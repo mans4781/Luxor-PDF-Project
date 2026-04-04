@@ -1,15 +1,16 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: PDF Expiry Tool API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: pdfs
+    description: PDF management operations
 paths:
   /healthz:
     get:
@@ -24,6 +25,141 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /pdfs:
+    get:
+      operationId: listPdfs
+      tags: [pdfs]
+      summary: List all uploaded PDFs
+      responses:
+        "200":
+          description: List of PDFs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PdfRecord"
+
+  /pdfs/upload:
+    post:
+      operationId: uploadPdf
+      tags: [pdfs]
+      summary: Upload a PDF and set an expiry date
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                expiryDate:
+                  type: string
+                  format: date
+                  description: ISO date string (YYYY-MM-DD) after which the PDF becomes inaccessible
+              required:
+                - file
+                - expiryDate
+      responses:
+        "201":
+          description: PDF uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PdfRecord"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /pdfs/{id}:
+    get:
+      operationId: getPdf
+      tags: [pdfs]
+      summary: Get PDF metadata
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: PDF metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PdfRecord"
+        "404":
+          description: PDF not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deletePdf
+      tags: [pdfs]
+      summary: Delete a PDF
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: PDF deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /pdfs/{id}/download:
+    get:
+      operationId: downloadPdf
+      tags: [pdfs]
+      summary: Download the PDF (returns corrupted data if expired)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /pdfs/stats:
+    get:
+      operationId: getPdfStats
+      tags: [pdfs]
+      summary: Get statistics about uploaded PDFs
+      responses:
+        "200":
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PdfStats"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +170,56 @@ components:
       required:
         - status
 
+    PdfRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        originalName:
+          type: string
+        fileSize:
+          type: integer
+        expiryDate:
+          type: string
+          format: date
+        isExpired:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - originalName
+        - fileSize
+        - expiryDate
+        - isExpired
+        - createdAt
+        - updatedAt
+
+    PdfStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        active:
+          type: integer
+        expired:
+          type: integer
+        totalSize:
+          type: integer
+      required:
+        - total
+        - active
+        - expired
+        - totalSize
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
