@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { FileText, Shield, Clock, LayoutDashboard, List } from "lucide-react";
+import { Shield, LayoutDashboard, List, Wrench } from "lucide-react";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
@@ -32,6 +32,15 @@ export function Layout({ children }: { children: ReactNode }) {
               <div className="flex items-center gap-2">
                 <List className="w-4 h-4" />
                 History
+              </div>
+            </Link>
+            <Link 
+              href="/pdf-tool" 
+              className={`text-sm font-medium transition-colors hover:text-primary ${location === '/pdf-tool' ? 'text-primary' : 'text-muted-foreground'}`}
+            >
+              <div className="flex items-center gap-2">
+                <Wrench className="w-4 h-4" />
+                PDF Tool
               </div>
             </Link>
           </nav>

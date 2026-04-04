@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import History from "@/pages/history";
+import PdfTool from "@/pages/pdf-tool";
 
 const queryClient = new QueryClient();
 
@@ -13,6 +14,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/history" component={History} />
+      <Route path="/pdf-tool" component={PdfTool} />
       <Route component={NotFound} />
     </Switch>
   );
