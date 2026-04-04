@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { Shield, LayoutDashboard, List, Wrench } from "lucide-react";
+import { Shield, LayoutDashboard, List, Wrench, ArrowLeftRight } from "lucide-react";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
@@ -41,6 +41,15 @@ export function Layout({ children }: { children: ReactNode }) {
               <div className="flex items-center gap-2">
                 <Wrench className="w-4 h-4" />
                 PDF Tool
+              </div>
+            </Link>
+            <Link 
+              href="/convert" 
+              className={`text-sm font-medium transition-colors hover:text-primary ${location === '/convert' ? 'text-primary' : 'text-muted-foreground'}`}
+            >
+              <div className="flex items-center gap-2">
+                <ArrowLeftRight className="w-4 h-4" />
+                Convert
               </div>
             </Link>
           </nav>
