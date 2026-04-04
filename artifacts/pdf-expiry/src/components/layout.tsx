@@ -13,7 +13,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="p-1.5 rounded" style={{ backgroundColor: "#FF0000" }}>
               <Shield className="w-5 h-5" style={{ color: "#ffffff" }} />
             </div>
-            <span className="font-semibold tracking-tight text-lg">LexSecure PDF</span>
+            <span className="font-semibold tracking-tight text-lg" style={{ color: "#0000FF", fontFamily: "Century, 'Century Gothic', Georgia, serif" }}>LexSecure PDF</span>
           </div>
           <nav className="flex items-center gap-6">
             <Link 
