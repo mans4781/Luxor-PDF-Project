@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { useSearch } from "wouter";
 import { Layout } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -450,6 +451,10 @@ function PdfToText() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ConvertToolPage() {
+  const search = useSearch();
+  const params = new URLSearchParams(search);
+  const defaultTab = params.get("tab") || "images-to-pdf";
+
   return (
     <Layout>
       <div className="max-w-2xl mx-auto space-y-6">
@@ -462,7 +467,7 @@ export default function ConvertToolPage() {
 
         <Card>
           <CardContent className="pt-6">
-            <Tabs defaultValue="images-to-pdf">
+            <Tabs defaultValue={defaultTab}>
               <TabsList className="grid w-full grid-cols-3 mb-6">
                 <TabsTrigger value="images-to-pdf" data-testid="tab-images-to-pdf" className="flex items-center gap-1.5 text-xs">
                   <ImageIcon className="w-3.5 h-3.5" />
