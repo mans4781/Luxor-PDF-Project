@@ -10,7 +10,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded" style={{ backgroundColor: "#8B0000" }}>
+            <div className="p-1.5 rounded" style={{ backgroundColor: "#FF0000" }}>
               <Shield className="w-5 h-5" style={{ color: "#ffffff" }} />
             </div>
             <span className="font-semibold tracking-tight text-lg">LexSecure PDF</span>
