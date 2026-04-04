@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDFDocument } from "pdf-lib";
 import { formatBytes } from "@/lib/utils";
-import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Plus, Trash2 } from "lucide-react";
+import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Plus, Trash2, Wrench } from "lucide-react";
 
 function FileDropZone({
   onFiles,
@@ -619,57 +619,90 @@ export default function PdfToolPage() {
   return (
     <Layout>
       <div className="max-w-2xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">PDF Tool</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Merge, split, and extract pages from PDF files. All processing happens in your browser — nothing is uploaded.
-          </p>
+
+        {/* ── Vibrant header banner ── */}
+        <div className="bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-lg">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm">
+              <Wrench className="w-7 h-7 text-white" strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">PDF Tool</h1>
+              <p className="text-violet-200 text-sm mt-0.5">Merge, split &amp; extract pages — all processed in your browser</p>
+            </div>
+          </div>
+          <div className="flex gap-2 mt-5 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Merge className="w-3 h-3" />Merge PDFs</span>
+            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Scissors className="w-3 h-3" />Split by Range</span>
+            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FileOutput className="w-3 h-3" />Extract Pages</span>
+          </div>
         </div>
 
-        <Card>
+        <Card className="border-violet-100 shadow-sm">
           <CardContent className="pt-6">
             <Tabs defaultValue="merge">
-              <TabsList className="grid w-full grid-cols-3 mb-6">
-                <TabsTrigger value="merge" data-testid="tab-merge" className="flex items-center gap-1.5">
+              <TabsList className="grid w-full grid-cols-3 mb-6 bg-violet-50 border border-violet-100 p-1 rounded-xl h-auto">
+                <TabsTrigger
+                  value="merge"
+                  data-testid="tab-merge"
+                  className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-violet-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                >
                   <Merge className="w-4 h-4" />
                   Merge
                 </TabsTrigger>
-                <TabsTrigger value="split" data-testid="tab-split" className="flex items-center gap-1.5">
+                <TabsTrigger
+                  value="split"
+                  data-testid="tab-split"
+                  className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                >
                   <Scissors className="w-4 h-4" />
                   Split
                 </TabsTrigger>
-                <TabsTrigger value="extract" data-testid="tab-extract" className="flex items-center gap-1.5">
+                <TabsTrigger
+                  value="extract"
+                  data-testid="tab-extract"
+                  className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                >
                   <FileOutput className="w-4 h-4" />
                   Extract
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="merge">
-                <div className="space-y-2 mb-4">
-                  <h2 className="font-semibold">Merge PDFs</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Combine multiple PDF files into a single document. Files are merged in the order listed.
-                  </p>
+                <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
+                  <div className="w-9 h-9 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                    <Merge className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-violet-900">Merge PDFs</h2>
+                    <p className="text-xs text-violet-600">Combine multiple PDFs into one document in the listed order.</p>
+                  </div>
                 </div>
                 <MergeTab />
               </TabsContent>
 
               <TabsContent value="split">
-                <div className="space-y-2 mb-4">
-                  <h2 className="font-semibold">Split PDF</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Divide a PDF into separate files by defining page ranges. Each range downloads as its own file.
-                  </p>
+                <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
+                  <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                    <Scissors className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-indigo-900">Split PDF</h2>
+                    <p className="text-xs text-indigo-600">Divide a PDF by page ranges — each range downloads as its own file.</p>
+                  </div>
                 </div>
                 <SplitTab />
               </TabsContent>
 
               <TabsContent value="extract">
-                <div className="space-y-2 mb-4">
-                  <h2 className="font-semibold">Extract Pages</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Pick specific pages from a PDF and save them as a new document.
-                  </p>
+                <div className="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
+                  <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-violet-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                    <FileOutput className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-purple-900">Extract Pages</h2>
+                    <p className="text-xs text-purple-600">Pick specific pages from a PDF and save them as a new document.</p>
+                  </div>
                 </div>
                 <ExtractTab />
               </TabsContent>
