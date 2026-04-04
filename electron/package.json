@@ -1,0 +1,59 @@
+{
+  "name": "lexsecure-pdf",
+  "version": "1.0.0",
+  "description": "LexSecure PDF — Secure PDF management desktop app",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win portable --x64",
+    "build:win32": "electron-builder --win portable --ia32"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "cors": "^2.8.5",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.lexsecure.pdf",
+    "productName": "LexSecure PDF",
+    "copyright": "Copyright © 2025 LexSecure",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "server.js",
+      "db.js",
+      "public/**/*",
+      "node_modules/**/*",
+      "!node_modules/.cache/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "public/favicon.ico",
+      "forceCodeSigning": false,
+      "certificateFile": null,
+      "signingHashAlgorithms": null
+    },
+    "portable": {
+      "artifactName": "LexSecure-PDF-Setup.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "public/favicon.ico",
+      "uninstallerIcon": "public/favicon.ico",
+      "artifactName": "LexSecure-PDF-Setup.exe"
+    }
+  }
+}
