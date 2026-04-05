@@ -33,7 +33,7 @@ export function Navbar() {
         </Link>
         
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Home</Link>
+          <a href={import.meta.env.BASE_URL} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Home</a>
           <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
           <a href="#security" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Security</a>
           <a href="#desktop" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Desktop App</a>
