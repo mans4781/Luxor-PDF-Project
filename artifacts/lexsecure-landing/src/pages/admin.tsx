@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import {
-  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 
 const ADMIN_TOKEN = "luxor-admin-2024";
 const LOCK_PIN = "luxor2024";
+const SIDEBAR_W = 220;
 
 interface AdminStats {
   overview: {
@@ -20,35 +21,40 @@ interface AdminStats {
   topCountries: { country: string; users: number; pct: number }[];
 }
 
+type Section = "overview" | "users" | "revenue" | "documents" | "geography" | "activity" | "settings";
+
 // ── Theme ─────────────────────────────────────────────────────────────────────
 function makeTheme(dark: boolean) {
   return {
-    pageBg:     dark ? "#0f0f13"                       : "#f0f2f7",
-    headerBg:   dark ? "#16161e"                       : "#ffffff",
-    headerBorder: dark ? "rgba(255,255,255,0.07)"      : "rgba(0,0,0,0.08)",
-    cardBg:     dark ? "rgba(255,255,255,0.03)"        : "#ffffff",
-    cardBorder: dark ? "rgba(255,255,255,0.07)"        : "rgba(0,0,0,0.08)",
-    text:       dark ? "#ffffff"                       : "#111827",
-    textMuted:  dark ? "#888"                          : "#6b7280",
-    textFaint:  dark ? "#444"                          : "#9ca3af",
-    textSub:    dark ? "#555"                          : "#9ca3af",
-    divider:    dark ? "rgba(255,255,255,0.05)"        : "rgba(0,0,0,0.06)",
-    btnBg:      dark ? "rgba(255,255,255,0.06)"        : "rgba(0,0,0,0.05)",
-    btnBorder:  dark ? "rgba(255,255,255,0.1)"         : "rgba(0,0,0,0.12)",
-    btnColor:   dark ? "#aaa"                          : "#555",
-    chartGrid:  dark ? "rgba(255,255,255,0.05)"        : "rgba(0,0,0,0.06)",
-    chartTick:  dark ? "#555"                          : "#9ca3af",
-    tooltipBg:  dark ? "#1a1a22"                       : "#ffffff",
-    tooltipBorder: dark ? "rgba(255,255,255,0.1)"      : "rgba(0,0,0,0.1)",
-    avatarBg:   dark ? "rgba(79,142,247,0.12)"         : "rgba(79,142,247,0.08)",
-    barTrack:   dark ? "rgba(255,255,255,0.06)"        : "rgba(0,0,0,0.06)",
-    inputBg:    dark ? "rgba(255,255,255,0.07)"        : "#f9fafb",
-    inputBorder: dark ? "rgba(255,255,255,0.12)"       : "rgba(0,0,0,0.15)",
-    loginCardBg: dark ? "rgba(255,255,255,0.04)"       : "#ffffff",
-    loginCardBorder: dark ? "rgba(255,255,255,0.08)"   : "rgba(0,0,0,0.1)",
+    pageBg:      dark ? "#0f0f13"                      : "#f0f2f7",
+    sidebarBg:   dark ? "#13131a"                      : "#1e2130",
+    headerBg:    dark ? "#16161e"                      : "#ffffff",
+    headerBorder:dark ? "rgba(255,255,255,0.07)"       : "rgba(0,0,0,0.08)",
+    cardBg:      dark ? "rgba(255,255,255,0.04)"       : "#ffffff",
+    cardBorder:  dark ? "rgba(255,255,255,0.08)"       : "rgba(0,0,0,0.09)",
+    text:        dark ? "#ffffff"                      : "#111827",
+    textMuted:   dark ? "#888"                         : "#6b7280",
+    textFaint:   dark ? "#444"                         : "#9ca3af",
+    textSub:     dark ? "#555"                         : "#9ca3af",
+    divider:     dark ? "rgba(255,255,255,0.06)"       : "rgba(0,0,0,0.07)",
+    btnBg:       dark ? "rgba(255,255,255,0.06)"       : "rgba(0,0,0,0.05)",
+    btnBorder:   dark ? "rgba(255,255,255,0.1)"        : "rgba(0,0,0,0.12)",
+    btnColor:    dark ? "#aaa"                         : "#555",
+    chartGrid:   dark ? "rgba(255,255,255,0.05)"       : "rgba(0,0,0,0.06)",
+    chartTick:   dark ? "#555"                         : "#9ca3af",
+    tooltipBg:   dark ? "#1a1a22"                      : "#ffffff",
+    tooltipBorder:dark ? "rgba(255,255,255,0.1)"       : "rgba(0,0,0,0.1)",
+    avatarBg:    dark ? "rgba(79,142,247,0.12)"        : "rgba(79,142,247,0.08)",
+    barTrack:    dark ? "rgba(255,255,255,0.06)"       : "rgba(0,0,0,0.06)",
+    navActive:   dark ? "rgba(79,142,247,0.18)"        : "rgba(79,142,247,0.12)",
+    navHover:    dark ? "rgba(255,255,255,0.05)"       : "rgba(255,255,255,0.06)",
+    navText:     "#c8ccd8",
+    navTextActive:"#4f8ef7",
   };
 }
+type Theme = ReturnType<typeof makeTheme>;
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function fmt(n: number) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
@@ -63,19 +69,35 @@ function fmtBytes(b: number) {
 
 const PIE_COLORS = ["#6366f1", "#4f8ef7", "#10b981"];
 
-type Theme = ReturnType<typeof makeTheme>;
-
+// ── Sub-components ────────────────────────────────────────────────────────────
 function StatCard({ label, value, sub, color = "#4f8ef7", icon, t }: {
   label: string; value: string; sub?: string; color?: string; icon: string; t: Theme;
 }) {
   return (
     <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "20px 22px", display: "flex", flexDirection: "column", gap: 8 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <span style={{ color: t.textMuted, fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.6px" }}>{label}</span>
-        <span style={{ fontSize: 20 }}>{icon}</span>
+        <span style={{ color: t.textMuted, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.7px" }}>{label}</span>
+        <span style={{ fontSize: 19 }}>{icon}</span>
       </div>
-      <div style={{ color: t.text, fontSize: 28, fontWeight: 700, letterSpacing: "-0.5px" }}>{value}</div>
+      <div style={{ color: t.text, fontSize: 26, fontWeight: 700, letterSpacing: "-0.5px" }}>{value}</div>
       {sub && <div style={{ color, fontSize: 12, fontWeight: 500 }}>{sub}</div>}
+    </div>
+  );
+}
+
+function SectionTitle({ title, sub, t }: { title: string; sub?: string; t: Theme }) {
+  return (
+    <div style={{ marginBottom: 22 }}>
+      <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0, marginBottom: 4, color: t.text }}>{title}</h2>
+      {sub && <p style={{ color: t.textSub, fontSize: 13, margin: 0 }}>{sub}</p>}
+    </div>
+  );
+}
+
+function Card({ children, t, style }: { children: React.ReactNode; t: Theme; style?: React.CSSProperties }) {
+  return (
+    <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: 20, ...style }}>
+      {children}
     </div>
   );
 }
@@ -87,47 +109,501 @@ function ActivityBadge({ type }: { type: string }) {
     cancel:  { label: "Cancel",   bg: "rgba(239,68,68,0.15)",   color: "#ef4444" },
   };
   const c = cfg[type] ?? { label: type, bg: "rgba(150,150,150,0.15)", color: "#aaa" };
+  return <span style={{ background: c.bg, color: c.color, borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>{c.label}</span>;
+}
+
+function ThemeToggle({ dark, onToggle }: { dark: boolean; onToggle: () => void }) {
   return (
-    <span style={{ background: c.bg, color: c.color, borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>
-      {c.label}
-    </span>
+    <button onClick={onToggle} title={dark ? "Light mode" : "Dark mode"} style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 18, padding: "4px 10px 4px 7px", cursor: "pointer" }}>
+      <div style={{ width: 30, height: 16, borderRadius: 8, background: dark ? "#4f8ef7" : "#d1d5db", position: "relative", flexShrink: 0 }}>
+        <div style={{ position: "absolute", top: 2, left: dark ? 16 : 2, width: 12, height: 12, borderRadius: "50%", background: "#fff", transition: "left 0.18s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }} />
+      </div>
+      <span style={{ fontSize: 12, color: "#ccc", fontWeight: 500 }}>{dark ? "🌙" : "☀️"}</span>
+    </button>
   );
 }
 
-// ── Toggle Switch ─────────────────────────────────────────────────────────────
-function ThemeToggle({ dark, onToggle }: { dark: boolean; onToggle: () => void }) {
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+const NAV_ITEMS: { id: Section; label: string; icon: string; badge?: string }[] = [
+  { id: "overview",   label: "Overview",   icon: "📊" },
+  { id: "users",      label: "Users",      icon: "👥" },
+  { id: "revenue",    label: "Revenue",    icon: "💰" },
+  { id: "documents",  label: "Documents",  icon: "📄" },
+  { id: "geography",  label: "Geography",  icon: "🌍" },
+  { id: "activity",   label: "Activity",   icon: "🔔", badge: "7" },
+  { id: "settings",   label: "Settings",   icon: "⚙️" },
+];
+
+function Sidebar({ active, onSelect, onLogout, t }: {
+  active: Section; onSelect: (s: Section) => void; onLogout: () => void; t: Theme;
+}) {
   return (
-    <button
-      onClick={onToggle}
-      title={dark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-      style={{
-        display: "flex", alignItems: "center", gap: 7,
-        background: dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
-        border: `1px solid ${dark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)"}`,
-        borderRadius: 20, padding: "5px 12px 5px 8px",
-        cursor: "pointer", transition: "all 0.2s",
-      }}
-    >
-      {/* Track */}
-      <div style={{
-        width: 34, height: 18, borderRadius: 10,
-        background: dark ? "#4f8ef7" : "#e5e7eb",
-        position: "relative", transition: "background 0.2s", flexShrink: 0,
-      }}>
-        <div style={{
-          position: "absolute", top: 2,
-          left: dark ? 18 : 2,
-          width: 14, height: 14,
-          borderRadius: "50%",
-          background: "#fff",
-          transition: "left 0.2s",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-        }} />
+    <div style={{
+      width: SIDEBAR_W, flexShrink: 0,
+      background: t.sidebarBg,
+      borderRight: "1px solid rgba(255,255,255,0.06)",
+      display: "flex", flexDirection: "column",
+      height: "100%", overflow: "hidden",
+    }}>
+      {/* Logo */}
+      <div style={{ padding: "18px 20px 14px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+          <div style={{ width: 30, height: 30, background: "#4f8ef7", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "#fff", flexShrink: 0 }}>L</div>
+          <div>
+            <div style={{ color: "#fff", fontWeight: 700, fontSize: 13 }}>Luxor Admin</div>
+            <div style={{ color: "#555", fontSize: 10 }}>Analytics</div>
+          </div>
+        </div>
       </div>
-      <span style={{ fontSize: 13, color: dark ? "#ccc" : "#555", fontWeight: 500, whiteSpace: "nowrap" }}>
-        {dark ? "🌙 Dark" : "☀️ Light"}
-      </span>
-    </button>
+
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: "12px 10px", overflowY: "auto" }}>
+        <div style={{ color: "#3a3d52", fontSize: 10, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase", padding: "0 8px", marginBottom: 6 }}>Menu</div>
+        {NAV_ITEMS.map(item => {
+          const isActive = active === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => onSelect(item.id)}
+              style={{
+                width: "100%", display: "flex", alignItems: "center", gap: 10,
+                padding: "9px 10px", borderRadius: 8, border: "none",
+                background: isActive ? t.navActive : "transparent",
+                color: isActive ? t.navTextActive : t.navText,
+                cursor: "pointer", fontSize: 13, fontWeight: isActive ? 600 : 400,
+                marginBottom: 2, transition: "background 0.12s",
+                textAlign: "left",
+              }}
+            >
+              <span style={{ fontSize: 15, flexShrink: 0 }}>{item.icon}</span>
+              <span style={{ flex: 1 }}>{item.label}</span>
+              {item.badge && (
+                <span style={{ background: "#4f8ef7", color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 10, padding: "1px 6px", minWidth: 18, textAlign: "center" }}>
+                  {item.badge}
+                </span>
+              )}
+              {isActive && <span style={{ width: 3, height: 16, background: "#4f8ef7", borderRadius: 2, flexShrink: 0 }} />}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Bottom */}
+      <div style={{ padding: "12px 10px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", background: "rgba(255,255,255,0.04)", borderRadius: 8, marginBottom: 8 }}>
+          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#4f8ef7", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12, color: "#fff", flexShrink: 0 }}>A</div>
+          <div style={{ overflow: "hidden" }}>
+            <div style={{ color: "#ccc", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Admin</div>
+            <div style={{ color: "#444", fontSize: 10 }}>Super Admin</div>
+          </div>
+        </div>
+        <button onClick={onLogout} style={{ width: "100%", padding: "8px 10px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8, color: "#ef4444", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+          🔓 Logout
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Section: Overview ─────────────────────────────────────────────────────────
+function OverviewSection({ stats, t }: { stats: AdminStats; t: Theme }) {
+  const [activeChart, setActiveChart] = useState<"revenue"|"users"|"documents">("revenue");
+  const { overview, plans, monthlyData } = stats;
+  const totalPlanUsers = Object.values(plans).reduce((a, b) => a + b, 0);
+  const pieData = [{ name: "Free", value: plans.free }, { name: "Pro", value: plans.pro }, { name: "Enterprise", value: plans.enterprise }];
+  const chartColor = { revenue: "#4f8ef7", users: "#10b981", documents: "#a78bfa" }[activeChart];
+  const chartLabel = { revenue: "Revenue ($)", users: "New Users", documents: "Documents" }[activeChart];
+
+  return (
+    <div>
+      <SectionTitle title="Overview" sub="Platform-wide metrics at a glance" t={t} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 12, marginBottom: 24 }}>
+        <StatCard label="Total Users"      value={fmt(overview.totalUsers)}                       sub="+83 this month"           icon="👥" color="#10b981" t={t} />
+        <StatCard label="Monthly Revenue"  value={`$${overview.monthlyRevenue.toLocaleString()}`} sub="↑ 14% vs last month"      icon="💰" color="#10b981" t={t} />
+        <StatCard label="Page Views"       value={fmt(overview.pageViews)}                        sub="Unique visitors"          icon="👁️" t={t} />
+        <StatCard label="NPS Score"        value={String(overview.nps)}                           sub="Excellent (>70)"          icon="⭐" color="#f59e0b" t={t} />
+        <StatCard label="Churn Rate"       value={`${overview.churnRate}%`}                       sub="Monthly — healthy"        icon="📉" color="#10b981" t={t} />
+        <StatCard label="Support Tickets"  value={String(overview.supportTickets)}                sub="Open tickets"             icon="🎟️" color={overview.supportTickets > 10 ? "#ef4444" : "#10b981"} t={t} />
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16 }}>
+        <Card t={t}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+            <span style={{ fontWeight: 600, fontSize: 14, color: t.text }}>12-Month Trend</span>
+            <div style={{ display: "flex", gap: 5 }}>
+              {(["revenue","users","documents"] as const).map(k => (
+                <button key={k} onClick={() => setActiveChart(k)} style={{ padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, border: `1px solid ${t.cardBorder}`, background: activeChart === k ? "rgba(79,142,247,0.2)" : "transparent", color: activeChart === k ? "#4f8ef7" : t.textSub, cursor: "pointer" }}>
+                  {k.charAt(0).toUpperCase() + k.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={monthlyData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="aGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={chartColor} stopOpacity={0.28} />
+                  <stop offset="95%" stopColor={chartColor} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={t.chartGrid} />
+              <XAxis dataKey="month" tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} labelStyle={{ color: t.text }} itemStyle={{ color: chartColor }} formatter={(v: any) => activeChart === "revenue" ? [`$${v.toLocaleString()}`, chartLabel] : [v.toLocaleString(), chartLabel]} />
+              <Area type="monotone" dataKey={activeChart} stroke={chartColor} strokeWidth={2} fill="url(#aGrad)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card t={t}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Plan Breakdown</div>
+          <ResponsiveContainer width="100%" height={150}>
+            <PieChart>
+              <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={68} paddingAngle={3} dataKey="value">
+                {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
+              </Pie>
+              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} itemStyle={{ color: t.text }} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 10 }}>
+            {pieData.map((d, i) => (
+              <div key={d.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <div style={{ width: 9, height: 9, borderRadius: "50%", background: PIE_COLORS[i] }} />
+                  <span style={{ color: t.textMuted, fontSize: 12 }}>{d.name}</span>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <span style={{ color: t.text, fontSize: 12, fontWeight: 600 }}>{d.value.toLocaleString()}</span>
+                  <span style={{ color: t.textSub, fontSize: 11 }}>{Math.round(d.value / totalPlanUsers * 100)}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ── Section: Users ────────────────────────────────────────────────────────────
+function UsersSection({ stats, t }: { stats: AdminStats; t: Theme }) {
+  const { overview, plans, monthlyData } = stats;
+  const totalPlanUsers = Object.values(plans).reduce((a, b) => a + b, 0);
+  const mockUsers = [
+    { name: "alex.m@gmail.com",    plan: "Pro",        joined: "Mar 28, 2026", status: "Active" },
+    { name: "sarah.j@acme.com",    plan: "Enterprise", joined: "Mar 20, 2026", status: "Active" },
+    { name: "tom.w@outlook.com",   plan: "Free",       joined: "Mar 15, 2026", status: "Active" },
+    { name: "priya.k@startup.io",  plan: "Pro",        joined: "Feb 28, 2026", status: "Active" },
+    { name: "mike.r@gmail.com",    plan: "Pro",        joined: "Feb 10, 2026", status: "Churned" },
+    { name: "dana.l@corp.com",     plan: "Pro",        joined: "Jan 22, 2026", status: "Active" },
+    { name: "james.b@dev.co",      plan: "Free",       joined: "Jan 05, 2026", status: "Active" },
+    { name: "nina.s@design.io",    plan: "Enterprise", joined: "Dec 12, 2025", status: "Active" },
+  ];
+  const planBadge = (plan: string) => {
+    const c: Record<string, string> = { Free: "#6b7280", Pro: "#4f8ef7", Enterprise: "#a78bfa" };
+    return <span style={{ background: `${c[plan]}22`, color: c[plan], borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>{plan}</span>;
+  };
+  const statusBadge = (s: string) => (
+    <span style={{ background: s === "Active" ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.12)", color: s === "Active" ? "#10b981" : "#ef4444", borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>{s}</span>
+  );
+
+  return (
+    <div>
+      <SectionTitle title="Users" sub="Subscriber breakdown and management" t={t} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 24 }}>
+        <StatCard label="Total Users"   value={fmt(overview.totalUsers)}  sub="+83 this month"       icon="👥" color="#10b981" t={t} />
+        <StatCard label="Free Plan"     value={plans.free.toLocaleString()} sub={`${Math.round(plans.free/totalPlanUsers*100)}% of users`} icon="🆓" t={t} />
+        <StatCard label="Pro Plan"      value={plans.pro.toLocaleString()}  sub={`${Math.round(plans.pro/totalPlanUsers*100)}% of users`}  icon="⭐" color="#4f8ef7" t={t} />
+        <StatCard label="Enterprise"    value={plans.enterprise.toLocaleString()} sub={`${Math.round(plans.enterprise/totalPlanUsers*100)}% of users`} icon="🏢" color="#a78bfa" t={t} />
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+        <Card t={t}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>User Growth</div>
+          <ResponsiveContainer width="100%" height={180}>
+            <LineChart data={monthlyData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={t.chartGrid} />
+              <XAxis dataKey="month" tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} labelStyle={{ color: t.text }} />
+              <Line type="monotone" dataKey="users" stroke="#10b981" strokeWidth={2} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </Card>
+        <Card t={t}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Plan Distribution</div>
+          <ResponsiveContainer width="100%" height={180}>
+            <PieChart>
+              <Pie data={[{ name: "Free", value: plans.free }, { name: "Pro", value: plans.pro }, { name: "Enterprise", value: plans.enterprise }]} cx="50%" cy="50%" outerRadius={75} paddingAngle={3} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+                {[0,1,2].map(i => <Cell key={i} fill={PIE_COLORS[i]} />)}
+              </Pie>
+              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </Card>
+      </div>
+      <Card t={t}>
+        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Recent Users</div>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${t.divider}` }}>
+              {["User", "Plan", "Joined", "Status"].map(h => (
+                <th key={h} style={{ textAlign: "left", padding: "6px 10px 10px", color: t.textMuted, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {mockUsers.map((u, i) => (
+              <tr key={i} style={{ borderBottom: i < mockUsers.length - 1 ? `1px solid ${t.divider}` : "none" }}>
+                <td style={{ padding: "10px 10px", color: t.text }}>{u.name}</td>
+                <td style={{ padding: "10px 10px" }}>{planBadge(u.plan)}</td>
+                <td style={{ padding: "10px 10px", color: t.textMuted }}>{u.joined}</td>
+                <td style={{ padding: "10px 10px" }}>{statusBadge(u.status)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
+}
+
+// ── Section: Revenue ──────────────────────────────────────────────────────────
+function RevenueSection({ stats, t }: { stats: AdminStats; t: Theme }) {
+  const { overview, monthlyData } = stats;
+  return (
+    <div>
+      <SectionTitle title="Revenue" sub="Billing, MRR and financial analytics" t={t} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 24 }}>
+        <StatCard label="Monthly Revenue" value={`$${overview.monthlyRevenue.toLocaleString()}`} sub="↑ 14% vs last month" icon="💰" color="#10b981" t={t} />
+        <StatCard label="Annual Revenue"  value={`$${overview.annualRevenue.toLocaleString()}`}  sub="Projected ARR"       icon="📈" t={t} />
+        <StatCard label="ARPU"            value={`$${overview.avgRevenuePerUser}`}               sub="Pro + Enterprise"    icon="💳" t={t} />
+        <StatCard label="Churn Rate"      value={`${overview.churnRate}%`}                       sub="Monthly — healthy"   icon="📉" color="#10b981" t={t} />
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+        <Card t={t}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Monthly Revenue</div>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={monthlyData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="rGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#4f8ef7" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#4f8ef7" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={t.chartGrid} />
+              <XAxis dataKey="month" tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
+              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} formatter={(v: any) => [`$${v.toLocaleString()}`, "Revenue"]} />
+              <Area type="monotone" dataKey="revenue" stroke="#4f8ef7" strokeWidth={2} fill="url(#rGrad)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Card>
+        <Card t={t}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Revenue Bar</div>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={monthlyData.slice(-6)} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={t.chartGrid} />
+              <XAxis dataKey="month" tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
+              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} formatter={(v: any) => [`$${v.toLocaleString()}`, "Revenue"]} />
+              <Bar dataKey="revenue" fill="#4f8ef7" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+      </div>
+      <Card t={t}>
+        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Revenue Breakdown by Plan</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+          {[
+            { plan: "Free", users: stats.plans.free, price: 0, color: "#6b7280" },
+            { plan: "Pro", users: stats.plans.pro, price: 12, color: "#4f8ef7" },
+            { plan: "Enterprise", users: stats.plans.enterprise, price: 79, color: "#a78bfa" },
+          ].map(p => (
+            <div key={p.plan} style={{ background: `${p.color}12`, border: `1px solid ${p.color}30`, borderRadius: 10, padding: "16px 18px" }}>
+              <div style={{ color: p.color, fontSize: 12, fontWeight: 700, marginBottom: 8 }}>{p.plan}</div>
+              <div style={{ color: t.text, fontSize: 22, fontWeight: 700 }}>${(p.users * p.price).toLocaleString()}</div>
+              <div style={{ color: t.textMuted, fontSize: 12, marginTop: 4 }}>{p.users} users × ${p.price}/mo</div>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ── Section: Documents ────────────────────────────────────────────────────────
+function DocumentsSection({ stats, t }: { stats: AdminStats; t: Theme }) {
+  const { overview, monthlyData } = stats;
+  return (
+    <div>
+      <SectionTitle title="Documents" sub="PDF processing and storage metrics" t={t} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 24 }}>
+        <StatCard label="Total PDFs"    value={String(overview.totalPdfs)}           sub="All time"             icon="📄" t={t} />
+        <StatCard label="Active PDFs"   value={String(overview.activePdfs)}          sub="Not yet expired"      icon="✅" color="#10b981" t={t} />
+        <StatCard label="Expired PDFs"  value={String(overview.expiredPdfs)}         sub="Past expiry date"     icon="⏰" color="#f59e0b" t={t} />
+        <StatCard label="Storage Used"  value={fmtBytes(overview.totalStorageBytes)} sub="Across all uploads"   icon="🗄️" t={t} />
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <Card t={t}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Documents Processed</div>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={monthlyData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={t.chartGrid} />
+              <XAxis dataKey="month" tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} />
+              <Bar dataKey="documents" fill="#a78bfa" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+        <Card t={t}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Active vs Expired</div>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie
+                data={[{ name: "Active", value: overview.activePdfs || 1 }, { name: "Expired", value: overview.expiredPdfs || 0 }]}
+                cx="50%" cy="50%" outerRadius={80} paddingAngle={3} dataKey="value"
+              >
+                <Cell fill="#10b981" />
+                <Cell fill="#f59e0b" />
+              </Pie>
+              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} />
+              <Legend wrapperStyle={{ color: t.textMuted, fontSize: 12 }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ── Section: Geography ────────────────────────────────────────────────────────
+function GeographySection({ stats, t }: { stats: AdminStats; t: Theme }) {
+  const { topCountries } = stats;
+  return (
+    <div>
+      <SectionTitle title="Geography" sub="User distribution by country" t={t} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <Card t={t}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 16, color: t.text }}>Top Countries</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {topCountries.map((c, i) => (
+              <div key={c.country}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ color: t.textSub, fontSize: 12, width: 18, textAlign: "right", fontWeight: 600 }}>{i + 1}</span>
+                    <span style={{ color: t.text, fontSize: 13 }}>{c.country}</span>
+                  </div>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    <span style={{ color: t.textMuted, fontSize: 13 }}>{c.users.toLocaleString()} users</span>
+                    <span style={{ color: t.textSub, fontSize: 12, width: 34, textAlign: "right", fontWeight: 600 }}>{c.pct}%</span>
+                  </div>
+                </div>
+                <div style={{ height: 6, background: t.barTrack, borderRadius: 3 }}>
+                  <div style={{ width: `${c.pct}%`, height: "100%", background: PIE_COLORS[Math.min(i, 2)], borderRadius: 3, transition: "width 0.5s" }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+        <Card t={t}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Distribution Chart</div>
+          <ResponsiveContainer width="100%" height={260}>
+            <PieChart>
+              <Pie
+                data={topCountries}
+                cx="50%" cy="50%" outerRadius={95} dataKey="users"
+                nameKey="country" paddingAngle={2}
+                label={({ country, pct }) => pct > 7 ? `${country} ${pct}%` : ""}
+              >
+                {topCountries.map((_, i) => <Cell key={i} fill={["#4f8ef7","#10b981","#a78bfa","#f59e0b","#ef4444","#6366f1","#374151"][i % 7]} />)}
+              </Pie>
+              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} formatter={(v: any) => [v.toLocaleString(), "Users"]} />
+            </PieChart>
+          </ResponsiveContainer>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ── Section: Activity ─────────────────────────────────────────────────────────
+function ActivitySection({ stats, t }: { stats: AdminStats; t: Theme }) {
+  const { recentActivity } = stats;
+  return (
+    <div>
+      <SectionTitle title="Activity" sub="Real-time user events and notifications" t={t} />
+      <Card t={t}>
+        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 16, color: t.text }}>Recent Events</div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {recentActivity.map((a, i) => (
+            <div key={a.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: i < recentActivity.length - 1 ? `1px solid ${t.divider}` : "none" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: "50%", background: t.avatarBg, display: "flex", alignItems: "center", justifyContent: "center", color: "#4f8ef7", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+                  {a.user.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ color: t.text, fontSize: 13, fontWeight: 500 }}>{a.user}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
+                    <ActivityBadge type={a.type} />
+                    <span style={{ color: t.textSub, fontSize: 11 }}>{a.plan} plan</span>
+                  </div>
+                </div>
+              </div>
+              <span style={{ color: t.textFaint, fontSize: 12 }}>{a.time}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ── Section: Settings ─────────────────────────────────────────────────────────
+function SettingsSection({ dark, onToggleDark, onLogout, t }: { dark: boolean; onToggleDark: () => void; onLogout: () => void; t: Theme }) {
+  return (
+    <div>
+      <SectionTitle title="Settings" sub="Admin preferences and configuration" t={t} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 560 }}>
+        <Card t={t}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Appearance</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0" }}>
+            <div>
+              <div style={{ color: t.text, fontSize: 13, fontWeight: 500 }}>Theme</div>
+              <div style={{ color: t.textMuted, fontSize: 12 }}>Switch between dark and light mode</div>
+            </div>
+            <ThemeToggle dark={dark} onToggle={onToggleDark} />
+          </div>
+        </Card>
+        <Card t={t}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Account</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid ${t.divider}`, marginBottom: 14 }}>
+            <div style={{ width: 42, height: 42, borderRadius: "50%", background: "#4f8ef7", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, color: "#fff" }}>A</div>
+            <div>
+              <div style={{ color: t.text, fontSize: 14, fontWeight: 600 }}>Admin</div>
+              <div style={{ color: t.textMuted, fontSize: 12 }}>Super Admin · Full access</div>
+            </div>
+          </div>
+          <button onClick={onLogout} style={{ padding: "9px 20px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, color: "#ef4444", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            🔓 Logout
+          </button>
+        </Card>
+        <Card t={t}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>API Access</div>
+          <div style={{ color: t.textMuted, fontSize: 12, marginBottom: 10 }}>Admin API token (read-only display)</div>
+          <div style={{ background: t.barTrack, borderRadius: 6, padding: "8px 12px", fontFamily: "monospace", fontSize: 12, color: t.textFaint, letterSpacing: "0.5px" }}>
+            luxor-admin-****
+          </div>
+        </Card>
+        <Card t={t}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 8, color: t.text }}>Data</div>
+          <div style={{ color: t.textMuted, fontSize: 12, marginBottom: 12 }}>Analytics data refreshes on every page load.</div>
+          <button onClick={() => window.location.reload()} style={{ padding: "8px 18px", background: t.btnBg, border: `1px solid ${t.btnBorder}`, borderRadius: 8, color: t.text, fontSize: 13, cursor: "pointer" }}>
+            ↺ Refresh Data
+          </button>
+        </Card>
+      </div>
+    </div>
   );
 }
 
@@ -156,28 +632,12 @@ function LoginScreen({ onUnlock }: { onUnlock: () => void }) {
           <div style={{ color: "#555", fontSize: 12 }}>Analytics Dashboard</div>
         </div>
       </div>
-
-      <div style={{
-        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: 16, padding: "36px 40px", width: 340,
-        animation: shake ? "shake 0.4s ease" : undefined,
-      }}>
-        <div style={{ color: "#ccc", fontSize: 14, marginBottom: 16, textAlign: "center" }}>
-          Enter admin passphrase to continue
-        </div>
-        <input
-          type="password" value={pin}
-          onChange={e => { setPin(e.target.value); setError(""); }}
-          onKeyDown={e => e.key === "Enter" && submit()}
-          placeholder="Passphrase" autoFocus
-          style={{ width: "100%", padding: "10px 14px", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#fff", fontSize: 15, outline: "none", marginBottom: 12, boxSizing: "border-box" }}
-        />
+      <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "36px 40px", width: 340, animation: shake ? "shake 0.4s ease" : undefined }}>
+        <div style={{ color: "#ccc", fontSize: 14, marginBottom: 16, textAlign: "center" }}>Enter admin passphrase to continue</div>
+        <input type="password" value={pin} onChange={e => { setPin(e.target.value); setError(""); }} onKeyDown={e => e.key === "Enter" && submit()} placeholder="Passphrase" autoFocus style={{ width: "100%", padding: "10px 14px", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#fff", fontSize: 15, outline: "none", marginBottom: 12, boxSizing: "border-box" }} />
         {error && <div style={{ color: "#ef4444", fontSize: 12, marginBottom: 10 }}>{error}</div>}
-        <button onClick={submit} style={{ width: "100%", padding: "11px", background: "#4f8ef7", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-          Unlock Dashboard
-        </button>
+        <button onClick={submit} style={{ width: "100%", padding: "11px", background: "#4f8ef7", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Unlock Dashboard</button>
       </div>
-
       <style>{`@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }`}</style>
     </div>
   );
@@ -185,239 +645,59 @@ function LoginScreen({ onUnlock }: { onUnlock: () => void }) {
 
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 function Dashboard({ onLogout, dark, onToggleDark }: { onLogout: () => void; dark: boolean; onToggleDark: () => void }) {
+  const [section, setSection] = useState<Section>("overview");
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeChart, setActiveChart] = useState<"revenue" | "users" | "documents">("revenue");
-
   const t = makeTheme(dark);
 
   useEffect(() => {
     fetch("/api/admin/stats", { headers: { "x-admin-token": ADMIN_TOKEN } })
       .then(r => r.json())
       .then(data => { setStats(data); setLoading(false); })
-      .catch(() => { setError("Failed to load analytics data."); setLoading(false); });
+      .catch(() => { setError("Failed to load analytics."); setLoading(false); });
   }, []);
 
-  if (loading) return (
-    <div style={{ minHeight: "100vh", background: t.pageBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ color: "#4f8ef7", fontSize: 14 }}>Loading analytics…</div>
-    </div>
-  );
-
-  if (error || !stats) return (
-    <div style={{ minHeight: "100vh", background: t.pageBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ color: "#ef4444", fontSize: 14 }}>{error || "No data"}</div>
-    </div>
-  );
-
-  const { overview, plans, monthlyData, recentActivity, topCountries } = stats;
-  const pieData = [
-    { name: "Free", value: plans.free },
-    { name: "Pro", value: plans.pro },
-    { name: "Enterprise", value: plans.enterprise },
-  ];
-  const totalPlanUsers = Object.values(plans).reduce((a, b) => a + b, 0);
-  const chartColor = { revenue: "#4f8ef7", users: "#10b981", documents: "#a78bfa" }[activeChart];
-  const chartLabel = { revenue: "Revenue ($)", users: "New Users", documents: "Documents" }[activeChart];
+  const sectionLabel = NAV_ITEMS.find(n => n.id === section)?.label ?? "";
 
   return (
-    <div style={{ minHeight: "100vh", background: t.pageBg, color: t.text, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", transition: "background 0.2s, color 0.2s" }}>
+    <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: t.pageBg, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", transition: "background 0.2s" }}>
+      <Sidebar active={section} onSelect={setSection} onLogout={onLogout} t={t} />
 
-      {/* Header */}
-      <div style={{ background: t.headerBg, borderBottom: `1px solid ${t.headerBorder}`, padding: "0 32px", height: 58, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100, transition: "background 0.2s" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 32, height: 32, background: "#4f8ef7", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 15, color: "#fff" }}>L</div>
-          <span style={{ fontWeight: 700, fontSize: 15, color: t.text }}>Luxor Admin</span>
-          <span style={{ background: "rgba(79,142,247,0.15)", color: "#4f8ef7", borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>Analytics</span>
-        </div>
-
-        {/* Right side controls */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ color: t.textSub, fontSize: 12 }}>
-            {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-          </span>
-
-          {/* Dark/Light toggle */}
-          <ThemeToggle dark={dark} onToggle={onToggleDark} />
-
-          <button
-            onClick={onLogout}
-            style={{ background: t.btnBg, border: `1px solid ${t.btnBorder}`, borderRadius: 6, color: t.btnColor, fontSize: 12, padding: "5px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}
-          >
-            🔓 Logout
-          </button>
-        </div>
-      </div>
-
-      <div style={{ padding: "28px 32px", maxWidth: 1300, margin: "0 auto" }}>
-
-        {/* Title */}
-        <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 4, color: t.text }}>Analytics Overview</h1>
-          <p style={{ color: t.textSub, fontSize: 13, margin: 0 }}>All metrics across the Luxor PDF platform</p>
-        </div>
-
-        {/* KPI Cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 14, marginBottom: 28 }}>
-          <StatCard label="Total Users"       value={fmt(overview.totalUsers)}                        sub={`+${fmt(83)} this month`}         icon="👥" color="#10b981" t={t} />
-          <StatCard label="Monthly Revenue"   value={`$${overview.monthlyRevenue.toLocaleString()}`}  sub="↑ 14% vs last month"              icon="💰" color="#10b981" t={t} />
-          <StatCard label="Annual Revenue"    value={`$${overview.annualRevenue.toLocaleString()}`}   sub="Projected ARR"                    icon="📈" t={t} />
-          <StatCard label="Page Views"        value={fmt(overview.pageViews)}                         sub="Unique visitors tracked"          icon="👁️" t={t} />
-          <StatCard label="Avg Revenue/User"  value={`$${overview.avgRevenuePerUser}`}                sub="ARPU — Pro + Enterprise"          icon="💳" t={t} />
-          <StatCard label="Churn Rate"        value={`${overview.churnRate}%`}                        sub="Monthly churn — healthy"          icon="📉" color="#10b981" t={t} />
-          <StatCard label="NPS Score"         value={String(overview.nps)}                            sub="Excellent (>70)"                  icon="⭐" color="#f59e0b" t={t} />
-          <StatCard label="PDFs Processed"    value={String(overview.totalPdfs)}                      sub={`${overview.activePdfs} active · ${overview.expiredPdfs} expired`} icon="📄" t={t} />
-          <StatCard label="Storage Used"      value={fmtBytes(overview.totalStorageBytes)}             sub="Across all uploads"               icon="🗄️" t={t} />
-          <StatCard label="Support Tickets"   value={String(overview.supportTickets)}                  sub="Open tickets"                     icon="🎟️" color={overview.supportTickets > 10 ? "#ef4444" : "#10b981"} t={t} />
-        </div>
-
-        {/* Charts row */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 16, marginBottom: 28 }}>
-
-          {/* Trend chart */}
-          <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "20px 20px 10px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-              <div style={{ fontWeight: 600, fontSize: 14, color: t.text }}>12-Month Trend</div>
-              <div style={{ display: "flex", gap: 6 }}>
-                {(["revenue","users","documents"] as const).map(k => (
-                  <button key={k} onClick={() => setActiveChart(k)} style={{
-                    padding: "4px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600,
-                    border: `1px solid ${t.cardBorder}`,
-                    background: activeChart === k ? "rgba(79,142,247,0.2)" : "transparent",
-                    color: activeChart === k ? "#4f8ef7" : t.textSub,
-                    cursor: "pointer",
-                  }}>{k.charAt(0).toUpperCase() + k.slice(1)}</button>
-                ))}
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={monthlyData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="cGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={chartColor} stopOpacity={0.3} />
-                    <stop offset="95%" stopColor={chartColor} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={t.chartGrid} />
-                <XAxis dataKey="month" tick={{ fill: t.chartTick, fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: t.chartTick, fontSize: 11 }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }}
-                  labelStyle={{ color: t.text }}
-                  itemStyle={{ color: chartColor }}
-                  formatter={(v: any) => activeChart === "revenue" ? [`$${v.toLocaleString()}`, chartLabel] : [v.toLocaleString(), chartLabel]}
-                />
-                <Area type="monotone" dataKey={activeChart} stroke={chartColor} strokeWidth={2} fill="url(#cGrad)" />
-              </AreaChart>
-            </ResponsiveContainer>
+      {/* Main area */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* Top header */}
+        <div style={{ height: 54, flexShrink: 0, background: t.headerBg, borderBottom: `1px solid ${t.headerBorder}`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", transition: "background 0.2s" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ color: t.textSub, fontSize: 13 }}>Admin</span>
+            <span style={{ color: t.textFaint, fontSize: 13 }}>›</span>
+            <span style={{ color: t.text, fontSize: 13, fontWeight: 600 }}>{sectionLabel}</span>
           </div>
-
-          {/* Plan breakdown */}
-          <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "20px" }}>
-            <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 16, color: t.text }}>Plan Breakdown</div>
-            <ResponsiveContainer width="100%" height={160}>
-              <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={75} paddingAngle={3} dataKey="value">
-                  {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
-                </Pie>
-                <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} itemStyle={{ color: t.text }} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
-              {pieData.map((d, i) => (
-                <div key={d.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: PIE_COLORS[i], flexShrink: 0 }} />
-                    <span style={{ color: t.textMuted, fontSize: 12 }}>{d.name}</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                    <span style={{ color: t.text, fontSize: 13, fontWeight: 600 }}>{d.value.toLocaleString()}</span>
-                    <span style={{ color: t.textSub, fontSize: 11 }}>{Math.round(d.value / totalPlanUsers * 100)}%</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ color: t.textSub, fontSize: 12 }}>
+              {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+            </span>
+            <ThemeToggle dark={dark} onToggle={onToggleDark} />
           </div>
         </div>
 
-        {/* Bottom row */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-
-          {/* Recent activity */}
-          <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "20px" }}>
-            <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 16, color: t.text }}>Recent Activity</div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {recentActivity.map((a, i) => (
-                <div key={a.id} style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  padding: "10px 0",
-                  borderBottom: i < recentActivity.length - 1 ? `1px solid ${t.divider}` : "none",
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: t.avatarBg, display: "flex", alignItems: "center", justifyContent: "center", color: "#4f8ef7", fontWeight: 700, fontSize: 13, flexShrink: 0 }}>
-                      {a.user.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <div style={{ color: t.text, fontSize: 13 }}>{a.user}</div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                        <ActivityBadge type={a.type} />
-                        <span style={{ color: t.textSub, fontSize: 11 }}>{a.plan}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <span style={{ color: t.textFaint, fontSize: 11, whiteSpace: "nowrap" }}>{a.time}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Top countries */}
-          <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "20px" }}>
-            <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 16, color: t.text }}>Top Countries</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {topCountries.map((c, i) => (
-                <div key={c.country}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ color: t.textSub, fontSize: 11, width: 16, textAlign: "right" }}>{i + 1}</span>
-                      <span style={{ color: t.text, fontSize: 13 }}>{c.country}</span>
-                    </div>
-                    <div style={{ display: "flex", gap: 10 }}>
-                      <span style={{ color: t.textMuted, fontSize: 12 }}>{c.users.toLocaleString()}</span>
-                      <span style={{ color: t.textSub, fontSize: 12, width: 32, textAlign: "right" }}>{c.pct}%</span>
-                    </div>
-                  </div>
-                  <div style={{ height: 4, background: t.barTrack, borderRadius: 2 }}>
-                    <div style={{ width: `${c.pct}%`, height: "100%", background: PIE_COLORS[Math.min(i, 2)], borderRadius: 2 }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Bar chart */}
-        <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "20px", marginTop: 16 }}>
-          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 16, color: t.text }}>Monthly Documents Processed</div>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={monthlyData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={t.chartGrid} />
-              <XAxis dataKey="month" tick={{ fill: t.chartTick, fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: t.chartTick, fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} itemStyle={{ color: "#a78bfa" }} />
-              <Bar dataKey="documents" fill="#a78bfa" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Footer */}
-        <div style={{ marginTop: 28, padding: "16px 0", borderTop: `1px solid ${t.divider}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ color: t.textFaint, fontSize: 11 }}>Luxor PDF Admin · Data refreshes on page load</span>
-          <button
-            onClick={() => window.location.reload()}
-            style={{ background: "transparent", border: `1px solid ${t.btnBorder}`, borderRadius: 6, color: t.textSub, fontSize: 11, padding: "4px 12px", cursor: "pointer" }}
-          >↺ Refresh</button>
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "28px 32px" }}>
+          {loading ? (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60%", color: "#4f8ef7", fontSize: 14 }}>Loading analytics…</div>
+          ) : error || !stats ? (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60%", color: "#ef4444", fontSize: 14 }}>{error || "No data"}</div>
+          ) : (
+            <>
+              {section === "overview"  && <OverviewSection  stats={stats} t={t} />}
+              {section === "users"     && <UsersSection     stats={stats} t={t} />}
+              {section === "revenue"   && <RevenueSection   stats={stats} t={t} />}
+              {section === "documents" && <DocumentsSection stats={stats} t={t} />}
+              {section === "geography" && <GeographySection stats={stats} t={t} />}
+              {section === "activity"  && <ActivitySection  stats={stats} t={t} />}
+              {section === "settings"  && <SettingsSection  dark={dark} onToggleDark={onToggleDark} onLogout={onLogout} t={t} />}
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -427,13 +707,10 @@ function Dashboard({ onLogout, dark, onToggleDark }: { onLogout: () => void; dar
 // ── Page Root ─────────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem("luxor_admin") === "1");
-  const [dark, setDark] = useState(() => {
-    const saved = localStorage.getItem("luxor_admin_theme");
-    return saved ? saved === "dark" : true;
-  });
+  const [dark, setDark] = useState(() => localStorage.getItem("luxor_admin_theme") !== "light");
 
-  const handleUnlock = () => { sessionStorage.setItem("luxor_admin", "1"); setUnlocked(true); };
-  const handleLogout = () => { sessionStorage.removeItem("luxor_admin"); setUnlocked(false); };
+  const handleUnlock    = () => { sessionStorage.setItem("luxor_admin", "1"); setUnlocked(true); };
+  const handleLogout    = () => { sessionStorage.removeItem("luxor_admin"); setUnlocked(false); };
   const handleToggleDark = () => {
     const next = !dark;
     setDark(next);
