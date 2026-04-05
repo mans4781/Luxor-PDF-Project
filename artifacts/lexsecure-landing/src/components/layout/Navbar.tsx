@@ -172,7 +172,6 @@ export function Navbar() {
           {/* Links after Products */}
           {[
             { label: "Features", href: "#features", gradient: "from-emerald-500 to-teal-400" },
-            { label: "Buy Now",  href: "#buy",      gradient: "from-amber-500 to-yellow-400" },
           ].map(({ label, href, gradient }) => (
             <a
               key={label}
@@ -187,8 +186,14 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Login */}
+        {/* Buy Now + Login */}
         <div className="flex items-center gap-3">
+          <Button
+            asChild
+            className="text-[1.05rem] font-bold bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-white border-0 shadow-md transition-all duration-300 hidden sm:inline-flex"
+          >
+            <a href="#buy">Buy Now</a>
+          </Button>
           <Button
             asChild
             variant="ghost"
