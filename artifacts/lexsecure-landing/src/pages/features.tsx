@@ -16,6 +16,42 @@ const FADE_UP = {
   }),
 };
 
+const SLIDE_LEFT = {
+  hidden: { opacity: 0, x: -56 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } },
+};
+
+const SLIDE_RIGHT = {
+  hidden: { opacity: 0, x: 56 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } },
+};
+
+const SCALE_UP = {
+  hidden: { opacity: 0, scale: 0.85, y: 20 },
+  visible: (i = 0) => ({
+    opacity: 1, scale: 1, y: 0,
+    transition: { duration: 0.5, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] },
+  }),
+};
+
+const STAGGER_LIST = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } },
+};
+
+const LIST_ITEM = {
+  hidden: { opacity: 0, x: -16 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+};
+
+const TABLE_ROW = {
+  hidden: { opacity: 0, x: -24 },
+  visible: (i = 0) => ({
+    opacity: 1, x: 0,
+    transition: { duration: 0.4, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] },
+  }),
+};
+
 // ── Inline SVG Illustrations ──────────────────────────────────────────────────
 
 function IlluExpiry() {
@@ -373,9 +409,17 @@ export default function FeaturesPage() {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {STATS.map((s, i) => (
-              <motion.div key={s.label} initial="hidden" whileInView="visible" custom={i} variants={FADE_UP} viewport={{ once: true }}
-                className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">{s.value}</div>
+              <motion.div key={s.label}
+                initial="hidden" whileInView="visible" custom={i} variants={SCALE_UP} viewport={{ once: true }}
+                whileHover={{ scale: 1.07 }}
+                className="text-center cursor-default">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1, type: "spring", stiffness: 200 }}
+                  className="text-3xl font-bold text-white mb-1"
+                >{s.value}</motion.div>
                 <div className="text-slate-400 text-sm">{s.label}</div>
               </motion.div>
             ))}
@@ -387,26 +431,32 @@ export default function FeaturesPage() {
       <section id="features-list" className="py-24">
         <div className="container mx-auto px-6">
           <div className="space-y-28">
-            {HERO_FEATURES.map((feat, idx) => {
+            {HERO_FEATURES.map((feat) => {
               const Icon = feat.icon;
               const Illu = feat.Illustration;
-              const textFirst = !feat.flip;
+              const textVariant  = feat.flip ? SLIDE_RIGHT : SLIDE_LEFT;
+              const illuVariant  = feat.flip ? SLIDE_LEFT  : SLIDE_RIGHT;
               return (
-                <motion.div
+                <div
                   key={feat.id}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, margin: "-80px" }}
-                  custom={0}
-                  variants={FADE_UP}
-                  className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center ${feat.flip ? "lg:flex-row-reverse" : ""}`}
+                  className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center`}
                 >
-                  {/* Text */}
-                  <div className={feat.flip ? "lg:order-2" : ""}>
+                  {/* Text block */}
+                  <motion.div
+                    className={feat.flip ? "lg:order-2" : ""}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: "-60px" }}
+                    variants={textVariant}
+                  >
                     <div className="flex items-center gap-3 mb-5">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${feat.bg}`}>
+                      <motion.div
+                        whileHover={{ rotate: 10, scale: 1.15 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${feat.bg}`}
+                      >
                         <Icon className={`w-5 h-5 ${feat.iconColor}`} />
-                      </div>
+                      </motion.div>
                       <span className={`text-sm font-bold uppercase tracking-widest bg-gradient-to-r ${feat.color} bg-clip-text text-transparent`}>
                         {feat.tag}
                       </span>
@@ -417,21 +467,39 @@ export default function FeaturesPage() {
                     <p className="text-lg text-muted-foreground leading-relaxed mb-8">
                       {feat.body}
                     </p>
-                    <ul className="space-y-3">
+                    <motion.ul
+                      className="space-y-3"
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true }}
+                      variants={STAGGER_LIST}
+                    >
                       {feat.bullets.map(b => (
-                        <li key={b} className="flex items-center gap-3">
-                          <CheckCircle className={`w-5 h-5 flex-shrink-0 ${feat.iconColor}`} />
+                        <motion.li key={b} variants={LIST_ITEM} className="flex items-center gap-3">
+                          <motion.span whileHover={{ scale: 1.3 }} transition={{ type: "spring", stiffness: 400 }}>
+                            <CheckCircle className={`w-5 h-5 flex-shrink-0 ${feat.iconColor}`} />
+                          </motion.span>
                           <span className="text-foreground font-medium">{b}</span>
-                        </li>
+                        </motion.li>
                       ))}
-                    </ul>
-                  </div>
+                    </motion.ul>
+                  </motion.div>
 
                   {/* Illustration */}
-                  <div className={`${feat.flip ? "lg:order-1" : ""} rounded-2xl border-2 ${feat.border} overflow-hidden shadow-lg aspect-[16/10]`}>
-                    <Illu />
-                  </div>
-                </motion.div>
+                  <motion.div
+                    className={feat.flip ? "lg:order-1" : ""}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: "-60px" }}
+                    variants={illuVariant}
+                    whileHover={{ y: -8, boxShadow: "0 24px 48px rgba(0,0,0,0.12)" }}
+                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                  >
+                    <div className={`rounded-2xl border-2 ${feat.border} overflow-hidden shadow-lg aspect-[16/10]`}>
+                      <Illu />
+                    </div>
+                  </motion.div>
+                </div>
               );
             })}
           </div>
@@ -452,11 +520,25 @@ export default function FeaturesPage() {
             {GRID_FEATURES.map((f, i) => {
               const Icon = f.icon;
               return (
-                <motion.div key={f.title} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-40px" }} custom={i} variants={FADE_UP}
-                  className="bg-white rounded-2xl border border-slate-100 p-6 hover:shadow-md transition-shadow">
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-4 ${f.bg}`}>
+                <motion.div
+                  key={f.title}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-30px" }}
+                  custom={i}
+                  variants={SCALE_UP}
+                  whileHover={{ y: -8, scale: 1.03, boxShadow: "0 20px 40px rgba(0,0,0,0.10)" }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 22 }}
+                  className="bg-white rounded-2xl border border-slate-100 p-6 cursor-default"
+                >
+                  <motion.div
+                    whileHover={{ rotate: 12, scale: 1.18 }}
+                    transition={{ type: "spring", stiffness: 350 }}
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center mb-4 ${f.bg}`}
+                  >
                     <Icon className={`w-5 h-5 ${f.color}`} />
-                  </div>
+                  </motion.div>
                   <h3 className="font-semibold text-foreground mb-2">{f.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
                 </motion.div>
@@ -474,8 +556,13 @@ export default function FeaturesPage() {
             <h2 className="text-4xl font-serif font-bold text-foreground mb-4">How we compare</h2>
             <p className="text-muted-foreground text-lg">See why professionals choose Luxor PDF over the alternatives.</p>
           </motion.div>
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={FADE_UP}
-            className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+          <motion.div
+            initial={{ opacity: 0, y: 32 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm"
+          >
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-900 text-white">
@@ -487,26 +574,40 @@ export default function FeaturesPage() {
               </thead>
               <tbody>
                 {[
-                  ["PDF Expiry & Auto-revoke",  true,  false, false, false],
-                  ["eSignatures",               true,  false, true,  false],
-                  ["Annotation Tools",          true,  true,  false, true ],
-                  ["AES-256 Encryption",        true,  true,  false, false],
-                  ["Local Processing (no upload)", true, false, false, false],
-                  ["Team Collaboration",        true,  true,  true,  false],
-                  ["Free Tier Available",        true,  false, false, true ],
-                  ["No Per-doc Fees",           true,  false, false, true ],
-                ].map(([label,...vals], ri)=>(
-                  <tr key={String(label)} className={ri%2===0 ? "bg-white" : "bg-slate-50/70"}>
+                  ["PDF Expiry & Auto-revoke",     true,  false, false, false],
+                  ["eSignatures",                  true,  false, true,  false],
+                  ["Annotation Tools",             true,  true,  false, true ],
+                  ["AES-256 Encryption",           true,  true,  false, false],
+                  ["Local Processing (no upload)", true,  false, false, false],
+                  ["Team Collaboration",           true,  true,  true,  false],
+                  ["Free Tier Available",          true,  false, false, true ],
+                  ["No Per-doc Fees",              true,  false, false, true ],
+                ].map(([label,...vals], ri) => (
+                  <motion.tr
+                    key={String(label)}
+                    custom={ri}
+                    variants={TABLE_ROW}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    whileHover={{ backgroundColor: "#f1f5f9" }}
+                    className={ri%2===0 ? "bg-white" : "bg-slate-50/70"}
+                  >
                     <td className="py-3.5 px-6 text-foreground font-medium">{label}</td>
-                    {vals.map((v,ci)=>(
+                    {vals.map((v, ci) => (
                       <td key={ci} className="py-3.5 px-4 text-center">
-                        {v
-                          ? <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full ${ci===0?"bg-blue-100 text-blue-600":"bg-emerald-50 text-emerald-500"}`}>✓</span>
-                          : <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-300">✕</span>
-                        }
+                        <motion.span
+                          whileHover={{ scale: 1.3 }}
+                          transition={{ type: "spring", stiffness: 400 }}
+                          className={`inline-flex items-center justify-center w-6 h-6 rounded-full ${
+                            v
+                              ? ci===0 ? "bg-blue-100 text-blue-600" : "bg-emerald-50 text-emerald-500"
+                              : "bg-slate-100 text-slate-300"
+                          }`}
+                        >{v ? "✓" : "✕"}</motion.span>
                       </td>
                     ))}
-                  </tr>
+                  </motion.tr>
                 ))}
               </tbody>
             </table>
@@ -515,8 +616,19 @@ export default function FeaturesPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-20 bg-gradient-to-br from-blue-600 to-violet-700">
-        <div className="container mx-auto px-6 text-center">
+      <section className="py-20 bg-gradient-to-br from-blue-600 to-violet-700 overflow-hidden relative">
+        {/* Floating blobs */}
+        <motion.div
+          animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-[-60px] left-[-60px] w-64 h-64 rounded-full bg-white/5 pointer-events-none"
+        />
+        <motion.div
+          animate={{ x: [0, -20, 0], y: [0, 30, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-[-40px] right-[-40px] w-80 h-80 rounded-full bg-white/5 pointer-events-none"
+        />
+        <div className="container mx-auto px-6 text-center relative z-10">
           <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={FADE_UP}
             className="text-4xl md:text-5xl font-serif font-bold text-white mb-6">
             Ready to get started?
@@ -527,14 +639,18 @@ export default function FeaturesPage() {
           </motion.p>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} custom={2} variants={FADE_UP}
             className="flex flex-wrap justify-center gap-4">
-            <Link href="/pricing"
-              className="inline-flex items-center gap-2 bg-white text-blue-700 px-8 py-3.5 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors shadow-md">
-              View Pricing <ArrowRight className="w-5 h-5" />
-            </Link>
-            <a href="#"
-              className="inline-flex items-center gap-2 border-2 border-white/40 text-white px-8 py-3.5 rounded-xl font-bold text-lg hover:bg-white/10 transition-colors">
-              Try for Free
-            </a>
+            <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 300 }}>
+              <Link href="/pricing"
+                className="inline-flex items-center gap-2 bg-white text-blue-700 px-8 py-3.5 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors shadow-md">
+                View Pricing <ArrowRight className="w-5 h-5" />
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 300 }}>
+              <a href="#"
+                className="inline-flex items-center gap-2 border-2 border-white/40 text-white px-8 py-3.5 rounded-xl font-bold text-lg hover:bg-white/10 transition-colors">
+                Try for Free
+              </a>
+            </motion.div>
           </motion.div>
         </div>
       </section>
