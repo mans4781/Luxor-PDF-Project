@@ -11,19 +11,24 @@ const navLinks = [
     gradient: "from-rose-500 to-orange-400",
   },
   {
-    label: "Features",
-    href: "#features",
+    label: "About Us",
+    href: "#about",
     gradient: "from-violet-500 to-purple-400",
   },
   {
-    label: "Security",
-    href: "#security",
+    label: "Products",
+    href: "#products",
     gradient: "from-sky-500 to-blue-400",
   },
   {
-    label: "Desktop App",
-    href: "#desktop",
+    label: "Features",
+    href: "#features",
     gradient: "from-emerald-500 to-teal-400",
+  },
+  {
+    label: "Buy Now",
+    href: "#buy",
+    gradient: "from-amber-500 to-yellow-400",
   },
 ];
 
@@ -74,15 +79,13 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-4">
-          <Button asChild variant="ghost" className="text-[1.05rem] font-medium hidden sm:inline-flex hover:bg-violet-50 hover:text-violet-600 transition-colors duration-300">
-            <Link href="/web-app">Open Web App</Link>
-          </Button>
+        <div className="flex items-center gap-3">
           <Button
             asChild
-            className="text-[1.05rem] font-medium bg-gradient-to-r from-rose-600 to-orange-500 hover:from-rose-500 hover:to-orange-400 text-white border-0 shadow-md transition-all duration-300 hover:shadow-rose-200 hover:shadow-lg"
+            variant="ghost"
+            className="text-[1.05rem] font-bold text-blue-700 hidden sm:inline-flex hover:bg-blue-50 hover:text-blue-800 transition-colors duration-300 border border-blue-200"
           >
-            <a href="#download">Download for Windows</a>
+            <a href="#login">Login</a>
           </Button>
         </div>
       </div>
