@@ -8,7 +8,6 @@
  * Falls back to a silent <a download> for Firefox / Safari.
  */
 export async function saveFile(blob: Blob, suggestedName: string): Promise<void> {
-  // Build the list of accepted MIME types for the picker
   const ext = suggestedName.split(".").pop()?.toLowerCase() ?? "";
   const mimeMap: Record<string, string> = {
     pdf:  "application/pdf",
@@ -20,32 +19,23 @@ export async function saveFile(blob: Blob, suggestedName: string): Promise<void>
   };
   const mimeType = mimeMap[ext] ?? blob.type ?? "application/octet-stream";
 
-  // Try the File System Access API first (Chrome, Edge, Electron)
   if (typeof window !== "undefined" && "showSaveFilePicker" in window) {
     try {
       const handle = await (window as Window & typeof globalThis & {
         showSaveFilePicker: (opts?: unknown) => Promise<FileSystemFileHandle>;
       }).showSaveFilePicker({
         suggestedName,
-        types: [
-          {
-            description: suggestedName,
-            accept: { [mimeType]: [`.${ext}`] },
-          },
-        ],
+        types: [{ description: suggestedName, accept: { [mimeType]: [`.${ext}`] } }],
       });
       const writable = await handle.createWritable();
       await writable.write(blob);
       await writable.close();
       return;
     } catch (err: unknown) {
-      // User cancelled the dialog — don't fall through, just return quietly
       if (err instanceof Error && err.name === "AbortError") return;
-      // For any other error fall through to legacy download
     }
   }
 
-  // Legacy fallback: silent download to the browser's default Downloads folder
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -54,4 +44,35 @@ export async function saveFile(blob: Blob, suggestedName: string): Promise<void>
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+/**
+ * Write a Blob directly into a FileSystemDirectoryHandle (no dialog).
+ * Use this when the user has already chosen a destination folder.
+ */
+export async function saveFileToDir(
+  dirHandle: FileSystemDirectoryHandle,
+  blob: Blob,
+  filename: string
+): Promise<void> {
+  const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+  const writable = await fileHandle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+}
+
+/**
+ * Ask the user to pick a folder via the File System Access API.
+ * Returns null on cancel or if the API is not supported.
+ */
+export async function pickDirectory(): Promise<FileSystemDirectoryHandle | null> {
+  if (typeof window === "undefined" || !("showDirectoryPicker" in window)) return null;
+  try {
+    return await (window as Window & typeof globalThis & {
+      showDirectoryPicker: (opts?: unknown) => Promise<FileSystemDirectoryHandle>;
+    }).showDirectoryPicker({ mode: "readwrite" });
+  } catch (err: unknown) {
+    if (err instanceof Error && err.name === "AbortError") return null;
+    return null;
+  }
 }

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDFDocument } from "pdf-lib";
 import { formatBytes } from "@/lib/utils";
-import { saveFile } from "@/lib/save-file";
+import { saveFile, saveFileToDir, pickDirectory } from "@/lib/save-file";
 import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Wrench } from "lucide-react";
 
 type DropColorScheme = "violet" | "indigo" | "purple";
@@ -228,9 +228,13 @@ function MergeTab() {
 
 // ─── Split ────────────────────────────────────────────────────────────────────
 
+const dirPickerSupported =
+  typeof window !== "undefined" && "showDirectoryPicker" in window;
+
 function SplitTab() {
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
+  const [dirHandle, setDirHandle] = useState<FileSystemDirectoryHandle | null>(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -239,6 +243,7 @@ function SplitTab() {
     const f = files[0];
     setFile(f);
     setError(null);
+    setDirHandle(null);
     try {
       const buf = await readFileAsArrayBuffer(f);
       const doc = await PDFDocument.load(buf);
@@ -248,6 +253,11 @@ function SplitTab() {
       setFile(null);
       setPageCount(null);
     }
+  }
+
+  async function chooseFolder() {
+    const handle = await pickDirectory();
+    if (handle) setDirHandle(handle);
   }
 
   async function splitPdf() {
@@ -265,10 +275,13 @@ function SplitTab() {
         const [page] = await newDoc.copyPages(srcDoc, [i]);
         newDoc.addPage(page);
         const bytes = await newDoc.save();
-        await saveFile(
-          new Blob([bytes], { type: "application/pdf" }),
-          `${baseName}-${i + 1}.pdf`
-        );
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const filename = `${baseName}-${i + 1}.pdf`;
+        if (dirHandle) {
+          await saveFileToDir(dirHandle, blob, filename);
+        } else {
+          await saveFile(blob, filename);
+        }
       }
       setProgress("");
     } catch {
@@ -278,6 +291,8 @@ function SplitTab() {
       setLoading(false);
     }
   }
+
+  const baseName = file?.name.replace(/\.pdf$/i, "") ?? "";
 
   return (
     <div className="space-y-4">
@@ -298,7 +313,7 @@ function SplitTab() {
           </div>
           <button
             data-testid="button-clear-split-file"
-            onClick={() => { setFile(null); setPageCount(null); setError(null); setProgress(""); }}
+            onClick={() => { setFile(null); setPageCount(null); setDirHandle(null); setError(null); setProgress(""); }}
             className="text-muted-foreground hover:text-destructive transition-colors"
           >
             <X className="w-4 h-4" />
@@ -307,10 +322,33 @@ function SplitTab() {
       )}
 
       {file && pageCount !== null && (
-        <p className="text-xs text-muted-foreground">
-          Output files will be named <span className="font-mono">{file.name.replace(/\.pdf$/i, "")}-1.pdf</span>,{" "}
-          <span className="font-mono">{file.name.replace(/\.pdf$/i, "")}-2.pdf</span>, …
-        </p>
+        <>
+          <p className="text-xs text-muted-foreground">
+            Files will be named{" "}
+            <span className="font-mono">{baseName}-1.pdf</span>,{" "}
+            <span className="font-mono">{baseName}-2.pdf</span>, …
+          </p>
+
+          {dirPickerSupported && (
+            <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
+              <span className="text-muted-foreground shrink-0">Output folder:</span>
+              {dirHandle ? (
+                <span className="font-medium truncate flex-1">{dirHandle.name}/</span>
+              ) : (
+                <span className="text-muted-foreground italic flex-1">not chosen — Save As dialog per file</span>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={chooseFolder}
+                data-testid="button-choose-folder"
+                className="shrink-0"
+              >
+                {dirHandle ? "Change" : "Choose folder"}
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {progress && (
