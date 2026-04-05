@@ -29,6 +29,7 @@
       "main.js",
       "server.js",
       "db.js",
+      "icon.jpg",
       "public/**/*",
       "node_modules/**/*",
       "!node_modules/.cache/**/*"
@@ -40,7 +41,7 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "public/favicon.ico",
+      "icon": "icon.jpg",
       "forceCodeSigning": false,
       "certificateFile": null,
       "signingHashAlgorithms": null

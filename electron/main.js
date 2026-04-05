@@ -1,6 +1,7 @@
 const { app, BrowserWindow, shell, Menu } = require("electron");
 const path = require("path");
 const http = require("http");
+const fs = require("fs");
 const { fork } = require("child_process");
 
 let mainWindow = null;
@@ -58,7 +59,9 @@ function createWindow() {
     minWidth: 900,
     minHeight: 600,
     title: "LexSecure PDF",
-    icon: path.join(__dirname, "public", "favicon.ico"),
+    icon: fs.existsSync(path.join(__dirname, "public", "favicon.ico"))
+      ? path.join(__dirname, "public", "favicon.ico")
+      : path.join(__dirname, "icon.jpg"),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
