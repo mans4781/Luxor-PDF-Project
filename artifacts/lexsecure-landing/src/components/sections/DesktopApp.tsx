@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Download, Monitor, WifiOff, FileCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AppStoreBadges } from "@/components/AppStoreBadges";
 
 export function DesktopApp() {
   return (
@@ -75,6 +76,11 @@ export function DesktopApp() {
               </Button>
             </a>
             <p className="text-xs text-muted-foreground mt-4">Version 1.0.0 • 45MB • Requires Windows 10/11</p>
+
+            <div className="mt-8 pt-8 border-t border-gray-100">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">Also available on mobile</p>
+              <AppStoreBadges size="sm" />
+            </div>
           </motion.div>
         </div>
       </div>
