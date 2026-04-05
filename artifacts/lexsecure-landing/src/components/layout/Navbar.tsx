@@ -171,21 +171,27 @@ export function Navbar() {
             </AnimatePresence>
           </div>
 
-          {/* Links after Products */}
-          {[
-            { label: "Features", href: "#features", gradient: "from-emerald-500 to-teal-400" },
-          ].map(({ label, href, gradient }) => (
-            <a
-              key={label}
-              href={href}
-              className="group relative text-[1.05rem] font-medium transition-colors duration-300"
-            >
-              <span className={`bg-gradient-to-r ${gradient} bg-clip-text text-blue-700 font-bold group-hover:text-transparent transition-colors duration-300`}>
-                {label}
-              </span>
-              <span className={`absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r ${gradient} transition-all duration-300 group-hover:w-full`} />
-            </a>
-          ))}
+          {/* Features link */}
+          <a
+            href="#features"
+            className="group relative text-[1.05rem] font-medium transition-colors duration-300"
+          >
+            <span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-blue-700 font-bold group-hover:text-transparent transition-colors duration-300">
+              Features
+            </span>
+            <span className="absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 group-hover:w-full" />
+          </a>
+
+          {/* Pricing link */}
+          <Link
+            href="/pricing"
+            className="group relative text-[1.05rem] font-medium transition-colors duration-300"
+          >
+            <span className="bg-gradient-to-r from-violet-600 to-indigo-500 bg-clip-text text-blue-700 font-bold group-hover:text-transparent transition-colors duration-300">
+              Pricing
+            </span>
+            <span className="absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r from-violet-600 to-indigo-500 transition-all duration-300 group-hover:w-full" />
+          </Link>
         </nav>
 
         {/* Buy Now + Login */}
