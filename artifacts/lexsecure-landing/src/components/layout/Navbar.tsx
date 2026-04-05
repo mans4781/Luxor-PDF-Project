@@ -4,6 +4,29 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
+const navLinks = [
+  {
+    label: "Home",
+    href: "BASE_URL",
+    gradient: "from-rose-500 to-orange-400",
+  },
+  {
+    label: "Features",
+    href: "#features",
+    gradient: "from-violet-500 to-purple-400",
+  },
+  {
+    label: "Security",
+    href: "#security",
+    gradient: "from-sky-500 to-blue-400",
+  },
+  {
+    label: "Desktop App",
+    href: "#desktop",
+    gradient: "from-emerald-500 to-teal-400",
+  },
+];
+
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
 
@@ -31,19 +54,34 @@ export function Navbar() {
           </div>
           <span className="font-serif font-bold text-2xl text-primary tracking-tight">LexSecure PDF</span>
         </Link>
-        
+
         <nav className="hidden md:flex items-center gap-8">
-          <a href={import.meta.env.BASE_URL} className="text-[1.05rem] font-medium text-muted-foreground hover:text-foreground transition-colors">Home</a>
-          <a href="#features" className="text-[1.05rem] font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
-          <a href="#security" className="text-[1.05rem] font-medium text-muted-foreground hover:text-foreground transition-colors">Security</a>
-          <a href="#desktop" className="text-[1.05rem] font-medium text-muted-foreground hover:text-foreground transition-colors">Desktop App</a>
+          {navLinks.map(({ label, href, gradient }) => (
+            <a
+              key={label}
+              href={href === "BASE_URL" ? import.meta.env.BASE_URL : href}
+              className="group relative text-[1.05rem] font-medium transition-colors duration-300"
+            >
+              <span
+                className={`bg-gradient-to-r ${gradient} bg-clip-text text-muted-foreground group-hover:text-transparent transition-colors duration-300`}
+              >
+                {label}
+              </span>
+              <span
+                className={`absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r ${gradient} transition-all duration-300 group-hover:w-full`}
+              />
+            </a>
+          ))}
         </nav>
 
         <div className="flex items-center gap-4">
-          <Button asChild variant="ghost" className="text-[1.05rem] font-medium hidden sm:inline-flex">
+          <Button asChild variant="ghost" className="text-[1.05rem] font-medium hidden sm:inline-flex hover:bg-violet-50 hover:text-violet-600 transition-colors duration-300">
             <Link href="/web-app">Open Web App</Link>
           </Button>
-          <Button asChild className="text-[1.05rem] font-medium bg-foreground text-background hover:bg-foreground/90">
+          <Button
+            asChild
+            className="text-[1.05rem] font-medium bg-gradient-to-r from-rose-600 to-orange-500 hover:from-rose-500 hover:to-orange-400 text-white border-0 shadow-md transition-all duration-300 hover:shadow-rose-200 hover:shadow-lg"
+          >
             <a href="#download">Download for Windows</a>
           </Button>
         </div>
