@@ -1,7 +1,10 @@
 import { Shield } from "lucide-react";
 import { Link } from "wouter";
+import { useVisitorCount } from "@/hooks/useVisitorCount";
 
 export function Footer() {
+  const visitorCount = useVisitorCount();
+
   return (
     <footer className="bg-foreground text-background py-20">
       <div className="container mx-auto px-6">
@@ -45,6 +48,11 @@ export function Footer() {
             <span className="text-sm text-gray-500 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
               All systems operational
+            </span>
+            <span className="text-sm text-gray-600 tabular-nums">
+              {visitorCount === null
+                ? "· · ·"
+                : `${visitorCount.toLocaleString()} visitors`}
             </span>
           </div>
         </div>
