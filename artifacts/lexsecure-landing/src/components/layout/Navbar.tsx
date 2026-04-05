@@ -207,6 +207,17 @@ export function Navbar() {
             </span>
             <span className="absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r from-violet-600 to-indigo-500 transition-all duration-300 group-hover:w-full" />
           </Link>
+
+          {/* Contact link */}
+          <Link
+            href="/contact"
+            className="group relative text-[1.05rem] font-medium transition-colors duration-300"
+          >
+            <span className="bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-blue-700 font-bold group-hover:text-transparent transition-colors duration-300">
+              Contact Us
+            </span>
+            <span className="absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 transition-all duration-300 group-hover:w-full" />
+          </Link>
         </nav>
 
         {/* Buy Now + Login */}
