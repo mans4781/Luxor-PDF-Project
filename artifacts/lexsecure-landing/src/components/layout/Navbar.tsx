@@ -19,6 +19,8 @@ const productItems = [
     desc: "Fast, lightweight PDF viewer",
     gradient: "from-sky-500 to-blue-500",
     bg: "bg-sky-50",
+    iconColor: "#0284c7",
+    strokeWidth: 1.5,
   },
   {
     label: "Luxor PDF Editor",
@@ -27,6 +29,8 @@ const productItems = [
     desc: "Edit text, images & pages",
     gradient: "from-violet-500 to-purple-500",
     bg: "bg-violet-50",
+    iconColor: "#7c3aed",
+    strokeWidth: 2,
   },
   {
     label: "Luxor eSign",
@@ -35,6 +39,8 @@ const productItems = [
     desc: "Legally binding e-signatures",
     gradient: "from-emerald-500 to-teal-500",
     bg: "bg-emerald-50",
+    iconColor: "#059669",
+    strokeWidth: 1.75,
   },
   {
     label: "Luxor PDF Security",
@@ -43,6 +49,8 @@ const productItems = [
     desc: "Encrypt, redact & set expiry",
     gradient: "from-rose-500 to-orange-500",
     bg: "bg-rose-50",
+    iconColor: "#e11d48",
+    strokeWidth: 2.5,
   },
 ];
 
@@ -133,15 +141,19 @@ export function Navbar() {
                   <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-l border-t border-slate-100 rotate-45" />
 
                   <div className="p-2">
-                    {productItems.map(({ label, href, icon: Icon, desc, gradient, bg }) => (
+                    {productItems.map(({ label, href, icon: Icon, desc, gradient, bg, iconColor, strokeWidth }) => (
                       <a
                         key={label}
                         href={href}
                         onClick={() => setProductsOpen(false)}
                         className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-colors duration-150 group/item"
                       >
-                        <div className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
-                          <Icon className={`w-4.5 h-4.5 bg-gradient-to-br ${gradient} bg-clip-text`} style={{ color: "transparent", backgroundClip: "text", WebkitBackgroundClip: "text" }} />
+                        <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center shrink-0 shadow-sm`}>
+                          <Icon
+                            size={20}
+                            color={iconColor}
+                            strokeWidth={strokeWidth}
+                          />
                         </div>
                         <div>
                           <p className={`text-sm font-semibold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}>{label}</p>
