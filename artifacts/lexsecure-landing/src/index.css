@@ -217,7 +217,7 @@
 
 @layer base {
   html {
-    zoom: 0.8;
+    zoom: 0.92;
   }
   * {
     @apply border-border;
