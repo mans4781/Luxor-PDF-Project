@@ -41,10 +41,7 @@ export function PdfUploadForm() {
 
   const handleUpload = () => {
     if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("expiryDate", expiryDate);
-    uploadMutation.mutate({ data: formData as any }, {
+    uploadMutation.mutate({ data: { file, expiryDate } }, {
       onSuccess: () => {
         toast({ title: "Document uploaded successfully", description: "The document has been securely stored." });
         setFile(null);
