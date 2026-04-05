@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/sections/Hero";
+import { AppPreview } from "@/components/sections/AppPreview";
 import { Features } from "@/components/sections/Features";
 import { Security } from "@/components/sections/Security";
 import { DesktopApp } from "@/components/sections/DesktopApp";
@@ -14,6 +15,7 @@ export default function LandingPage() {
       <Navbar />
       <main className="flex-1">
         <Hero />
+        <AppPreview />
         <Features />
         <Security />
         <DesktopApp />
