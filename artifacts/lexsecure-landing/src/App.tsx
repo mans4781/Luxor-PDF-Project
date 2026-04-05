@@ -11,6 +11,7 @@ import PdfReaderPage from "@/pages/products/pdf-reader";
 import PdfEditorPage from "@/pages/products/pdf-editor";
 import ESignPage from "@/pages/products/esign";
 import PdfSecurityPage from "@/pages/products/pdf-security";
+import AdminPage from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 import { Chatbot } from "@/components/Chatbot";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/products/pdf-editor" component={PdfEditorPage} />
       <Route path="/products/esign" component={ESignPage} />
       <Route path="/products/pdf-security" component={PdfSecurityPage} />
+      <Route path="/admin" component={AdminPage} />
       <Route component={NotFound} />
     </Switch>
   );
