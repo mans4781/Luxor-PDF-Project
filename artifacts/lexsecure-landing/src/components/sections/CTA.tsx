@@ -25,7 +25,7 @@ export function CTA() {
           </h2>
           
           <p className="text-xl text-primary-foreground/80 mb-10">
-            Take control of your sensitive documents today with LexSecure PDF. Try the web app instantly or download the desktop client for ultimate security.
+            Take control of your sensitive documents today with Luxor. Try the web app instantly or download the desktop client for ultimate security.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

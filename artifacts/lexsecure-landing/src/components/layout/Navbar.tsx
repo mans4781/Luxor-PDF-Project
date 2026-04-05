@@ -90,7 +90,7 @@ export function Navbar() {
           <div className="bg-[#FA0F00] p-2 rounded-md">
             <Shield className="w-[23px] h-[23px] text-white" strokeWidth={2.5} />
           </div>
-          <span className="font-serif font-bold text-[1.71rem] text-primary tracking-tight">LexSecure PDF</span>
+          <span className="font-serif font-bold text-[1.71rem] text-primary tracking-tight">Luxor</span>
         </Link>
 
         {/* Nav links */}

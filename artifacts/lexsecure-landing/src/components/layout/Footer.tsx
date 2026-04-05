@@ -14,7 +14,7 @@ export function Footer() {
               <div className="bg-[#E11D48] p-2 rounded-md">
                 <Shield className="w-5 h-5 text-white" strokeWidth={2.5} />
               </div>
-              <span className="font-serif font-bold text-xl text-white tracking-tight">LexSecure PDF</span>
+              <span className="font-serif font-bold text-xl text-white tracking-tight">Luxor</span>
             </Link>
             <p className="text-gray-400 text-sm max-w-sm leading-relaxed">
               The professional PDF suite that respects your privacy. Built for law firms, businesses, and professionals who demand uncompromising document control.
@@ -43,7 +43,7 @@ export function Footer() {
         </div>
         
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-gray-500">© {new Date().getFullYear()} LexSecure PDF. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© {new Date().getFullYear()} Luxor. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <span className="text-sm text-gray-500 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
