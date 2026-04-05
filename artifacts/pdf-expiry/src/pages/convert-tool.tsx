@@ -10,7 +10,7 @@ import JSZip from "jszip";
 import { formatBytes } from "@/lib/utils";
 import {
   Upload, X, Download, Loader2, Image as ImageIcon,
-  FileText, AlignLeft, GripVertical, Copy, Check,
+  FileText, AlignLeft, GripVertical, Copy, Check, ArrowLeftRight,
 } from "lucide-react";
 
 // Set the worker source
@@ -202,8 +202,13 @@ function ImagesToPdf() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <Button onClick={convert} disabled={!files.length || loading} className="w-full" data-testid="button-images-to-pdf">
-        {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Converting...</> : <><Download className="w-4 h-4 mr-2" />Convert to PDF & Download</>}
+      <Button
+        onClick={convert}
+        disabled={!files.length || loading}
+        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-md"
+        data-testid="button-images-to-pdf"
+      >
+        {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Converting...</> : <><Download className="w-4 h-4 mr-2" />Convert to PDF &amp; Download</>}
       </Button>
     </div>
   );
@@ -299,10 +304,10 @@ function PdfToImages() {
               <button
                 key={opt.value}
                 onClick={() => setScale(opt.value)}
-                className={`flex-1 text-xs py-2 px-3 rounded border transition-colors ${
+                className={`flex-1 text-xs py-2 px-3 rounded-lg border transition-all font-medium ${
                   scale === opt.value
-                    ? "border-primary bg-primary/10 text-primary font-medium"
-                    : "border-border hover:border-primary/40 text-muted-foreground"
+                    ? "border-orange-500 bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-sm"
+                    : "border-border hover:border-orange-300 hover:bg-orange-50 text-muted-foreground"
                 }`}
               >
                 {opt.label}
@@ -313,11 +318,16 @@ function PdfToImages() {
         </div>
       )}
 
-      {progress && <p className="text-sm text-muted-foreground">{progress}</p>}
+      {progress && <p className="text-sm text-orange-600 font-medium">{progress}</p>}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <Button onClick={convert} disabled={!file || loading} className="w-full" data-testid="button-pdf-to-images">
-        {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{progress || "Converting…"}</> : <><Download className="w-4 h-4 mr-2" />Convert to Images & Download ZIP</>}
+      <Button
+        onClick={convert}
+        disabled={!file || loading}
+        className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white border-0 shadow-md"
+        data-testid="button-pdf-to-images"
+      >
+        {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{progress || "Converting…"}</> : <><Download className="w-4 h-4 mr-2" />Convert to Images &amp; Download ZIP</>}
       </Button>
     </div>
   );
@@ -409,11 +419,16 @@ function PdfToText() {
         </div>
       )}
 
-      {progress && <p className="text-sm text-muted-foreground">{progress}</p>}
+      {progress && <p className="text-sm text-amber-600 font-medium">{progress}</p>}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       {!text && (
-        <Button onClick={extract} disabled={!file || loading} className="w-full" data-testid="button-pdf-to-text">
+        <Button
+          onClick={extract}
+          disabled={!file || loading}
+          className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white border-0 shadow-md"
+          data-testid="button-pdf-to-text"
+        >
           {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{progress || "Extracting…"}</> : <><AlignLeft className="w-4 h-4 mr-2" />Extract Text</>}
         </Button>
       )}
@@ -425,10 +440,22 @@ function PdfToText() {
               Extracted text — {text.length.toLocaleString()} characters
             </p>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={copyText} data-testid="button-copy-text">
-                {copied ? <><Check className="w-3 h-3 mr-1" />Copied</> : <><Copy className="w-3 h-3 mr-1" />Copy</>}
+              <Button
+                size="sm"
+                onClick={copyText}
+                data-testid="button-copy-text"
+                className={copied
+                  ? "bg-emerald-500 hover:bg-emerald-600 text-white border-0"
+                  : "bg-amber-500 hover:bg-amber-600 text-white border-0"}
+              >
+                {copied ? <><Check className="w-3 h-3 mr-1" />Copied!</> : <><Copy className="w-3 h-3 mr-1" />Copy</>}
               </Button>
-              <Button variant="outline" size="sm" onClick={downloadText} data-testid="button-download-text">
+              <Button
+                size="sm"
+                onClick={downloadText}
+                data-testid="button-download-text"
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
+              >
                 <Download className="w-3 h-3 mr-1" />Save .txt
               </Button>
             </div>
@@ -436,7 +463,7 @@ function PdfToText() {
           <textarea
             readOnly
             value={text}
-            className="w-full h-64 text-xs font-mono p-3 rounded-md border bg-muted resize-none focus:outline-none"
+            className="w-full h-64 text-xs font-mono p-3 rounded-xl border-2 border-amber-200 bg-amber-50/40 resize-none focus:outline-none focus:border-amber-400 transition-colors"
             data-testid="text-output"
           />
           <Button variant="ghost" size="sm" onClick={() => { setText(""); }} className="w-full text-muted-foreground">
@@ -458,57 +485,90 @@ export default function ConvertToolPage() {
   return (
     <Layout>
       <div className="max-w-2xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Convert</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Convert between PDF and other formats. All processing happens in your browser — nothing is uploaded.
-          </p>
+
+        {/* ── Vibrant header banner ── */}
+        <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-orange-400 rounded-2xl p-6 text-white shadow-lg">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm">
+              <ArrowLeftRight className="w-7 h-7 text-white" strokeWidth={1.75} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">Convert</h1>
+              <p className="text-emerald-100 text-sm mt-0.5">Transform between PDF and other formats — nothing uploaded</p>
+            </div>
+          </div>
+          <div className="flex gap-2 mt-5 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><ImageIcon className="w-3 h-3" />Images → PDF</span>
+            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FileText className="w-3 h-3" />PDF → Images</span>
+            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><AlignLeft className="w-3 h-3" />PDF → Text</span>
+          </div>
         </div>
 
-        <Card>
+        <Card className="border-emerald-100 shadow-sm">
           <CardContent className="pt-6">
             <Tabs defaultValue={defaultTab}>
-              <TabsList className="grid w-full grid-cols-3 mb-6">
-                <TabsTrigger value="images-to-pdf" data-testid="tab-images-to-pdf" className="flex items-center gap-1.5 text-xs">
+              <TabsList className="grid w-full grid-cols-3 mb-6 bg-slate-50 border border-slate-200 p-1 rounded-xl h-auto">
+                <TabsTrigger
+                  value="images-to-pdf"
+                  data-testid="tab-images-to-pdf"
+                  className="flex items-center gap-1.5 text-xs rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                >
                   <ImageIcon className="w-3.5 h-3.5" />
                   Images → PDF
                 </TabsTrigger>
-                <TabsTrigger value="pdf-to-images" data-testid="tab-pdf-to-images" className="flex items-center gap-1.5 text-xs">
+                <TabsTrigger
+                  value="pdf-to-images"
+                  data-testid="tab-pdf-to-images"
+                  className="flex items-center gap-1.5 text-xs rounded-lg data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                >
                   <FileText className="w-3.5 h-3.5" />
                   PDF → Images
                 </TabsTrigger>
-                <TabsTrigger value="pdf-to-text" data-testid="tab-pdf-to-text" className="flex items-center gap-1.5 text-xs">
+                <TabsTrigger
+                  value="pdf-to-text"
+                  data-testid="tab-pdf-to-text"
+                  className="flex items-center gap-1.5 text-xs rounded-lg data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                >
                   <AlignLeft className="w-3.5 h-3.5" />
                   PDF → Text
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="images-to-pdf">
-                <div className="space-y-2 mb-4">
-                  <h2 className="font-semibold">Images to PDF</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Combine JPG, PNG, WEBP, GIF, or BMP images into a single PDF document.
-                  </p>
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
+                  <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                    <ImageIcon className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-emerald-900">Images to PDF</h2>
+                    <p className="text-xs text-emerald-600">Combine JPG, PNG, WEBP, GIF or BMP images into a single PDF document.</p>
+                  </div>
                 </div>
                 <ImagesToPdf />
               </TabsContent>
 
               <TabsContent value="pdf-to-images">
-                <div className="space-y-2 mb-4">
-                  <h2 className="font-semibold">PDF to Images</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Render every page of a PDF as a high-quality PNG image, downloaded as a ZIP.
-                  </p>
+                <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
+                  <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                    <FileText className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-orange-900">PDF to Images</h2>
+                    <p className="text-xs text-orange-600">Render every page as a high-quality PNG, downloaded as a ZIP file.</p>
+                  </div>
                 </div>
                 <PdfToImages />
               </TabsContent>
 
               <TabsContent value="pdf-to-text">
-                <div className="space-y-2 mb-4">
-                  <h2 className="font-semibold">PDF to Text</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Extract all selectable text from a PDF. Copy to clipboard or save as a .txt file.
-                  </p>
+                <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
+                  <div className="w-9 h-9 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                    <AlignLeft className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-amber-900">PDF to Text</h2>
+                    <p className="text-xs text-amber-600">Extract all selectable text. Copy to clipboard or save as a .txt file.</p>
+                  </div>
                 </div>
                 <PdfToText />
               </TabsContent>
