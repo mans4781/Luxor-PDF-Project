@@ -187,15 +187,15 @@ export function Navbar() {
           </div>
 
           {/* Features link */}
-          <a
-            href="#features"
+          <Link
+            href="/features"
             className="group relative text-[1.05rem] font-medium transition-colors duration-300"
           >
             <span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-blue-700 font-bold group-hover:text-transparent transition-colors duration-300">
               Features
             </span>
             <span className="absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 group-hover:w-full" />
-          </a>
+          </Link>
 
           {/* Pricing link */}
           <Link
