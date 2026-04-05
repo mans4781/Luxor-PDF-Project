@@ -105,8 +105,8 @@ export default function PdfSecurityPage() {
                 <Lock className="w-4 h-4" strokeWidth={2.5} />
                 Luxor PDF Security
               </div>
-              <h1 className="text-5xl font-bold leading-tight mb-6">
-                Control your PDFs <span className="text-rose-400">even after sharing</span>
+              <h1 className="text-5xl font-bold leading-tight mb-6 text-white">
+                Control your PDFs <span className="text-rose-300">even after sharing</span>
               </h1>
               <p className="text-red-200 text-lg leading-relaxed mb-8">
                 Encrypt, redact, watermark, and set expiry dates on any PDF. Revoke access remotely. Enforce strict permissions. Your confidential documents stay confidential — always.

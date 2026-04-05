@@ -87,8 +87,8 @@ export default function PdfReaderPage() {
                 <BookOpen className="w-4 h-4" strokeWidth={1.5} />
                 Luxor PDF Reader
               </div>
-              <h1 className="text-5xl font-bold leading-tight mb-6">
-                Read PDFs <span className="text-sky-400">faster</span> than ever before
+              <h1 className="text-5xl font-bold leading-tight mb-6 text-white">
+                Read PDFs <span className="text-sky-300">faster</span> than ever before
               </h1>
               <p className="text-blue-200 text-lg leading-relaxed mb-8">
                 A lightweight yet powerful PDF viewer built for professionals. Open, navigate, search, and annotate any PDF document — locally, privately, and blazingly fast.

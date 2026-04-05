@@ -105,8 +105,8 @@ export default function ESignPage() {
                 <FileSignature className="w-4 h-4" strokeWidth={1.75} />
                 Luxor eSign
               </div>
-              <h1 className="text-5xl font-bold leading-tight mb-6">
-                Collect signatures <span className="text-emerald-400">faster & legally</span>
+              <h1 className="text-5xl font-bold leading-tight mb-6 text-white">
+                Collect signatures <span className="text-emerald-300">faster & legally</span>
               </h1>
               <p className="text-teal-200 text-lg leading-relaxed mb-8">
                 Send contracts, NDAs, and agreements for legally binding e-signatures in seconds. Track who has signed, send reminders, and download certified PDFs — all from your desktop.

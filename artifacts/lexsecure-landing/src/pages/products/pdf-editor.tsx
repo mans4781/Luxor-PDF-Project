@@ -94,8 +94,8 @@ export default function PdfEditorPage() {
                 <PenTool className="w-4 h-4" strokeWidth={2} />
                 Luxor PDF Editor
               </div>
-              <h1 className="text-5xl font-bold leading-tight mb-6">
-                Edit PDFs like a <span className="text-violet-400">word processor</span>
+              <h1 className="text-5xl font-bold leading-tight mb-6 text-white">
+                Edit PDFs like a <span className="text-violet-300">word processor</span>
               </h1>
               <p className="text-purple-200 text-lg leading-relaxed mb-8">
                 True PDF editing without the complexity. Modify text, swap images, rearrange pages, create forms, and redact sensitive content — all in one intuitive desktop app.

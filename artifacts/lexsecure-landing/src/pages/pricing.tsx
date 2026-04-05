@@ -127,7 +127,7 @@ export default function PricingPage() {
               <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
               14-day free trial · No credit card required
             </div>
-            <h1 className="text-5xl font-bold mb-4">Simple, honest pricing</h1>
+            <h1 className="text-5xl font-bold mb-4 text-white">Simple, honest pricing</h1>
             <p className="text-indigo-200 text-lg max-w-xl mx-auto mb-10">
               One plan for every stage. Start free, scale when you're ready. Cancel any time.
             </p>

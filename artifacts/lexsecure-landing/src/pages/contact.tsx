@@ -157,7 +157,7 @@ export default function ContactPage() {
                 <MessageSquare className="w-3.5 h-3.5 text-violet-300" />
                 We're here to help
               </div>
-              <h1 className="text-5xl font-bold leading-tight mb-5">
+              <h1 className="text-5xl font-bold leading-tight mb-5 text-white">
                 Get in touch with{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-300 to-indigo-300">
                   Luxor PDF
