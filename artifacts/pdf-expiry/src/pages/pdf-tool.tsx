@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDFDocument } from "pdf-lib";
 import { formatBytes } from "@/lib/utils";
 import { saveFile } from "@/lib/save-file";
-import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Plus, Trash2, Wrench } from "lucide-react";
+import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Wrench } from "lucide-react";
 
 type DropColorScheme = "violet" | "indigo" | "purple";
 
@@ -228,19 +228,12 @@ function MergeTab() {
 
 // ─── Split ────────────────────────────────────────────────────────────────────
 
-interface PageRange {
-  id: number;
-  from: string;
-  to: string;
-}
-
 function SplitTab() {
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
-  const [ranges, setRanges] = useState<PageRange[]>([{ id: Date.now(), from: "1", to: "1" }]);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const nextId = useRef(1);
 
   async function handleFile(files: File[]) {
     const f = files[0];
@@ -249,9 +242,7 @@ function SplitTab() {
     try {
       const buf = await readFileAsArrayBuffer(f);
       const doc = await PDFDocument.load(buf);
-      const count = doc.getPageCount();
-      setPageCount(count);
-      setRanges([{ id: nextId.current++, from: "1", to: String(count) }]);
+      setPageCount(doc.getPageCount());
     } catch {
       setError("Could not read PDF. Make sure it is a valid, non-encrypted file.");
       setFile(null);
@@ -259,50 +250,30 @@ function SplitTab() {
     }
   }
 
-  function addRange() {
-    setRanges((prev) => [...prev, { id: nextId.current++, from: "1", to: String(pageCount ?? 1) }]);
-  }
-
-  function removeRange(id: number) {
-    setRanges((prev) => prev.filter((r) => r.id !== id));
-  }
-
-  function updateRange(id: number, field: "from" | "to", value: string) {
-    setRanges((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
-  }
-
   async function splitPdf() {
     if (!file || pageCount === null) return;
     setLoading(true);
     setError(null);
+    const baseName = file.name.replace(/\.pdf$/i, "");
     try {
       const buf = await readFileAsArrayBuffer(file);
       const srcDoc = await PDFDocument.load(buf);
 
-      for (let i = 0; i < ranges.length; i++) {
-        const from = Math.max(1, parseInt(ranges[i].from, 10) || 1);
-        const to = Math.min(pageCount, parseInt(ranges[i].to, 10) || pageCount);
-
-        if (from > to) {
-          setError(`Range ${i + 1}: "From" page must be less than or equal to "To" page.`);
-          setLoading(false);
-          return;
-        }
-
+      for (let i = 0; i < pageCount; i++) {
+        setProgress(`Saving page ${i + 1} of ${pageCount}…`);
         const newDoc = await PDFDocument.create();
-        const indices = Array.from({ length: to - from + 1 }, (_, k) => from - 1 + k);
-        const pages = await newDoc.copyPages(srcDoc, indices);
-        pages.forEach((p) => newDoc.addPage(p));
+        const [page] = await newDoc.copyPages(srcDoc, [i]);
+        newDoc.addPage(page);
         const bytes = await newDoc.save();
-        const baseName = file.name.replace(/\.pdf$/i, "");
         await saveFile(
           new Blob([bytes], { type: "application/pdf" }),
-          `${baseName}_pages${from}-${to}.pdf`
+          `${baseName}-${i + 1}.pdf`
         );
-        await new Promise((r) => setTimeout(r, 300));
       }
+      setProgress("");
     } catch {
       setError("Failed to split PDF. Make sure it is a valid, non-encrypted file.");
+      setProgress("");
     } finally {
       setLoading(false);
     }
@@ -314,7 +285,7 @@ function SplitTab() {
         <FileDropZone
           onFiles={handleFile}
           label="Click or drag a PDF here"
-          hint="Choose the PDF you want to split into parts"
+          hint="Each page will be saved as a separate PDF"
           colorScheme="indigo"
         />
       ) : (
@@ -322,12 +293,12 @@ function SplitTab() {
           <div>
             <p className="text-sm font-medium">{file.name}</p>
             <p className="text-xs text-muted-foreground">
-              {formatBytes(file.size)} &middot; {pageCount} page{pageCount !== 1 ? "s" : ""}
+              {formatBytes(file.size)} &middot; {pageCount} page{pageCount !== 1 ? "s" : ""} → {pageCount} files
             </p>
           </div>
           <button
             data-testid="button-clear-split-file"
-            onClick={() => { setFile(null); setPageCount(null); setError(null); }}
+            onClick={() => { setFile(null); setPageCount(null); setError(null); setProgress(""); }}
             className="text-muted-foreground hover:text-destructive transition-colors"
           >
             <X className="w-4 h-4" />
@@ -336,65 +307,14 @@ function SplitTab() {
       )}
 
       {file && pageCount !== null && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wider">
-              Page Ranges
-            </Label>
-            <Button variant="ghost" size="sm" onClick={addRange} data-testid="button-add-range">
-              <Plus className="w-3 h-3 mr-1" />
-              Add range
-            </Button>
-          </div>
+        <p className="text-xs text-muted-foreground">
+          Output files will be named <span className="font-mono">{file.name.replace(/\.pdf$/i, "")}-1.pdf</span>,{" "}
+          <span className="font-mono">{file.name.replace(/\.pdf$/i, "")}-2.pdf</span>, …
+        </p>
+      )}
 
-          <div className="space-y-2" data-testid="range-list">
-            {ranges.map((r, i) => (
-              <div key={r.id} className="flex items-center gap-2 bg-muted/50 rounded-md p-2">
-                <span className="text-xs text-muted-foreground w-16 shrink-0">Part {i + 1}</span>
-                <div className="flex items-center gap-2 flex-1">
-                  <div className="flex-1">
-                    <Label className="text-xs mb-1 block">From page</Label>
-                    <Input
-                      data-testid={`input-range-from-${i}`}
-                      type="number"
-                      min={1}
-                      max={pageCount}
-                      value={r.from}
-                      onChange={(e) => updateRange(r.id, "from", e.target.value)}
-                      className="h-8 text-sm"
-                    />
-                  </div>
-                  <span className="text-muted-foreground mt-4">–</span>
-                  <div className="flex-1">
-                    <Label className="text-xs mb-1 block">To page</Label>
-                    <Input
-                      data-testid={`input-range-to-${i}`}
-                      type="number"
-                      min={1}
-                      max={pageCount}
-                      value={r.to}
-                      onChange={(e) => updateRange(r.id, "to", e.target.value)}
-                      className="h-8 text-sm"
-                    />
-                  </div>
-                </div>
-                {ranges.length > 1 && (
-                  <button
-                    onClick={() => removeRange(r.id)}
-                    data-testid={`button-remove-range-${i}`}
-                    className="text-muted-foreground hover:text-destructive transition-colors mt-4"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <p className="text-xs text-muted-foreground">
-            Each range downloads as a separate PDF file.
-          </p>
-        </div>
+      {progress && (
+        <p className="text-sm text-indigo-600">{progress}</p>
       )}
 
       {error && (
@@ -412,12 +332,12 @@ function SplitTab() {
         {loading ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Splitting...
+            {progress || "Splitting…"}
           </>
         ) : (
           <>
             <Download className="w-4 h-4 mr-2" />
-            Split & Download
+            Split into Pages
           </>
         )}
       </Button>
