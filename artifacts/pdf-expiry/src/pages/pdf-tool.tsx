@@ -9,21 +9,49 @@ import { PDFDocument } from "pdf-lib";
 import { formatBytes } from "@/lib/utils";
 import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Plus, Trash2, Wrench } from "lucide-react";
 
+type DropColorScheme = "violet" | "indigo" | "purple";
+
+const dropColors: Record<DropColorScheme, {
+  drag: string; idle: string; icon: string; label: string; hint: string; iconBg: string;
+}> = {
+  violet: {
+    drag: "border-violet-400 bg-violet-50 scale-[1.01]",
+    idle: "border-violet-200 hover:border-violet-400 hover:bg-violet-50/60 bg-gradient-to-br from-violet-50/50 to-indigo-50/30",
+    icon: "text-white", iconBg: "bg-gradient-to-br from-violet-500 to-indigo-600",
+    label: "text-violet-700", hint: "text-violet-400",
+  },
+  indigo: {
+    drag: "border-indigo-400 bg-indigo-50 scale-[1.01]",
+    idle: "border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50/60 bg-gradient-to-br from-indigo-50/50 to-blue-50/30",
+    icon: "text-white", iconBg: "bg-gradient-to-br from-indigo-500 to-blue-600",
+    label: "text-indigo-700", hint: "text-indigo-400",
+  },
+  purple: {
+    drag: "border-purple-400 bg-purple-50 scale-[1.01]",
+    idle: "border-purple-200 hover:border-purple-400 hover:bg-purple-50/60 bg-gradient-to-br from-purple-50/50 to-violet-50/30",
+    icon: "text-white", iconBg: "bg-gradient-to-br from-purple-500 to-violet-600",
+    label: "text-purple-700", hint: "text-purple-400",
+  },
+};
+
 function FileDropZone({
   onFiles,
   multiple = false,
   label,
   hint,
   accept = ".pdf",
+  colorScheme = "violet",
 }: {
   onFiles: (files: File[]) => void;
   multiple?: boolean;
   label: string;
   hint?: string;
   accept?: string;
+  colorScheme?: DropColorScheme;
 }) {
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const c = dropColors[colorScheme];
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -44,15 +72,15 @@ function FileDropZone({
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
-      className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors select-none ${
-        dragging
-          ? "border-primary bg-primary/5"
-          : "border-border hover:border-primary/50 hover:bg-muted/30"
+      className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all select-none ${
+        dragging ? c.drag : c.idle
       }`}
     >
-      <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-      <p className="text-sm font-medium">{label}</p>
-      {hint && <p className="text-xs text-muted-foreground mt-1">{hint}</p>}
+      <div className={`w-14 h-14 ${c.iconBg} rounded-2xl flex items-center justify-center shadow-md mx-auto mb-3 opacity-85`}>
+        <Upload className={`w-7 h-7 ${c.icon}`} />
+      </div>
+      <p className={`text-sm font-semibold ${c.label}`}>{label}</p>
+      {hint && <p className={`text-xs mt-1 ${c.hint}`}>{hint}</p>}
       <input
         ref={inputRef}
         type="file"
@@ -162,6 +190,7 @@ function MergeTab() {
         multiple
         label="Click or drag PDFs here"
         hint="Add multiple PDFs — they will be merged in the order shown below"
+        colorScheme="violet"
       />
 
       {files.length > 0 && (
@@ -187,7 +216,7 @@ function MergeTab() {
         data-testid="button-merge"
         onClick={mergePdfs}
         disabled={files.length < 2 || loading}
-        className="w-full"
+        className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0 shadow-md font-semibold"
       >
         {loading ? (
           <>
@@ -294,6 +323,7 @@ function SplitTab() {
           onFiles={handleFile}
           label="Click or drag a PDF here"
           hint="Choose the PDF you want to split into parts"
+          colorScheme="indigo"
         />
       ) : (
         <div className="flex items-center justify-between bg-muted rounded-md px-3 py-2">
@@ -385,7 +415,7 @@ function SplitTab() {
         data-testid="button-split"
         onClick={splitPdf}
         disabled={!file || loading}
-        className="w-full"
+        className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white border-0 shadow-md font-semibold"
       >
         {loading ? (
           <>
@@ -502,6 +532,7 @@ function ExtractTab() {
           onFiles={handleFile}
           label="Click or drag a PDF here"
           hint="Select which pages to extract into a new PDF"
+          colorScheme="purple"
         />
       ) : (
         <div className="flex items-center justify-between bg-muted rounded-md px-3 py-2">
@@ -595,7 +626,7 @@ function ExtractTab() {
         data-testid="button-extract"
         onClick={extractPages}
         disabled={!file || selectedPages.size === 0 || loading}
-        className="w-full"
+        className="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white border-0 shadow-md font-semibold"
       >
         {loading ? (
           <>

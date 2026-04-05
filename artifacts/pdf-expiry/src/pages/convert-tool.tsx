@@ -50,21 +50,49 @@ function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
+type ConvertColorScheme = "emerald" | "orange" | "amber";
+
+const convertDropColors: Record<ConvertColorScheme, {
+  drag: string; idle: string; icon: string; iconBg: string; label: string; hint: string;
+}> = {
+  emerald: {
+    drag: "border-emerald-400 bg-emerald-50 scale-[1.01]",
+    idle: "border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50/60 bg-gradient-to-br from-emerald-50/50 to-teal-50/30",
+    icon: "text-white", iconBg: "bg-gradient-to-br from-emerald-500 to-teal-600",
+    label: "text-emerald-700", hint: "text-emerald-400",
+  },
+  orange: {
+    drag: "border-orange-400 bg-orange-50 scale-[1.01]",
+    idle: "border-orange-200 hover:border-orange-400 hover:bg-orange-50/60 bg-gradient-to-br from-orange-50/50 to-amber-50/30",
+    icon: "text-white", iconBg: "bg-gradient-to-br from-orange-500 to-amber-500",
+    label: "text-orange-700", hint: "text-orange-400",
+  },
+  amber: {
+    drag: "border-amber-400 bg-amber-50 scale-[1.01]",
+    idle: "border-amber-200 hover:border-amber-400 hover:bg-amber-50/60 bg-gradient-to-br from-amber-50/50 to-yellow-50/30",
+    icon: "text-white", iconBg: "bg-gradient-to-br from-amber-500 to-yellow-500",
+    label: "text-amber-700", hint: "text-amber-400",
+  },
+};
+
 function DropZone({
   onFiles,
   multiple = false,
   accept,
   label,
   hint,
+  colorScheme = "emerald",
 }: {
   onFiles: (files: File[]) => void;
   multiple?: boolean;
   accept: string;
   label: string;
   hint?: string;
+  colorScheme?: ConvertColorScheme;
 }) {
   const [dragging, setDragging] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
+  const c = convertDropColors[colorScheme];
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -82,13 +110,15 @@ function DropZone({
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
-      className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors select-none ${
-        dragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/30"
+      className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all select-none ${
+        dragging ? c.drag : c.idle
       }`}
     >
-      <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-      <p className="text-sm font-medium">{label}</p>
-      {hint && <p className="text-xs text-muted-foreground mt-1">{hint}</p>}
+      <div className={`w-14 h-14 ${c.iconBg} rounded-2xl flex items-center justify-center shadow-md mx-auto mb-3 opacity-85`}>
+        <Upload className={`w-7 h-7 ${c.icon}`} />
+      </div>
+      <p className={`text-sm font-semibold ${c.label}`}>{label}</p>
+      {hint && <p className={`text-xs mt-1 ${c.hint}`}>{hint}</p>}
       <input
         ref={ref}
         type="file"
@@ -180,6 +210,7 @@ function ImagesToPdf() {
         accept="image/jpeg,image/png,image/webp,image/gif,image/bmp"
         label="Click or drag images here"
         hint="Supports JPG, PNG, WEBP, GIF, BMP — each image becomes one page"
+        colorScheme="emerald"
       />
 
       {files.length > 0 && (
@@ -279,7 +310,7 @@ function PdfToImages() {
   return (
     <div className="space-y-4">
       {!file ? (
-        <DropZone onFiles={handleFile} accept=".pdf" label="Click or drag a PDF here" hint="Each page will be exported as a PNG image" />
+        <DropZone onFiles={handleFile} accept=".pdf" label="Click or drag a PDF here" hint="Each page will be exported as a PNG image" colorScheme="orange" />
       ) : (
         <div className="flex items-center justify-between bg-muted rounded-md px-3 py-2">
           <div>
@@ -406,7 +437,7 @@ function PdfToText() {
   return (
     <div className="space-y-4">
       {!file ? (
-        <DropZone onFiles={handleFile} accept=".pdf" label="Click or drag a PDF here" hint="Extracts all selectable text from the document" />
+        <DropZone onFiles={handleFile} accept=".pdf" label="Click or drag a PDF here" hint="Extracts all selectable text from the document" colorScheme="amber" />
       ) : (
         <div className="flex items-center justify-between bg-muted rounded-md px-3 py-2">
           <div>
