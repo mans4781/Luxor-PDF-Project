@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { ArrowRight, Download, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { AppStoreBadges } from "@/components/AppStoreBadges";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 30 },
@@ -55,12 +54,7 @@ export function Hero() {
               </Button>
             </motion.div>
             
-            <motion.div variants={FADE_UP} className="mt-8">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Also available on mobile</p>
-              <AppStoreBadges size="sm" />
-            </motion.div>
-            
-            <motion.p variants={FADE_UP} className="mt-5 text-sm text-muted-foreground flex items-center gap-2">
+            <motion.p variants={FADE_UP} className="mt-6 text-sm text-muted-foreground flex items-center gap-2">
               <span className="text-green-600 font-medium">✓</span> No internet required for desktop app
             </motion.p>
           </motion.div>

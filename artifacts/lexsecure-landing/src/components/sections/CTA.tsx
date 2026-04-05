@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { AppStoreBadges } from "@/components/AppStoreBadges";
 
 export function CTA() {
   return (
@@ -43,10 +42,6 @@ export function CTA() {
             </Button>
           </div>
 
-          <div className="mt-10 flex flex-col items-center gap-3">
-            <p className="text-sm font-medium text-white/60 uppercase tracking-wider">Available on mobile too</p>
-            <AppStoreBadges size="md" className="justify-center" />
-          </div>
         </motion.div>
       </div>
     </section>
