@@ -29,21 +29,21 @@ export function Navbar() {
           <div className="bg-[#E11D48] p-2 rounded-md">
             <Shield className="w-5 h-5 text-white" strokeWidth={2.5} />
           </div>
-          <span className="font-serif font-bold text-xl text-primary tracking-tight">LexSecure PDF</span>
+          <span className="font-serif font-bold text-2xl text-primary tracking-tight">LexSecure PDF</span>
         </Link>
         
         <nav className="hidden md:flex items-center gap-8">
-          <a href={import.meta.env.BASE_URL} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Home</a>
-          <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
-          <a href="#security" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Security</a>
-          <a href="#desktop" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Desktop App</a>
+          <a href={import.meta.env.BASE_URL} className="text-[1.05rem] font-medium text-muted-foreground hover:text-foreground transition-colors">Home</a>
+          <a href="#features" className="text-[1.05rem] font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
+          <a href="#security" className="text-[1.05rem] font-medium text-muted-foreground hover:text-foreground transition-colors">Security</a>
+          <a href="#desktop" className="text-[1.05rem] font-medium text-muted-foreground hover:text-foreground transition-colors">Desktop App</a>
         </nav>
 
         <div className="flex items-center gap-4">
-          <Button asChild variant="ghost" className="font-medium hidden sm:inline-flex">
+          <Button asChild variant="ghost" className="text-[1.05rem] font-medium hidden sm:inline-flex">
             <Link href="/web-app">Open Web App</Link>
           </Button>
-          <Button asChild className="font-medium bg-foreground text-background hover:bg-foreground/90">
+          <Button asChild className="text-[1.05rem] font-medium bg-foreground text-background hover:bg-foreground/90">
             <a href="#download">Download for Windows</a>
           </Button>
         </div>
