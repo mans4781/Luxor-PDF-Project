@@ -63,7 +63,7 @@ export function Navbar() {
               className="group relative text-[1.05rem] font-medium transition-colors duration-300"
             >
               <span
-                className={`bg-gradient-to-r ${gradient} bg-clip-text text-muted-foreground group-hover:text-transparent transition-colors duration-300`}
+                className={`bg-gradient-to-r ${gradient} bg-clip-text text-blue-700 font-bold group-hover:text-transparent transition-colors duration-300`}
               >
                 {label}
               </span>
