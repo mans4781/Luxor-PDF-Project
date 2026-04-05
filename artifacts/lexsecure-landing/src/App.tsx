@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import LandingPage from "@/pages/landing";
 import WebAppPage from "@/pages/web-app";
 import PricingPage from "@/pages/pricing";
+import AboutPage from "@/pages/about";
 import PdfReaderPage from "@/pages/products/pdf-reader";
 import PdfEditorPage from "@/pages/products/pdf-editor";
 import ESignPage from "@/pages/products/esign";
@@ -19,6 +20,7 @@ function Router() {
     <Switch>
       <Route path="/" component={LandingPage} />
       <Route path="/web-app" component={WebAppPage} />
+      <Route path="/about" component={AboutPage} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/products/pdf-reader" component={PdfReaderPage} />
       <Route path="/products/pdf-editor" component={PdfEditorPage} />

@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LoginModal } from "@/components/LoginModal";
 
 const navLinks = [
-  { label: "Home",     href: "BASE_URL", gradient: "from-rose-500 to-orange-400" },
-  { label: "About Us", href: "#about",   gradient: "from-violet-500 to-purple-400" },
+  { label: "Home",     href: "BASE_URL",  route: false, gradient: "from-rose-500 to-orange-400"  },
+  { label: "About Us", href: "/about",    route: true,  gradient: "from-violet-500 to-purple-400" },
 ];
 
 const productItems = [
@@ -95,18 +95,33 @@ export function Navbar() {
 
         {/* Nav links */}
         <nav className="hidden md:flex items-center gap-8">
-          {navLinks.map(({ label, href, gradient }) => (
-            <a
-              key={label}
-              href={href === "BASE_URL" ? import.meta.env.BASE_URL : href}
-              className="group relative text-[1.05rem] font-medium transition-colors duration-300"
-            >
-              <span className={`bg-gradient-to-r ${gradient} bg-clip-text text-blue-700 font-bold group-hover:text-transparent transition-colors duration-300`}>
-                {label}
-              </span>
-              <span className={`absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r ${gradient} transition-all duration-300 group-hover:w-full`} />
-            </a>
-          ))}
+          {navLinks.map(({ label, href, route, gradient }) => {
+            const inner = (
+              <>
+                <span className={`bg-gradient-to-r ${gradient} bg-clip-text text-blue-700 font-bold group-hover:text-transparent transition-colors duration-300`}>
+                  {label}
+                </span>
+                <span className={`absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r ${gradient} transition-all duration-300 group-hover:w-full`} />
+              </>
+            );
+            return route ? (
+              <Link
+                key={label}
+                href={href}
+                className="group relative text-[1.05rem] font-medium transition-colors duration-300"
+              >
+                {inner}
+              </Link>
+            ) : (
+              <a
+                key={label}
+                href={href === "BASE_URL" ? import.meta.env.BASE_URL : href}
+                className="group relative text-[1.05rem] font-medium transition-colors duration-300"
+              >
+                {inner}
+              </a>
+            );
+          })}
 
           {/* Products dropdown */}
           <div
