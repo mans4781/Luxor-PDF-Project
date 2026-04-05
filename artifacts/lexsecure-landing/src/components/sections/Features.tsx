@@ -15,7 +15,7 @@ const FEATURES = [
     icon: Lock,
     color: "bg-rose-50 text-rose-600",
     borderColor: "border-rose-100",
-    image: "/feature-expiry.png"
+    image: `${import.meta.env.BASE_URL}feature-expiry.png`
   },
   {
     id: "tool",
@@ -24,7 +24,7 @@ const FEATURES = [
     icon: FileStack,
     color: "bg-violet-50 text-violet-600",
     borderColor: "border-violet-100",
-    image: "/feature-tool.png"
+    image: `${import.meta.env.BASE_URL}feature-tool.png`
   },
   {
     id: "to-pdf",
@@ -33,7 +33,7 @@ const FEATURES = [
     icon: RefreshCw,
     color: "bg-emerald-50 text-emerald-600",
     borderColor: "border-emerald-100",
-    image: "/feature-to-pdf.png"
+    image: `${import.meta.env.BASE_URL}feature-to-pdf.png`
   },
   {
     id: "from-pdf",
@@ -42,7 +42,7 @@ const FEATURES = [
     icon: FileImage,
     color: "bg-amber-50 text-amber-600",
     borderColor: "border-amber-100",
-    image: "/feature-from-pdf.png"
+    image: `${import.meta.env.BASE_URL}feature-from-pdf.png`
   }
 ];
 
