@@ -26,7 +26,7 @@ export function Sidebar() {
         <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center">
           <PenLine className="w-4 h-4 text-white" strokeWidth={2.5} />
         </div>
-        <span className="text-white font-semibold text-lg tracking-tight">LexSign</span>
+        <span className="text-white font-semibold text-lg tracking-tight">LuxorSign</span>
       </div>
 
       {/* Nav */}

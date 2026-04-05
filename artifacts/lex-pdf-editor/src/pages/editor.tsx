@@ -297,7 +297,7 @@ export default function Editor() {
             <Shield className="w-8 h-8 text-white" strokeWidth={2} />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">LexPDF Editor</h1>
+            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">LuxorPDF Editor</h1>
             <p className="text-sm text-slate-500">Professional PDF viewer & editor</p>
           </div>
         </div>
@@ -346,7 +346,7 @@ export default function Editor() {
           <div className="p-1.5 rounded-lg bg-blue-600">
             <Shield className="w-4 h-4 text-white" />
           </div>
-          <span className="text-white font-semibold text-sm hidden sm:block">LexPDF</span>
+          <span className="text-white font-semibold text-sm hidden sm:block">LuxorPDF</span>
         </div>
 
         {/* Open file */}
@@ -671,7 +671,7 @@ export default function Editor() {
           <span className="text-blue-400 text-xs">{annotations.length} text block{annotations.length !== 1 ? "s" : ""} added</span>
         )}
         <div className="flex-1" />
-        <span className="text-slate-600 text-xs">LexPDF Editor — Windows & Android ready</span>
+        <span className="text-slate-600 text-xs">LuxorPDF Editor — Windows & Android ready</span>
       </footer>
 
       <style>{`

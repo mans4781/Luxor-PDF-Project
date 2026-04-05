@@ -100,7 +100,7 @@ export default function Settings() {
                 { key: "signedEmail", label: "Document signed", desc: "Email when someone signs your document" },
                 { key: "reminders", label: "Automatic reminders", desc: "Send reminders to pending signers" },
                 { key: "weeklyDigest", label: "Weekly digest", desc: "Summary of document activity each week" },
-                { key: "marketing", label: "Product updates", desc: "News and tips from LexSign" },
+                { key: "marketing", label: "Product updates", desc: "News and tips from LuxorSign" },
               ].map(({ key, label, desc }) => (
                 <div key={key} className="flex items-center justify-between py-3 border-b border-border last:border-0">
                   <div>
@@ -191,7 +191,7 @@ export default function Settings() {
                 <h2 className="text-base font-semibold text-foreground">API Keys</h2>
                 <span className="text-xs text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full font-medium">Pro feature</span>
               </div>
-              <p className="text-sm text-muted-foreground">Use API keys to integrate LexSign into your own applications. Upgrade to Pro to generate API keys.</p>
+              <p className="text-sm text-muted-foreground">Use API keys to integrate LuxorSign into your own applications. Upgrade to Pro to generate API keys.</p>
               <div className="h-32 rounded-xl bg-muted/40 border border-dashed border-border flex items-center justify-center">
                 <div className="text-center">
                   <Key className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />

@@ -3,7 +3,7 @@ import { Quote } from "lucide-react";
 
 const TESTIMONIALS = [
   {
-    quote: "Finally, a PDF tool we can actually use. Our IT department banned cloud PDF converters years ago due to data sovereignty concerns. LexSecure running client-side solves everything.",
+    quote: "Finally, a PDF tool we can actually use. Our IT department banned cloud PDF converters years ago due to data sovereignty concerns. LuxorSecure running client-side solves everything.",
     author: "Sarah Jenkins",
     role: "Managing Partner, Jenkins & Croft Legal",
     color: "bg-blue-50"
