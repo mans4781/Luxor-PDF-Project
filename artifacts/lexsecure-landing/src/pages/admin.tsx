@@ -243,9 +243,9 @@ function Dashboard({ onLogout, dark, onToggleDark }: { onLogout: () => void; dar
 
           <button
             onClick={onLogout}
-            style={{ background: t.btnBg, border: `1px solid ${t.btnBorder}`, borderRadius: 6, color: t.btnColor, fontSize: 12, padding: "5px 12px", cursor: "pointer" }}
+            style={{ background: t.btnBg, border: `1px solid ${t.btnBorder}`, borderRadius: 6, color: t.btnColor, fontSize: 12, padding: "5px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}
           >
-            Lock
+            🔓 Logout
           </button>
         </div>
       </div>
