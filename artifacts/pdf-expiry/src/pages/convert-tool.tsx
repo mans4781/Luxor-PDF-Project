@@ -8,6 +8,7 @@ import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
 import JSZip from "jszip";
 import { formatBytes } from "@/lib/utils";
+import { saveFile } from "@/lib/save-file";
 import {
   Upload, X, Download, Loader2, Image as ImageIcon,
   FileText, AlignLeft, GripVertical, Copy, Check, ArrowLeftRight,
@@ -39,16 +40,7 @@ function readAsDataURL(file: File): Promise<string> {
   });
 }
 
-function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+// saveFile is imported from @/lib/save-file — opens a native Save As dialog
 
 type ConvertColorScheme = "emerald" | "orange" | "amber";
 
@@ -194,7 +186,7 @@ function ImagesToPdf() {
         page.drawImage(embedded, { x: 0, y: 0, width: w, height: h });
       }
       const bytes = await pdf.save();
-      downloadBlob(new Blob([bytes], { type: "application/pdf" }), "converted.pdf");
+      await saveFile(new Blob([bytes], { type: "application/pdf" }), "converted.pdf");
     } catch {
       setError("Conversion failed. Make sure all images are valid and not corrupted.");
     } finally {
@@ -297,7 +289,7 @@ function PdfToImages() {
 
       setProgress("Packing ZIP…");
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      downloadBlob(zipBlob, `${baseName}_images.zip`);
+      await saveFile(zipBlob, `${baseName}_images.zip`);
       setProgress("");
     } catch {
       setError("Conversion failed. Make sure the PDF is valid and non-encrypted.");
@@ -425,7 +417,7 @@ function PdfToText() {
 
   function downloadText() {
     const baseName = file?.name.replace(/\.pdf$/i, "") ?? "extracted";
-    downloadBlob(new Blob([text], { type: "text/plain" }), `${baseName}.txt`);
+    saveFile(new Blob([text], { type: "text/plain" }), `${baseName}.txt`);
   }
 
   async function copyText() {

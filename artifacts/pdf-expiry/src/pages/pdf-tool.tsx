@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDFDocument } from "pdf-lib";
 import { formatBytes } from "@/lib/utils";
+import { saveFile } from "@/lib/save-file";
 import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Plus, Trash2, Wrench } from "lucide-react";
 
 type DropColorScheme = "violet" | "indigo" | "purple";
@@ -119,16 +120,7 @@ function FileTag({ name, size, onRemove }: { name: string; size: number; onRemov
   );
 }
 
-function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+// saveFile is imported from @/lib/save-file — opens a native Save As dialog
 
 async function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
   return new Promise((resolve, reject) => {
@@ -175,7 +167,7 @@ function MergeTab() {
         pages.forEach((p) => merged.addPage(p));
       }
       const bytes = await merged.save();
-      downloadBlob(new Blob([bytes], { type: "application/pdf" }), "merged.pdf");
+      await saveFile(new Blob([bytes], { type: "application/pdf" }), "merged.pdf");
     } catch (e) {
       setError("Failed to merge PDFs. Make sure all files are valid, non-encrypted PDFs.");
     } finally {
@@ -303,7 +295,7 @@ function SplitTab() {
         pages.forEach((p) => newDoc.addPage(p));
         const bytes = await newDoc.save();
         const baseName = file.name.replace(/\.pdf$/i, "");
-        downloadBlob(
+        await saveFile(
           new Blob([bytes], { type: "application/pdf" }),
           `${baseName}_pages${from}-${to}.pdf`
         );
@@ -512,7 +504,7 @@ function ExtractTab() {
       pages.forEach((p) => newDoc.addPage(p));
       const bytes = await newDoc.save();
       const baseName = file.name.replace(/\.pdf$/i, "");
-      downloadBlob(
+      await saveFile(
         new Blob([bytes], { type: "application/pdf" }),
         `${baseName}_extracted.pdf`
       );
