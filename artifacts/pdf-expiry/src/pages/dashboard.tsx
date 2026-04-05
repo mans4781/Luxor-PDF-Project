@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Layout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wrench, FileOutput, FileInput, ShieldOff } from "lucide-react";
+import { Wrench, FileOutput, FileInput, ShieldOff, PenLine } from "lucide-react";
 import { PdfUploadForm } from "@/components/pdf-upload-form";
 
 const menuItems = [
@@ -40,6 +40,18 @@ const menuItems = [
     iconBg: "bg-gradient-to-br from-emerald-500 to-teal-600",
     textColor: "text-emerald-700",
     descColor: "text-emerald-500",
+  },
+  {
+    label: "Edit PDF",
+    description: "Add text — fonts, sizes & colours",
+    href: "/edit",
+    icon: PenLine,
+    gradient: "from-blue-500 to-indigo-600",
+    bg: "bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100",
+    border: "border-blue-200 hover:border-blue-400",
+    iconBg: "bg-gradient-to-br from-blue-500 to-indigo-600",
+    textColor: "text-blue-700",
+    descColor: "text-blue-500",
   },
   {
     label: "PDF Expiry",

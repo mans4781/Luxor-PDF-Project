@@ -7,6 +7,7 @@ import Dashboard from "@/pages/dashboard";
 import History from "@/pages/history";
 import PdfTool from "@/pages/pdf-tool";
 import ConvertTool from "@/pages/convert-tool";
+import EditTool from "@/pages/edit-tool";
 
 const queryClient = new QueryClient();
 
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/history" component={History} />
       <Route path="/pdf-tool" component={PdfTool} />
       <Route path="/convert" component={ConvertTool} />
+      <Route path="/edit" component={EditTool} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { Shield, LayoutDashboard, List, Wrench, ArrowLeftRight } from "lucide-react";
+import { Shield, LayoutDashboard, List, Wrench, ArrowLeftRight, PenLine } from "lucide-react";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
@@ -50,6 +50,15 @@ export function Layout({ children }: { children: ReactNode }) {
               <div className="flex items-center gap-2">
                 <ArrowLeftRight className="w-4 h-4" />
                 Convert
+              </div>
+            </Link>
+            <Link 
+              href="/edit" 
+              className={`text-sm font-medium transition-colors hover:text-primary ${location === '/edit' ? 'text-primary' : 'text-muted-foreground'}`}
+            >
+              <div className="flex items-center gap-2">
+                <PenLine className="w-4 h-4" />
+                Edit PDF
               </div>
             </Link>
           </nav>
