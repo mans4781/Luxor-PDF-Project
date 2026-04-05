@@ -10,6 +10,7 @@ import PdfEditorPage from "@/pages/products/pdf-editor";
 import ESignPage from "@/pages/products/esign";
 import PdfSecurityPage from "@/pages/products/pdf-security";
 import NotFound from "@/pages/not-found";
+import { Chatbot } from "@/components/Chatbot";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ function App() {
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <Router />
         </WouterRouter>
+        <Chatbot />
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
