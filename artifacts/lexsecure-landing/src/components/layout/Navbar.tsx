@@ -50,9 +50,9 @@ export function Navbar() {
       <div className="container mx-auto px-6 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           <div className="bg-[#E11D48] p-2 rounded-md">
-            <Shield className="w-5 h-5 text-white" strokeWidth={2.5} />
+            <Shield className="w-[23px] h-[23px] text-white" strokeWidth={2.5} />
           </div>
-          <span className="font-serif font-bold text-2xl text-primary tracking-tight">LexSecure PDF</span>
+          <span className="font-serif font-bold text-[1.71rem] text-primary tracking-tight">LexSecure PDF</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
