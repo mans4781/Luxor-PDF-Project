@@ -7,8 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 const navLinks = [
   { label: "Home",     href: "BASE_URL", gradient: "from-rose-500 to-orange-400" },
   { label: "About Us", href: "#about",   gradient: "from-violet-500 to-purple-400" },
-  { label: "Features", href: "#features",gradient: "from-emerald-500 to-teal-400" },
-  { label: "Buy Now",  href: "#buy",     gradient: "from-amber-500 to-yellow-400" },
 ];
 
 const productItems = [
@@ -170,6 +168,23 @@ export function Navbar() {
               )}
             </AnimatePresence>
           </div>
+
+          {/* Links after Products */}
+          {[
+            { label: "Features", href: "#features", gradient: "from-emerald-500 to-teal-400" },
+            { label: "Buy Now",  href: "#buy",      gradient: "from-amber-500 to-yellow-400" },
+          ].map(({ label, href, gradient }) => (
+            <a
+              key={label}
+              href={href}
+              className="group relative text-[1.05rem] font-medium transition-colors duration-300"
+            >
+              <span className={`bg-gradient-to-r ${gradient} bg-clip-text text-blue-700 font-bold group-hover:text-transparent transition-colors duration-300`}>
+                {label}
+              </span>
+              <span className={`absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r ${gradient} transition-all duration-300 group-hover:w-full`} />
+            </a>
+          ))}
         </nav>
 
         {/* Login */}
