@@ -18,7 +18,7 @@ export function FAQ() {
           <AccordionItem value="item-1">
             <AccordionTrigger className="text-left text-lg font-medium">How does client-side processing work?</AccordionTrigger>
             <AccordionContent className="text-muted-foreground leading-relaxed text-base">
-              Luxor uses WebAssembly (WASM) to run complex PDF manipulation algorithms directly inside your web browser. When you select a file to split, merge, or convert, the file is read into your device's memory, processed by the WASM engine, and downloaded back to your hard drive. The file data never leaves your computer.
+              Luxor PDF uses WebAssembly (WASM) to run complex PDF manipulation algorithms directly inside your web browser. When you select a file to split, merge, or convert, the file is read into your device's memory, processed by the WASM engine, and downloaded back to your hard drive. The file data never leaves your computer.
             </AccordionContent>
           </AccordionItem>
           

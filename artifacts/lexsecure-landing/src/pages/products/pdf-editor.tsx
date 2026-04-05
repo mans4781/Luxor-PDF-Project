@@ -168,7 +168,7 @@ export default function PdfEditorPage() {
               </div>
             </div>
             <div className="rounded-2xl bg-slate-50 border border-slate-200 p-6">
-              <p className="text-xs font-bold text-emerald-500 uppercase tracking-wider mb-4">After — edited with Luxor</p>
+              <p className="text-xs font-bold text-emerald-500 uppercase tracking-wider mb-4">After — edited with Luxor PDF</p>
               <div className="space-y-2">
                 {["New logo inserted & scaled","Correct contact updated","Pricing table refreshed","Footer perfectly aligned"].map(t => (
                   <div key={t} className="flex items-center gap-2 bg-emerald-50 rounded-lg px-3 py-2">

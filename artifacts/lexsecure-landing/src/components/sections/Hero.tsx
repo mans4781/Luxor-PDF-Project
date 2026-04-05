@@ -68,7 +68,7 @@ export function Hero() {
             <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-white">
               <img 
                 src={`${import.meta.env.BASE_URL}hero-artwork.png`}
-                alt="Luxor Abstract Security Visualization" 
+                alt="Luxor PDF Abstract Security Visualization" 
                 className="w-full h-full object-cover object-center"
               />
             </div>

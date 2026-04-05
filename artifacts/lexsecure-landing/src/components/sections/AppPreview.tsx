@@ -55,7 +55,7 @@ export function AppPreview() {
             {/* Dashboard screenshot */}
             <img
               src={`${import.meta.env.BASE_URL}dashboard-preview.jpg`}
-              alt="Luxor Dashboard — showing PDF Tool, Convert, and PDF Expiry navigation cards with the secure upload form"
+              alt="Luxor PDF Dashboard — showing PDF Tool, Convert, and PDF Expiry navigation cards with the secure upload form"
               className="w-full block"
               draggable={false}
             />

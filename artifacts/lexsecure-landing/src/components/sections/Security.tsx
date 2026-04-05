@@ -18,7 +18,7 @@ export function Security() {
               Your documents never leave your device.
             </h2>
             <p className="text-lg text-gray-400 mb-8 leading-relaxed max-w-lg">
-              Unlike cloud-based PDF tools that silently upload your sensitive contracts and financial records to third-party servers, Luxor processes everything directly on your machine using WebAssembly.
+              Unlike cloud-based PDF tools that silently upload your sensitive contracts and financial records to third-party servers, Luxor PDF processes everything directly on your machine using WebAssembly.
             </p>
             
             <div className="space-y-6">

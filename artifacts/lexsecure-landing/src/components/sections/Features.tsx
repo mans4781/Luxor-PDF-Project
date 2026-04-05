@@ -67,7 +67,7 @@ export function Features() {
             variants={FADE_UP}
             className="text-lg text-muted-foreground"
           >
-            Luxor combines powerful document manipulation with an uncompromising security model. Every feature is designed for professionals who handle sensitive data.
+            Luxor PDF combines powerful document manipulation with an uncompromising security model. Every feature is designed for professionals who handle sensitive data.
           </motion.p>
         </div>
 
