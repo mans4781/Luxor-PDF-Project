@@ -4,6 +4,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import LandingPage from "@/pages/landing";
 import WebAppPage from "@/pages/web-app";
+import PdfReaderPage from "@/pages/products/pdf-reader";
+import PdfEditorPage from "@/pages/products/pdf-editor";
+import ESignPage from "@/pages/products/esign";
+import PdfSecurityPage from "@/pages/products/pdf-security";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -13,6 +17,10 @@ function Router() {
     <Switch>
       <Route path="/" component={LandingPage} />
       <Route path="/web-app" component={WebAppPage} />
+      <Route path="/products/pdf-reader" component={PdfReaderPage} />
+      <Route path="/products/pdf-editor" component={PdfEditorPage} />
+      <Route path="/products/esign" component={ESignPage} />
+      <Route path="/products/pdf-security" component={PdfSecurityPage} />
       <Route component={NotFound} />
     </Switch>
   );

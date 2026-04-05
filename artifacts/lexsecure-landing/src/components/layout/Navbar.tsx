@@ -14,7 +14,7 @@ const navLinks = [
 const productItems = [
   {
     label: "Luxor PDF Reader",
-    href: "#pdf-reader",
+    href: "/products/pdf-reader",
     icon: BookOpen,
     desc: "Fast, lightweight PDF viewer",
     gradient: "from-sky-500 to-blue-500",
@@ -24,7 +24,7 @@ const productItems = [
   },
   {
     label: "Luxor PDF Editor",
-    href: "#pdf-editor",
+    href: "/products/pdf-editor",
     icon: PenTool,
     desc: "Edit text, images & pages",
     gradient: "from-violet-500 to-purple-500",
@@ -34,7 +34,7 @@ const productItems = [
   },
   {
     label: "Luxor eSign",
-    href: "#esign",
+    href: "/products/esign",
     icon: FileSignature,
     desc: "Legally binding e-signatures",
     gradient: "from-emerald-500 to-teal-500",
@@ -44,7 +44,7 @@ const productItems = [
   },
   {
     label: "Luxor PDF Security",
-    href: "#pdf-security",
+    href: "/products/pdf-security",
     icon: Lock,
     desc: "Encrypt, redact & set expiry",
     gradient: "from-rose-500 to-orange-500",
@@ -142,7 +142,7 @@ export function Navbar() {
 
                   <div className="p-2">
                     {productItems.map(({ label, href, icon: Icon, desc, gradient, bg, iconColor, strokeWidth }) => (
-                      <a
+                      <Link
                         key={label}
                         href={href}
                         onClick={() => setProductsOpen(false)}
@@ -159,7 +159,7 @@ export function Navbar() {
                           <p className={`text-sm font-semibold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}>{label}</p>
                           <p className="text-xs text-slate-400 leading-tight">{desc}</p>
                         </div>
-                      </a>
+                      </Link>
                     ))}
                   </div>
 
