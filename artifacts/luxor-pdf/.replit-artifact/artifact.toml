@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/luxor-pdf/"
+title = "Luxor PDF Reader"
+version = "1.0.0"
+id = "artifacts/luxor-pdf"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/luxor-pdf/" ]
+localPort = 22843
+
+[services.development]
+run = "pnpm --filter @workspace/luxor-pdf run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/luxor-pdf", "run", "build" ]
+publicDir = "artifacts/luxor-pdf/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22843"
+BASE_PATH = "/luxor-pdf/"
