@@ -3,6 +3,7 @@ import { Shield, ChevronDown, BookOpen, PenTool, FileSignature, Lock } from "luc
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { LoginModal } from "@/components/LoginModal";
 
 const navLinks = [
   { label: "Home",     href: "BASE_URL", gradient: "from-rose-500 to-orange-400" },
@@ -53,8 +54,9 @@ const productItems = [
 ];
 
 export function Navbar() {
-  const [scrolled, setScrolled]       = useState(false);
+  const [scrolled, setScrolled]         = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
+  const [loginOpen, setLoginOpen]       = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -195,14 +197,16 @@ export function Navbar() {
             <a href="#buy">Buy Now</a>
           </Button>
           <Button
-            asChild
             variant="ghost"
+            onClick={() => setLoginOpen(true)}
             className="text-[1.05rem] font-bold text-blue-700 hidden sm:inline-flex hover:bg-blue-50 hover:text-blue-800 transition-colors duration-300 border border-blue-200"
           >
-            <a href="#login">Login</a>
+            Login
           </Button>
         </div>
       </div>
+
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </motion.header>
   );
 }
