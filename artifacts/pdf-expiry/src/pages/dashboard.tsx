@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Layout } from "@/components/layout";
-import { useGetPdfStats, useListPdfs } from "@workspace/api-client-react";
+import { useGetPdfStats } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   FileText, ShieldAlert, ShieldCheck, HardDrive,
@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import { formatBytes } from "@/lib/utils";
 import { PdfUploadForm } from "@/components/pdf-upload-form";
-import { PdfList } from "@/components/pdf-list";
 
 const menuItems = [
   {
@@ -63,7 +62,6 @@ const menuItems = [
 
 export default function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useGetPdfStats();
-  const { data: pdfs, isLoading: pdfsLoading } = useListPdfs();
 
   return (
     <Layout>
@@ -144,28 +142,16 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* ── Upload + Recent ── */}
-        <div id="expiry" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Secure Upload</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PdfUploadForm />
-              </CardContent>
-            </Card>
-          </div>
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Documents</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PdfList pdfs={pdfs?.slice(0, 5) || []} isLoading={pdfsLoading} />
-              </CardContent>
-            </Card>
-          </div>
+        {/* ── Upload ── */}
+        <div id="expiry" className="max-w-md">
+          <Card>
+            <CardHeader>
+              <CardTitle>Secure Upload</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PdfUploadForm />
+            </CardContent>
+          </Card>
         </div>
 
       </div>
