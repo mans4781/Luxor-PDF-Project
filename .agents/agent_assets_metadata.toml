@@ -1,5 +1,34 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "CrN7Oo68Y_1QWXYtCbQhY"
+uri = "file://artifacts/lexsecure-landing/public/hero-artwork.png"
+type = "image"
+title = "LexSecure abstract hero artwork"
+
+[[generated]]
+id = "JD_z-xbQkg2IbDhY-CE3j"
+uri = "file://artifacts/lexsecure-landing/public/feature-expiry.png"
+type = "image"
+title = "PDF Expiry feature artwork"
+
+[[generated]]
+id = "96Cg8bdu3Hk6-8DWRyI02"
+uri = "file://artifacts/lexsecure-landing/public/feature-tool.png"
+type = "image"
+title = "PDF Tool feature artwork"
+
+[[generated]]
+id = "kOjWggvd7SAJYbZrS584n"
+uri = "file://artifacts/lexsecure-landing/public/feature-to-pdf.png"
+type = "image"
+title = "Convert to PDF artwork"
+
+[[generated]]
+id = "67sNAfBXd-GzRA3_nuUDP"
+uri = "file://artifacts/lexsecure-landing/public/feature-from-pdf.png"
+type = "image"
+title = "Convert from PDF artwork"
 
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/lexsecure-landing/"
+title = "LexSecure PDF — Landing Page"
+version = "1.0.0"
+id = "artifacts/lexsecure-landing"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/lexsecure-landing/" ]
+localPort = 21447
+
+[services.development]
+run = "pnpm --filter @workspace/lexsecure-landing run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/lexsecure-landing", "run", "build" ]
+publicDir = "artifacts/lexsecure-landing/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21447"
+BASE_PATH = "/lexsecure-landing/"
