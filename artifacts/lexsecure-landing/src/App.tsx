@@ -13,6 +13,7 @@ import ESignPage from "@/pages/products/esign";
 import PdfSecurityPage from "@/pages/products/pdf-security";
 import NotFound from "@/pages/not-found";
 import { Chatbot } from "@/components/Chatbot";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ function App() {
           <Router />
         </WouterRouter>
         <Chatbot />
+        <ScrollToTop />
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
