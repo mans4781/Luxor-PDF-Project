@@ -100,10 +100,10 @@ function TeamAvatar({ initials, gradient, size = 56 }: { initials: string; gradi
 /* ─── Data ─── */
 
 const stats = [
-  { value: "50K+", label: "Active Users", color: "text-violet-600" },
-  { value: "120+", label: "Countries",    color: "text-indigo-600" },
-  { value: "4.9★", label: "App Rating",   color: "text-amber-500"  },
-  { value: "99.9%", label: "Uptime SLA",  color: "text-emerald-600"},
+  { value: "50K+", label: "Active Users", color: "text-white" },
+  { value: "120+", label: "Countries",    color: "text-white" },
+  { value: "4.9★", label: "App Rating",   color: "text-white" },
+  { value: "99.9%", label: "Uptime SLA",  color: "text-white" },
 ];
 
 const values = [
@@ -159,7 +159,7 @@ export default function AboutPage() {
                 <Users className="w-3.5 h-3.5 text-violet-300" />
                 Meet the team behind Luxor PDF
               </div>
-              <h1 className="text-5xl font-bold leading-tight mb-5">
+              <h1 className="text-5xl font-bold leading-tight mb-5 text-white">
                 We're on a mission to make{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-300 to-indigo-300">
                   PDF privacy
