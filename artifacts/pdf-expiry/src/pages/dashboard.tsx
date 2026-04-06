@@ -105,7 +105,7 @@ function RightPanel({ active }: { active: ToolKey | null }) {
 }
 
 export default function Dashboard() {
-  const [active, setActive] = useState<ToolKey | null>(null);
+  const [active, setActive] = useState<ToolKey | null>("pdf-tool");
 
   return (
     <Layout>
