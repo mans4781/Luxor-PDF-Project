@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { PDFDocument } from "pdf-lib";
 import { Layout } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -223,14 +224,29 @@ function PasswordTab() {
 
   const reset = () => { setFile(null); setPassword(""); setUploadedId(null); setUploadedName(""); };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) return;
     if (!password) {
       toast({ title: "Password required", description: "Please enter a password to protect this PDF.", variant: "destructive" });
       return;
     }
     const name = file.name;
-    uploadMutation.mutate({ data: { file, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd") } }, {
+
+    let encryptedFile: File;
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+      const encryptedBytes = await pdfDoc.save({
+        userPassword: password,
+        ownerPassword: password,
+      });
+      encryptedFile = new File([encryptedBytes], file.name, { type: "application/pdf" });
+    } catch {
+      toast({ title: "Encryption failed", description: "Could not encrypt this PDF. It may already be password-protected.", variant: "destructive" });
+      return;
+    }
+
+    uploadMutation.mutate({ data: { file: encryptedFile, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd") } }, {
       onSuccess: (data) => {
         setUploadedId(data.id); setUploadedName(name); setFile(null); setPassword("");
         queryClient.invalidateQueries({ queryKey: getListPdfsQueryKey() });
