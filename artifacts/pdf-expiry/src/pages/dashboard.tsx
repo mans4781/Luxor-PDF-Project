@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import { Layout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,6 @@ const menuItems = [
     iconBg: "bg-gradient-to-br from-violet-500 to-indigo-600",
     textColor: "text-violet-700",
     descColor: "text-violet-500",
-    features: null,
   },
   {
     label: "Convert from PDF",
@@ -27,7 +27,6 @@ const menuItems = [
     iconBg: "bg-gradient-to-br from-orange-400 to-amber-500",
     textColor: "text-orange-700",
     descColor: "text-orange-500",
-    features: null,
   },
   {
     label: "Convert to PDF",
@@ -39,27 +38,23 @@ const menuItems = [
     iconBg: "bg-gradient-to-br from-emerald-500 to-teal-600",
     textColor: "text-emerald-700",
     descColor: "text-emerald-500",
-    features: null,
   },
   {
     label: "Secure Your PDF",
-    description: "Protect with expiry, password & print controls",
-    href: "#expiry",
+    description: "Expiry, password & print controls",
+    href: "#secure",
     icon: ShieldCheck,
     bg: "bg-gradient-to-br from-rose-50 to-red-50 hover:from-rose-100 hover:to-red-100",
-    border: "border-rose-300 hover:border-rose-500",
+    border: "border-rose-200 hover:border-rose-400",
     iconBg: "bg-gradient-to-br from-rose-500 to-red-600",
     textColor: "text-rose-700",
     descColor: "text-rose-500",
-    features: [
-      { icon: Calendar, label: "Set Expiry Date" },
-      { icon: Lock,     label: "Set Password" },
-      { icon: Printer,  label: "Print Control" },
-    ],
   },
 ];
 
 export default function Dashboard() {
+  const [secureOpen, setSecureOpen] = useState(false);
+
   return (
     <Layout>
       <div className="grid gap-6">
@@ -68,16 +63,14 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isAnchor = item.href.startsWith("#");
-            const inner = (
+            const isSecure = item.label === "Secure Your PDF";
+
+            const cardContent = (
               <div
-                className={`flex flex-col items-center text-center gap-3 p-5 rounded-xl border-2 transition-all duration-200 cursor-pointer select-none ${item.bg} ${item.border}`}
+                className={`flex flex-col items-center text-center gap-3 p-5 rounded-xl border-2 transition-all duration-200 cursor-pointer select-none ${item.bg} ${item.border} ${
+                  isSecure && secureOpen ? "ring-2 ring-rose-400 ring-offset-1" : ""
+                }`}
                 data-testid={`menu-card-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
-                onClick={
-                  isAnchor
-                    ? () => document.getElementById("expiry")?.scrollIntoView({ behavior: "smooth" })
-                    : undefined
-                }
               >
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-md ${item.iconBg}`}>
                   <Icon className="w-7 h-7 text-white" strokeWidth={1.75} />
@@ -86,55 +79,58 @@ export default function Dashboard() {
                   <p className={`font-semibold text-sm leading-tight ${item.textColor}`}>{item.label}</p>
                   <p className={`text-xs mt-0.5 leading-tight ${item.descColor}`}>{item.description}</p>
                 </div>
-                {item.features && (
-                  <div className="flex flex-col gap-1.5 w-full mt-1">
-                    {item.features.map(({ icon: FIcon, label }) => (
-                      <div key={label} className="flex items-center gap-2 bg-white/60 rounded-lg px-2.5 py-1.5 text-left">
-                        <FIcon className="w-3.5 h-3.5 text-rose-500 flex-shrink-0" />
-                        <span className="text-xs font-medium text-rose-700">{label}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             );
 
-            return isAnchor ? (
-              <div key={item.label}>{inner}</div>
-            ) : (
+            if (isSecure) {
+              return (
+                <div key={item.label} onClick={() => setSecureOpen(v => !v)}>
+                  {cardContent}
+                </div>
+              );
+            }
+
+            return (
               <Link key={item.label} href={item.href} className="block no-underline">
-                {inner}
+                {cardContent}
               </Link>
             );
           })}
         </div>
 
-        {/* ── Secure Your PDF Upload ── */}
-        <div id="expiry" className="max-w-md">
-          <Card className="border-rose-200">
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-500 to-red-600 flex items-center justify-center shadow-sm">
-                  <ShieldCheck className="w-4 h-4 text-white" />
+        {/* ── Secure Your PDF panel (shown on click) ── */}
+        <div
+          id="secure"
+          className={`grid transition-all duration-300 ease-in-out ${
+            secureOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          }`}
+        >
+          <div className="overflow-hidden">
+            <Card className="border-rose-200 max-w-md">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-500 to-red-600 flex items-center justify-center shadow-sm">
+                    <ShieldCheck className="w-4 h-4 text-white" />
+                  </div>
+                  <CardTitle className="text-rose-800">Secure Your PDF</CardTitle>
                 </div>
-                <CardTitle className="text-rose-800">Secure Your PDF</CardTitle>
-              </div>
-              <div className="flex gap-2 mt-2 flex-wrap">
-                {[
-                  { icon: Calendar, label: "Expiry Date" },
-                  { icon: Lock,     label: "Password" },
-                  { icon: Printer,  label: "Print Control" },
-                ].map(({ icon: FIcon, label }) => (
-                  <span key={label} className="inline-flex items-center gap-1.5 bg-rose-50 border border-rose-200 text-rose-600 text-xs font-semibold px-2.5 py-1 rounded-full">
-                    <FIcon className="w-3 h-3" />{label}
-                  </span>
-                ))}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <PdfUploadForm />
-            </CardContent>
-          </Card>
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  {[
+                    { icon: Calendar, label: "Expiry Date" },
+                    { icon: Lock,     label: "Password" },
+                    { icon: Printer,  label: "Print Control" },
+                  ].map(({ icon: FIcon, label }) => (
+                    <span key={label} className="inline-flex items-center gap-1.5 bg-rose-50 border border-rose-200 text-rose-600 text-xs font-semibold px-2.5 py-1 rounded-full">
+                      <FIcon className="w-3 h-3" />{label}
+                    </span>
+                  ))}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <PdfUploadForm />
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
       </div>
