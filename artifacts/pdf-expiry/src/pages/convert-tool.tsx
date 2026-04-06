@@ -151,7 +151,7 @@ function ImagesToPdf() {
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { dirHandle, supported, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
+  const { dirHandle, supported, folderError, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
 
   function addFiles(incoming: File[]) {
     const valid = incoming.filter((f) => IMAGE_TYPES.includes(f.type));
@@ -230,6 +230,7 @@ function ImagesToPdf() {
       <DestinationFolderPicker
         dirHandle={dirHandle}
         supported={supported}
+        folderError={folderError}
         onChoose={chooseFolder}
         onClear={clearFolder}
         testId="button-choose-folder-images-to-pdf"
@@ -256,7 +257,7 @@ function PdfToImages() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-  const { dirHandle, supported, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
+  const { dirHandle, supported, folderError, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
 
   async function handleFile(files: File[]) {
     const f = files[0];
@@ -358,6 +359,7 @@ function PdfToImages() {
       <DestinationFolderPicker
         dirHandle={dirHandle}
         supported={supported}
+        folderError={folderError}
         onChoose={chooseFolder}
         onClear={clearFolder}
         testId="button-choose-folder-pdf-to-images"
@@ -385,7 +387,7 @@ function PdfToText() {
   const [progress, setProgress] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const { dirHandle, supported, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
+  const { dirHandle, supported, folderError, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
 
   async function handleFile(files: File[]) {
     const f = files[0];
@@ -481,6 +483,7 @@ function PdfToText() {
           <DestinationFolderPicker
             dirHandle={dirHandle}
             supported={supported}
+            folderError={folderError}
             onChoose={chooseFolder}
             onClear={clearFolder}
             testId="button-choose-folder-pdf-to-text"

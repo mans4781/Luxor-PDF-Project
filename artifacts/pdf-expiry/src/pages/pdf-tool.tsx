@@ -138,7 +138,7 @@ function MergeTab() {
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { dirHandle, supported, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
+  const { dirHandle, supported, folderError, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
 
   function addFiles(incoming: File[]) {
     setFiles((prev) => {
@@ -209,6 +209,7 @@ function MergeTab() {
       <DestinationFolderPicker
         dirHandle={dirHandle}
         supported={supported}
+        folderError={folderError}
         onChoose={chooseFolder}
         onClear={clearFolder}
         testId="button-choose-folder-merge"
@@ -244,7 +245,7 @@ function SplitTab() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const { dirHandle, supported, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
+  const { dirHandle, supported, folderError, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
 
   async function handleFile(files: File[]) {
     const f = files[0];
@@ -330,6 +331,7 @@ function SplitTab() {
           <DestinationFolderPicker
             dirHandle={dirHandle}
             supported={supported}
+            folderError={folderError}
             onChoose={chooseFolder}
             onClear={clearFolder}
             testId="button-choose-folder-split"
@@ -378,7 +380,7 @@ function ExtractTab() {
   const [pageInput, setPageInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { dirHandle, supported, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
+  const { dirHandle, supported, folderError, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
 
   async function handleFile(files: File[]) {
     const f = files[0];
@@ -562,6 +564,7 @@ function ExtractTab() {
       <DestinationFolderPicker
         dirHandle={dirHandle}
         supported={supported}
+        folderError={folderError}
         onChoose={chooseFolder}
         onClear={clearFolder}
         testId="button-choose-folder-extract"

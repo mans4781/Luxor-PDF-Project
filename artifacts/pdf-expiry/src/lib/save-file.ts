@@ -63,16 +63,22 @@ export async function saveFileToDir(
 
 /**
  * Ask the user to pick a folder via the File System Access API.
- * Returns null on cancel or if the API is not supported.
+ * Returns null on cancel.
+ * Throws an error if the API is blocked or unavailable.
  */
 export async function pickDirectory(): Promise<FileSystemDirectoryHandle | null> {
-  if (typeof window === "undefined" || !("showDirectoryPicker" in window)) return null;
+  if (typeof window === "undefined" || !("showDirectoryPicker" in window)) {
+    throw new Error("Your browser does not support folder selection.");
+  }
   try {
     return await (window as Window & typeof globalThis & {
       showDirectoryPicker: (opts?: unknown) => Promise<FileSystemDirectoryHandle>;
     }).showDirectoryPicker({ mode: "readwrite" });
   } catch (err: unknown) {
     if (err instanceof Error && err.name === "AbortError") return null;
-    return null;
+    if (err instanceof Error && err.name === "SecurityError") {
+      throw new Error("Folder access was blocked by your browser. Try opening the app in its own tab.");
+    }
+    throw err;
   }
 }
