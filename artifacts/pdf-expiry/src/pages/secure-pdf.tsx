@@ -236,6 +236,11 @@ function PasswordTab() {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
+      // Force PDF 1.7 so the security handler uses AES-128 (AESV2),
+      // which all modern readers enforce. Without this the default
+      // falls back to RC4-40 which Chrome and others silently bypass.
+      (pdfDoc.context.header as unknown as { major: string; minor: string }).major = '1';
+      (pdfDoc.context.header as unknown as { major: string; minor: string }).minor = '7';
       pdfDoc.encrypt({ userPassword: password, ownerPassword: password });
       const encryptedBytes = await pdfDoc.save();
       encryptedFile = new File([encryptedBytes], file.name, { type: "application/pdf" });
