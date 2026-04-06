@@ -56,26 +56,26 @@ const menuItems = [
 export default function Dashboard() {
   return (
     <Layout>
-      <div className="flex gap-8">
+      <div className="flex gap-8 min-h-[calc(100vh-120px)]">
 
         {/* ── Left side: vertical tool cards ── */}
-        <div className="flex flex-col gap-3 w-72 shrink-0">
+        <div className="flex flex-col gap-3 w-80 shrink-0 self-stretch">
           {menuItems.map((item) => {
             const Icon = item.icon;
             return (
-              <Link key={item.label} href={item.href} className="block no-underline">
+              <Link key={item.label} href={item.href} className="flex-1 block no-underline">
                 <div
-                  className={`flex items-center gap-4 px-4 py-4 rounded-xl border-2 transition-all duration-200 cursor-pointer select-none ${item.bg} ${item.border}`}
+                  className={`flex items-center gap-4 px-5 py-0 h-full rounded-xl border-2 transition-all duration-200 cursor-pointer select-none ${item.bg} ${item.border}`}
                   data-testid={`menu-card-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
                 >
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shadow-md shrink-0 ${item.iconBg}`}>
-                    <Icon className="w-5 h-5 text-white" strokeWidth={1.75} />
+                  <div className={`w-13 h-13 rounded-xl flex items-center justify-center shadow-md shrink-0 ${item.iconBg}`} style={{width: 52, height: 52}}>
+                    <Icon className="w-6 h-6 text-white" strokeWidth={1.75} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`font-semibold text-sm leading-tight ${item.textColor}`}>{item.label}</p>
-                    <p className={`text-xs mt-0.5 leading-tight ${item.descColor}`}>{item.description}</p>
+                    <p className={`font-bold text-base leading-tight ${item.textColor}`}>{item.label}</p>
+                    <p className={`text-sm mt-1 leading-tight ${item.descColor}`}>{item.description}</p>
                   </div>
-                  <ArrowRight className={`w-4 h-4 shrink-0 ${item.arrowColor}`} />
+                  <ArrowRight className={`w-5 h-5 shrink-0 ${item.arrowColor}`} />
                 </div>
               </Link>
             );
