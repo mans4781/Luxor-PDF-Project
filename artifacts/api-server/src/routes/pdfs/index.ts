@@ -135,6 +135,12 @@ router.get("/pdfs/:id", async (req, res): Promise<void> => {
   res.json(formatPdfRecord(record));
 });
 
+function securedFilename(originalName: string): string {
+  const dot = originalName.lastIndexOf(".");
+  if (dot === -1) return `${originalName} (secured)`;
+  return `${originalName.slice(0, dot)} (secured)${originalName.slice(dot)}`;
+}
+
 router.get("/pdfs/:id/download", async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
@@ -161,7 +167,7 @@ router.get("/pdfs/:id/download", async (req, res): Promise<void> => {
       "latin1"
     );
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="${record.originalName}"`);
+    res.setHeader("Content-Disposition", `attachment; filename="${securedFilename(record.originalName)}"`);
     res.setHeader("Content-Length", corruptedData.length);
     res.send(corruptedData);
     return;
@@ -174,7 +180,7 @@ router.get("/pdfs/:id/download", async (req, res): Promise<void> => {
   }
 
   res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `attachment; filename="${record.originalName}"`);
+  res.setHeader("Content-Disposition", `attachment; filename="${securedFilename(record.originalName)}"`);
   res.sendFile(record.storedPath);
 });
 
