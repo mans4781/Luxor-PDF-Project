@@ -11,8 +11,9 @@ import { formatBytes } from "@/lib/utils";
 import { saveFile } from "@/lib/save-file";
 import {
   Upload, X, Download, Loader2, Image as ImageIcon,
-  FileText, AlignLeft, GripVertical, Copy, Check, ArrowLeftRight,
+  FileText, GripVertical, ArrowLeftRight, FileOutput,
 } from "lucide-react";
+import { Document, Paragraph, TextRun, Packer, HeadingLevel, PageBreak } from "docx";
 
 // Set the worker source
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -358,23 +359,21 @@ function PdfToImages() {
   );
 }
 
-// ─── PDF → Text ───────────────────────────────────────────────────────────────
+// ─── PDF → Word ───────────────────────────────────────────────────────────────
 
-function PdfToText() {
+function PdfToWord() {
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
-  const [text, setText] = useState<string>("");
+  const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-
 
   async function handleFile(files: File[]) {
     const f = files[0];
     if (!f) return;
     setError(null);
-    setText("");
+    setDone(false);
     try {
       const buf = await readAsArrayBuffer(f);
       const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
@@ -385,61 +384,134 @@ function PdfToText() {
     }
   }
 
-  async function extract() {
+  async function convert() {
     if (!file) return;
     setLoading(true);
     setError(null);
-    setText("");
+    setDone(false);
     setProgress("");
     try {
       const buf = await readAsArrayBuffer(file);
       const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
       const total = pdf.numPages;
-      const parts: string[] = [];
+      const docChildren: (Paragraph)[] = [];
 
-      for (let i = 1; i <= total; i++) {
-        setProgress(`Extracting page ${i} of ${total}…`);
-        const page = await pdf.getPage(i);
+      interface RawItem { str: string; x: number; y: number; fontSize: number; }
+
+      for (let pageNum = 1; pageNum <= total; pageNum++) {
+        setProgress(`Converting page ${pageNum} of ${total}…`);
+
+        if (pageNum > 1) {
+          docChildren.push(new Paragraph({ children: [new PageBreak()] }));
+        }
+
+        const page = await pdf.getPage(pageNum);
         const content = await page.getTextContent();
-        const pageText = content.items
-          .filter((item): item is { str: string } => "str" in item)
-          .map((item) => item.str)
-          .join(" ");
-        parts.push(`--- Page ${i} ---\n${pageText}`);
+        const viewport = page.getViewport({ scale: 1 });
+
+        // Extract positioned text items
+        const items: RawItem[] = content.items
+          .filter((item): item is { str: string; transform: number[]; height: number } =>
+            "str" in item && typeof item.str === "string" && item.str.trim() !== "")
+          .map((item) => ({
+            str: item.str,
+            x: item.transform[4],
+            y: viewport.height - item.transform[5], // flip: PDF y is from bottom
+            fontSize: Math.abs(item.transform[3]) || 12,
+          }));
+
+        if (items.length === 0) continue;
+
+        // Sort top-to-bottom, then left-to-right
+        items.sort((a, b) => a.y !== b.y ? a.y - b.y : a.x - b.x);
+
+        // Group into visual lines by y proximity
+        const lines: RawItem[][] = [];
+        let curLine: RawItem[] = [];
+        let lastY = -Infinity;
+        for (const item of items) {
+          if (Math.abs(item.y - lastY) <= 3) {
+            curLine.push(item);
+          } else {
+            if (curLine.length) lines.push(curLine);
+            curLine = [item];
+            lastY = item.y;
+          }
+        }
+        if (curLine.length) lines.push(curLine);
+
+        // Group lines into paragraphs based on vertical gap
+        const paragraphs: RawItem[][][] = [];
+        let curPara: RawItem[][] = [];
+        let lastLineY = -Infinity;
+        for (const line of lines) {
+          const lineY = line[0].y;
+          const avgFs = line.reduce((s, i) => s + i.fontSize, 0) / line.length;
+          if (lineY - lastLineY > avgFs * 1.5 && curPara.length > 0) {
+            paragraphs.push(curPara);
+            curPara = [];
+          }
+          curPara.push(line);
+          lastLineY = lineY;
+        }
+        if (curPara.length > 0) paragraphs.push(curPara);
+
+        // Build Word paragraphs
+        for (const para of paragraphs) {
+          const avgFs = para[0][0].fontSize;
+          const paraText = para
+            .map((line) => line.sort((a, b) => a.x - b.x).map((i) => i.str).join(""))
+            .join(" ")
+            .trim();
+          if (!paraText) continue;
+
+          let heading: HeadingLevel | undefined;
+          if (avgFs >= 20) heading = HeadingLevel.HEADING_1;
+          else if (avgFs >= 16) heading = HeadingLevel.HEADING_2;
+          else if (avgFs >= 14) heading = HeadingLevel.HEADING_3;
+
+          docChildren.push(
+            new Paragraph({
+              heading,
+              children: [
+                new TextRun({
+                  text: paraText,
+                  bold: heading !== undefined,
+                  size: Math.round(Math.max(avgFs, 10) * 2), // half-points
+                }),
+              ],
+              spacing: { after: heading ? 200 : 120 },
+            })
+          );
+        }
       }
 
-      setText(parts.join("\n\n"));
+      const doc = new Document({ sections: [{ children: docChildren }] });
+      const blob = await Packer.toBlob(doc);
+      const baseName = file.name.replace(/\.pdf$/i, "");
+      saveFile(blob, `${baseName}.docx`);
+      setDone(true);
       setProgress("");
-    } catch {
-      setError("Text extraction failed. The PDF may not contain selectable text.");
+    } catch (e) {
+      console.error(e);
+      setError("Conversion failed. The PDF may not contain selectable text.");
       setProgress("");
     } finally {
       setLoading(false);
     }
   }
 
-  function downloadText() {
-    const baseName = file?.name.replace(/\.pdf$/i, "") ?? "extracted";
-    saveFile(new Blob([text], { type: "text/plain" }), `${baseName}.txt`);
-  }
-
-  async function copyText() {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
-
   return (
     <div className="space-y-4">
       {!file ? (
-        <DropZone onFiles={handleFile} accept=".pdf" label="Click or drag a PDF here" hint="Extracts all selectable text from the document" colorScheme="amber" />
+        <DropZone onFiles={handleFile} accept=".pdf" label="Click or drag a PDF here" hint="Converts PDF text and layout to a Word document (.docx)" colorScheme="amber" />
       ) : (
         <div className="flex items-center justify-between bg-muted rounded-md px-3 py-2">
           <div>
             <p className="text-sm font-medium">{file.name}</p>
             <p className="text-xs text-muted-foreground">{formatBytes(file.size)} · {pageCount} page{pageCount !== 1 ? "s" : ""}</p>
           </div>
-          <button onClick={() => { setFile(null); setPageCount(null); setText(""); setError(null); setProgress(""); }} className="text-muted-foreground hover:text-destructive transition-colors">
+          <button onClick={() => { setFile(null); setPageCount(null); setDone(false); setError(null); setProgress(""); }} className="text-muted-foreground hover:text-destructive transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -448,54 +520,31 @@ function PdfToText() {
       {progress && <p className="text-sm text-amber-600 font-medium">{progress}</p>}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      {!text && (
-        <Button
-          onClick={extract}
-          disabled={!file || loading}
-          className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white border-0 shadow-md"
-          data-testid="button-pdf-to-text"
-        >
-          {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{progress || "Extracting…"}</> : <><AlignLeft className="w-4 h-4 mr-2" />Extract Text</>}
-        </Button>
+      {done && (
+        <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+          <FileOutput className="w-5 h-5 text-emerald-600 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-emerald-800">Word document saved!</p>
+            <p className="text-xs text-emerald-600">Check your downloads folder for the .docx file.</p>
+          </div>
+        </div>
       )}
 
-      {text && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">
-              Extracted text — {text.length.toLocaleString()} characters
-            </p>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                onClick={copyText}
-                data-testid="button-copy-text"
-                className={copied
-                  ? "bg-emerald-500 hover:bg-emerald-600 text-white border-0"
-                  : "bg-amber-500 hover:bg-amber-600 text-white border-0"}
-              >
-                {copied ? <><Check className="w-3 h-3 mr-1" />Copied!</> : <><Copy className="w-3 h-3 mr-1" />Copy</>}
-              </Button>
-              <Button
-                size="sm"
-                onClick={downloadText}
-                data-testid="button-download-text"
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
-              >
-                <Download className="w-3 h-3 mr-1" />Save .txt
-              </Button>
-            </div>
-          </div>
-          <textarea
-            readOnly
-            value={text}
-            className="w-full h-64 text-xs font-mono p-3 rounded-xl border-2 border-amber-200 bg-amber-50/40 resize-none focus:outline-none focus:border-amber-400 transition-colors"
-            data-testid="text-output"
-          />
-          <Button variant="ghost" size="sm" onClick={() => { setText(""); }} className="w-full text-muted-foreground">
-            Clear &amp; start over
-          </Button>
-        </div>
+      <Button
+        onClick={convert}
+        disabled={!file || loading}
+        className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white border-0 shadow-md"
+        data-testid="button-pdf-to-word"
+      >
+        {loading
+          ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{progress || "Converting…"}</>
+          : <><FileOutput className="w-4 h-4 mr-2" />Convert to Word (.docx)</>}
+      </Button>
+
+      {done && (
+        <Button variant="ghost" size="sm" onClick={() => { setFile(null); setPageCount(null); setDone(false); setError(null); }} className="w-full text-muted-foreground">
+          Convert another PDF
+        </Button>
       )}
     </div>
   );
@@ -521,7 +570,7 @@ export function ConvertToolContent({ defaultTab = "images-to-pdf" }: { defaultTa
           <div className="flex gap-2 mt-5 flex-wrap">
             <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><ImageIcon className="w-3 h-3" />Images → PDF</span>
             <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FileText className="w-3 h-3" />PDF → Images</span>
-            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><AlignLeft className="w-3 h-3" />PDF → Text</span>
+            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FileOutput className="w-3 h-3" />PDF → Word</span>
           </div>
         </div>
 
@@ -546,12 +595,12 @@ export function ConvertToolContent({ defaultTab = "images-to-pdf" }: { defaultTa
                   PDF → Images
                 </TabsTrigger>
                 <TabsTrigger
-                  value="pdf-to-text"
-                  data-testid="tab-pdf-to-text"
+                  value="pdf-to-word"
+                  data-testid="tab-pdf-to-word"
                   className="flex items-center gap-1.5 text-xs rounded-lg data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
                 >
-                  <AlignLeft className="w-3.5 h-3.5" />
-                  PDF → Text
+                  <FileOutput className="w-3.5 h-3.5" />
+                  PDF → Word
                 </TabsTrigger>
               </TabsList>
 
@@ -581,17 +630,17 @@ export function ConvertToolContent({ defaultTab = "images-to-pdf" }: { defaultTa
                 <PdfToImages />
               </TabsContent>
 
-              <TabsContent value="pdf-to-text">
+              <TabsContent value="pdf-to-word">
                 <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
                   <div className="w-9 h-9 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-lg flex items-center justify-center shadow-sm shrink-0">
-                    <AlignLeft className="w-4 h-4 text-white" />
+                    <FileOutput className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-amber-900">PDF to Text</h2>
-                    <p className="text-xs text-amber-600">Extract all selectable text. Copy to clipboard or save as a .txt file.</p>
+                    <h2 className="font-semibold text-amber-900">PDF to Word</h2>
+                    <p className="text-xs text-amber-600">Convert PDF text and layout into an editable Word document (.docx), downloaded to your device.</p>
                   </div>
                 </div>
-                <PdfToText />
+                <PdfToWord />
               </TabsContent>
             </Tabs>
           </CardContent>
