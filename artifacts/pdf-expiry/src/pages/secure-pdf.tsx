@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ShieldCheck, Calendar, Lock, Printer,
-  UploadCloud, Eye, EyeOff, Copy, ShieldOff,
+  UploadCloud, Eye, EyeOff, Copy, ShieldOff, Download, CheckCircle2, RotateCcw,
 } from "lucide-react";
 import { useUploadPdf, getListPdfsQueryKey, getGetPdfStatsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -74,18 +74,67 @@ function UploadZone({ file, onFile, onClear }: {
   );
 }
 
+function SuccessCard({ label, downloadId, fileName, onReset }: {
+  label: string;
+  downloadId: number;
+  fileName: string;
+  onReset: () => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col items-center gap-3 py-6 px-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-center">
+        <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-md">
+          <CheckCircle2 className="w-7 h-7 text-white" />
+        </div>
+        <div>
+          <p className="text-base font-bold text-emerald-800">Secured successfully!</p>
+          <p className="text-xs text-emerald-600 mt-0.5 truncate max-w-[240px] mx-auto">{fileName}</p>
+          <p className="text-xs text-emerald-500 mt-1">{label}</p>
+        </div>
+      </div>
+
+      <a href={`/api/pdfs/${downloadId}/download`} download>
+        <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-md font-semibold">
+          <Download className="w-4 h-4 mr-2" />
+          Download Secured PDF
+        </Button>
+      </a>
+
+      <Button
+        variant="outline"
+        className="w-full border-rose-200 text-rose-600 hover:bg-rose-50"
+        onClick={onReset}
+      >
+        <RotateCcw className="w-4 h-4 mr-2" />
+        Secure Another PDF
+      </Button>
+    </div>
+  );
+}
+
 function ExpiryTab() {
   const [file, setFile] = useState<File | null>(null);
   const [expiryDate, setExpiryDate] = useState(format(addDays(new Date(), 7), "yyyy-MM-dd"));
+  const [uploadedId, setUploadedId] = useState<number | null>(null);
+  const [uploadedName, setUploadedName] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const uploadMutation = useUploadPdf();
 
+  const handleReset = () => {
+    setFile(null);
+    setUploadedId(null);
+    setUploadedName("");
+    setExpiryDate(format(addDays(new Date(), 7), "yyyy-MM-dd"));
+  };
+
   const handleUpload = () => {
     if (!file) return;
+    const name = file.name;
     uploadMutation.mutate({ data: { file, expiryDate } }, {
-      onSuccess: () => {
-        toast({ title: "Document secured", description: "Expiry date has been applied and the file is uploaded." });
+      onSuccess: (data) => {
+        setUploadedId(data.id);
+        setUploadedName(name);
         setFile(null);
         queryClient.invalidateQueries({ queryKey: getListPdfsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
@@ -93,6 +142,17 @@ function ExpiryTab() {
       onError: () => toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" }),
     });
   };
+
+  if (uploadedId !== null) {
+    return (
+      <SuccessCard
+        label={`Expires on ${format(new Date(expiryDate + "T00:00:00"), "MMMM d, yyyy")}`}
+        downloadId={uploadedId}
+        fileName={uploadedName}
+        onReset={handleReset}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -125,9 +185,18 @@ function PasswordTab() {
   const [file, setFile] = useState<File | null>(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [uploadedId, setUploadedId] = useState<number | null>(null);
+  const [uploadedName, setUploadedName] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const uploadMutation = useUploadPdf();
+
+  const handleReset = () => {
+    setFile(null);
+    setPassword("");
+    setUploadedId(null);
+    setUploadedName("");
+  };
 
   const handleUpload = () => {
     if (!file) return;
@@ -135,9 +204,11 @@ function PasswordTab() {
       toast({ title: "Password required", description: "Please enter a password to protect this PDF.", variant: "destructive" });
       return;
     }
+    const name = file.name;
     uploadMutation.mutate({ data: { file, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd") } }, {
-      onSuccess: () => {
-        toast({ title: "Password protection applied", description: "Your PDF has been secured with a password." });
+      onSuccess: (data) => {
+        setUploadedId(data.id);
+        setUploadedName(name);
         setFile(null);
         setPassword("");
         queryClient.invalidateQueries({ queryKey: getListPdfsQueryKey() });
@@ -146,6 +217,17 @@ function PasswordTab() {
       onError: () => toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" }),
     });
   };
+
+  if (uploadedId !== null) {
+    return (
+      <SuccessCard
+        label="Password protection applied"
+        downloadId={uploadedId}
+        fileName={uploadedName}
+        onReset={handleReset}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -189,15 +271,27 @@ function PrintControlTab() {
   const [file, setFile] = useState<File | null>(null);
   const [allowPrint, setAllowPrint] = useState(false);
   const [allowCopy, setAllowCopy] = useState(false);
+  const [uploadedId, setUploadedId] = useState<number | null>(null);
+  const [uploadedName, setUploadedName] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const uploadMutation = useUploadPdf();
 
+  const handleReset = () => {
+    setFile(null);
+    setAllowPrint(false);
+    setAllowCopy(false);
+    setUploadedId(null);
+    setUploadedName("");
+  };
+
   const handleUpload = () => {
     if (!file) return;
+    const name = file.name;
     uploadMutation.mutate({ data: { file, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd") } }, {
-      onSuccess: () => {
-        toast({ title: "Print controls applied", description: `Printing ${allowPrint ? "allowed" : "restricted"}, copying ${allowCopy ? "allowed" : "restricted"}.` });
+      onSuccess: (data) => {
+        setUploadedId(data.id);
+        setUploadedName(name);
         setFile(null);
         queryClient.invalidateQueries({ queryKey: getListPdfsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
@@ -205,6 +299,17 @@ function PrintControlTab() {
       onError: () => toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" }),
     });
   };
+
+  if (uploadedId !== null) {
+    return (
+      <SuccessCard
+        label={`Printing ${allowPrint ? "allowed" : "restricted"} · Copying ${allowCopy ? "allowed" : "restricted"}`}
+        downloadId={uploadedId}
+        fileName={uploadedName}
+        onReset={handleReset}
+      />
+    );
+  }
 
   const Toggle = ({ label, icon: Icon, value, onChange }: { label: string; icon: React.ElementType; value: boolean; onChange: () => void }) => (
     <div className="flex items-center justify-between p-3 bg-rose-50/60 border border-rose-100 rounded-xl">
@@ -251,7 +356,6 @@ export function SecurePdfContent() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
 
-        {/* ── Header banner ── */}
         <div className="bg-gradient-to-br from-rose-600 via-red-600 to-rose-700 rounded-2xl p-6 text-white shadow-lg">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm">
@@ -275,7 +379,6 @@ export function SecurePdfContent() {
           </div>
         </div>
 
-        {/* ── Tabs ── */}
         <Card className="border-rose-100 shadow-sm">
           <CardContent className="pt-6">
             <Tabs defaultValue="expiry">
