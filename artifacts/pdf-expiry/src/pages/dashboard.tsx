@@ -42,7 +42,7 @@ const menuItems = [
     descColor: "text-emerald-500",
   },
   {
-    label: "PDF Expiry",
+    label: "Secure Your PDF",
     description: "Upload & set expiry dates",
     href: "#expiry",
     icon: ShieldOff,
