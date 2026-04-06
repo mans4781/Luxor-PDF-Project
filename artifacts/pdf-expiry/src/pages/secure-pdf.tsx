@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument } from "@cantoo/pdf-lib";
 import { Layout } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -235,11 +235,9 @@ function PasswordTab() {
     let encryptedFile: File;
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
-      const encryptedBytes = await pdfDoc.save({
-        userPassword: password,
-        ownerPassword: password,
-      });
+      const pdfDoc = await PDFDocument.load(arrayBuffer);
+      pdfDoc.encrypt({ userPassword: password, ownerPassword: password });
+      const encryptedBytes = await pdfDoc.save();
       encryptedFile = new File([encryptedBytes], file.name, { type: "application/pdf" });
     } catch {
       toast({ title: "Encryption failed", description: "Could not encrypt this PDF. It may already be password-protected.", variant: "destructive" });

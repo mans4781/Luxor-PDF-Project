@@ -75,6 +75,7 @@
     "zod": "catalog:"
   },
   "dependencies": {
+    "@cantoo/pdf-lib": "^2.6.5",
     "docx": "^9.6.1",
     "jszip": "^3.10.1",
     "pdf-lib": "^1.17.1",
