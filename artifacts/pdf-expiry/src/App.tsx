@@ -14,7 +14,7 @@ const queryClient = new QueryClient();
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
+      <Route path="/" component={PdfTool} />
       <Route path="/history" component={History} />
       <Route path="/pdf-tool" component={PdfTool} />
       <Route path="/convert" component={ConvertTool} />
