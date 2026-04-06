@@ -132,7 +132,7 @@ function SuccessCard({ label, downloadId, fileName, onReset, accentBtn }: {
 
 function ExpiryTab() {
   const [file, setFile] = useState<File | null>(null);
-  const [expiryDate, setExpiryDate] = useState(format(addDays(new Date(), 7), "yyyy-MM-dd"));
+  const [expiryDate, setExpiryDate] = useState(format(addDays(new Date(), 1), "yyyy-MM-dd"));
   const [uploadedId, setUploadedId] = useState<number | null>(null);
   const [uploadedName, setUploadedName] = useState("");
   const { toast } = useToast();
@@ -141,7 +141,7 @@ function ExpiryTab() {
 
   const reset = () => {
     setFile(null); setUploadedId(null); setUploadedName("");
-    setExpiryDate(format(addDays(new Date(), 7), "yyyy-MM-dd"));
+    setExpiryDate(format(addDays(new Date(), 1), "yyyy-MM-dd"));
   };
 
   const handleUpload = () => {
