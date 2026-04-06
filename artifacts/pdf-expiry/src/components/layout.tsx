@@ -1,10 +1,8 @@
 import { ReactNode } from "react";
-import { Link, useLocation } from "wouter";
-import { Shield, LayoutDashboard } from "lucide-react";
+import { Link } from "wouter";
+import { Shield } from "lucide-react";
 
 export function Layout({ children }: { children: ReactNode }) {
-  const [location] = useLocation();
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="border-b bg-card">
@@ -18,12 +16,10 @@ export function Layout({ children }: { children: ReactNode }) {
           <nav className="flex items-center gap-6">
             <Link
               href="/"
-              className={`text-sm font-medium transition-colors hover:text-primary ${location === '/' ? 'text-primary' : 'text-muted-foreground'}`}
+              className="text-sm font-semibold hover:underline"
+              style={{ color: "#0000FF", fontFamily: "Century, 'Century Gothic', Georgia, serif" }}
             >
-              <div className="flex items-center gap-2">
-                <LayoutDashboard className="w-4 h-4" />
-                Dashboard
-              </div>
+              Dashboard
             </Link>
           </nav>
         </div>
