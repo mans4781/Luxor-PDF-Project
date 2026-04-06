@@ -8,7 +8,8 @@ import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
 import JSZip from "jszip";
 import { formatBytes } from "@/lib/utils";
-import { saveFile } from "@/lib/save-file";
+import { useDestinationFolder } from "@/lib/use-destination-folder";
+import { DestinationFolderPicker } from "@/components/destination-folder-picker";
 import {
   Upload, X, Download, Loader2, Image as ImageIcon,
   FileText, AlignLeft, GripVertical, Copy, Check, ArrowLeftRight,
@@ -150,6 +151,7 @@ function ImagesToPdf() {
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { dirHandle, supported, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
 
   function addFiles(incoming: File[]) {
     const valid = incoming.filter((f) => IMAGE_TYPES.includes(f.type));
@@ -186,7 +188,7 @@ function ImagesToPdf() {
         page.drawImage(embedded, { x: 0, y: 0, width: w, height: h });
       }
       const bytes = await pdf.save();
-      await saveFile(new Blob([bytes], { type: "application/pdf" }), "converted.pdf");
+      await saveToDestination(new Blob([bytes], { type: "application/pdf" }), "converted.pdf");
     } catch {
       setError("Conversion failed. Make sure all images are valid and not corrupted.");
     } finally {
@@ -225,6 +227,14 @@ function ImagesToPdf() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
+      <DestinationFolderPicker
+        dirHandle={dirHandle}
+        supported={supported}
+        onChoose={chooseFolder}
+        onClear={clearFolder}
+        testId="button-choose-folder-images-to-pdf"
+      />
+
       <Button
         onClick={convert}
         disabled={!files.length || loading}
@@ -246,6 +256,7 @@ function PdfToImages() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const { dirHandle, supported, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
 
   async function handleFile(files: File[]) {
     const f = files[0];
@@ -289,7 +300,7 @@ function PdfToImages() {
 
       setProgress("Packing ZIP…");
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      await saveFile(zipBlob, `${baseName}_images.zip`);
+      await saveToDestination(zipBlob, `${baseName}_images.zip`);
       setProgress("");
     } catch {
       setError("Conversion failed. Make sure the PDF is valid and non-encrypted.");
@@ -344,6 +355,14 @@ function PdfToImages() {
       {progress && <p className="text-sm text-orange-600 font-medium">{progress}</p>}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
+      <DestinationFolderPicker
+        dirHandle={dirHandle}
+        supported={supported}
+        onChoose={chooseFolder}
+        onClear={clearFolder}
+        testId="button-choose-folder-pdf-to-images"
+      />
+
       <Button
         onClick={convert}
         disabled={!file || loading}
@@ -366,6 +385,7 @@ function PdfToText() {
   const [progress, setProgress] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const { dirHandle, supported, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
 
   async function handleFile(files: File[]) {
     const f = files[0];
@@ -417,7 +437,7 @@ function PdfToText() {
 
   function downloadText() {
     const baseName = file?.name.replace(/\.pdf$/i, "") ?? "extracted";
-    saveFile(new Blob([text], { type: "text/plain" }), `${baseName}.txt`);
+    saveToDestination(new Blob([text], { type: "text/plain" }), `${baseName}.txt`);
   }
 
   async function copyText() {
@@ -458,6 +478,13 @@ function PdfToText() {
 
       {text && (
         <div className="space-y-3">
+          <DestinationFolderPicker
+            dirHandle={dirHandle}
+            supported={supported}
+            onChoose={chooseFolder}
+            onClear={clearFolder}
+            testId="button-choose-folder-pdf-to-text"
+          />
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground uppercase tracking-wider">
               Extracted text — {text.length.toLocaleString()} characters

@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDFDocument } from "pdf-lib";
 import { formatBytes } from "@/lib/utils";
-import { saveFile, saveFileToDir, pickDirectory } from "@/lib/save-file";
+import { useDestinationFolder } from "@/lib/use-destination-folder";
+import { DestinationFolderPicker } from "@/components/destination-folder-picker";
 import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Wrench } from "lucide-react";
 
 type DropColorScheme = "violet" | "indigo" | "purple";
@@ -137,6 +138,7 @@ function MergeTab() {
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { dirHandle, supported, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
 
   function addFiles(incoming: File[]) {
     setFiles((prev) => {
@@ -167,7 +169,7 @@ function MergeTab() {
         pages.forEach((p) => merged.addPage(p));
       }
       const bytes = await merged.save();
-      await saveFile(new Blob([bytes], { type: "application/pdf" }), "merged.pdf");
+      await saveToDestination(new Blob([bytes], { type: "application/pdf" }), "merged.pdf");
     } catch (e) {
       setError("Failed to merge PDFs. Make sure all files are valid, non-encrypted PDFs.");
     } finally {
@@ -204,6 +206,14 @@ function MergeTab() {
         </p>
       )}
 
+      <DestinationFolderPicker
+        dirHandle={dirHandle}
+        supported={supported}
+        onChoose={chooseFolder}
+        onClear={clearFolder}
+        testId="button-choose-folder-merge"
+      />
+
       <Button
         data-testid="button-merge"
         onClick={mergePdfs}
@@ -228,22 +238,19 @@ function MergeTab() {
 
 // ─── Split ────────────────────────────────────────────────────────────────────
 
-const dirPickerSupported =
-  typeof window !== "undefined" && "showDirectoryPicker" in window;
-
 function SplitTab() {
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
-  const [dirHandle, setDirHandle] = useState<FileSystemDirectoryHandle | null>(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const { dirHandle, supported, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
 
   async function handleFile(files: File[]) {
     const f = files[0];
     setFile(f);
     setError(null);
-    setDirHandle(null);
+    clearFolder();
     try {
       const buf = await readFileAsArrayBuffer(f);
       const doc = await PDFDocument.load(buf);
@@ -253,11 +260,6 @@ function SplitTab() {
       setFile(null);
       setPageCount(null);
     }
-  }
-
-  async function chooseFolder() {
-    const handle = await pickDirectory();
-    if (handle) setDirHandle(handle);
   }
 
   async function splitPdf() {
@@ -277,11 +279,7 @@ function SplitTab() {
         const bytes = await newDoc.save();
         const blob = new Blob([bytes], { type: "application/pdf" });
         const filename = `${baseName}-${i + 1}.pdf`;
-        if (dirHandle) {
-          await saveFileToDir(dirHandle, blob, filename);
-        } else {
-          await saveFile(blob, filename);
-        }
+        await saveToDestination(blob, filename);
       }
       setProgress("");
     } catch {
@@ -313,7 +311,7 @@ function SplitTab() {
           </div>
           <button
             data-testid="button-clear-split-file"
-            onClick={() => { setFile(null); setPageCount(null); setDirHandle(null); setError(null); setProgress(""); }}
+            onClick={() => { setFile(null); setPageCount(null); clearFolder(); setError(null); setProgress(""); }}
             className="text-muted-foreground hover:text-destructive transition-colors"
           >
             <X className="w-4 h-4" />
@@ -329,25 +327,13 @@ function SplitTab() {
             <span className="font-mono">{baseName}-2.pdf</span>, …
           </p>
 
-          {dirPickerSupported && (
-            <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
-              <span className="text-muted-foreground shrink-0">Output folder:</span>
-              {dirHandle ? (
-                <span className="font-medium truncate flex-1">{dirHandle.name}/</span>
-              ) : (
-                <span className="text-muted-foreground italic flex-1">not chosen — Save As dialog per file</span>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={chooseFolder}
-                data-testid="button-choose-folder"
-                className="shrink-0"
-              >
-                {dirHandle ? "Change" : "Choose folder"}
-              </Button>
-            </div>
-          )}
+          <DestinationFolderPicker
+            dirHandle={dirHandle}
+            supported={supported}
+            onChoose={chooseFolder}
+            onClear={clearFolder}
+            testId="button-choose-folder-split"
+          />
         </>
       )}
 
@@ -392,6 +378,7 @@ function ExtractTab() {
   const [pageInput, setPageInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { dirHandle, supported, chooseFolder, clearFolder, saveToDestination } = useDestinationFolder();
 
   async function handleFile(files: File[]) {
     const f = files[0];
@@ -462,7 +449,7 @@ function ExtractTab() {
       pages.forEach((p) => newDoc.addPage(p));
       const bytes = await newDoc.save();
       const baseName = file.name.replace(/\.pdf$/i, "");
-      await saveFile(
+      await saveToDestination(
         new Blob([bytes], { type: "application/pdf" }),
         `${baseName}_extracted.pdf`
       );
@@ -571,6 +558,14 @@ function ExtractTab() {
           {error}
         </p>
       )}
+
+      <DestinationFolderPicker
+        dirHandle={dirHandle}
+        supported={supported}
+        onChoose={chooseFolder}
+        onClear={clearFolder}
+        testId="button-choose-folder-extract"
+      />
 
       <Button
         data-testid="button-extract"
