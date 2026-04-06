@@ -500,14 +500,9 @@ function PdfToText() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function ConvertToolPage() {
-  const search = useSearch();
-  const params = new URLSearchParams(search);
-  const defaultTab = params.get("tab") || "images-to-pdf";
-
+export function ConvertToolContent({ defaultTab = "images-to-pdf" }: { defaultTab?: string }) {
   return (
-    <Layout>
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
 
         {/* ── Vibrant header banner ── */}
         <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-orange-400 rounded-2xl p-6 text-white shadow-lg">
@@ -599,6 +594,12 @@ export default function ConvertToolPage() {
           </CardContent>
         </Card>
       </div>
-    </Layout>
   );
+}
+
+export default function ConvertToolPage() {
+  const search = useSearch();
+  const params = new URLSearchParams(search);
+  const defaultTab = params.get("tab") || "images-to-pdf";
+  return <Layout><ConvertToolContent defaultTab={defaultTab} /></Layout>;
 }

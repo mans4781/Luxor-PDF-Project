@@ -247,10 +247,9 @@ function PrintControlTab() {
   );
 }
 
-export default function SecurePdfPage() {
+export function SecurePdfContent() {
   return (
-    <Layout>
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
 
         {/* ── Header banner ── */}
         <div className="bg-gradient-to-br from-rose-600 via-red-600 to-rose-700 rounded-2xl p-6 text-white shadow-lg">
@@ -309,6 +308,9 @@ export default function SecurePdfPage() {
         </Card>
 
       </div>
-    </Layout>
   );
+}
+
+export default function SecurePdfPage() {
+  return <Layout><SecurePdfContent /></Layout>;
 }

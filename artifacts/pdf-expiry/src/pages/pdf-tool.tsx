@@ -596,10 +596,9 @@ function ExtractTab() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function PdfToolPage() {
+export function PdfToolContent() {
   return (
-    <Layout>
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
 
         {/* ── Vibrant header banner ── */}
         <div className="bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-lg">
@@ -691,6 +690,9 @@ export default function PdfToolPage() {
           </CardContent>
         </Card>
       </div>
-    </Layout>
   );
+}
+
+export default function PdfToolPage() {
+  return <Layout><PdfToolContent /></Layout>;
 }
