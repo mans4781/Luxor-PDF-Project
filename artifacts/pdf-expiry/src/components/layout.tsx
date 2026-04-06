@@ -1,8 +1,9 @@
 import { ReactNode } from "react";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 import { Shield } from "lucide-react";
 
 export function Layout({ children }: { children: ReactNode }) {
+  const [, navigate] = useLocation();
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="border-b bg-card">
@@ -14,13 +15,13 @@ export function Layout({ children }: { children: ReactNode }) {
             <span className="font-semibold tracking-tight text-lg" style={{ color: "#0000FF", fontFamily: "Century, 'Century Gothic', Georgia, serif" }}>LuxorSecure PDF</span>
           </div>
           <nav className="flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-sm font-semibold hover:underline"
+            <button
+              onClick={() => navigate("/")}
+              className="text-sm font-semibold hover:underline cursor-pointer bg-transparent border-0 p-0"
               style={{ color: "#0000FF", fontFamily: "Century, 'Century Gothic', Georgia, serif" }}
             >
               Dashboard
-            </Link>
+            </button>
           </nav>
         </div>
       </header>
