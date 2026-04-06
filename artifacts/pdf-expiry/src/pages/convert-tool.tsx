@@ -13,7 +13,10 @@ import {
   Upload, X, Download, Loader2, Image as ImageIcon,
   FileText, GripVertical, ArrowLeftRight, FileOutput,
 } from "lucide-react";
-import { Document, Paragraph, TextRun, Packer, HeadingLevel, PageBreak } from "docx";
+import {
+  Document, Paragraph, TextRun, Packer,
+  HeadingLevel, AlignmentType, LineRuleType,
+} from "docx";
 
 // Set the worker source
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -390,47 +393,71 @@ function PdfToWord() {
     setError(null);
     setDone(false);
     setProgress("");
+
+    interface RawItem {
+      str: string;
+      x: number;
+      y: number;
+      fontSize: number;
+      fontName: string;
+      width: number;
+    }
+
+    // Convert PDF points → Word twips (1 pt = 20 twips)
+    const pt2tw = (pt: number) => Math.round(pt * 20);
+
     try {
       const buf = await readAsArrayBuffer(file);
       const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
       const total = pdf.numPages;
-      const docChildren: (Paragraph)[] = [];
 
-      interface RawItem { str: string; x: number; y: number; fontSize: number; }
+      // Build one Word section per page so page size & margins match the PDF
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sections: any[] = [];
 
       for (let pageNum = 1; pageNum <= total; pageNum++) {
         setProgress(`Converting page ${pageNum} of ${total}…`);
 
-        if (pageNum > 1) {
-          docChildren.push(new Paragraph({ children: [new PageBreak()] }));
-        }
-
         const page = await pdf.getPage(pageNum);
-        const content = await page.getTextContent();
         const viewport = page.getViewport({ scale: 1 });
+        const pageW = viewport.width;
+        const pageH = viewport.height;
+        const content = await page.getTextContent();
 
-        // Extract positioned text items
-        const items: RawItem[] = content.items
-          .filter((item): item is { str: string; transform: number[]; height: number } =>
-            "str" in item && typeof item.str === "string" && item.str.trim() !== "")
+        // ── 1. Extract items with full metadata ─────────────────────────────
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const items: RawItem[] = (content.items as any[])
+          .filter((item) => "str" in item && typeof item.str === "string" && item.str !== "")
           .map((item) => ({
-            str: item.str,
-            x: item.transform[4],
-            y: viewport.height - item.transform[5], // flip: PDF y is from bottom
-            fontSize: Math.abs(item.transform[3]) || 12,
+            str: item.str as string,
+            x: item.transform[4] as number,
+            // pdfjs y is from the bottom; flip so y=0 is top of page
+            y: pageH - (item.transform[5] as number),
+            fontSize: Math.abs(item.transform[3] as number) || 12,
+            fontName: (item.fontName as string) ?? "",
+            width: item.width as number,
           }));
 
-        if (items.length === 0) continue;
+        if (items.length === 0) {
+          sections.push({ children: [new Paragraph({ children: [new TextRun({ text: "" })] })] });
+          continue;
+        }
 
-        // Sort top-to-bottom, then left-to-right
-        items.sort((a, b) => a.y !== b.y ? a.y - b.y : a.x - b.x);
+        // Sort top→bottom, left→right
+        items.sort((a, b) => (Math.abs(a.y - b.y) < 1 ? a.x - b.x : a.y - b.y));
 
-        // Group into visual lines by y proximity
+        // ── 2. Estimate page margins from content bounds ────────────────────
+        const leftMargin = Math.max(0, Math.min(...items.map((i) => i.x)));
+        const rightEdge = Math.max(...items.map((i) => i.x + i.width));
+        const pageCenter = (leftMargin + rightEdge) / 2;
+
+        // ── 3. Group into visual lines (dynamic threshold per item's font size)
         const lines: RawItem[][] = [];
         let curLine: RawItem[] = [];
         let lastY = -Infinity;
         for (const item of items) {
-          if (Math.abs(item.y - lastY) <= 3) {
+          const threshold = Math.max(1.5, item.fontSize * 0.4);
+          if (Math.abs(item.y - lastY) <= threshold) {
             curLine.push(item);
           } else {
             if (curLine.length) lines.push(curLine);
@@ -440,53 +467,82 @@ function PdfToWord() {
         }
         if (curLine.length) lines.push(curLine);
 
-        // Group lines into paragraphs based on vertical gap
-        const paragraphs: RawItem[][][] = [];
-        let curPara: RawItem[][] = [];
-        let lastLineY = -Infinity;
-        for (const line of lines) {
-          const lineY = line[0].y;
+        // ── 4. Build one Word Paragraph per visual line ────────────────────
+        const pageParas: Paragraph[] = [];
+
+        for (let li = 0; li < lines.length; li++) {
+          const line = [...lines[li]].sort((a, b) => a.x - b.x);
           const avgFs = line.reduce((s, i) => s + i.fontSize, 0) / line.length;
-          if (lineY - lastLineY > avgFs * 1.5 && curPara.length > 0) {
-            paragraphs.push(curPara);
-            curPara = [];
+          const maxFs = Math.max(...line.map((i) => i.fontSize));
+
+          // Alignment: detect centering by comparing line center to page center
+          const lineWidth = line.reduce((s, i) => s + i.width, 0);
+          const lineCenter = line[0].x + lineWidth / 2;
+          const isCentered = Math.abs(lineCenter - pageCenter) < pageCenter * 0.12;
+
+          // Indentation relative to left margin
+          const rawIndent = line[0].x - leftMargin;
+          const indent = rawIndent > 6 ? pt2tw(rawIndent) : 0;
+
+          // Vertical gap → space before (in twips)
+          let spaceBefore = 0;
+          if (li > 0) {
+            const prevLineY = lines[li - 1][lines[li - 1].length - 1].y;
+            const gap = line[0].y - prevLineY;
+            if (gap > avgFs * 1.4) spaceBefore = pt2tw(gap - avgFs);
           }
-          curPara.push(line);
-          lastLineY = lineY;
-        }
-        if (curPara.length > 0) paragraphs.push(curPara);
 
-        // Build Word paragraphs
-        for (const para of paragraphs) {
-          const avgFs = para[0][0].fontSize;
-          const paraText = para
-            .map((line) => line.sort((a, b) => a.x - b.x).map((i) => i.str).join(""))
-            .join(" ")
-            .trim();
-          if (!paraText) continue;
+          // Heading detection by font size
+          let heading: (typeof HeadingLevel)[keyof typeof HeadingLevel] | undefined;
+          if (maxFs >= 22) heading = HeadingLevel.HEADING_1;
+          else if (maxFs >= 17) heading = HeadingLevel.HEADING_2;
+          else if (maxFs >= 14) heading = HeadingLevel.HEADING_3;
 
-          let heading: HeadingLevel | undefined;
-          if (avgFs >= 20) heading = HeadingLevel.HEADING_1;
-          else if (avgFs >= 16) heading = HeadingLevel.HEADING_2;
-          else if (avgFs >= 14) heading = HeadingLevel.HEADING_3;
+          // Build runs — each pdfjs item becomes its own run so we can preserve
+          // bold/italic from the embedded font name
+          const runs: TextRun[] = line.map((item) => {
+            const fn = item.fontName.toLowerCase();
+            const isBold = /bold|heavy|black|demi|semibold/i.test(fn);
+            const isItalic = /italic|oblique/i.test(fn);
+            return new TextRun({
+              text: item.str,
+              bold: isBold,
+              italics: isItalic,
+              size: Math.round(Math.max(item.fontSize, 7) * 2), // half-points
+              font: "Calibri",
+            });
+          });
 
-          docChildren.push(
+          pageParas.push(
             new Paragraph({
               heading,
-              children: [
-                new TextRun({
-                  text: paraText,
-                  bold: heading !== undefined,
-                  size: Math.round(Math.max(avgFs, 10) * 2), // half-points
-                }),
-              ],
-              spacing: { after: heading ? 200 : 120 },
+              children: runs,
+              alignment: isCentered ? AlignmentType.CENTER : AlignmentType.LEFT,
+              indent: indent > 0 ? { left: indent } : undefined,
+              spacing: {
+                before: spaceBefore,
+                after: 0,
+                line: Math.round(avgFs * 20 * 1.15), // line height in twips
+                lineRule: LineRuleType.EXACT,
+              },
             })
           );
         }
+
+        // ── 5. Section carries page size + margins matching the PDF ─────────
+        const margin = pt2tw(Math.max(leftMargin, 28)); // at least ~1 cm
+        sections.push({
+          properties: {
+            page: {
+              size: { width: pt2tw(pageW), height: pt2tw(pageH) },
+              margin: { top: margin, bottom: margin, left: margin, right: margin },
+            },
+          },
+          children: pageParas,
+        });
       }
 
-      const doc = new Document({ sections: [{ children: docChildren }] });
+      const doc = new Document({ sections });
       const blob = await Packer.toBlob(doc);
       const baseName = file.name.replace(/\.pdf$/i, "");
       saveFile(blob, `${baseName}.docx`);
