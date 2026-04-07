@@ -444,8 +444,8 @@ function PrintControlTab() {
               <Printer className="w-3.5 h-3.5" /> Permissions
             </Label>
             <div className="space-y-2">
-              <Toggle label="Allow Printing" icon={Printer} value={allowPrint} onChange={() => setAllowPrint(v => !v)} />
-              <Toggle label="Allow Text Copying" icon={Copy} value={allowCopy} onChange={() => setAllowCopy(v => !v)} />
+              <Toggle label={allowPrint ? "Restrict Printing" : "Allow Printing"} icon={Printer} value={allowPrint} onChange={() => setAllowPrint(v => !v)} />
+              <Toggle label={allowCopy ? "Restrict Text Copying" : "Allow Text Copying"} icon={Copy} value={allowCopy} onChange={() => setAllowCopy(v => !v)} />
             </div>
             <p className="text-xs text-amber-400">Disabled permissions are enforced for all recipients of this document.</p>
           </div>
