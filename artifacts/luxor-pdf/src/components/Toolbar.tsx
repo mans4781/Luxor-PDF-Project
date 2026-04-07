@@ -158,16 +158,27 @@ export default function Toolbar({
           style={{ gap: 0, width: 38 }}
         >
           <span className="toolbar-tip">Highlight</span>
-          {/* Highlighter icon — realistic marker pen */}
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-            {/* Cap */}
-            <rect x="7" y="1" width="10" height="5" rx="2"/>
-            {/* Body */}
-            <rect x="7" y="6" width="10" height="11" rx="1"/>
-            {/* Window stripe on body */}
-            <line x1="9" y1="9" x2="15" y2="9" strokeWidth="2.5" strokeOpacity="0.45"/>
-            {/* Chisel tip */}
-            <path d="M9 17 L8 22 L16 22 L15 17"/>
+          {/* Highlighter icon — diagonal marker pen, same gradient as eraser */}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <defs>
+              <linearGradient id="mg" x1="1" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+                <stop offset="0%" stopColor="#3a50f0"/>
+                <stop offset="100%" stopColor="#00cfff"/>
+              </linearGradient>
+            </defs>
+            {/* Whole marker rotated -45° around centre */}
+            <g transform="rotate(-45, 12, 12)">
+              {/* Cap */}
+              <rect x="9" y="1" width="6" height="4.5" rx="2" fill="#3a50f0"/>
+              {/* Body */}
+              <rect x="9" y="5.5" width="6" height="11" rx="1" fill="url(#mg)"/>
+              {/* Shine stripe */}
+              <rect x="10.2" y="7" width="1.6" height="7" rx="0.8" fill="white" fillOpacity="0.35"/>
+              {/* Chisel tip */}
+              <path d="M9 16.5 L10.5 21 L13.5 21 L15 16.5 Z" fill="#00cfff"/>
+              {/* Tip point */}
+              <path d="M10.5 21 L12 23.5 L13.5 21 Z" fill="#00cfff" fillOpacity="0.7"/>
+            </g>
           </svg>
           {/* Color dot */}
           <div style={{
