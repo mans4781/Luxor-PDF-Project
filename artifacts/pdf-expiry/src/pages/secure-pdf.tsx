@@ -277,7 +277,7 @@ function PasswordTab() {
   const queryClient = useQueryClient();
   const uploadMutation = useUploadPdf();
 
-  const reset = () => { setFile(null); setPassword(""); setUploadedId(null); setUploadedName(""); };
+  const reset = () => { setFile(null); setPassword(""); setShowPassword(false); setUploadedId(null); setUploadedName(""); };
 
   const handleUpload = async () => {
     if (!file) return;
@@ -349,6 +349,7 @@ function PasswordTab() {
               <Input id="password" type={showPassword ? "text" : "password"} value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter a strong password…"
+                autoComplete="new-password"
                 className="border-indigo-200 focus:border-indigo-400 focus:ring-indigo-400/20 pr-10" />
               <button type="button" onClick={() => setShowPassword(v => !v)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-400 hover:text-indigo-600">
