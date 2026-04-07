@@ -380,22 +380,58 @@ function PrintControlTab() {
   const [allowCopy, setAllowCopy] = useState(false);
   const [uploadedId, setUploadedId] = useState<number | null>(null);
   const [uploadedName, setUploadedName] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const uploadMutation = useUploadPdf();
 
   const reset = () => { setFile(null); setAllowPrint(false); setAllowCopy(false); setUploadedId(null); setUploadedName(""); };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) return;
     const name = file.name;
-    uploadMutation.mutate({ data: { file, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd") } }, {
+    setIsProcessing(true);
+
+    let restrictedFile: File;
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(arrayBuffer);
+      // Force PDF 1.7 so the security handler uses AES-128 (AESV2)
+      // which all modern readers enforce for permission restrictions.
+      (pdfDoc.context.header as unknown as { major: string; minor: string }).major = '1';
+      (pdfDoc.context.header as unknown as { major: string; minor: string }).minor = '7';
+      // Empty userPassword = no open password required; random ownerPassword
+      // ensures permissions cannot be overridden by the viewer.
+      const ownerPassword = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      pdfDoc.encrypt({
+        userPassword: "",
+        ownerPassword,
+        permissions: {
+          printing: allowPrint ? "highResolution" : false,
+          copying: allowCopy,
+          modifying: false,
+          annotating: false,
+          fillingForms: false,
+          contentAccessibility: true,
+          documentAssembly: false,
+        },
+      });
+      const bytes = await pdfDoc.save();
+      restrictedFile = new File([bytes], file.name, { type: "application/pdf" });
+    } catch {
+      toast({ title: "Restriction failed", description: "Could not apply print restrictions to this PDF.", variant: "destructive" });
+      setIsProcessing(false);
+      return;
+    }
+
+    uploadMutation.mutate({ data: { file: restrictedFile, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd") } }, {
       onSuccess: (data) => {
         setUploadedId(data.id); setUploadedName(name); setFile(null);
         queryClient.invalidateQueries({ queryKey: getListPdfsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
       },
       onError: () => toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" }),
+      onSettled: () => setIsProcessing(false),
     });
   };
 
@@ -452,10 +488,12 @@ function PrintControlTab() {
 
           <Button
             className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-md font-semibold"
-            disabled={!file || uploadMutation.isPending} onClick={handleUpload}
+            disabled={!file || isProcessing || uploadMutation.isPending} onClick={handleUpload}
           >
-            {uploadMutation.isPending
-              ? <><span className="animate-spin mr-2">⏳</span>Securing…</>
+            {isProcessing
+              ? <><span className="animate-spin mr-2">⏳</span>Applying Restrictions…</>
+              : uploadMutation.isPending
+              ? <><span className="animate-spin mr-2">⏳</span>Uploading…</>
               : <><ShieldOff className="w-4 h-4 mr-2" />Apply Controls &amp; Download</>}
           </Button>
         </>
