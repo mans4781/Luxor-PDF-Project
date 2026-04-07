@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from "react";
+import { TextLayer } from "pdfjs-dist";
 import { Annotation, HighlightAnnotation, TextAnnotation, ToolType } from "@/lib/annotationTypes";
 
 interface PDFPageProps {
@@ -192,10 +193,12 @@ export default function PDFPage({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const pageCanvasRef = useRef<HTMLCanvasElement>(null);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
+  const textLayerRef = useRef<HTMLDivElement>(null);
   const [pageSize, setPageSize] = useState({ w: 0, h: 0 });
   const [editingText, setEditingText] = useState<{ id: string; x: number; y: number } | null>(null);
   const highlightRef = useRef<{ active: boolean; startX: number; startY: number } | null>(null);
   const renderTaskRef = useRef<any>(null);
+  const textLayerTaskRef = useRef<any>(null);
 
   // Track visible page
   useEffect(() => {
@@ -251,12 +254,35 @@ export default function PDFPage({
         await task.promise;
         renderTaskRef.current = null;
         if (!cancelled) redrawAnnotations();
+
+        // ── Text layer (for text selection) ──────────────────────────────
+        if (textLayerRef.current && !cancelled) {
+          if (textLayerTaskRef.current) {
+            textLayerTaskRef.current.cancel?.();
+            textLayerTaskRef.current = null;
+          }
+          textLayerRef.current.innerHTML = "";
+          // Use logical-pixel viewport so text positions match CSS canvas size
+          const textViewport = page.getViewport({ scale: zoom });
+          const textContent = await page.getTextContent();
+          const tl = new TextLayer({
+            textContentSource: textContent,
+            container: textLayerRef.current,
+            viewport: textViewport,
+          });
+          textLayerTaskRef.current = tl;
+          await tl.render();
+          textLayerTaskRef.current = null;
+        }
       } catch (err: any) {
         if (err?.name !== "RenderingCancelledException") console.error(err);
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      textLayerTaskRef.current?.cancel?.();
+    };
   }, [pdfDocument, pageNum, zoom]);
 
   useEffect(() => { redrawAnnotations(); }, [annotations, pageSize]);
@@ -351,6 +377,18 @@ export default function PDFPage({
       id={`page-${pageNum}`}
     >
       <canvas ref={pageCanvasRef} className="pdf-page-canvas" />
+
+      {/* Text selection layer — transparent spans over rendered text */}
+      <div
+        ref={textLayerRef}
+        className="textLayer"
+        style={{
+          width: pageSize.w,
+          height: pageSize.h,
+          // Disabled when a drawing/text tool is active so those tools still get clicks
+          pointerEvents: (tool === "highlight" || tool === "text") ? "none" : "all",
+        }}
+      />
 
       {/* Highlight drawing canvas */}
       <canvas
