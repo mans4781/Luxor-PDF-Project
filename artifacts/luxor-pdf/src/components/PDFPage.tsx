@@ -183,6 +183,9 @@ export default function PDFPage({
         ref={drawCanvasRef}
         style={{
           position: "absolute", top: 0, left: 0,
+          display: "block",
+          width: pageSize.w || "100%",
+          height: pageSize.h || "100%",
           pointerEvents: isInteractive ? "all" : "none",
           cursor: getCursor(),
         }}
@@ -202,25 +205,27 @@ export default function PDFPage({
             fontSize: ann.fontSize,
             color: ann.color,
             fontFamily: "Times New Roman, serif",
-            background: "transparent",
-            border: "1px dashed transparent",
+            background: "rgba(255,255,255,0.85)",
+            border: "1.5px dashed rgba(79,142,247,0.45)",
+            borderRadius: 3,
             outline: "none",
-            resize: "none",
+            resize: "both",
             cursor: "text",
-            minWidth: 60, minHeight: 24,
-            padding: "2px 4px",
-            lineHeight: 1.4,
+            minWidth: 80, minHeight: 28,
+            padding: "3px 6px",
+            lineHeight: 1.5,
             pointerEvents: "all",
             zIndex: 10,
-            overflow: "hidden",
+            overflow: "auto",
             whiteSpace: "pre-wrap",
             wordBreak: "break-word",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
           }}
           defaultValue={ann.content}
           rows={1}
           onFocus={e => (e.currentTarget.style.borderColor = "#4f8ef7")}
           onBlur={e => {
-            (e.currentTarget.style.borderColor = "transparent");
+            e.currentTarget.style.borderColor = "rgba(79,142,247,0.45)";
             if (e.target.value !== ann.content) {
               onAnnotationUpdate(ann.id, { content: e.target.value } as any);
             }
