@@ -5,12 +5,12 @@ interface HomeProps {
 }
 
 const FEATURES = [
-  { icon: "✏️", label: "Draw & Sketch" },
-  { icon: "🖊️", label: "Text Notes" },
-  { icon: "🎨", label: "Highlights" },
-  { icon: "◻️", label: "Shapes" },
-  { icon: "🔍", label: "Zoom & Pan" },
   { icon: "📄", label: "Multi-Page" },
+  { icon: "🔍", label: "Zoom & Pan" },
+  { icon: "⬇️", label: "Download" },
+  { icon: "🖨️", label: "Print" },
+  { icon: "↔️", label: "Navigate" },
+  { icon: "🔒", label: "Secure View" },
 ];
 
 export default function Home({ onFileLoad }: HomeProps) {
