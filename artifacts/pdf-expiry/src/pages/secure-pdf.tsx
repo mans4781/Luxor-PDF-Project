@@ -70,13 +70,13 @@ function FileDropZone({
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
-      className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all select-none ${dragging ? c.drag : c.idle}`}
+      className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all select-none ${dragging ? c.drag : c.idle}`}
     >
-      <div className={`w-14 h-14 ${c.iconBg} rounded-2xl flex items-center justify-center shadow-md mx-auto mb-3 opacity-85`}>
-        <Upload className="w-7 h-7 text-white" />
+      <div className={`w-10 h-10 ${c.iconBg} rounded-xl flex items-center justify-center shadow-md mx-auto mb-2 opacity-85`}>
+        <Upload className="w-5 h-5 text-white" />
       </div>
       <p className={`text-sm font-semibold ${c.label}`}>{label}</p>
-      {hint && <p className={`text-xs mt-1 ${c.hint}`}>{hint}</p>}
+      {hint && <p className={`text-xs mt-0.5 ${c.hint}`}>{hint}</p>}
       <input ref={inputRef} type="file" accept=".pdf" className="hidden"
         onChange={(e) => {
           const files = Array.from(e.target.files || []);
@@ -214,13 +214,13 @@ function ExpiryTab() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="bg-gradient-to-r from-rose-50 to-red-50 border border-rose-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-        <div className="w-9 h-9 bg-gradient-to-br from-rose-500 to-red-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
-          <Calendar className="w-4 h-4 text-white" />
+    <div className="space-y-3">
+      <div className="bg-gradient-to-r from-rose-50 to-red-50 border border-rose-100 rounded-xl px-3 py-2 mb-2 flex items-center gap-2.5">
+        <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-red-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+          <Calendar className="w-3.5 h-3.5 text-white" />
         </div>
         <div>
-          <h2 className="font-semibold text-rose-900">Set Expiry Date</h2>
+          <h2 className="font-semibold text-rose-900 text-sm">Set Expiry Date</h2>
           <p className="text-xs text-rose-600">The PDF auto-locks after this date — no views or downloads.</p>
         </div>
       </div>
@@ -315,13 +315,13 @@ function PasswordTab() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="bg-gradient-to-r from-indigo-50 to-violet-50 border border-indigo-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-        <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
-          <Lock className="w-4 h-4 text-white" />
+    <div className="space-y-3">
+      <div className="bg-gradient-to-r from-indigo-50 to-violet-50 border border-indigo-100 rounded-xl px-3 py-2 mb-2 flex items-center gap-2.5">
+        <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+          <Lock className="w-3.5 h-3.5 text-white" />
         </div>
         <div>
-          <h2 className="font-semibold text-indigo-900">Set Password</h2>
+          <h2 className="font-semibold text-indigo-900 text-sm">Set Password</h2>
           <p className="text-xs text-indigo-600">Recipients must enter this password to open the document.</p>
         </div>
       </div>
@@ -450,13 +450,13 @@ function PrintControlTab() {
   );
 
   return (
-    <div className="space-y-4">
-      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-        <div className="w-9 h-9 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center shadow-sm shrink-0">
-          <Printer className="w-4 h-4 text-white" />
+    <div className="space-y-3">
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 rounded-xl px-3 py-2 mb-2 flex items-center gap-2.5">
+        <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+          <Printer className="w-3.5 h-3.5 text-white" />
         </div>
         <div>
-          <h2 className="font-semibold text-amber-900">Print Control</h2>
+          <h2 className="font-semibold text-amber-900 text-sm">Print Control</h2>
           <p className="text-xs text-amber-600">Restrict or allow printing and text copying for this document.</p>
         </div>
       </div>
@@ -507,31 +507,31 @@ function PrintControlTab() {
 
 export function SecurePdfContent() {
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-3">
 
       {/* Header banner */}
-      <div className="bg-gradient-to-br from-rose-600 via-red-600 to-rose-700 rounded-2xl p-6 text-white shadow-lg">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm">
-            <ShieldCheck className="w-7 h-7 text-white" strokeWidth={1.75} />
+      <div className="bg-gradient-to-br from-rose-600 via-red-600 to-rose-700 rounded-xl p-3 text-white shadow-lg">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center shadow-inner backdrop-blur-sm shrink-0">
+            <ShieldCheck className="w-5 h-5 text-white" strokeWidth={1.75} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Secure Your PDF</h1>
-            <p className="text-rose-200 text-sm mt-0.5">Choose one type of protection and apply it to your PDF</p>
+            <h1 className="text-lg font-bold leading-tight">Secure Your PDF</h1>
+            <p className="text-rose-200 text-xs mt-0.5">Choose one type of protection and apply it to your PDF</p>
           </div>
-        </div>
-        <div className="flex gap-2 mt-5 flex-wrap">
-          <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Calendar className="w-3 h-3" />Expiry Date</span>
-          <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Lock className="w-3 h-3" />Password</span>
-          <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Printer className="w-3 h-3" />Print Control</span>
+          <div className="flex gap-1.5 ml-auto flex-wrap justify-end">
+            <span className="inline-flex items-center gap-1 bg-white/15 text-white text-xs px-2 py-1 rounded-full font-medium"><Calendar className="w-3 h-3" />Expiry Date</span>
+            <span className="inline-flex items-center gap-1 bg-white/15 text-white text-xs px-2 py-1 rounded-full font-medium"><Lock className="w-3 h-3" />Password</span>
+            <span className="inline-flex items-center gap-1 bg-white/15 text-white text-xs px-2 py-1 rounded-full font-medium"><Printer className="w-3 h-3" />Print Control</span>
+          </div>
         </div>
       </div>
 
       {/* Tabbed card */}
       <Card className="border-rose-100 shadow-sm">
-        <CardContent className="pt-6">
+        <CardContent className="pt-3 pb-3">
           <Tabs defaultValue="expiry">
-            <TabsList className="grid w-full grid-cols-3 mb-6 bg-rose-50 border border-rose-100 p-1 rounded-xl h-auto">
+            <TabsList className="grid w-full grid-cols-3 mb-3 bg-rose-50 border border-rose-100 p-1 rounded-xl h-auto">
               <TabsTrigger
                 value="expiry"
                 data-testid="tab-expiry"
