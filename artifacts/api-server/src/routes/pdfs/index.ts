@@ -36,10 +36,11 @@ const upload = multer({
 });
 
 function isExpired(expiryDate: string): boolean {
-  const expiry = new Date(expiryDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return expiry < today;
+  // Compare in UTC to avoid timezone drift.
+  // expiryDate is YYYY-MM-DD — the file is valid through the END of that day UTC.
+  const expiry = new Date(expiryDate + "T23:59:59.999Z");
+  const now = new Date();
+  return now > expiry;
 }
 
 function formatPdfRecord(record: typeof pdfsTable.$inferSelect) {
@@ -158,18 +159,20 @@ router.get("/pdfs/:id/download", async (req, res): Promise<void> => {
   }
 
   if (isExpired(record.expiryDate)) {
-    req.log.info({ id: record.id }, "Serving corrupted PDF — expired");
-    const corruptedData = Buffer.from(
-      "%PDF-1.4\n%\xc7\xec\x8f\xa2\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n" +
-      "CORRUPTED_INVALID_DATA_THIS_FILE_HAS_EXPIRED_" +
-      Array(512).fill("X").join("") +
-      "\n%%EOF",
-      "latin1"
-    );
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="${securedFilename(record.originalName)}"`);
-    res.setHeader("Content-Length", corruptedData.length);
-    res.send(corruptedData);
+    // Delete the physical file from disk immediately so it cannot be
+    // retrieved by any means — even if someone had the stored path.
+    if (fs.existsSync(record.storedPath)) {
+      try {
+        fs.unlinkSync(record.storedPath);
+        req.log.info({ id: record.id }, "Expired PDF deleted from disk");
+      } catch (err) {
+        req.log.error({ id: record.id, err }, "Failed to delete expired PDF from disk");
+      }
+    }
+    res.status(410).json({
+      error: "This PDF has expired and is no longer available.",
+      expiredAt: record.expiryDate,
+    });
     return;
   }
 

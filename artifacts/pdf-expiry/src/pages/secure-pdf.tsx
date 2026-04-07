@@ -105,23 +105,78 @@ function SuccessCard({ label, downloadId, fileName, onReset, accentBtn }: {
   label: string; downloadId: number; fileName: string;
   onReset: () => void; accentBtn: string;
 }) {
+  const { toast } = useToast();
+  const [downloading, setDownloading] = useState(false);
+  const [expired, setExpired] = useState(false);
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const res = await fetch(`/api/pdfs/${downloadId}/download`);
+      if (res.status === 410) {
+        setExpired(true);
+        toast({
+          title: "PDF Expired",
+          description: "This PDF has passed its expiry date and has been permanently deleted.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!res.ok) {
+        toast({ title: "Download failed", description: "Could not retrieve the file.", variant: "destructive" });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const dot = fileName.lastIndexOf(".");
+      const secured = dot === -1 ? `${fileName} (secured)` : `${fileName.slice(0, dot)} (secured)${fileName.slice(dot)}`;
+      a.download = secured;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast({ title: "Download failed", description: "A network error occurred.", variant: "destructive" });
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <div className="space-y-3">
-      <div className="flex flex-col items-center gap-3 py-5 px-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-center">
-        <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-md">
-          <CheckCircle2 className="w-6 h-6 text-white" />
+      {expired ? (
+        <div className="flex flex-col items-center gap-3 py-5 px-4 bg-red-50 border border-red-200 rounded-2xl text-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-md">
+            <ShieldOff className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-red-800">PDF Expired</p>
+            <p className="text-xs text-red-600 mt-0.5">This file has passed its expiry date and has been permanently removed.</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-bold text-emerald-800">Secured successfully!</p>
-          <p className="text-xs text-emerald-600 mt-0.5 truncate max-w-[220px] mx-auto">{fileName}</p>
-          <p className="text-xs text-emerald-500 mt-0.5">{label}</p>
+      ) : (
+        <div className="flex flex-col items-center gap-3 py-5 px-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-md">
+            <CheckCircle2 className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-emerald-800">Secured successfully!</p>
+            <p className="text-xs text-emerald-600 mt-0.5 truncate max-w-[220px] mx-auto">{fileName}</p>
+            <p className="text-xs text-emerald-500 mt-0.5">{label}</p>
+          </div>
         </div>
-      </div>
-      <a href={`/api/pdfs/${downloadId}/download`} download>
-        <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-md font-semibold">
-          <Download className="w-4 h-4 mr-2" />Download Secured PDF
+      )}
+      {!expired && (
+        <Button
+          className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-md font-semibold"
+          onClick={handleDownload}
+          disabled={downloading}
+        >
+          {downloading
+            ? <><span className="animate-spin mr-2">⏳</span>Downloading…</>
+            : <><Download className="w-4 h-4 mr-2" />Download Secured PDF</>}
         </Button>
-      </a>
+      )}
       <Button variant="outline" className={`w-full ${accentBtn}`} onClick={onReset}>
         <RotateCcw className="w-4 h-4 mr-2" />Secure Another PDF
       </Button>
