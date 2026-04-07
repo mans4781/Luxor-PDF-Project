@@ -254,7 +254,7 @@ export default function Toolbar({
               x="12" y="20"
               textAnchor="middle"
               fontFamily="'Times New Roman', Times, serif"
-              fontSize="18"
+              fontSize="20"
               fontWeight="normal"
               fill="currentColor"
             >T</text>
