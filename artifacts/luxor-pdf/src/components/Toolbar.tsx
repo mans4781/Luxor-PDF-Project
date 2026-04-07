@@ -53,6 +53,17 @@ export default function Toolbar({
   const pageInputRef = useRef<HTMLInputElement>(null);
   const [popover, setPopover] = useState<PopoverType>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const [eraserIcon, setEraserIcon] = useState<string | null>(null);
+  const eraserUploadRef = useRef<HTMLInputElement>(null);
+
+  const handleEraserIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => setEraserIcon(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
 
   const toggle = useCallback((p: PopoverType) => {
     setPopover(prev => prev === p ? null : p);
@@ -185,32 +196,50 @@ export default function Toolbar({
       </div>
 
       {/* ── Feature 2: Eraser ──────────────────────────────────────────── */}
-      <button
-        className="toolbar-btn"
-        onClick={onEraseAll}
-        title="Erase all highlights"
-      >
-        <span className="toolbar-tip">Erase Highlights</span>
-          {/* Eraser icon — vertically tilted block eraser (Edge style) */}
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
-            <g transform="rotate(-38, 12, 12)">
-              {/* Upper section (label area) */}
-              <rect x="6" y="4" width="12" height="7" rx="1.5"
-                fill="currentColor" fillOpacity="0.12"
-                stroke="currentColor" strokeWidth="1.6"/>
-              {/* Lower section (rubber tip) — filled darker */}
-              <rect x="6" y="11" width="12" height="7" rx="0"
-                fill="currentColor" fillOpacity="0.32"
-                stroke="currentColor" strokeWidth="1.6"/>
-              {/* Bottom rounded corners on lower section */}
-              <rect x="6" y="15" width="12" height="3" rx="1.5"
-                fill="currentColor" fillOpacity="0.32"
-                stroke="none"/>
-              {/* Divider line */}
-              <line x1="6" y1="11" x2="18" y2="11" stroke="currentColor" strokeWidth="1.9"/>
-            </g>
-          </svg>
-      </button>
+      <div style={{ position: "relative" }}>
+        <button
+          className="toolbar-btn"
+          onClick={onEraseAll}
+          title="Erase all highlights — right-click to upload custom icon"
+          onContextMenu={e => { e.preventDefault(); eraserUploadRef.current?.click(); }}
+          style={{ position: "relative", overflow: "visible" }}
+        >
+          <span className="toolbar-tip">Erase Highlights (right-click to change icon)</span>
+          {eraserIcon ? (
+            <img src={eraserIcon} alt="Eraser" style={{ width: 18, height: 18, objectFit: "contain" }} />
+          ) : (
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <g transform="rotate(-38, 12, 12)">
+                <rect x="6" y="4" width="12" height="7" rx="1.5"
+                  fill="currentColor" fillOpacity="0.12"
+                  stroke="currentColor" strokeWidth="1.6"/>
+                <rect x="6" y="11" width="12" height="7" rx="0"
+                  fill="currentColor" fillOpacity="0.32"
+                  stroke="currentColor" strokeWidth="1.6"/>
+                <rect x="6" y="15" width="12" height="3" rx="1.5"
+                  fill="currentColor" fillOpacity="0.32" stroke="none"/>
+                <line x1="6" y1="11" x2="18" y2="11" stroke="currentColor" strokeWidth="1.9"/>
+              </g>
+            </svg>
+          )}
+          {/* Upload badge */}
+          <div style={{
+            position: "absolute", top: 1, right: 1,
+            width: 9, height: 9, borderRadius: "50%",
+            background: "#4f8ef7", display: "flex",
+            alignItems: "center", justifyContent: "center",
+            fontSize: 7, color: "#fff", fontWeight: 700,
+            lineHeight: 1, cursor: "pointer",
+          }} title="Right-click to upload icon">↑</div>
+        </button>
+        <input
+          ref={eraserUploadRef}
+          type="file"
+          accept="image/*,.svg"
+          style={{ display: "none" }}
+          onChange={handleEraserIconUpload}
+        />
+      </div>
 
       {/* ── Feature 3: Text Box ────────────────────────────────────────── */}
       <div style={{ position: "relative" }}>
