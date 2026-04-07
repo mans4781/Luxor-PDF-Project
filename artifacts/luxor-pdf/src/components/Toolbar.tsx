@@ -191,16 +191,22 @@ export default function Toolbar({
         title="Erase all highlights"
       >
         <span className="toolbar-tip">Erase Highlights</span>
-          {/* Eraser icon — realistic block eraser */}
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-            {/* Eraser body (main block) */}
-            <rect x="2" y="12" width="20" height="8" rx="1.5"/>
-            {/* Angled top showing used/worn portion */}
-            <path d="M2 12 L8 6 L22 6 L22 12"/>
-            {/* Divider stripe — separates rubber from paper section */}
-            <line x1="10" y1="6" x2="10" y2="20" strokeWidth="1.5"/>
-            {/* Erased trail lines */}
-            <line x1="4" y1="22" x2="4" y2="22" strokeWidth="0"/>
+          {/* Eraser icon — Microsoft Edge style */}
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            {/* Shadow/base */}
+            <rect x="2" y="19" width="20" height="2" rx="1" fill="currentColor" opacity="0.18"/>
+            {/* Eraser bottom half (pink rubber section) */}
+            <rect x="3" y="13" width="18" height="6" rx="1" fill="currentColor" opacity="0.22" stroke="currentColor" strokeWidth="1.5"/>
+            {/* Eraser top half (white paper section) */}
+            <rect x="3" y="7" width="18" height="6" rx="0" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+            {/* Top rounded cap */}
+            <path d="M3 8 Q3 7 4 7 L20 7 Q21 7 21 8" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+            {/* Divider line between rubber and paper */}
+            <line x1="3" y1="13" x2="21" y2="13" stroke="currentColor" strokeWidth="1.8"/>
+            {/* Eraser left edge vertical */}
+            <line x1="3" y1="7" x2="3" y2="19" stroke="currentColor" strokeWidth="1.5"/>
+            {/* Eraser right edge vertical */}
+            <line x1="21" y1="7" x2="21" y2="19" stroke="currentColor" strokeWidth="1.5"/>
           </svg>
       </button>
 
