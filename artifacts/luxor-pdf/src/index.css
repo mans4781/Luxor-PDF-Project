@@ -221,6 +221,52 @@ html, body, #root {
 .fc-icon { font-size: 18px; margin-bottom: 4px; }
 .fc-label { color: #aaa; font-size: 10px; }
 
+/* ── Popovers & color swatches ───────────────────────────────────────────── */
+
+.popover-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%; transform: translateX(-50%);
+  background: #252525;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.55);
+  z-index: 400;
+  min-width: 120px;
+}
+
+.popover-panel::before {
+  content: '';
+  position: absolute; top: -5px; left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px; height: 8px;
+  background: #252525;
+  border-left: 1px solid rgba(255,255,255,0.12);
+  border-top: 1px solid rgba(255,255,255,0.12);
+}
+
+.popover-label {
+  color: #888; font-size: 10px;
+  margin-bottom: 6px;
+  text-transform: uppercase; letter-spacing: 0.6px;
+}
+
+.color-dot {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.1s;
+  flex-shrink: 0;
+  outline: none;
+}
+
+.color-dot:hover { transform: scale(1.2); }
+.color-dot.sel { border-color: white; transform: scale(1.1); }
+
+.toolbar-btn.active { background: rgba(79,142,247,0.22); color: #4f8ef7; }
+
 /* ── Loading ─────────────────────────────────────────────────────────────── */
 
 .spinner {
