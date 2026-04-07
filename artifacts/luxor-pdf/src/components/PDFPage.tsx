@@ -131,7 +131,7 @@ function DraggableTextBox({ ann, onMove, onContentChange }: TextBoxProps) {
           fontSize: ann.fontSize,
           color: ann.color,
           fontFamily: "Times New Roman, serif",
-          background: selected ? "rgba(255,255,255,0.97)" : "transparent",
+          background: "transparent",
           border: selected ? "1.5px solid #4f8ef7" : "none",
           borderTop: selected ? "1.5px solid #4f8ef7" : "none",
           outline: "none",
