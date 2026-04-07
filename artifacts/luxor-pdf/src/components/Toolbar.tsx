@@ -245,12 +245,14 @@ export default function Toolbar({
           style={{ width: 38 }}
         >
           <span className="toolbar-tip">Text Box</span>
-          {/* Bold capital T icon */}
+          {/* Bold capital T inside a dotted box */}
           <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+            {/* Dotted border box */}
+            <rect x="1" y="1" width="22" height="22" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeDasharray="3 2"/>
             {/* Top horizontal bar of T */}
-            <rect x="2" y="2" width="20" height="4" rx="1.5"/>
+            <rect x="4" y="5" width="16" height="3.2" rx="1.2"/>
             {/* Vertical stem of T */}
-            <rect x="9" y="6" width="6" height="16" rx="1.5"/>
+            <rect x="10.4" y="8.2" width="3.2" height="11" rx="1.2"/>
           </svg>
         </button>
 
