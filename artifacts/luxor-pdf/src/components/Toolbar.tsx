@@ -191,22 +191,24 @@ export default function Toolbar({
         title="Erase all highlights"
       >
         <span className="toolbar-tip">Erase Highlights</span>
-          {/* Eraser icon — Microsoft Edge style */}
+          {/* Eraser icon — vertically tilted block eraser (Edge style) */}
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
-            {/* Shadow/base */}
-            <rect x="2" y="19" width="20" height="2" rx="1" fill="currentColor" opacity="0.18"/>
-            {/* Eraser bottom half (pink rubber section) */}
-            <rect x="3" y="13" width="18" height="6" rx="1" fill="currentColor" opacity="0.22" stroke="currentColor" strokeWidth="1.5"/>
-            {/* Eraser top half (white paper section) */}
-            <rect x="3" y="7" width="18" height="6" rx="0" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-            {/* Top rounded cap */}
-            <path d="M3 8 Q3 7 4 7 L20 7 Q21 7 21 8" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-            {/* Divider line between rubber and paper */}
-            <line x1="3" y1="13" x2="21" y2="13" stroke="currentColor" strokeWidth="1.8"/>
-            {/* Eraser left edge vertical */}
-            <line x1="3" y1="7" x2="3" y2="19" stroke="currentColor" strokeWidth="1.5"/>
-            {/* Eraser right edge vertical */}
-            <line x1="21" y1="7" x2="21" y2="19" stroke="currentColor" strokeWidth="1.5"/>
+            <g transform="rotate(-38, 12, 12)">
+              {/* Upper section (label area) */}
+              <rect x="6" y="4" width="12" height="7" rx="1.5"
+                fill="currentColor" fillOpacity="0.12"
+                stroke="currentColor" strokeWidth="1.6"/>
+              {/* Lower section (rubber tip) — filled darker */}
+              <rect x="6" y="11" width="12" height="7" rx="0"
+                fill="currentColor" fillOpacity="0.32"
+                stroke="currentColor" strokeWidth="1.6"/>
+              {/* Bottom rounded corners on lower section */}
+              <rect x="6" y="15" width="12" height="3" rx="1.5"
+                fill="currentColor" fillOpacity="0.32"
+                stroke="none"/>
+              {/* Divider line */}
+              <line x1="6" y1="11" x2="18" y2="11" stroke="currentColor" strokeWidth="1.9"/>
+            </g>
           </svg>
       </button>
 
