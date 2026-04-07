@@ -40,10 +40,9 @@ const upload = multer({
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function isExpired(expiryDate) {
-  const expiry = new Date(expiryDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return expiry < today;
+  // Use UTC end-of-day: the document is valid through the full calendar day in UTC
+  const expiry = new Date(`${expiryDate}T23:59:59.999Z`);
+  return Date.now() > expiry.getTime();
 }
 
 function formatRecord(record) {
@@ -125,17 +124,11 @@ app.get("/api/pdfs/:id/download", (req, res) => {
   if (!record) return res.status(404).json({ error: "PDF not found" });
 
   if (isExpired(record.expiryDate)) {
-    const corruptedData = Buffer.from(
-      "%PDF-1.4\n%\xc7\xec\x8f\xa2\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n" +
-        "CORRUPTED_INVALID_DATA_THIS_FILE_HAS_EXPIRED_" +
-        Array(512).fill("X").join("") +
-        "\n%%EOF",
-      "latin1"
-    );
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="${record.originalName}"`);
-    res.setHeader("Content-Length", corruptedData.length);
-    return res.send(corruptedData);
+    // Delete the file from disk immediately on first expired access
+    if (fs.existsSync(record.storedPath)) {
+      try { fs.unlinkSync(record.storedPath); } catch { /* ignore */ }
+    }
+    return res.status(410).json({ error: "This PDF has expired and is no longer available." });
   }
 
   if (!fs.existsSync(record.storedPath)) {

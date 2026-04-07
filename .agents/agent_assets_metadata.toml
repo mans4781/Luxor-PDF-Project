@@ -35,3 +35,9 @@ id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
 type = "unspecified"
 title = "LexSecure PDF — Windows Desktop App"
+
+[[outputs]]
+id = "tpzh8-KQdsStaYCcnz1u5"
+uri = "file://electron/dist/LexSecurePDF-Windows.zip"
+type = "unspecified"
+title = "LexSecure PDF — Windows Desktop App"
