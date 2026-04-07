@@ -12,6 +12,7 @@ interface PDFPageProps {
   textSize: number;
   onAnnotationAdd: (a: Annotation) => void;
   onAnnotationUpdate: (id: string, updates: Partial<Annotation>) => void;
+  onAnnotationRemove: (id: string) => void;
   isCurrentPage: boolean;
   onVisible: (page: number) => void;
 }
@@ -25,9 +26,10 @@ interface TextBoxProps {
   ann: TextAnnotation;
   onMove: (x: number, y: number) => void;
   onContentChange: (content: string) => void;
+  onDelete: () => void;
 }
 
-function DraggableTextBox({ ann, onMove, onContentChange }: TextBoxProps) {
+function DraggableTextBox({ ann, onMove, onContentChange, onDelete }: TextBoxProps) {
   const [selected, setSelected] = useState(false);
   const [localPos, setLocalPos] = useState({ x: ann.x, y: ann.y });
   const dragRef = useRef<{ startMouseX: number; startMouseY: number; startX: number; startY: number } | null>(null);
@@ -98,28 +100,47 @@ function DraggableTextBox({ ann, onMove, onContentChange }: TextBoxProps) {
       {/* Drag handle — visible only when selected */}
       {selected && (
         <div
-          onMouseDown={startDrag}
           style={{
             position: "absolute",
-            top: -20,
+            top: -22,
             left: 0,
             right: 0,
-            height: 20,
+            height: 22,
             background: "#4f8ef7",
             borderRadius: "4px 4px 0 0",
-            cursor: "grab",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            gap: 3,
+            justifyContent: "space-between",
             padding: "0 6px",
           }}
-          title="Drag to move"
         >
-          {/* Grip dots */}
-          {[0,1,2,3,4,5].map(i => (
-            <div key={i} style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.8)" }} />
-          ))}
+          {/* Grip area */}
+          <div
+            onMouseDown={startDrag}
+            style={{ flex: 1, display: "flex", alignItems: "center", gap: 3, cursor: "grab", height: "100%" }}
+            title="Drag to move"
+          >
+            {[0,1,2,3,4,5].map(i => (
+              <div key={i} style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.75)" }} />
+            ))}
+          </div>
+          {/* Delete button */}
+          <button
+            onMouseDown={e => e.stopPropagation()}
+            onClick={e => { e.stopPropagation(); onDelete(); }}
+            title="Delete text box"
+            style={{
+              background: "none", border: "none",
+              color: "rgba(255,255,255,0.9)", cursor: "pointer",
+              fontSize: 14, lineHeight: 1, padding: "0 2px",
+              display: "flex", alignItems: "center",
+              borderRadius: 3,
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
+            onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -165,7 +186,7 @@ function DraggableTextBox({ ann, onMove, onContentChange }: TextBoxProps) {
 export default function PDFPage({
   pdfDocument, pageNum, zoom, tool, annotations,
   highlightColor, textColor, textSize,
-  onAnnotationAdd, onAnnotationUpdate,
+  onAnnotationAdd, onAnnotationUpdate, onAnnotationRemove,
   onVisible,
 }: PDFPageProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -348,6 +369,7 @@ export default function PDFPage({
           ann={ann}
           onMove={(x, y) => onAnnotationUpdate(ann.id, { x, y } as any)}
           onContentChange={content => onAnnotationUpdate(ann.id, { content } as any)}
+          onDelete={() => onAnnotationRemove(ann.id)}
         />
       ))}
 

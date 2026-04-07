@@ -28,7 +28,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { annotations, addAnnotation, updateAnnotation, clearHighlights, getPageAnnotations } = useAnnotations();
+  const { annotations, addAnnotation, updateAnnotation, removeAnnotation, clearHighlights, getPageAnnotations } = useAnnotations();
 
   // Load PDF
   useEffect(() => {
@@ -158,6 +158,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
             textSize={textSize}
             onAnnotationAdd={addAnnotation}
             onAnnotationUpdate={updateAnnotation}
+            onAnnotationRemove={removeAnnotation}
             isCurrentPage={pageNum === currentPage}
             onVisible={handlePageVisible}
           />
