@@ -376,8 +376,8 @@ function PasswordTab() {
 
 function PrintControlTab() {
   const [file, setFile] = useState<File | null>(null);
-  const [allowPrint, setAllowPrint] = useState(false);
-  const [allowCopy, setAllowCopy] = useState(false);
+  const [restrictPrint, setRestrictPrint] = useState(false);
+  const [restrictCopy, setRestrictCopy] = useState(false);
   const [uploadedId, setUploadedId] = useState<number | null>(null);
   const [uploadedName, setUploadedName] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -385,7 +385,7 @@ function PrintControlTab() {
   const queryClient = useQueryClient();
   const uploadMutation = useUploadPdf();
 
-  const reset = () => { setFile(null); setAllowPrint(false); setAllowCopy(false); setUploadedId(null); setUploadedName(""); };
+  const reset = () => { setFile(null); setRestrictPrint(false); setRestrictCopy(false); setUploadedId(null); setUploadedName(""); };
 
   const handleUpload = async () => {
     if (!file) return;
@@ -407,8 +407,8 @@ function PrintControlTab() {
         userPassword: "",
         ownerPassword,
         permissions: {
-          printing: allowPrint ? "highResolution" : false,
-          copying: allowCopy,
+          printing: restrictPrint ? false : "highResolution",
+          copying: !restrictCopy,
           modifying: false,
           annotating: false,
           fillingForms: false,
@@ -462,7 +462,7 @@ function PrintControlTab() {
 
       {uploadedId !== null ? (
         <SuccessCard
-          label={`Printing ${allowPrint ? "allowed" : "restricted"} · Copying ${allowCopy ? "allowed" : "restricted"}`}
+          label={`Printing ${restrictPrint ? "restricted" : "allowed"} · Copying ${restrictCopy ? "restricted" : "allowed"}`}
           downloadId={uploadedId} fileName={uploadedName} onReset={reset}
           accentBtn="border-amber-200 text-amber-600 hover:bg-amber-50"
         />
@@ -480,8 +480,8 @@ function PrintControlTab() {
               <Printer className="w-3.5 h-3.5" /> Permissions
             </Label>
             <div className="space-y-2">
-              <Toggle label={allowPrint ? "Restrict Printing" : "Allow Printing"} icon={Printer} value={allowPrint} onChange={() => setAllowPrint(v => !v)} />
-              <Toggle label={allowCopy ? "Restrict Text Copying" : "Allow Text Copying"} icon={Copy} value={allowCopy} onChange={() => setAllowCopy(v => !v)} />
+              <Toggle label={restrictPrint ? "Restrict Printing" : "Allow Printing"} icon={Printer} value={restrictPrint} onChange={() => setRestrictPrint(v => !v)} />
+              <Toggle label={restrictCopy ? "Restrict Text Copying" : "Allow Text Copying"} icon={Copy} value={restrictCopy} onChange={() => setRestrictCopy(v => !v)} />
             </div>
             <p className="text-xs text-amber-400">Disabled permissions are enforced for all recipients of this document.</p>
           </div>
