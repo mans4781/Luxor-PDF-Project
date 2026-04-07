@@ -30,115 +30,104 @@ export function Layout({ children }: { children: ReactNode }) {
               </filter>
             </defs>
 
-            {/* Soft background blobs */}
-            <circle cx="640"  cy="32" r="160" fill="rgba(245,158,11,0.04)" />
-            <circle cx="1100" cy="32" r="120" fill="rgba(59,130,246,0.05)" />
+            {/* All icons grouped — starts at x=530, scale 0.6, tight spacing */}
+            <g transform="translate(530,0) scale(0.6)">
 
-            {/* PDF Doc purple */}
-            <g transform="translate(260,6) scale(0.85)" filter="url(#docShadow2)">
-              <rect width="44" height="52" rx="5" fill="#fff" stroke="#ddd6fe" strokeWidth="1.5"/>
-              <rect width="44" height="13" rx="5" fill="#8b5cf6"/>
-              <rect y="7" width="44" height="6" fill="#8b5cf6"/>
-              <text x="22" y="10.5" textAnchor="middle" fill="#fff" fontSize="6" fontWeight="bold" fontFamily="Arial,sans-serif">PDF</text>
-              <rect x="7" y="20" width="30" height="2.5" rx="1.2" fill="#ddd6fe"/>
-              <rect x="7" y="26" width="22" height="2.5" rx="1.2" fill="#ddd6fe"/>
-              <rect x="7" y="32" width="26" height="2.5" rx="1.2" fill="#ddd6fe"/>
-              <rect x="7" y="38" width="18" height="2.5" rx="1.2" fill="#ddd6fe"/>
-            </g>
+              {/* PDF Doc purple — x=0 */}
+              <g transform="translate(0,8)" filter="url(#docShadow2)">
+                <rect width="44" height="52" rx="5" fill="#fff" stroke="#ddd6fe" strokeWidth="1.5"/>
+                <rect width="44" height="13" rx="5" fill="#8b5cf6"/>
+                <rect y="7" width="44" height="6" fill="#8b5cf6"/>
+                <text x="22" y="10.5" textAnchor="middle" fill="#fff" fontSize="6" fontWeight="bold" fontFamily="Arial,sans-serif">PDF</text>
+                <rect x="7" y="20" width="30" height="2.5" rx="1.2" fill="#ddd6fe"/>
+                <rect x="7" y="26" width="22" height="2.5" rx="1.2" fill="#ddd6fe"/>
+                <rect x="7" y="32" width="26" height="2.5" rx="1.2" fill="#ddd6fe"/>
+                <rect x="7" y="38" width="18" height="2.5" rx="1.2" fill="#ddd6fe"/>
+              </g>
+              <circle cx="58" cy="53" r="5" fill="rgba(139,92,246,0.18)"/>
+              <circle cx="70" cy="53" r="3.5" fill="rgba(139,92,246,0.12)"/>
 
-            {/* Dots */}
-            <circle cx="340" cy="32" r="3" fill="rgba(139,92,246,0.18)"/>
-            <circle cx="349" cy="32" r="2" fill="rgba(139,92,246,0.12)"/>
+              {/* Shield pink — x=90 */}
+              <g transform="translate(90,6)">
+                <path d="M28 2 L52 13 L52 36 C52 51 38 62 28 66 C18 62 4 51 4 36 L4 13 Z" fill="rgba(236,72,153,0.13)"/>
+                <path d="M28 6 L48 16 L48 36 C48 49 36 58 28 62 C20 58 8 49 8 36 L8 16 Z" fill="none" stroke="#ec4899" strokeWidth="2.2"/>
+                <rect x="20" y="30" width="16" height="13" rx="2.5" fill="#ec4899" opacity="0.85"/>
+                <path d="M23 30 L23 25 C23 20 33 20 33 25 L33 30" fill="none" stroke="#ec4899" strokeWidth="2.2" strokeLinecap="round"/>
+                <circle cx="28" cy="37" r="2.5" fill="#fff"/>
+              </g>
+              <circle cx="150" cy="53" r="5" fill="rgba(236,72,153,0.18)"/>
+              <circle cx="162" cy="53" r="3.5" fill="rgba(236,72,153,0.12)"/>
 
-            {/* Shield pink */}
-            <g transform="translate(390,6) scale(0.72)">
-              <path d="M28 2 L52 13 L52 36 C52 51 38 62 28 66 C18 62 4 51 4 36 L4 13 Z" fill="rgba(236,72,153,0.13)"/>
-              <path d="M28 6 L48 16 L48 36 C48 49 36 58 28 62 C20 58 8 49 8 36 L8 16 Z" fill="none" stroke="#ec4899" strokeWidth="2.2"/>
-              <rect x="20" y="30" width="16" height="13" rx="2.5" fill="#ec4899" opacity="0.85"/>
-              <path d="M23 30 L23 25 C23 20 33 20 33 25 L33 30" fill="none" stroke="#ec4899" strokeWidth="2.2" strokeLinecap="round"/>
-              <circle cx="28" cy="37" r="2.5" fill="#fff"/>
-            </g>
+              {/* PDF Doc amber — x=180 */}
+              <g transform="translate(180,8)" filter="url(#docShadow2)">
+                <rect width="40" height="52" rx="5" fill="#fff" stroke="#fde68a" strokeWidth="1.5"/>
+                <rect width="40" height="13" rx="5" fill="#f59e0b"/>
+                <rect y="7" width="40" height="6" fill="#f59e0b"/>
+                <text x="20" y="10.5" textAnchor="middle" fill="#fff" fontSize="6" fontWeight="bold" fontFamily="Arial,sans-serif">PDF</text>
+                <rect x="6" y="20" width="28" height="2.5" rx="1.2" fill="#fde68a"/>
+                <rect x="6" y="26" width="20" height="2.5" rx="1.2" fill="#fde68a"/>
+                <rect x="6" y="32" width="24" height="2.5" rx="1.2" fill="#fde68a"/>
+                <rect x="6" y="38" width="14" height="2.5" rx="1.2" fill="#fde68a"/>
+              </g>
+              <circle cx="234" cy="53" r="5" fill="rgba(245,158,11,0.18)"/>
+              <circle cx="246" cy="53" r="3.5" fill="rgba(245,158,11,0.12)"/>
 
-            {/* Dots */}
-            <circle cx="448" cy="32" r="3" fill="rgba(236,72,153,0.18)"/>
-            <circle cx="457" cy="32" r="2" fill="rgba(236,72,153,0.12)"/>
+              {/* Calendar expiry — x=268 */}
+              <g transform="translate(268,6)" filter="url(#docShadow2)">
+                <rect width="56" height="52" rx="7" fill="#fff" stroke="#fecdd3" strokeWidth="1.5"/>
+                <rect width="56" height="17" rx="7" fill="#f43f5e"/>
+                <rect y="10" width="56" height="7" fill="#f43f5e"/>
+                <circle cx="14" cy="6" r="4" fill="#fff" stroke="#f43f5e" strokeWidth="1.5"/>
+                <circle cx="42" cy="6" r="4" fill="#fff" stroke="#f43f5e" strokeWidth="1.5"/>
+                <rect x="12" y="1" width="2.5" height="10" rx="1.2" fill="#f43f5e"/>
+                <rect x="41" y="1" width="2.5" height="10" rx="1.2" fill="#f43f5e"/>
+                <text x="28" y="13" textAnchor="middle" fill="#fff" fontSize="5.5" fontWeight="bold" fontFamily="Arial,sans-serif">EXPIRY</text>
+                <rect x="7"  y="23" width="8" height="6" rx="2" fill="#fce7f3"/>
+                <rect x="18" y="23" width="8" height="6" rx="2" fill="#fce7f3"/>
+                <rect x="29" y="23" width="8" height="6" rx="2" fill="#fce7f3"/>
+                <rect x="40" y="23" width="8" height="6" rx="2" fill="#fce7f3"/>
+                <rect x="7"  y="32" width="8" height="6" rx="2" fill="#fce7f3"/>
+                <rect x="18" y="32" width="8" height="6" rx="2" fill="#fce7f3"/>
+                <rect x="29" y="32" width="8" height="6" rx="2" fill="#fce7f3"/>
+                <rect x="40" y="32" width="8" height="6" rx="2" fill="#f43f5e" opacity="0.7"/>
+                <rect x="7"  y="41" width="8" height="5" rx="2" fill="#fce7f3"/>
+                <rect x="18" y="41" width="8" height="5" rx="2" fill="#fce7f3"/>
+                <rect x="29" y="41" width="8" height="5" rx="2" fill="#fce7f3"/>
+                <rect x="40" y="41" width="8" height="5" rx="2" fill="#fce7f3"/>
+              </g>
+              <circle cx="338" cy="53" r="5" fill="rgba(239,68,68,0.18)"/>
 
-            {/* PDF Doc amber */}
-            <g transform="translate(500,6) scale(0.85)" filter="url(#docShadow2)">
-              <rect width="40" height="52" rx="5" fill="#fff" stroke="#fde68a" strokeWidth="1.5"/>
-              <rect width="40" height="13" rx="5" fill="#f59e0b"/>
-              <rect y="7" width="40" height="6" fill="#f59e0b"/>
-              <text x="20" y="10.5" textAnchor="middle" fill="#fff" fontSize="6" fontWeight="bold" fontFamily="Arial,sans-serif">PDF</text>
-              <rect x="6" y="20" width="28" height="2.5" rx="1.2" fill="#fde68a"/>
-              <rect x="6" y="26" width="20" height="2.5" rx="1.2" fill="#fde68a"/>
-              <rect x="6" y="32" width="24" height="2.5" rx="1.2" fill="#fde68a"/>
-              <rect x="6" y="38" width="14" height="2.5" rx="1.2" fill="#fde68a"/>
-            </g>
+              {/* Lock indigo — x=360 */}
+              <g transform="translate(360,10)">
+                <rect x="2" y="24" width="44" height="34" rx="7" fill="#6366f1" opacity="0.9"/>
+                <path d="M10 24 L10 15 C10 4 38 4 38 15 L38 24" fill="none" stroke="#6366f1" strokeWidth="4.5" strokeLinecap="round"/>
+                <circle cx="24" cy="41" r="5.5" fill="#fff" opacity="0.9"/>
+                <rect x="21.5" y="41" width="5" height="9" rx="2.5" fill="#fff" opacity="0.9"/>
+              </g>
+              <circle cx="418" cy="53" r="5" fill="rgba(99,102,241,0.18)"/>
+              <circle cx="430" cy="53" r="3.5" fill="rgba(99,102,241,0.12)"/>
 
-            {/* Dots */}
-            <circle cx="580" cy="32" r="3" fill="rgba(245,158,11,0.18)"/>
-            <circle cx="589" cy="32" r="2" fill="rgba(245,158,11,0.12)"/>
+              {/* PDF Doc blue — x=450 */}
+              <g transform="translate(450,8)" filter="url(#docShadow2)">
+                <rect width="44" height="52" rx="5" fill="#fff" stroke="#bfdbfe" strokeWidth="1.5"/>
+                <rect width="44" height="13" rx="5" fill="#3b82f6"/>
+                <rect y="7" width="44" height="6" fill="#3b82f6"/>
+                <text x="22" y="10.5" textAnchor="middle" fill="#fff" fontSize="6" fontWeight="bold" fontFamily="Arial,sans-serif">PDF</text>
+                <rect x="7" y="20" width="30" height="2.5" rx="1.2" fill="#bfdbfe"/>
+                <rect x="7" y="26" width="22" height="2.5" rx="1.2" fill="#bfdbfe"/>
+                <rect x="7" y="32" width="26" height="2.5" rx="1.2" fill="#bfdbfe"/>
+                <rect x="7" y="38" width="18" height="2.5" rx="1.2" fill="#bfdbfe"/>
+              </g>
+              <circle cx="508" cy="53" r="5" fill="rgba(59,130,246,0.18)"/>
+              <circle cx="520" cy="53" r="3.5" fill="rgba(59,130,246,0.12)"/>
 
-            {/* Calendar expiry — center */}
-            <g transform="translate(630,5) scale(0.85)" filter="url(#docShadow2)">
-              <rect width="56" height="52" rx="7" fill="#fff" stroke="#fecdd3" strokeWidth="1.5"/>
-              <rect width="56" height="17" rx="7" fill="#f43f5e"/>
-              <rect y="10" width="56" height="7" fill="#f43f5e"/>
-              <circle cx="14" cy="6"  r="4" fill="#fff" stroke="#f43f5e" strokeWidth="1.5"/>
-              <circle cx="42" cy="6"  r="4" fill="#fff" stroke="#f43f5e" strokeWidth="1.5"/>
-              <rect x="12" y="1" width="2.5" height="10" rx="1.2" fill="#f43f5e"/>
-              <rect x="41" y="1" width="2.5" height="10" rx="1.2" fill="#f43f5e"/>
-              <text x="28" y="13" textAnchor="middle" fill="#fff" fontSize="5.5" fontWeight="bold" fontFamily="Arial,sans-serif">EXPIRY</text>
-              <rect x="7"  y="23" width="8" height="6" rx="2" fill="#fce7f3"/>
-              <rect x="18" y="23" width="8" height="6" rx="2" fill="#fce7f3"/>
-              <rect x="29" y="23" width="8" height="6" rx="2" fill="#fce7f3"/>
-              <rect x="40" y="23" width="8" height="6" rx="2" fill="#fce7f3"/>
-              <rect x="7"  y="32" width="8" height="6" rx="2" fill="#fce7f3"/>
-              <rect x="18" y="32" width="8" height="6" rx="2" fill="#fce7f3"/>
-              <rect x="29" y="32" width="8" height="6" rx="2" fill="#fce7f3"/>
-              <rect x="40" y="32" width="8" height="6" rx="2" fill="#f43f5e" opacity="0.7"/>
-              <rect x="7"  y="41" width="8" height="5" rx="2" fill="#fce7f3"/>
-              <rect x="18" y="41" width="8" height="5" rx="2" fill="#fce7f3"/>
-              <rect x="29" y="41" width="8" height="5" rx="2" fill="#fce7f3"/>
-              <rect x="40" y="41" width="8" height="5" rx="2" fill="#fce7f3"/>
-            </g>
+              {/* Shield checkmark emerald — x=540 */}
+              <g transform="translate(540,3)">
+                <path d="M36 2 L64 14 L64 44 C64 60 48 72 36 78 C24 72 8 60 8 44 L8 14 Z" fill="rgba(16,185,129,0.12)"/>
+                <path d="M36 7 L59 18 L59 44 C59 58 46 68 36 73 C26 68 13 58 13 44 L13 18 Z" fill="none" stroke="#10b981" strokeWidth="2.5"/>
+                <polyline points="22,42 32,54 52,28" fill="none" stroke="#10b981" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </g>
 
-            {/* Dots */}
-            <circle cx="724" cy="32" r="3" fill="rgba(239,68,68,0.18)"/>
-
-            {/* Lock indigo */}
-            <g transform="translate(766,10) scale(0.72)">
-              <rect x="2" y="24" width="44" height="34" rx="7" fill="#6366f1" opacity="0.9"/>
-              <path d="M10 24 L10 15 C10 4 38 4 38 15 L38 24" fill="none" stroke="#6366f1" strokeWidth="4.5" strokeLinecap="round"/>
-              <circle cx="24" cy="41" r="5.5" fill="#fff" opacity="0.9"/>
-              <rect x="21.5" y="41" width="5" height="9" rx="2.5" fill="#fff" opacity="0.9"/>
-            </g>
-
-            {/* Dots */}
-            <circle cx="838" cy="32" r="3" fill="rgba(99,102,241,0.18)"/>
-            <circle cx="847" cy="32" r="2" fill="rgba(99,102,241,0.12)"/>
-
-            {/* PDF Doc blue */}
-            <g transform="translate(888,6) scale(0.85)" filter="url(#docShadow2)">
-              <rect width="44" height="52" rx="5" fill="#fff" stroke="#bfdbfe" strokeWidth="1.5"/>
-              <rect width="44" height="13" rx="5" fill="#3b82f6"/>
-              <rect y="7" width="44" height="6" fill="#3b82f6"/>
-              <text x="22" y="10.5" textAnchor="middle" fill="#fff" fontSize="6" fontWeight="bold" fontFamily="Arial,sans-serif">PDF</text>
-              <rect x="7" y="20" width="30" height="2.5" rx="1.2" fill="#bfdbfe"/>
-              <rect x="7" y="26" width="22" height="2.5" rx="1.2" fill="#bfdbfe"/>
-              <rect x="7" y="32" width="26" height="2.5" rx="1.2" fill="#bfdbfe"/>
-              <rect x="7" y="38" width="18" height="2.5" rx="1.2" fill="#bfdbfe"/>
-            </g>
-
-            {/* Dots */}
-            <circle cx="968" cy="32" r="3" fill="rgba(59,130,246,0.18)"/>
-            <circle cx="977" cy="32" r="2" fill="rgba(59,130,246,0.12)"/>
-
-            {/* Shield checkmark emerald */}
-            <g transform="translate(1020,4) scale(0.72)">
-              <path d="M36 2 L64 14 L64 44 C64 60 48 72 36 78 C24 72 8 60 8 44 L8 14 Z" fill="rgba(16,185,129,0.12)"/>
-              <path d="M36 7 L59 18 L59 44 C59 58 46 68 36 73 C26 68 13 58 13 44 L13 18 Z" fill="none" stroke="#10b981" strokeWidth="2.5"/>
-              <polyline points="22,42 32,54 52,28" fill="none" stroke="#10b981" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
             </g>
 
             {/* Bottom accent line */}
