@@ -385,6 +385,10 @@ export default function PDFPage({
         style={{
           width: pageSize.w,
           height: pageSize.h,
+          zIndex: 4,
+          // pdfjs v5 needs --scale-factor so --total-scale-factor resolves correctly
+          ["--scale-factor" as any]: zoom,
+          ["--user-unit" as any]: 1,
           // Disabled when a drawing/text tool is active so those tools still get clicks
           pointerEvents: (tool === "highlight" || tool === "text") ? "none" : "all",
         }}
@@ -397,7 +401,7 @@ export default function PDFPage({
           position: "absolute", top: 0, left: 0,
           display: "block",
           pointerEvents: tool === "highlight" ? "all" : "none",
-          cursor: tool === "highlight" ? "crosshair" : "default",
+          cursor: tool === "highlight" ? "crosshair" : "inherit",
         }}
         onMouseDown={onHighlightMouseDown}
         onMouseMove={onHighlightMouseMove}

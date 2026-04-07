@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import * as pdfjsLib from "pdfjs-dist";
+import "pdfjs-dist/web/pdf_viewer.css";
 import Toolbar from "@/components/Toolbar";
 import PDFPage from "@/components/PDFPage";
 import { useAnnotations } from "@/lib/useAnnotations";
