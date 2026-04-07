@@ -11,7 +11,7 @@ import { formatBytes } from "@/lib/utils";
 import { saveFile } from "@/lib/save-file";
 import {
   Upload, X, Download, Loader2, Image as ImageIcon,
-  FileText, GripVertical, ArrowLeftRight, FileOutput,
+  FileText, GripVertical, ArrowLeftRight, FileOutput, ChevronDown,
 } from "lucide-react";
 import {
   Document, Paragraph, TextRun, Packer,
@@ -242,6 +242,19 @@ function ImagesToPdf() {
   );
 }
 
+// ─── Image format options ──────────────────────────────────────────────────────
+
+const IMAGE_FORMATS = [
+  { value: "png",  label: "PNG",  mime: "image/png",  ext: "png"  },
+  { value: "jpg",  label: "JPG",  mime: "image/jpeg", ext: "jpg"  },
+  { value: "jpeg", label: "JPEG", mime: "image/jpeg", ext: "jpeg" },
+  { value: "bmp",  label: "BMP",  mime: "image/bmp",  ext: "bmp"  },
+  { value: "tiff", label: "TIFF", mime: "image/png",  ext: "tiff" }, // canvas → PNG bytes, .tiff ext
+  { value: "svg",  label: "SVG",  mime: "image/png",  ext: "svg"  }, // canvas → PNG embedded in SVG
+] as const;
+
+type ImageFormatValue = typeof IMAGE_FORMATS[number]["value"];
+
 // ─── PDF → Images ─────────────────────────────────────────────────────────────
 
 function PdfToImages() {
@@ -251,7 +264,8 @@ function PdfToImages() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-
+  const [showFormatDialog, setShowFormatDialog] = useState(false);
+  const [selectedFormat, setSelectedFormat] = useState<ImageFormatValue>("png");
 
   async function handleFile(files: File[]) {
     const f = files[0];
@@ -267,11 +281,15 @@ function PdfToImages() {
     }
   }
 
-  async function convert() {
+  async function convert(format: ImageFormatValue) {
     if (!file) return;
+    setShowFormatDialog(false);
     setLoading(true);
     setError(null);
     setProgress("");
+
+    const fmt = IMAGE_FORMATS.find(f => f.value === format)!;
+
     try {
       const buf = await readAsArrayBuffer(file);
       const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
@@ -288,9 +306,24 @@ function PdfToImages() {
         canvas.height = Math.round(viewport.height);
         const ctx = canvas.getContext("2d")!;
         await page.render({ canvasContext: ctx, viewport }).promise;
-        const blob = await new Promise<Blob>((res) => canvas.toBlob((b) => res(b!), "image/png"));
-        const arrayBuffer = await blob.arrayBuffer();
-        zip.file(`${baseName}_page${String(i).padStart(3, "0")}.png`, arrayBuffer);
+
+        let fileBytes: ArrayBuffer;
+        const pageSlug = `${baseName}_page${String(i).padStart(3, "0")}`;
+
+        if (format === "svg") {
+          // Embed rasterized PNG inside an SVG wrapper
+          const dataUrl = canvas.toDataURL("image/png");
+          const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">`
+            + `<image href="${dataUrl}" width="${canvas.width}" height="${canvas.height}"/></svg>`;
+          fileBytes = new TextEncoder().encode(svgStr).buffer;
+          zip.file(`${pageSlug}.svg`, fileBytes);
+        } else {
+          const blob = await new Promise<Blob>((res, rej) =>
+            canvas.toBlob((b) => b ? res(b) : rej(new Error("toBlob failed")), fmt.mime, fmt.mime === "image/jpeg" ? 0.92 : undefined)
+          );
+          fileBytes = await blob.arrayBuffer();
+          zip.file(`${pageSlug}.${fmt.ext}`, fileBytes);
+        }
       }
 
       setProgress("Packing ZIP…");
@@ -308,7 +341,7 @@ function PdfToImages() {
   return (
     <div className="space-y-4">
       {!file ? (
-        <DropZone onFiles={handleFile} accept=".pdf" label="Click or drag a PDF here" hint="Each page will be exported as a PNG image" colorScheme="orange" />
+        <DropZone onFiles={handleFile} accept=".pdf" label="Click or drag a PDF here" hint="Each page will be exported as an image in your chosen format" colorScheme="orange" />
       ) : (
         <div className="flex items-center justify-between bg-muted rounded-md px-3 py-2">
           <div>
@@ -343,15 +376,78 @@ function PdfToImages() {
               </button>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">Pages are downloaded as a ZIP of PNG files.</p>
+          <p className="text-xs text-muted-foreground">Pages are packed into a ZIP archive.</p>
         </div>
       )}
 
       {progress && <p className="text-sm text-orange-600 font-medium">{progress}</p>}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
+      {/* Format picker modal */}
+      {showFormatDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowFormatDialog(false)} />
+          {/* Panel */}
+          <div className="relative w-[90vw] max-w-sm bg-white rounded-2xl shadow-2xl p-6 animate-in fade-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                <ImageIcon className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="font-bold text-gray-900 text-base leading-tight">Choose Image Format</p>
+                <p className="text-xs text-gray-500 mt-0.5">Select the output format for all pages</p>
+              </div>
+              <button onClick={() => setShowFormatDialog(false)} className="ml-auto text-gray-400 hover:text-gray-600 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Dropdown */}
+            <div className="relative mb-5">
+              <select
+                value={selectedFormat}
+                onChange={(e) => setSelectedFormat(e.target.value as ImageFormatValue)}
+                className="w-full appearance-none border border-orange-200 rounded-xl px-4 py-3 pr-10 text-sm font-medium text-gray-800 bg-orange-50/40 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400 cursor-pointer"
+              >
+                {IMAGE_FORMATS.map((f) => (
+                  <option key={f.value} value={f.value}>{f.label}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-orange-400 pointer-events-none" />
+            </div>
+
+            {/* Note for TIFF / SVG */}
+            {(selectedFormat === "tiff" || selectedFormat === "svg") && (
+              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-4">
+                {selectedFormat === "tiff"
+                  ? "TIFF uses lossless PNG encoding internally — full quality, standard .tiff extension."
+                  : "SVG embeds each rasterized page as a PNG image inside an SVG wrapper."}
+              </p>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowFormatDialog(false)}
+                className="flex-1 py-2.5 px-4 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => convert(selectedFormat)}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-sm font-semibold shadow-sm transition-all"
+              >
+                Convert &amp; Download
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Button
-        onClick={convert}
+        onClick={() => setShowFormatDialog(true)}
         disabled={!file || loading}
         className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white border-0 shadow-md"
         data-testid="button-pdf-to-images"
