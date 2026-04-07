@@ -256,10 +256,22 @@ export default function Toolbar({
           style={{ width: 38 }}
         >
           <span className="toolbar-tip">Text Box</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="4 7 4 4 20 4 20 7"/>
-            <line x1="9" y1="20" x2="15" y2="20"/>
-            <line x1="12" y1="4" x2="12" y2="20"/>
+          {/* Text cursor / I-beam icon */}
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" strokeLinecap="round" strokeLinejoin="round">
+            {/* Top serif bar */}
+            <rect x="5" y="2" width="14" height="2.5" rx="1.2"/>
+            {/* Left stem going down from top serif */}
+            <rect x="8.5" y="4.5" width="3" height="6" rx="0.8"/>
+            {/* Right stem going down from top serif */}
+            <rect x="12.5" y="4.5" width="3" height="6" rx="0.8"/>
+            {/* Middle connector */}
+            <rect x="5" y="10.8" width="14" height="2.5" rx="1.2"/>
+            {/* Left stem going down to bottom serif */}
+            <rect x="8.5" y="13.5" width="3" height="6" rx="0.8"/>
+            {/* Right stem going down to bottom serif */}
+            <rect x="12.5" y="13.5" width="3" height="6" rx="0.8"/>
+            {/* Bottom serif bar */}
+            <rect x="5" y="19.5" width="14" height="2.5" rx="1.2"/>
           </svg>
         </button>
 
