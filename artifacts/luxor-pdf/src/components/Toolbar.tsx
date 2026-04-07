@@ -245,22 +245,12 @@ export default function Toolbar({
           style={{ width: 38 }}
         >
           <span className="toolbar-tip">Text Box</span>
-          {/* Text cursor / I-beam icon */}
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" strokeLinecap="round" strokeLinejoin="round">
-            {/* Top serif bar */}
-            <rect x="5" y="2" width="14" height="2.5" rx="1.2"/>
-            {/* Left stem going down from top serif */}
-            <rect x="8.5" y="4.5" width="3" height="6" rx="0.8"/>
-            {/* Right stem going down from top serif */}
-            <rect x="12.5" y="4.5" width="3" height="6" rx="0.8"/>
-            {/* Middle connector */}
-            <rect x="5" y="10.8" width="14" height="2.5" rx="1.2"/>
-            {/* Left stem going down to bottom serif */}
-            <rect x="8.5" y="13.5" width="3" height="6" rx="0.8"/>
-            {/* Right stem going down to bottom serif */}
-            <rect x="12.5" y="13.5" width="3" height="6" rx="0.8"/>
-            {/* Bottom serif bar */}
-            <rect x="5" y="19.5" width="14" height="2.5" rx="1.2"/>
+          {/* Bold capital T icon */}
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+            {/* Top horizontal bar of T */}
+            <rect x="2" y="2" width="20" height="4" rx="1.5"/>
+            {/* Vertical stem of T */}
+            <rect x="9" y="6" width="6" height="16" rx="1.5"/>
           </svg>
         </button>
 
