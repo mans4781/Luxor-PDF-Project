@@ -209,7 +209,7 @@ export default function PDFPage({
     return () => obs.disconnect();
   }, [pageNum, onVisible]);
 
-  // Render PDF page
+  // Render PDF page — renders at device pixel ratio for HD sharpness
   useEffect(() => {
     if (!pdfDocument || !pageCanvasRef.current) return;
     let cancelled = false;
@@ -218,16 +218,33 @@ export default function PDFPage({
       try {
         if (renderTaskRef.current) { renderTaskRef.current.cancel(); renderTaskRef.current = null; }
         const page = await pdfDocument.getPage(pageNum);
-        const viewport = page.getViewport({ scale: zoom });
+        const dpr = window.devicePixelRatio || 1;
+
+        // Render at physical pixels (zoom × DPR) for crispness
+        const viewport = page.getViewport({ scale: zoom * dpr });
+        const cssW = viewport.width / dpr;
+        const cssH = viewport.height / dpr;
+
         const canvas = pageCanvasRef.current!;
         if (cancelled) return;
+
+        // Physical canvas size = full resolution
         canvas.width = viewport.width;
         canvas.height = viewport.height;
+        // CSS size = logical size so it doesn't appear zoomed
+        canvas.style.width = `${cssW}px`;
+        canvas.style.height = `${cssH}px`;
+
         if (drawCanvasRef.current) {
           drawCanvasRef.current.width = viewport.width;
           drawCanvasRef.current.height = viewport.height;
+          drawCanvasRef.current.style.width = `${cssW}px`;
+          drawCanvasRef.current.style.height = `${cssH}px`;
         }
-        setPageSize({ w: viewport.width, h: viewport.height });
+
+        // Layout size in logical (CSS) pixels
+        setPageSize({ w: cssW, h: cssH });
+
         const ctx = canvas.getContext("2d")!;
         const task = page.render({ canvasContext: ctx, viewport });
         renderTaskRef.current = task;
