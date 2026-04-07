@@ -208,20 +208,22 @@ export default function Toolbar({
           {eraserIcon ? (
             <img src={eraserIcon} alt="Eraser" style={{ width: 18, height: 18, objectFit: "contain" }} />
           ) : (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round"
-              style={{ transform: "scaleX(-1)" }}>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
               <defs>
                 <linearGradient id="eg" x1="1" y1="1" x2="0" y2="0" gradientUnits="objectBoundingBox">
                   <stop offset="0%" stopColor="#00cfff"/>
                   <stop offset="100%" stopColor="#3a50f0"/>
                 </linearGradient>
               </defs>
-              <g transform="rotate(-42, 12, 11)">
-                <rect x="6" y="2" width="12" height="13" rx="3" fill="url(#eg)"/>
-                <rect x="6" y="15" width="12" height="5" rx="1.5" fill="#00cfff" fillOpacity="0.75"/>
-                <line x1="6" y1="15" x2="18" y2="15" stroke="white" strokeWidth="1.2" strokeOpacity="0.6"/>
+              {/* Flip horizontally around centre x=12 */}
+              <g transform="scale(-1,1) translate(-24,0)">
+                <g transform="rotate(-42, 12, 11)">
+                  <rect x="6" y="2" width="12" height="13" rx="3" fill="url(#eg)"/>
+                  <rect x="6" y="15" width="12" height="5" rx="1.5" fill="#00cfff" fillOpacity="0.75"/>
+                  <line x1="6" y1="15" x2="18" y2="15" stroke="white" strokeWidth="1.2" strokeOpacity="0.6"/>
+                </g>
+                <line x1="3" y1="22" x2="15" y2="22" stroke="url(#eg)" strokeWidth="2.2" strokeLinecap="round"/>
               </g>
-              <line x1="3" y1="22" x2="15" y2="22" stroke="url(#eg)" strokeWidth="2.2" strokeLinecap="round"/>
             </svg>
           )}
         </button>
