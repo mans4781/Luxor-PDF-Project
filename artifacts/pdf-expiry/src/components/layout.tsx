@@ -142,7 +142,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <span className="font-semibold tracking-tight text-lg" style={{ color: "#0000FF", fontFamily: "Century,'Century Gothic',Georgia,serif" }}>
-                LuxorSecure PDF
+                Luxor PDF Editor
               </span>
             </div>
           </div>
