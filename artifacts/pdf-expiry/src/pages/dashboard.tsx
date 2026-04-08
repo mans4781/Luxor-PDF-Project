@@ -109,7 +109,7 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="flex gap-5 min-h-[calc(100vh-120px)]">
+      <div className="flex gap-5 min-h-[calc(90vh-108px)]">
 
         {/* ── Left side: vertical tool cards ── */}
         <div className="flex flex-col gap-3 w-80 shrink-0 self-stretch">
