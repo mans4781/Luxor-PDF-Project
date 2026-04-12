@@ -118,9 +118,9 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
     document.addEventListener("mouseup", handleDragUp);
   }, [localPos, onMove]);
 
-  const lineH = Math.round(ann.fontSize * 1.35);
+  const lineH = Math.round(ann.fontSize * 1.485);
   const maxW = Math.max(60, pageWidth - localPos.x - 4);
-  const initialW = Math.min(maxW, Math.max(144, ann.fontSize * 10));
+  const initialW = Math.min(maxW, Math.max(288, ann.fontSize * 20));
   const ls = ann.letterSpacing ?? 0;
   const showControls = selected || editing || showColorPicker;
 
@@ -364,9 +364,9 @@ function ActiveTextInput({ editingText, textSize, textColor, pageWidth, onCommit
   onCommit: (id: string, content: string, x: number, y: number) => void;
   onCancel: () => void;
 }) {
-  const lineH = Math.round(textSize * 1.35);
+  const lineH = Math.round(textSize * 1.485);
   const maxW = Math.max(60, pageWidth - editingText.x - 4);
-  const initialW = Math.min(maxW, Math.max(120, textSize * 8));
+  const initialW = Math.min(maxW, Math.max(288, textSize * 20));
   const [width, setWidth] = useState(initialW);
   const measureRef = useRef<HTMLSpanElement>(null);
 
