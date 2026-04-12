@@ -26,7 +26,9 @@ interface ToolbarProps {
   textSize: number;
   isSpeaking: boolean;
   showContents: boolean;
+  searchOpen: boolean;
   onToggleContents: () => void;
+  onToggleSearch: () => void;
   onToolChange: (tool: ToolType) => void;
   onHighlightColorChange: (c: string) => void;
   onTextColorChange: (c: string) => void;
@@ -43,7 +45,7 @@ type PopoverType = "highlight" | "text" | null;
 export default function Toolbar({
   fileName, tool,
   highlightColor, textColor, textSize, isSpeaking,
-  showContents, onToggleContents,
+  showContents, searchOpen, onToggleContents, onToggleSearch,
   onToolChange,
   onHighlightColorChange, onTextColorChange, onTextSizeChange,
   onEraseAll, onReadAloud, onOpenFile, onDownload, onPrint,
@@ -289,6 +291,17 @@ export default function Toolbar({
       )}
 
       <div className="toolbar-sep" />
+
+      <button
+        className={`toolbar-btn ${searchOpen ? "active" : ""}`}
+        onClick={onToggleSearch}
+        title="Find in document (Ctrl+F)"
+      >
+        <span className="toolbar-tip">Find (Ctrl+F)</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
 
       <button className="toolbar-btn" onClick={onPrint} title="Print">
         <span className="toolbar-tip">Print</span>

@@ -4,6 +4,7 @@ import "pdfjs-dist/web/pdf_viewer.css";
 import Toolbar from "@/components/Toolbar";
 import PDFPage from "@/components/PDFPage";
 import ThumbnailPanel from "@/components/ThumbnailPanel";
+import SearchBar from "@/components/SearchBar";
 import { useAnnotations } from "@/lib/useAnnotations";
 import { ToolType } from "@/lib/annotationTypes";
 
@@ -26,6 +27,10 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   const [zoom, setZoom] = useState(1.0);
   const [rotation, setRotation] = useState(0);
   const [showContents, setShowContents] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchMatchList, setSearchMatchList] = useState<number[]>([]);
+  const [matchIndex, setMatchIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [tool, setTool] = useState<ToolType>("hand");
   const [highlightColor, setHighlightColor] = useState("#FFE566");
@@ -57,19 +62,88 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Ctrl+F / Cmd+F — open search (works even inside inputs)
+      if ((e.key === "f" || e.key === "F") && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        setSearchOpen(true);
+        return;
+      }
       if ((e.target as HTMLElement).tagName === "TEXTAREA" || (e.target as HTMLElement).tagName === "INPUT") return;
       if (e.key === "ArrowRight" || e.key === "ArrowDown") setCurrentPage(p => Math.min(totalPages, p + 1));
       if (e.key === "ArrowLeft" || e.key === "ArrowUp") setCurrentPage(p => Math.max(1, p - 1));
       if (e.key === "+" || e.key === "=") setZoom(z => Math.min(5, z + 0.15));
       if (e.key === "-") setZoom(z => Math.max(0.25, z - 0.15));
-      if (e.key === "Escape") { setTool("hand"); speechSynthesis.cancel(); setIsSpeaking(false); }
+      if (e.key === "Escape") {
+        if (searchOpen) { setSearchOpen(false); setSearchQuery(""); return; }
+        setTool("hand"); speechSynthesis.cancel(); setIsSpeaking(false);
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [totalPages]);
+  }, [totalPages, searchOpen]);
 
   // Stop speech on unmount
   useEffect(() => () => speechSynthesis.cancel(), []);
+
+  // Scan all pages for search matches whenever query changes
+  useEffect(() => {
+    if (!pdfDoc || !searchQuery.trim()) {
+      setSearchMatchList([]);
+      setMatchIndex(0);
+      return;
+    }
+    const term = searchQuery.toLowerCase().trim();
+    let cancelled = false;
+
+    (async () => {
+      const pages: number[] = [];
+      for (let i = 1; i <= totalPages; i++) {
+        try {
+          const page = await pdfDoc.getPage(i);
+          const content = await page.getTextContent();
+          const text = content.items.map((item: any) => item.str).join("").toLowerCase();
+          let idx = 0;
+          while ((idx = text.indexOf(term, idx)) !== -1) {
+            pages.push(i);
+            idx += term.length;
+          }
+        } catch { /* skip */ }
+        if (cancelled) return;
+      }
+      setSearchMatchList(pages);
+      setMatchIndex(0);
+      if (pages.length > 0) {
+        document.getElementById(`page-${pages[0]}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        setCurrentPage(pages[0]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [searchQuery, pdfDoc, totalPages]);
+
+  const handleSearchNext = useCallback(() => {
+    if (searchMatchList.length === 0) return;
+    const next = (matchIndex + 1) % searchMatchList.length;
+    setMatchIndex(next);
+    const page = searchMatchList[next];
+    document.getElementById(`page-${page}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setCurrentPage(page);
+  }, [matchIndex, searchMatchList]);
+
+  const handleSearchPrev = useCallback(() => {
+    if (searchMatchList.length === 0) return;
+    const prev = (matchIndex - 1 + searchMatchList.length) % searchMatchList.length;
+    setMatchIndex(prev);
+    const page = searchMatchList[prev];
+    document.getElementById(`page-${page}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setCurrentPage(page);
+  }, [matchIndex, searchMatchList]);
+
+  const handleSearchClose = useCallback(() => {
+    setSearchOpen(false);
+    setSearchQuery("");
+    setSearchMatchList([]);
+    setMatchIndex(0);
+  }, []);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
@@ -143,7 +217,9 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         textSize={textSize}
         isSpeaking={isSpeaking}
         showContents={showContents}
+        searchOpen={searchOpen}
         onToggleContents={() => setShowContents(s => !s)}
+        onToggleSearch={() => { setSearchOpen(s => !s); if (searchOpen) { setSearchQuery(""); setSearchMatchList([]); } }}
         onToolChange={setTool}
         onHighlightColorChange={setHighlightColor}
         onTextColorChange={setTextColor}
@@ -154,6 +230,19 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         onDownload={handleDownload}
         onPrint={() => window.print()}
       />
+
+      {/* ── Search bar ── */}
+      {searchOpen && (
+        <SearchBar
+          query={searchQuery}
+          matchIndex={matchIndex}
+          totalMatches={searchMatchList.length}
+          onQueryChange={setSearchQuery}
+          onNext={handleSearchNext}
+          onPrev={handleSearchPrev}
+          onClose={handleSearchClose}
+        />
+      )}
 
       {/* ── Page thumbnails panel ── */}
       {showContents && pdfDoc && (
@@ -297,6 +386,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
             pageNum={pageNum}
             zoom={zoom}
             rotation={rotation}
+            searchTerm={searchQuery.trim()}
             tool={tool}
             annotations={getPageAnnotations(pageNum)}
             highlightColor={highlightColor}

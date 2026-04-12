@@ -7,6 +7,7 @@ interface PDFPageProps {
   pageNum: number;
   zoom: number;
   rotation: number;
+  searchTerm: string;
   tool: ToolType;
   annotations: Annotation[];
   highlightColor: string;
@@ -185,8 +186,44 @@ function DraggableTextBox({ ann, onMove, onContentChange, onDelete }: TextBoxPro
 }
 
 // ── Main PDFPage component ────────────────────────────────────────────────────
+function highlightTextInLayer(container: HTMLElement, term: string) {
+  // Remove previous search highlights
+  container.querySelectorAll("mark.search-hl").forEach(mark => {
+    const parent = mark.parentNode!;
+    while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+    parent.removeChild(mark);
+    parent.normalize();
+  });
+  if (!term) return;
+
+  const termLower = term.toLowerCase();
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+  const textNodes: Text[] = [];
+  let n: Text | null;
+  while ((n = walker.nextNode() as Text | null)) textNodes.push(n);
+
+  for (let i = textNodes.length - 1; i >= 0; i--) {
+    const node = textNodes[i];
+    const text = node.textContent || "";
+    const lower = text.toLowerCase();
+    const positions: number[] = [];
+    let idx = 0;
+    while ((idx = lower.indexOf(termLower, idx)) !== -1) { positions.push(idx); idx += termLower.length; }
+    for (let j = positions.length - 1; j >= 0; j--) {
+      try {
+        const range = document.createRange();
+        range.setStart(node, positions[j]);
+        range.setEnd(node, positions[j] + termLower.length);
+        const mark = document.createElement("mark");
+        mark.className = "search-hl";
+        range.surroundContents(mark);
+      } catch { /* skip cross-node ranges */ }
+    }
+  }
+}
+
 export default function PDFPage({
-  pdfDocument, pageNum, zoom, rotation, tool, annotations,
+  pdfDocument, pageNum, zoom, rotation, searchTerm, tool, annotations,
   highlightColor, textColor, textSize,
   onAnnotationAdd, onAnnotationUpdate, onAnnotationRemove,
   onVisible,
@@ -293,6 +330,11 @@ export default function PDFPage({
   }, [pdfDocument, pageNum, zoom, rotation]);
 
   useEffect(() => { redrawAnnotations(); }, [annotations, pageSize]);
+
+  // Re-highlight search term whenever it changes or the page re-renders
+  useEffect(() => {
+    if (textLayerRef.current) highlightTextInLayer(textLayerRef.current, searchTerm);
+  }, [searchTerm, pageSize]);
 
   function redrawAnnotations() {
     const canvas = drawCanvasRef.current;
