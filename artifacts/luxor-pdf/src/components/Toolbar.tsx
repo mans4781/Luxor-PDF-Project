@@ -79,11 +79,6 @@ export default function Toolbar({
 
   return (
     <div className="luxor-toolbar" ref={popoverRef}>
-      {/* Brand */}
-      <div className="toolbar-brand">
-        <div className="toolbar-brand-icon">L</div>
-      </div>
-
       <button
         className={`toolbar-btn ${showContents ? "active" : ""}`}
         onClick={onToggleContents}
