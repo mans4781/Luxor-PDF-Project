@@ -3,6 +3,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/web/pdf_viewer.css";
 import Toolbar from "@/components/Toolbar";
 import PDFPage from "@/components/PDFPage";
+import ThumbnailPanel from "@/components/ThumbnailPanel";
 import { useAnnotations } from "@/lib/useAnnotations";
 import { ToolType } from "@/lib/annotationTypes";
 
@@ -24,6 +25,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [zoom, setZoom] = useState(1.0);
   const [rotation, setRotation] = useState(0);
+  const [showContents, setShowContents] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tool, setTool] = useState<ToolType>("hand");
   const [highlightColor, setHighlightColor] = useState("#FFE566");
@@ -140,6 +142,8 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         textColor={textColor}
         textSize={textSize}
         isSpeaking={isSpeaking}
+        showContents={showContents}
+        onToggleContents={() => setShowContents(s => !s)}
         onToolChange={setTool}
         onHighlightColorChange={setHighlightColor}
         onTextColorChange={setTextColor}
@@ -150,6 +154,17 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         onDownload={handleDownload}
         onPrint={() => window.print()}
       />
+
+      {/* ── Page thumbnails panel ── */}
+      {showContents && pdfDoc && (
+        <ThumbnailPanel
+          pdfDoc={pdfDoc}
+          totalPages={totalPages}
+          currentPage={currentPage}
+          rotation={rotation}
+          onPageChange={handlePageChange}
+        />
+      )}
 
       {/* ── Right sidebar: zoom + page navigation ── */}
       <div className="right-sidebar">
@@ -274,7 +289,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
 
       </div>
 
-      <div className="luxor-viewer">
+      <div className={`luxor-viewer${showContents ? " viewer-with-panel" : ""}`}>
         {pdfDoc && allPageNums.map(pageNum => (
           <PDFPage
             key={pageNum}

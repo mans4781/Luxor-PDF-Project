@@ -25,6 +25,8 @@ interface ToolbarProps {
   textColor: string;
   textSize: number;
   isSpeaking: boolean;
+  showContents: boolean;
+  onToggleContents: () => void;
   onToolChange: (tool: ToolType) => void;
   onHighlightColorChange: (c: string) => void;
   onTextColorChange: (c: string) => void;
@@ -41,6 +43,7 @@ type PopoverType = "highlight" | "text" | null;
 export default function Toolbar({
   fileName, tool,
   highlightColor, textColor, textSize, isSpeaking,
+  showContents, onToggleContents,
   onToolChange,
   onHighlightColorChange, onTextColorChange, onTextSizeChange,
   onEraseAll, onReadAloud, onOpenFile, onDownload, onPrint,
@@ -80,6 +83,24 @@ export default function Toolbar({
       <div className="toolbar-brand">
         <div className="toolbar-brand-icon">L</div>
       </div>
+
+      <button
+        className={`toolbar-btn ${showContents ? "active" : ""}`}
+        onClick={onToggleContents}
+        title="Page thumbnails"
+      >
+        <span className="toolbar-tip">Page Contents</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="9" rx="1"/>
+          <rect x="3" y="15" width="7" height="6" rx="1"/>
+          <line x1="14" y1="5" x2="21" y2="5"/>
+          <line x1="14" y1="9" x2="21" y2="9"/>
+          <line x1="14" y1="16" x2="21" y2="16"/>
+          <line x1="14" y1="20" x2="21" y2="20"/>
+        </svg>
+      </button>
+
+      <div className="toolbar-sep" />
 
       <button className="toolbar-btn" onClick={onOpenFile} title="Open PDF">
         <span className="toolbar-tip">Open PDF</span>
