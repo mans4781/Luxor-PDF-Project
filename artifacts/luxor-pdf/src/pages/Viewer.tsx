@@ -82,6 +82,18 @@ export default function Viewer({ file, onClose }: ViewerProps) {
     return () => window.removeEventListener("keydown", handler);
   }, [totalPages, searchOpen]);
 
+  // Ctrl+Scroll → zoom PDF, not the browser
+  useEffect(() => {
+    const handler = (e: WheelEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.1 : -0.1;
+      setZoom(z => Math.min(5, Math.max(0.25, parseFloat((z + delta).toFixed(2)))));
+    };
+    window.addEventListener("wheel", handler, { passive: false });
+    return () => window.removeEventListener("wheel", handler);
+  }, []);
+
   // Stop speech on unmount
   useEffect(() => () => speechSynthesis.cancel(), []);
 
