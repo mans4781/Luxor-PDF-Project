@@ -6,6 +6,7 @@ interface PDFPageProps {
   pdfDocument: any;
   pageNum: number;
   zoom: number;
+  rotation: number;
   tool: ToolType;
   annotations: Annotation[];
   highlightColor: string;
@@ -185,7 +186,7 @@ function DraggableTextBox({ ann, onMove, onContentChange, onDelete }: TextBoxPro
 
 // ── Main PDFPage component ────────────────────────────────────────────────────
 export default function PDFPage({
-  pdfDocument, pageNum, zoom, tool, annotations,
+  pdfDocument, pageNum, zoom, rotation, tool, annotations,
   highlightColor, textColor, textSize,
   onAnnotationAdd, onAnnotationUpdate, onAnnotationRemove,
   onVisible,
@@ -223,9 +224,11 @@ export default function PDFPage({
         const page = await pdfDocument.getPage(pageNum);
         // Use at least 2× DPR to guarantee crisp, HD-quality text & images
         const dpr = Math.max(2, window.devicePixelRatio || 1);
+        // Combine page's native rotation with user-applied rotation
+        const totalRotation = ((page.rotate ?? 0) + rotation) % 360;
 
         // Render at physical pixels (zoom × dpr) for crispness
-        const viewport = page.getViewport({ scale: zoom * dpr });
+        const viewport = page.getViewport({ scale: zoom * dpr, rotation: totalRotation });
         const cssW = viewport.width / dpr;
         const cssH = viewport.height / dpr;
 
@@ -267,7 +270,7 @@ export default function PDFPage({
           }
           textLayerRef.current.innerHTML = "";
           // Use logical-pixel viewport so text positions match CSS canvas size
-          const textViewport = page.getViewport({ scale: zoom });
+          const textViewport = page.getViewport({ scale: zoom, rotation: totalRotation });
           const textContent = await page.getTextContent();
           const tl = new TextLayer({
             textContentSource: textContent,
@@ -287,7 +290,7 @@ export default function PDFPage({
       cancelled = true;
       textLayerTaskRef.current?.cancel?.();
     };
-  }, [pdfDocument, pageNum, zoom]);
+  }, [pdfDocument, pageNum, zoom, rotation]);
 
   useEffect(() => { redrawAnnotations(); }, [annotations, pageSize]);
 

@@ -23,6 +23,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [zoom, setZoom] = useState(1.0);
+  const [rotation, setRotation] = useState(0);
   const [loading, setLoading] = useState(true);
   const [tool, setTool] = useState<ToolType>("hand");
   const [highlightColor, setHighlightColor] = useState("#FFE566");
@@ -234,6 +235,32 @@ export default function Viewer({ file, onClose }: ViewerProps) {
 
         <div className="sidebar-sep" />
 
+        {/* Rotate */}
+        <div className="sidebar-group">
+          <button
+            className="sidebar-btn"
+            title="Rotate clockwise (90°)"
+            onClick={() => setRotation(r => (r + 90) % 360)}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 2v6h-6"/>
+              <path d="M21 8C19.6 5 16.8 3 13.5 3 8.8 3 5 6.8 5 11.5S8.8 20 13.5 20c3.3 0 6.2-2 7.6-5"/>
+            </svg>
+          </button>
+          <button
+            className="sidebar-btn"
+            title="Rotate counter-clockwise (90°)"
+            onClick={() => setRotation(r => (r + 270) % 360)}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 2v6h6"/>
+              <path d="M3 8c1.4-3 4.2-5 7.5-5C15.2 3 19 6.8 19 11.5S15.2 20 10.5 20c-3.3 0-6.2-2-7.6-5"/>
+            </svg>
+          </button>
+        </div>
+
+        <div className="sidebar-sep" />
+
         {/* Fit to width */}
         <button
           className="sidebar-btn"
@@ -254,6 +281,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
             pdfDocument={pdfDoc}
             pageNum={pageNum}
             zoom={zoom}
+            rotation={rotation}
             tool={tool}
             annotations={getPageAnnotations(pageNum)}
             highlightColor={highlightColor}
