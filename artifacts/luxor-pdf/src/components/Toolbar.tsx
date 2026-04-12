@@ -262,19 +262,19 @@ export default function Toolbar({
           style={{ gap: 0, width: 38 }}
         >
           <span className="toolbar-tip">Highlight</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
             <defs>
-              <linearGradient id="mg" x1="1" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
-                <stop offset="0%" stopColor="#3a50f0"/>
-                <stop offset="100%" stopColor="#00cfff"/>
+              <linearGradient id="hlg" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
+                <stop offset="0%" stopColor="#FFD700"/>
+                <stop offset="100%" stopColor="#FFA500"/>
               </linearGradient>
             </defs>
             <g transform="rotate(-45, 12, 12)">
-              <rect x="9" y="1" width="6" height="4.5" rx="2" fill="#3a50f0"/>
-              <rect x="9" y="5.5" width="6" height="11" rx="1" fill="url(#mg)"/>
-              <rect x="10.2" y="7" width="1.6" height="7" rx="0.8" fill="white" fillOpacity="0.35"/>
-              <path d="M9 16.5 L10.5 21 L13.5 21 L15 16.5 Z" fill="#00cfff"/>
-              <path d="M10.5 21 L12 23.5 L13.5 21 Z" fill="#00cfff" fillOpacity="0.7"/>
+              <rect x="9.5" y="1" width="5" height="3.5" rx="1.5" fill="#e69500" stroke="#cc8400" strokeWidth="0.4"/>
+              <rect x="9.5" y="4.5" width="5" height="12" rx="0.8" fill="url(#hlg)" stroke="#e69500" strokeWidth="0.3"/>
+              <rect x="10.8" y="6" width="1.4" height="8" rx="0.7" fill="white" fillOpacity="0.4"/>
+              <path d="M9.5 16.5 L10.8 20.5 L13.2 20.5 L14.5 16.5 Z" fill="#FFA500"/>
+              <path d="M10.8 20.5 L12 22.5 L13.2 20.5 Z" fill="#e69500"/>
             </g>
           </svg>
           <div style={{
@@ -315,21 +315,20 @@ export default function Toolbar({
           {eraserIcon ? (
             <img src={eraserIcon} alt="Eraser" style={{ width: 18, height: 18, objectFit: "contain" }} />
           ) : (
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
               <defs>
-                <linearGradient id="eg" x1="1" y1="1" x2="0" y2="0" gradientUnits="objectBoundingBox">
-                  <stop offset="0%" stopColor="#00cfff"/>
-                  <stop offset="100%" stopColor="#3a50f0"/>
+                <linearGradient id="erg" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
+                  <stop offset="0%" stopColor="#7B8CDE"/>
+                  <stop offset="100%" stopColor="#4A5AC7"/>
                 </linearGradient>
               </defs>
-              <g transform="scale(-1,1) translate(-24,0)">
-                <g transform="rotate(-42, 12, 11)">
-                  <rect x="6" y="2" width="12" height="13" rx="3" fill="url(#eg)"/>
-                  <rect x="6" y="15" width="12" height="5" rx="1.5" fill="#00cfff" fillOpacity="0.75"/>
-                  <line x1="6" y1="15" x2="18" y2="15" stroke="white" strokeWidth="1.2" strokeOpacity="0.6"/>
-                </g>
-                <line x1="3" y1="22" x2="15" y2="22" stroke="url(#eg)" strokeWidth="2.2" strokeLinecap="round"/>
+              <g transform="rotate(-30, 12, 12)">
+                <rect x="7" y="2" width="10" height="13" rx="2" fill="url(#erg)" stroke="#3d4db3" strokeWidth="0.5"/>
+                <rect x="8.5" y="4" width="2" height="8" rx="1" fill="white" fillOpacity="0.25"/>
+                <rect x="7" y="15" width="10" height="5" rx="1.5" fill="#E8E8E8" stroke="#ccc" strokeWidth="0.4"/>
+                <line x1="7" y1="15" x2="17" y2="15" stroke="#bbb" strokeWidth="0.8"/>
               </g>
+              <line x1="4" y1="22" x2="20" y2="22" stroke="#999" strokeWidth="1.8" strokeLinecap="round"/>
             </svg>
           )}
         </button>
