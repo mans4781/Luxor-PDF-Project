@@ -312,10 +312,14 @@ export default function PDFPage({
       lines.push({ top: item.st, height: item.sb - item.st, items: [item] });
     }
 
-    // ── Step 3: apply Adobe-style per-line x-clipping ────────────────────
-    // • First line  → from the drag-start x to the RIGHT edge of the line
-    // • Middle lines → full line width (no x clipping at all)
-    // • Last line   → from the LEFT edge of the line to the drag-end x
+    // ── Step 3: apply per-line x-clipping ────────────────────────────────
+    // • First line  → spans whose right edge is past the drag-start x
+    // • Middle lines → spans within the drag rectangle's x bounds (preserves columns)
+    // • Last line   → spans whose left edge is before the drag-end x
+    // This way a two-column drag stays in its column, and the last word is never cut off.
+    const selL = Math.min(sx, ex);
+    const selR = Math.max(sx, ex);
+
     const boxes: { left: number; top: number; width: number; height: number }[] = [];
     const texts: string[] = [];
     const isMulti = lines.length > 1;
@@ -326,17 +330,17 @@ export default function PDFPage({
 
       if (isMulti) {
         if (i === 0) {
-          // First line: only spans whose right edge is past the anchor
-          lineItems = lineItems.filter(s => s.sr > firstAnchorX);
+          // First line: right of the start anchor, within the drag's right bound
+          lineItems = lineItems.filter(s => s.sr > firstAnchorX && s.sl < selR);
         } else if (i === lines.length - 1) {
-          // Last line: only spans whose left edge is before the anchor
-          lineItems = lineItems.filter(s => s.sl < lastAnchorX);
+          // Last line: left of the end anchor, within the drag's left bound
+          lineItems = lineItems.filter(s => s.sl < lastAnchorX && s.sr > selL);
+        } else {
+          // Middle lines: respect the horizontal drag bounds → column-safe
+          lineItems = lineItems.filter(s => s.sl < selR && s.sr > selL);
         }
-        // Intermediate lines: keep all — no x clipping
       } else {
         // Single-line drag: honour both x bounds
-        const selL = Math.min(sx, ex);
-        const selR = Math.max(sx, ex);
         lineItems = lineItems.filter(s => s.sl < selR && s.sr > selL);
       }
 
