@@ -212,7 +212,7 @@ export default function PDFPage({
     return () => obs.disconnect();
   }, [pageNum, onVisible]);
 
-  // Render PDF page — renders at device pixel ratio for HD sharpness
+  // Render PDF page — renders at 2× minimum for HD sharpness
   useEffect(() => {
     if (!pdfDocument || !pageCanvasRef.current) return;
     let cancelled = false;
@@ -221,9 +221,10 @@ export default function PDFPage({
       try {
         if (renderTaskRef.current) { renderTaskRef.current.cancel(); renderTaskRef.current = null; }
         const page = await pdfDocument.getPage(pageNum);
-        const dpr = window.devicePixelRatio || 1;
+        // Use at least 2× DPR to guarantee crisp, HD-quality text & images
+        const dpr = Math.max(2, window.devicePixelRatio || 1);
 
-        // Render at physical pixels (zoom × DPR) for crispness
+        // Render at physical pixels (zoom × dpr) for crispness
         const viewport = page.getViewport({ scale: zoom * dpr });
         const cssW = viewport.width / dpr;
         const cssH = viewport.height / dpr;
@@ -249,6 +250,8 @@ export default function PDFPage({
         setPageSize({ w: cssW, h: cssH });
 
         const ctx = canvas.getContext("2d")!;
+        // Disable smoothing so pixel-perfect text stays sharp when scaling
+        ctx.imageSmoothingEnabled = false;
         const task = page.render({ canvasContext: ctx, viewport });
         renderTaskRef.current = task;
         await task.promise;

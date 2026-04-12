@@ -148,7 +148,12 @@ html, body, #root {
   flex-shrink: 0;
 }
 
-.pdf-page-canvas { display: block; }
+.pdf-page-canvas {
+  display: block;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
 
 /* ── Home screen ─────────────────────────────────────────────────────────── */
 
