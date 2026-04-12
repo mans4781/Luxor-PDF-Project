@@ -453,15 +453,11 @@ export default function PDFPage({
     >
       <canvas ref={pageCanvasRef} className="pdf-page-canvas" />
 
-      {/* pdfjs text layer — native browser selection when hand tool is active */}
+      {/* pdfjs text layer — always interactive; higher-z tool overlays block it
+           when highlight or text tools are active */}
       <div
         ref={textLayerRef}
         className="textLayer"
-        style={{
-          zIndex: tool === "hand" ? 10 : 2,
-          pointerEvents: tool === "hand" ? "auto" : "none",
-          cursor: tool === "hand" ? "text" : "default",
-        }}
       />
 
       {/* Highlight drawing canvas (z-index 3) */}

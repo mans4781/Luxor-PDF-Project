@@ -429,25 +429,12 @@ mark.search-hl {
   flex-shrink: 0;
 }
 
-/* Text layer: selectable when hand tool is active (controlled via inline style) */
-.pdf-page-wrapper .textLayer {
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  cursor: text;
-}
-
-.pdf-page-wrapper .textLayer span,
-.pdf-page-wrapper .textLayer br {
-  user-select: text !important;
-  -webkit-user-select: text !important;
-}
-
-/* Light-green native selection highlight (Edge-style) */
+/* Microsoft Edge-style blue selection highlight on the pdfjs text layer */
 .pdf-page-wrapper .textLayer ::selection {
-  background: rgba(144, 238, 144, 0.45) !important;
+  background: rgba(0, 120, 215, 0.35) !important;
 }
 .pdf-page-wrapper .textLayer ::-moz-selection {
-  background: rgba(144, 238, 144, 0.45) !important;
+  background: rgba(0, 120, 215, 0.35) !important;
 }
 
 .pdf-page-canvas {
