@@ -58,7 +58,7 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
   const [localPos, setLocalPos] = useState({ x: ann.x, y: ann.y });
   const [inputWidth, setInputWidth] = useState<number | null>(null);
   const dragRef = useRef<{ startMouseX: number; startMouseY: number; startX: number; startY: number } | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -259,10 +259,11 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
       />
 
       {editing ? (
-        <input
+        <textarea
           ref={inputRef}
           autoFocus
           defaultValue={ann.content}
+          rows={1}
           style={{
             fontSize: ann.fontSize,
             color: ann.color,
@@ -271,7 +272,7 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
             background: "rgba(255,255,255,0.97)",
             border: "1.5px dashed #E81123",
             outline: "none",
-            height: lineH,
+            minHeight: lineH,
             width: inputWidth ?? initialW,
             maxWidth: maxW,
             padding: "0 4px",
@@ -279,16 +280,23 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
             pointerEvents: "all",
             borderRadius: 2,
             boxSizing: "border-box",
+            resize: "none",
+            overflow: "hidden",
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+            display: "block",
           }}
           onChange={e => {
             if (measureRef.current) {
-              measureRef.current.textContent = e.target.value || "";
+              const longestLine = e.target.value.split("\n").reduce((a, b) => a.length > b.length ? a : b, "");
+              measureRef.current.textContent = longestLine || "";
               updateInputWidth();
             }
+            e.target.style.height = "auto";
+            e.target.style.height = e.target.scrollHeight + "px";
           }}
           onKeyDown={e => {
-            if (e.key === "Escape") { e.stopPropagation(); setEditing(false); setInputWidth(null); }
-            if (e.key === "Enter") { e.preventDefault(); commitEdit(e.currentTarget.value); }
+            if (e.key === "Escape") { e.stopPropagation(); commitEdit(e.currentTarget.value); }
           }}
           onBlur={e => commitEdit(e.target.value)}
         />
@@ -301,11 +309,8 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
             fontFamily: "Times New Roman, serif",
             letterSpacing: ls,
             lineHeight: `${lineH}px`,
-            height: lineH,
+            minHeight: lineH,
             maxWidth: maxW,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
             cursor: "default",
             pointerEvents: "all",
             borderRadius: 2,
@@ -313,6 +318,8 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
             padding: "0 4px",
             boxSizing: "border-box",
             transition: "border-color 0.15s",
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
           }}
           title="Double-click to edit"
         >
@@ -337,12 +344,15 @@ function ActiveTextInput({ editingText, textSize, textColor, pageWidth, onCommit
   const [width, setWidth] = useState(initialW);
   const measureRef = useRef<HTMLSpanElement>(null);
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (measureRef.current) {
-      measureRef.current.textContent = e.target.value || "";
+      const longestLine = e.target.value.split("\n").reduce((a, b) => a.length > b.length ? a : b, "");
+      measureRef.current.textContent = longestLine || "";
       const textW = measureRef.current.offsetWidth + 16;
       setWidth(Math.min(maxW, Math.max(initialW, textW)));
     }
+    e.target.style.height = "auto";
+    e.target.style.height = e.target.scrollHeight + "px";
   }, [maxW, initialW]);
 
   return (
@@ -355,9 +365,9 @@ function ActiveTextInput({ editingText, textSize, textColor, pageWidth, onCommit
         }}
         aria-hidden="true"
       />
-      <input
+      <textarea
         autoFocus
-        type="text"
+        rows={1}
         style={{
           position: "absolute",
           left: editingText.x, top: editingText.y,
@@ -368,21 +378,22 @@ function ActiveTextInput({ editingText, textSize, textColor, pageWidth, onCommit
           outline: "none",
           width,
           maxWidth: maxW,
-          height: lineH,
+          minHeight: lineH,
           lineHeight: `${lineH}px`,
           padding: "0 4px",
           pointerEvents: "all", zIndex: 50,
           borderRadius: 2,
           boxSizing: "border-box",
+          resize: "none",
+          overflow: "hidden",
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-word",
+          display: "block",
         }}
         placeholder="Type here…"
         onChange={handleChange}
         onKeyDown={e => {
-          if (e.key === "Escape") { e.stopPropagation(); onCancel(); }
-          if (e.key === "Enter") {
-            e.preventDefault();
-            onCommit(editingText.id, e.currentTarget.value, editingText.x, editingText.y);
-          }
+          if (e.key === "Escape") { e.stopPropagation(); onCommit(editingText.id, e.currentTarget.value, editingText.x, editingText.y); }
         }}
         onBlur={e => onCommit(editingText.id, e.target.value, editingText.x, editingText.y)}
       />
