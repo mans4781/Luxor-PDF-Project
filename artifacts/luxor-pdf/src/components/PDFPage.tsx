@@ -253,68 +253,104 @@ export default function PDFPage({
   ) {
     if (!textLayerRef.current || !wrapperRef.current) return { boxes: [], text: "" };
 
-    // Re-resolve BOTH start and end against the CURRENT wrapper position
+    // Re-resolve BOTH endpoints against the CURRENT wrapper rect every time
     const wRect = wrapperRef.current.getBoundingClientRect();
     const sx = startClient.x - wRect.left;
     const sy = startClient.y - wRect.top;
-    const ex = endClient.x - wRect.left;
-    const ey = endClient.y - wRect.top;
+    const ex = endClient.x   - wRect.left;
+    const ey = endClient.y   - wRect.top;
 
-    const selL = Math.min(sx, ex);
     const selT = Math.min(sy, ey);
-    const selR = Math.max(sx, ex);
     const selB = Math.max(sy, ey);
 
     // Skip bare clicks
-    if (selR - selL < 3 && selB - selT < 3) return { boxes: [], text: "" };
+    if (Math.abs(sx - ex) < 3 && Math.abs(sy - ey) < 3) return { boxes: [], text: "" };
 
-    const spans = Array.from(
+    // Drag direction: are we going down the page?
+    const draggingDown = sy <= ey;
+    // First-line anchor x (where the drag started on the first line)
+    const firstAnchorX = draggingDown ? sx : ex;
+    // Last-line anchor x (where the drag ended on the last line)
+    const lastAnchorX  = draggingDown ? ex : sx;
+
+    // ── Step 1: collect all spans within the vertical selection band ──────
+    type SpanItem = { sl: number; st: number; sr: number; sb: number; t: string };
+    const allSpans = Array.from(
       textLayerRef.current.querySelectorAll<HTMLElement>("span:not(.endOfContent)")
     );
-    const boxes: { left: number; top: number; width: number; height: number }[] = [];
-    const texts: string[] = [];
-
-    for (const span of spans) {
-      const t = (span.textContent || "").trim();
-      if (!t) continue;
+    const items: SpanItem[] = [];
+    for (const span of allSpans) {
+      const t = span.textContent || "";
+      if (!t.trim()) continue;
       const r = span.getBoundingClientRect();
-      // Span position relative to wrapper — uses the same wRect snapshot
-      const sl = r.left - wRect.left;
-      const st = r.top  - wRect.top;
+      const sl = r.left   - wRect.left;
+      const st = r.top    - wRect.top;
       const sr = r.right  - wRect.left;
       const sb = r.bottom - wRect.top;
-      if (sl < selR && sr > selL && st < selB && sb > selT) {
-        boxes.push({ left: sl, top: st, width: Math.max(sr - sl, 2), height: Math.max(sb - st, 2) });
-        texts.push(span.textContent || "");
-      }
+      const cy = (st + sb) / 2;
+      if (cy >= selT && cy <= selB) items.push({ sl, st, sr, sb, t });
     }
-    if (boxes.length === 0) return { boxes: [], text: "" };
+    if (items.length === 0) return { boxes: [], text: "" };
 
-    // Sort by reading order
-    const paired = boxes.map((b, i) => ({ b, t: texts[i] }));
-    paired.sort((a, b) => a.b.top - b.b.top || a.b.left - b.b.left);
+    // ── Step 2: sort & group into lines ──────────────────────────────────
+    items.sort((a, b) => a.st - b.st || a.sl - b.sl);
+    type Line = { top: number; height: number; items: SpanItem[] };
+    const lines: Line[] = [];
+    for (const item of items) {
+      const cy = (item.st + item.sb) / 2;
+      const last = lines[lines.length - 1];
+      if (last) {
+        const lastCy = last.top + last.height / 2;
+        const threshold = (item.sb - item.st + last.height) / 2 * 0.55;
+        if (Math.abs(cy - lastCy) < threshold) {
+          last.items.push(item);
+          last.top    = Math.min(last.top, item.st);
+          last.height = Math.max(last.height, item.sb - last.top);
+          continue;
+        }
+      }
+      lines.push({ top: item.st, height: item.sb - item.st, items: [item] });
+    }
 
-    // Merge spans on the same line into a single continuous rectangle.
-    // Threshold scales with font size: same line if centres are within 55% of average height.
-    const merged: { left: number; top: number; width: number; height: number }[] = [];
-    const orderedTexts: string[] = [];
-    for (const { b, t } of paired) {
-      const last = merged[merged.length - 1];
-      const bCy = b.top + b.height / 2;
-      const lCy = last ? last.top + last.height / 2 : NaN;
-      const threshold = last ? (b.height + last.height) / 2 * 0.55 : 0;
-      if (last && Math.abs(bCy - lCy) < threshold) {
-        const newRight = Math.max(last.left + last.width, b.left + b.width);
-        last.top    = Math.min(last.top, b.top);
-        last.height = Math.max(last.height, b.height);
-        last.width  = newRight - last.left;
-        orderedTexts[orderedTexts.length - 1] += t;
+    // ── Step 3: apply Adobe-style per-line x-clipping ────────────────────
+    // • First line  → from the drag-start x to the RIGHT edge of the line
+    // • Middle lines → full line width (no x clipping at all)
+    // • Last line   → from the LEFT edge of the line to the drag-end x
+    const boxes: { left: number; top: number; width: number; height: number }[] = [];
+    const texts: string[] = [];
+    const isMulti = lines.length > 1;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      let lineItems = line.items;
+
+      if (isMulti) {
+        if (i === 0) {
+          // First line: only spans whose right edge is past the anchor
+          lineItems = lineItems.filter(s => s.sr > firstAnchorX);
+        } else if (i === lines.length - 1) {
+          // Last line: only spans whose left edge is before the anchor
+          lineItems = lineItems.filter(s => s.sl < lastAnchorX);
+        }
+        // Intermediate lines: keep all — no x clipping
       } else {
-        merged.push({ ...b });
-        orderedTexts.push(t);
+        // Single-line drag: honour both x bounds
+        const selL = Math.min(sx, ex);
+        const selR = Math.max(sx, ex);
+        lineItems = lineItems.filter(s => s.sl < selR && s.sr > selL);
       }
+
+      if (lineItems.length === 0) continue;
+
+      const left   = Math.min(...lineItems.map(s => s.sl));
+      const right  = Math.max(...lineItems.map(s => s.sr));
+      const top    = Math.min(...lineItems.map(s => s.st));
+      const bottom = Math.max(...lineItems.map(s => s.sb));
+      boxes.push({ left, top, width: right - left, height: bottom - top });
+      texts.push(lineItems.map(s => s.t).join(""));
     }
-    return { boxes: merged, text: orderedTexts.join(" ").replace(/\s+/g, " ").trim() };
+
+    return { boxes, text: texts.join(" ").replace(/\s+/g, " ").trim() };
   }
 
   /**
@@ -590,7 +626,7 @@ export default function PDFPage({
           }}
           onMouseDown={handleSelMouseDown}
         >
-          {/* Blue selection highlight boxes */}
+          {/* Blue selection highlight — opacity scales with zoom */}
           {selBoxes.map((b, i) => (
             <div
               key={i}
@@ -598,7 +634,7 @@ export default function PDFPage({
                 position: "absolute",
                 left: b.left, top: b.top,
                 width: b.width, height: b.height,
-                background: "rgba(0, 120, 215, 0.30)",
+                background: `rgba(0, 120, 215, ${Math.min(0.55, Math.max(0.18, 0.30 * (zoom / 1.5))).toFixed(2)})`,
                 pointerEvents: "none",
               }}
             />
