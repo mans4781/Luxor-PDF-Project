@@ -69,8 +69,8 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 38px;
   border-radius: 6px;
   border: none;
   background: transparent;
@@ -81,6 +81,10 @@ html, body, #root {
   flex-shrink: 0;
   position: relative;
 }
+
+/* Force toolbar SVG icons to standard 20px — Adobe/Edge size */
+.toolbar-btn > svg,
+.toolbar-btn svg:not(.toolbar-tip svg) { width: 20px !important; height: 20px !important; }
 
 .toolbar-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
 .toolbar-btn:disabled { opacity: 0.35; cursor: not-allowed; }
@@ -131,7 +135,7 @@ html, body, #root {
 .luxor-viewer {
   position: fixed;
   top: var(--toolbar-height); bottom: 0;
-  left: 0; right: 52px;
+  left: 0; right: 60px;
   overflow-y: auto; overflow-x: auto;
   background: #525659;
   display: flex; flex-direction: column;
@@ -145,7 +149,7 @@ html, body, #root {
 .search-bar {
   position: fixed;
   top: calc(var(--toolbar-height) + 6px);
-  right: 62px;
+  right: 70px;
   z-index: 110;
   display: flex;
   align-items: center;
@@ -324,7 +328,7 @@ mark.search-hl {
 .right-sidebar {
   position: fixed;
   top: var(--toolbar-height); bottom: 0; right: 0;
-  width: 52px;
+  width: 60px;
   background: #1e1e1e;
   border-left: 1px solid rgba(255,255,255,0.07);
   display: flex;
@@ -347,28 +351,31 @@ mark.search-hl {
 }
 
 .sidebar-btn {
-  width: 32px; height: 30px;
-  border-radius: 5px;
+  width: 40px; height: 36px;
+  border-radius: 6px;
   border: none;
   background: transparent;
-  color: #888;
+  color: #aaa;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: background 0.12s, color 0.12s;
   flex-shrink: 0;
 }
 
+/* Force sidebar SVGs to 18px — standard Adobe/Edge size */
+.sidebar-btn svg { width: 18px !important; height: 18px !important; }
+
 .sidebar-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
 .sidebar-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
 .sidebar-zoom-select {
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 4px;
-  color: #bbb;
-  font-size: 10px;
-  padding: 2px 1px;
-  width: 42px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 5px;
+  color: #ccc;
+  font-size: 11px;
+  padding: 3px 2px;
+  width: 46px;
   text-align: center;
   outline: none;
   cursor: pointer;
@@ -379,18 +386,18 @@ mark.search-hl {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
+  gap: 2px;
 }
 
 .sidebar-page-input {
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 4px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 5px;
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 2px 2px;
-  width: 38px;
+  padding: 3px 3px;
+  width: 42px;
   text-align: center;
   outline: none;
 }
@@ -402,15 +409,15 @@ mark.search-hl {
 .sidebar-page-input { -moz-appearance: textfield; }
 
 .sidebar-page-total {
-  color: #555;
-  font-size: 9px;
+  color: #666;
+  font-size: 10px;
 }
 
 .sidebar-sep {
-  width: 32px;
+  width: 36px;
   height: 1px;
-  background: rgba(255,255,255,0.07);
-  margin: 5px 0;
+  background: rgba(255,255,255,0.08);
+  margin: 6px 0;
   flex-shrink: 0;
 }
 
