@@ -17,11 +17,21 @@ const TEXT_COLORS = [
 ];
 
 const DRAW_COLORS = [
-  { label: "Black",       value: "#1a1a1a" },
-  { label: "Dark Red",    value: "#8B0000" },
-  { label: "Dark Blue",   value: "#1a3a8a" },
-  { label: "Dark Green",  value: "#006400" },
-  { label: "Dark Purple", value: "#4B0082" },
+  { label: "Black",   value: "#1a1a1a" },
+  { label: "Blue",    value: "#0078D4" },
+  { label: "Red",     value: "#E81123" },
+  { label: "Magenta", value: "#E3008C" },
+  { label: "Violet",  value: "#8764B8" },
+  { label: "Green",   value: "#00B294" },
+  { label: "Orange",  value: "#FF8C00" },
+];
+
+const THICKNESS_OPTIONS = [
+  { label: "Thin",     value: 1,  size: 3  },
+  { label: "Medium",   value: 2,  size: 5  },
+  { label: "Thick",    value: 4,  size: 8  },
+  { label: "Heavy",    value: 6,  size: 11 },
+  { label: "Very Heavy", value: 10, size: 15 },
 ];
 
 const SHAPE_TOOLS: { id: ToolType; label: string }[] = [
@@ -39,6 +49,7 @@ interface ToolbarProps {
   textColor: string;
   textSize: number;
   drawColor: string;
+  drawThickness: number;
   isSpeaking: boolean;
   showContents: boolean;
   searchOpen: boolean;
@@ -51,6 +62,7 @@ interface ToolbarProps {
   onTextColorChange: (c: string) => void;
   onTextSizeChange: (s: number) => void;
   onDrawColorChange: (c: string) => void;
+  onDrawThicknessChange: (t: number) => void;
   onEraseAll: () => void;
   onReadAloud: () => void;
   onOpenFile: () => void;
@@ -64,11 +76,11 @@ const isShapeTool = (t: ToolType) => ["freehand", "line", "arrow", "oval", "rect
 
 export default function Toolbar({
   fileName, tool,
-  highlightColor, textColor, textSize, drawColor, isSpeaking,
+  highlightColor, textColor, textSize, drawColor, drawThickness, isSpeaking,
   showContents, searchOpen, splitView,
   onToggleContents, onToggleSearch, onToggleSplit,
   onToolChange,
-  onHighlightColorChange, onTextColorChange, onTextSizeChange, onDrawColorChange,
+  onHighlightColorChange, onTextColorChange, onTextSizeChange, onDrawColorChange, onDrawThicknessChange,
   onEraseAll, onReadAloud, onOpenFile, onDownload, onPrint,
 }: ToolbarProps) {
   const [popover, setPopover] = useState<PopoverType>(null);
@@ -200,7 +212,7 @@ export default function Toolbar({
             ))}
             <div style={{ height: 6 }} />
             <div className="popover-label">Color</div>
-            <div style={{ display: "flex", gap: 7 }}>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {DRAW_COLORS.map(c => (
                 <button
                   key={c.value}
@@ -209,6 +221,30 @@ export default function Toolbar({
                   title={c.label}
                   onClick={() => onDrawColorChange(c.value)}
                 />
+              ))}
+            </div>
+            <div style={{ height: 8 }} />
+            <div className="popover-label">Thickness</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {THICKNESS_OPTIONS.map(t => (
+                <button
+                  key={t.value}
+                  title={t.label}
+                  onClick={() => onDrawThicknessChange(t.value)}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    width: 24, height: 24, border: "none", borderRadius: 4,
+                    background: drawThickness === t.value ? "rgba(255,255,255,0.2)" : "transparent",
+                    cursor: "pointer", padding: 0,
+                  }}
+                >
+                  <div style={{
+                    width: t.size, height: t.size,
+                    borderRadius: "50%",
+                    background: drawColor,
+                    border: drawThickness === t.value ? "1.5px solid #fff" : "1px solid rgba(255,255,255,0.3)",
+                  }} />
+                </button>
               ))}
             </div>
           </div>

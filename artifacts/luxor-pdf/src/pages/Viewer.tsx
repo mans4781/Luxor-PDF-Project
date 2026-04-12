@@ -40,12 +40,13 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   const [textColor, setTextColor] = useState("#1a1a1a");
   const [textSize, setTextSize] = useState(16);
   const [drawColor, setDrawColor] = useState("#1a1a1a");
+  const [drawThickness, setDrawThickness] = useState(2);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [splitView, setSplitView] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pageInputRef = useRef<HTMLInputElement>(null);
 
-  const { annotations, addAnnotation, updateAnnotation, removeAnnotation, clearHighlights, getPageAnnotations } = useAnnotations();
+  const { annotations, addAnnotation, updateAnnotation, removeAnnotation, clearHighlights, undo, getPageAnnotations } = useAnnotations();
 
   // Load PDF
   useEffect(() => {
@@ -67,6 +68,12 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Ctrl+Z / Cmd+Z — undo
+      if ((e.key === "z" || e.key === "Z") && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+        return;
+      }
       // Ctrl+F / Cmd+F — open search (works even inside inputs)
       if ((e.key === "f" || e.key === "F") && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
@@ -85,7 +92,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [totalPages, searchOpen]);
+  }, [totalPages, searchOpen, undo]);
 
   // Ctrl+Scroll → zoom PDF, not the browser
   useEffect(() => {
@@ -244,7 +251,9 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         onTextColorChange={setTextColor}
         onTextSizeChange={setTextSize}
         drawColor={drawColor}
+        drawThickness={drawThickness}
         onDrawColorChange={setDrawColor}
+        onDrawThicknessChange={setDrawThickness}
         onEraseAll={clearHighlights}
         onReadAloud={handleReadAloud}
         onOpenFile={handleOpenFile}
@@ -412,7 +421,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                     searchTerm={searchQuery.trim()} tool={tool}
                     annotations={getPageAnnotations(left)}
                     highlightColor={highlightColor} textColor={textColor} textSize={textSize}
-                    drawColor={drawColor}
+                    drawColor={drawColor} drawThickness={drawThickness}
                     onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                     onAnnotationRemove={removeAnnotation}
                     isCurrentPage={left === currentPage} onVisible={handlePageVisible}
@@ -423,7 +432,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                       searchTerm={searchQuery.trim()} tool={tool}
                       annotations={getPageAnnotations(right)}
                       highlightColor={highlightColor} textColor={textColor} textSize={textSize}
-                      drawColor={drawColor}
+                      drawColor={drawColor} drawThickness={drawThickness}
                       onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                       onAnnotationRemove={removeAnnotation}
                       isCurrentPage={right === currentPage} onVisible={handlePageVisible}
@@ -440,7 +449,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                 searchTerm={searchQuery.trim()} tool={tool}
                 annotations={getPageAnnotations(pageNum)}
                 highlightColor={highlightColor} textColor={textColor} textSize={textSize}
-                drawColor={drawColor}
+                drawColor={drawColor} drawThickness={drawThickness}
                 onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                 onAnnotationRemove={removeAnnotation}
                 isCurrentPage={pageNum === currentPage} onVisible={handlePageVisible}

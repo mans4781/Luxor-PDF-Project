@@ -8,8 +8,6 @@ import {
 
 const SHAPE_TOOLS: ToolType[] = ["freehand", "line", "arrow", "oval", "rectangle"];
 const isShapeTool = (t: ToolType) => SHAPE_TOOLS.includes(t);
-const LINE_WIDTH = 2.5;
-
 interface PDFPageProps {
   pdfDocument: any;
   pageNum: number;
@@ -21,6 +19,7 @@ interface PDFPageProps {
   highlightColor: string;
   textColor: string;
   textSize: number;
+  drawThickness: number;
   drawColor: string;
   onAnnotationAdd: (a: Annotation) => void;
   onAnnotationUpdate: (id: string, updates: Partial<Annotation>) => void;
@@ -275,7 +274,7 @@ function drawShapeOnCtx(ctx: CanvasRenderingContext2D, ann: ShapeAnnotation) {
 
 export default function PDFPage({
   pdfDocument, pageNum, zoom, rotation, searchTerm, tool, annotations,
-  highlightColor, textColor, textSize, drawColor,
+  highlightColor, textColor, textSize, drawThickness, drawColor,
   onAnnotationAdd, onAnnotationUpdate, onAnnotationRemove,
   onVisible,
 }: PDFPageProps) {
@@ -496,7 +495,7 @@ export default function PDFPage({
 
     ctx.save();
     ctx.strokeStyle = drawColor;
-    ctx.lineWidth = LINE_WIDTH * (canvas.width / pageSize.w);
+    ctx.lineWidth = drawThickness * (canvas.width / pageSize.w);
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
@@ -560,7 +559,7 @@ export default function PDFPage({
     shapeDrawRef.current = null;
 
     const canvas = drawCanvasRef.current!;
-    const lw = LINE_WIDTH * (canvas.width / pageSize.w);
+    const lw = drawThickness * (canvas.width / pageSize.w);
     const { startX, startY, shiftKey, points } = state;
 
     let ann: ShapeAnnotation | null = null;
