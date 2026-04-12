@@ -19,6 +19,7 @@ export interface TextAnnotation {
   content: string;
   fontSize: number;
   color: string;
+  letterSpacing?: number;
 }
 
 export interface FreehandAnnotation {
