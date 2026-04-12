@@ -239,27 +239,35 @@ export default function PDFPage({
   const textLayerTaskRef = useRef<any>(null);
 
   // ── Custom text selection (Adobe / Edge style) ────────────────────────────
-  const selStartRef = useRef<{ x: number; y: number } | null>(null);
-  const selActiveRef = useRef(false);
+  // We store the drag start as RAW clientX/Y so we can always re-resolve it
+  // relative to the CURRENT wrapper rect on every mousemove — this means
+  // scrolling and any zoom level work perfectly.
+  const selClientStartRef = useRef<{ x: number; y: number } | null>(null);
   const selTextRef = useRef("");
   const [selBoxes, setSelBoxes] = useState<{ left: number; top: number; width: number; height: number }[]>([]);
   const [copiedToast, setCopiedToast] = useState(false);
 
-  function getWrapperRelPos(clientX: number, clientY: number) {
-    const r = wrapperRef.current!.getBoundingClientRect();
-    return { x: clientX - r.left, y: clientY - r.top };
-  }
-
-  function computeSpanSelection(start: { x: number; y: number }, end: { x: number; y: number }) {
+  function computeSpanSelection(
+    startClient: { x: number; y: number },
+    endClient: { x: number; y: number }
+  ) {
     if (!textLayerRef.current || !wrapperRef.current) return { boxes: [], text: "" };
-    const selL = Math.min(start.x, end.x);
-    const selT = Math.min(start.y, end.y);
-    const selR = Math.max(start.x, end.x);
-    const selB = Math.max(start.y, end.y);
-    // Only trigger on actual drag (not a bare click)
+
+    // Re-resolve BOTH start and end against the CURRENT wrapper position
+    const wRect = wrapperRef.current.getBoundingClientRect();
+    const sx = startClient.x - wRect.left;
+    const sy = startClient.y - wRect.top;
+    const ex = endClient.x - wRect.left;
+    const ey = endClient.y - wRect.top;
+
+    const selL = Math.min(sx, ex);
+    const selT = Math.min(sy, ey);
+    const selR = Math.max(sx, ex);
+    const selB = Math.max(sy, ey);
+
+    // Skip bare clicks
     if (selR - selL < 3 && selB - selT < 3) return { boxes: [], text: "" };
 
-    const wRect = wrapperRef.current.getBoundingClientRect();
     const spans = Array.from(
       textLayerRef.current.querySelectorAll<HTMLElement>("span:not(.endOfContent)")
     );
@@ -270,36 +278,36 @@ export default function PDFPage({
       const t = (span.textContent || "").trim();
       if (!t) continue;
       const r = span.getBoundingClientRect();
+      // Span position relative to wrapper — uses the same wRect snapshot
       const sl = r.left - wRect.left;
-      const st = r.top - wRect.top;
-      const sr = r.right - wRect.left;
+      const st = r.top  - wRect.top;
+      const sr = r.right  - wRect.left;
       const sb = r.bottom - wRect.top;
       if (sl < selR && sr > selL && st < selB && sb > selT) {
         boxes.push({ left: sl, top: st, width: Math.max(sr - sl, 2), height: Math.max(sb - st, 2) });
         texts.push(span.textContent || "");
       }
     }
-    if (boxes.length === 0) return { boxes: [], text: texts.join("") };
+    if (boxes.length === 0) return { boxes: [], text: "" };
 
-    // Sort spans by top then left so line-merging works correctly
+    // Sort by reading order
     const paired = boxes.map((b, i) => ({ b, t: texts[i] }));
     paired.sort((a, b) => a.b.top - b.b.top || a.b.left - b.b.left);
 
-    // Merge spans that share the same visual line into one continuous rectangle
-    // (fills the gaps between words, just like Adobe / Edge selection)
+    // Merge spans on the same line into a single continuous rectangle.
+    // Threshold scales with font size: same line if centres are within 55% of average height.
     const merged: { left: number; top: number; width: number; height: number }[] = [];
     const orderedTexts: string[] = [];
     for (const { b, t } of paired) {
       const last = merged[merged.length - 1];
-      // Two boxes are on the same line if their vertical centres are within 4px of each other
       const bCy = b.top + b.height / 2;
       const lCy = last ? last.top + last.height / 2 : NaN;
-      if (last && Math.abs(bCy - lCy) < 4) {
-        // Extend the existing line rectangle to cover the new span (including any gap)
+      const threshold = last ? (b.height + last.height) / 2 * 0.55 : 0;
+      if (last && Math.abs(bCy - lCy) < threshold) {
         const newRight = Math.max(last.left + last.width, b.left + b.width);
-        last.top = Math.min(last.top, b.top);
+        last.top    = Math.min(last.top, b.top);
         last.height = Math.max(last.height, b.height);
-        last.width = newRight - last.left;
+        last.width  = newRight - last.left;
         orderedTexts[orderedTexts.length - 1] += t;
       } else {
         merged.push({ ...b });
@@ -309,36 +317,46 @@ export default function PDFPage({
     return { boxes: merged, text: orderedTexts.join(" ").replace(/\s+/g, " ").trim() };
   }
 
+  /**
+   * On mousedown we attach DOCUMENT-level listeners so selection is never
+   * interrupted by the mouse leaving the page wrapper or a sibling element.
+   */
   const handleSelMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
     e.preventDefault();
-    selActiveRef.current = true;
-    selStartRef.current = getWrapperRelPos(e.clientX, e.clientY);
-    setSelBoxes([]);
+
+    // Store the raw viewport coords
+    selClientStartRef.current = { x: e.clientX, y: e.clientY };
     selTextRef.current = "";
+    setSelBoxes([]);
+
+    const onMove = (ev: MouseEvent) => {
+      if (!selClientStartRef.current) return;
+      const { boxes, text } = computeSpanSelection(
+        selClientStartRef.current,
+        { x: ev.clientX, y: ev.clientY }
+      );
+      setSelBoxes(boxes);
+      selTextRef.current = text;
+    };
+
+    const onUp = () => {
+      const txt = selTextRef.current.trim();
+      if (txt) {
+        navigator.clipboard.writeText(txt).then(() => {
+          setCopiedToast(true);
+          setTimeout(() => setCopiedToast(false), 1800);
+        }).catch(() => {});
+      }
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
   }, []);
 
-  const handleSelMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!selActiveRef.current || !selStartRef.current) return;
-    const end = getWrapperRelPos(e.clientX, e.clientY);
-    const { boxes, text } = computeSpanSelection(selStartRef.current, end);
-    setSelBoxes(boxes);
-    selTextRef.current = text;
-  }, []);
-
-  const handleSelMouseUp = useCallback((_e: React.MouseEvent<HTMLDivElement>) => {
-    if (!selActiveRef.current) return;
-    selActiveRef.current = false;
-    const txt = selTextRef.current.trim();
-    if (txt) {
-      navigator.clipboard.writeText(txt).then(() => {
-        setCopiedToast(true);
-        setTimeout(() => setCopiedToast(false), 1800);
-      }).catch(() => {});
-    }
-  }, []);
-
-  // Ctrl+C copies the last text-selected content
+  // Ctrl+C re-copies the last selection
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "c" && selTextRef.current.trim()) {
@@ -571,9 +589,6 @@ export default function PDFPage({
             userSelect: "none",
           }}
           onMouseDown={handleSelMouseDown}
-          onMouseMove={handleSelMouseMove}
-          onMouseUp={handleSelMouseUp}
-          onMouseLeave={handleSelMouseUp}
         >
           {/* Blue selection highlight boxes */}
           {selBoxes.map((b, i) => (
