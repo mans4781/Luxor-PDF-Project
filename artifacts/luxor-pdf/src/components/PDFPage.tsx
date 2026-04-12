@@ -1,6 +1,14 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { TextLayer } from "pdfjs-dist";
-import { Annotation, HighlightAnnotation, TextAnnotation, ToolType } from "@/lib/annotationTypes";
+import {
+  Annotation, HighlightAnnotation, TextAnnotation, ToolType,
+  FreehandAnnotation, LineAnnotation, ArrowAnnotation, OvalAnnotation, RectAnnotation,
+  ShapeAnnotation, Point,
+} from "@/lib/annotationTypes";
+
+const SHAPE_TOOLS: ToolType[] = ["freehand", "line", "arrow", "oval", "rectangle"];
+const isShapeTool = (t: ToolType) => SHAPE_TOOLS.includes(t);
+const LINE_WIDTH = 2.5;
 
 interface PDFPageProps {
   pdfDocument: any;
@@ -13,6 +21,7 @@ interface PDFPageProps {
   highlightColor: string;
   textColor: string;
   textSize: number;
+  drawColor: string;
   onAnnotationAdd: (a: Annotation) => void;
   onAnnotationUpdate: (id: string, updates: Partial<Annotation>) => void;
   onAnnotationRemove: (id: string) => void;
@@ -24,7 +33,6 @@ function genId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-// ── Draggable text box sub-component ─────────────────────────────────────────
 interface TextBoxProps {
   ann: TextAnnotation;
   onMove: (x: number, y: number) => void;
@@ -38,7 +46,6 @@ function DraggableTextBox({ ann, onMove, onContentChange, onDelete }: TextBoxPro
   const dragRef = useRef<{ startMouseX: number; startMouseY: number; startX: number; startY: number } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Sync position when annotation x/y change externally
   useEffect(() => {
     setLocalPos({ x: ann.x, y: ann.y });
   }, [ann.x, ann.y]);
@@ -75,7 +82,6 @@ function DraggableTextBox({ ann, onMove, onContentChange, onDelete }: TextBoxPro
     document.addEventListener("mouseup", handleDragUp);
   }, [localPos, onMove]);
 
-  // Clicking outside deselects
   useEffect(() => {
     if (!selected) return;
     const handler = (e: MouseEvent) => {
@@ -100,24 +106,17 @@ function DraggableTextBox({ ann, onMove, onContentChange, onDelete }: TextBoxPro
       }}
       onMouseDown={() => setSelected(true)}
     >
-      {/* Drag handle — visible only when selected */}
       {selected && (
         <div
           style={{
             position: "absolute",
-            top: -22,
-            left: 0,
-            right: 0,
-            height: 22,
+            top: -22, left: 0, right: 0, height: 22,
             background: "#4f8ef7",
             borderRadius: "4px 4px 0 0",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "0 6px",
           }}
         >
-          {/* Grip area */}
           <div
             onMouseDown={startDrag}
             style={{ flex: 1, display: "flex", alignItems: "center", gap: 3, cursor: "grab", height: "100%" }}
@@ -127,7 +126,6 @@ function DraggableTextBox({ ann, onMove, onContentChange, onDelete }: TextBoxPro
               <div key={i} style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.75)" }} />
             ))}
           </div>
-          {/* Delete button */}
           <button
             onMouseDown={e => e.stopPropagation()}
             onClick={e => { e.stopPropagation(); onDelete(); }}
@@ -136,8 +134,7 @@ function DraggableTextBox({ ann, onMove, onContentChange, onDelete }: TextBoxPro
               background: "none", border: "none",
               color: "rgba(255,255,255,0.9)", cursor: "pointer",
               fontSize: 14, lineHeight: 1, padding: "0 2px",
-              display: "flex", alignItems: "center",
-              borderRadius: 3,
+              display: "flex", alignItems: "center", borderRadius: 3,
             }}
             onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
             onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
@@ -161,8 +158,7 @@ function DraggableTextBox({ ann, onMove, onContentChange, onDelete }: TextBoxPro
           outline: "none",
           resize: selected ? "both" : "none",
           cursor: "text",
-          minWidth: 80,
-          minHeight: 28,
+          minWidth: 80, minHeight: 28,
           padding: selected ? "4px 8px" : "0",
           lineHeight: 1.5,
           pointerEvents: "all",
@@ -185,9 +181,7 @@ function DraggableTextBox({ ann, onMove, onContentChange, onDelete }: TextBoxPro
   );
 }
 
-// ── Main PDFPage component ────────────────────────────────────────────────────
 function highlightTextInLayer(container: HTMLElement, term: string) {
-  // Remove previous search highlights
   container.querySelectorAll("mark.search-hl").forEach(mark => {
     const parent = mark.parentNode!;
     while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
@@ -222,9 +216,66 @@ function highlightTextInLayer(container: HTMLElement, term: string) {
   }
 }
 
+function drawArrowhead(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number, size: number) {
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - size * Math.cos(angle - Math.PI / 6), y2 - size * Math.sin(angle - Math.PI / 6));
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - size * Math.cos(angle + Math.PI / 6), y2 - size * Math.sin(angle + Math.PI / 6));
+  ctx.stroke();
+}
+
+function drawShapeOnCtx(ctx: CanvasRenderingContext2D, ann: ShapeAnnotation) {
+  ctx.save();
+  ctx.strokeStyle = ann.color;
+  ctx.lineWidth = ann.lineWidth;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  switch (ann.type) {
+    case "freehand": {
+      if (ann.points.length < 2) break;
+      ctx.beginPath();
+      ctx.moveTo(ann.points[0].x, ann.points[0].y);
+      for (let i = 1; i < ann.points.length; i++) {
+        ctx.lineTo(ann.points[i].x, ann.points[i].y);
+      }
+      ctx.stroke();
+      break;
+    }
+    case "line": {
+      ctx.beginPath();
+      ctx.moveTo(ann.x1, ann.y1);
+      ctx.lineTo(ann.x2, ann.y2);
+      ctx.stroke();
+      break;
+    }
+    case "arrow": {
+      ctx.beginPath();
+      ctx.moveTo(ann.x1, ann.y1);
+      ctx.lineTo(ann.x2, ann.y2);
+      ctx.stroke();
+      drawArrowhead(ctx, ann.x1, ann.y1, ann.x2, ann.y2, 14 * ann.lineWidth / 2);
+      break;
+    }
+    case "oval": {
+      ctx.beginPath();
+      ctx.ellipse(ann.cx, ann.cy, Math.abs(ann.rx), Math.abs(ann.ry), 0, 0, 2 * Math.PI);
+      ctx.stroke();
+      break;
+    }
+    case "rect": {
+      ctx.strokeRect(ann.x, ann.y, ann.w, ann.h);
+      break;
+    }
+  }
+  ctx.restore();
+}
+
 export default function PDFPage({
   pdfDocument, pageNum, zoom, rotation, searchTerm, tool, annotations,
-  highlightColor, textColor, textSize,
+  highlightColor, textColor, textSize, drawColor,
   onAnnotationAdd, onAnnotationUpdate, onAnnotationRemove,
   onVisible,
 }: PDFPageProps) {
@@ -238,10 +289,14 @@ export default function PDFPage({
   const renderTaskRef = useRef<any>(null);
   const textLayerTaskRef = useRef<any>(null);
 
-  // ── Native text selection (Edge-style) ──────────────────────────────────
-  // When the hand tool is active the text layer gets pointer-events so the
-  // browser's own selection engine handles columns, word boundaries, etc.
-  // On mouseup we auto-copy the selected text and show a brief toast.
+  const shapeDrawRef = useRef<{
+    active: boolean;
+    startX: number;
+    startY: number;
+    points: Point[];
+    shiftKey: boolean;
+  } | null>(null);
+
   const [copiedToast, setCopiedToast] = useState(false);
 
   useEffect(() => {
@@ -264,7 +319,6 @@ export default function PDFPage({
     return () => layer.removeEventListener("mouseup", onUp);
   }, [tool]);
 
-  // Track visible page
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
@@ -276,7 +330,6 @@ export default function PDFPage({
     return () => obs.disconnect();
   }, [pageNum, onVisible]);
 
-  // Render PDF page — renders at 2× minimum for HD sharpness
   useEffect(() => {
     if (!pdfDocument || !pageCanvasRef.current) return;
     let cancelled = false;
@@ -285,12 +338,8 @@ export default function PDFPage({
       try {
         if (renderTaskRef.current) { renderTaskRef.current.cancel(); renderTaskRef.current = null; }
         const page = await pdfDocument.getPage(pageNum);
-        // Use at least 2× DPR to guarantee crisp, HD-quality text & images
         const dpr = Math.max(2, window.devicePixelRatio || 1);
-        // Combine page's native rotation with user-applied rotation
         const totalRotation = ((page.rotate ?? 0) + rotation) % 360;
-
-        // Render at physical pixels (zoom × dpr) for crispness
         const viewport = page.getViewport({ scale: zoom * dpr, rotation: totalRotation });
         const cssW = viewport.width / dpr;
         const cssH = viewport.height / dpr;
@@ -298,10 +347,8 @@ export default function PDFPage({
         const canvas = pageCanvasRef.current!;
         if (cancelled) return;
 
-        // Physical canvas size = full resolution
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        // CSS size = logical size so it doesn't appear zoomed
         canvas.style.width = `${cssW}px`;
         canvas.style.height = `${cssH}px`;
 
@@ -312,11 +359,9 @@ export default function PDFPage({
           drawCanvasRef.current.style.height = `${cssH}px`;
         }
 
-        // Layout size in logical (CSS) pixels
         setPageSize({ w: cssW, h: cssH });
 
         const ctx = canvas.getContext("2d")!;
-        // High-quality smoothing for sharp text and images at all zoom levels
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
         const task = page.render({ canvasContext: ctx, viewport });
@@ -325,14 +370,12 @@ export default function PDFPage({
         renderTaskRef.current = null;
         if (!cancelled) redrawAnnotations();
 
-        // ── Text layer (for text selection) ──────────────────────────────
         if (textLayerRef.current && !cancelled) {
           if (textLayerTaskRef.current) {
             textLayerTaskRef.current.cancel?.();
             textLayerTaskRef.current = null;
           }
           textLayerRef.current.innerHTML = "";
-          // Use logical-pixel viewport so text positions match CSS canvas size
           const textViewport = page.getViewport({ scale: zoom, rotation: totalRotation });
           const textContent = await page.getTextContent();
           const tl = new TextLayer({
@@ -357,7 +400,6 @@ export default function PDFPage({
 
   useEffect(() => { redrawAnnotations(); }, [annotations, pageSize]);
 
-  // Re-highlight search term whenever it changes or the page re-renders
   useEffect(() => {
     if (textLayerRef.current) highlightTextInLayer(textLayerRef.current, searchTerm);
   }, [searchTerm, pageSize]);
@@ -374,11 +416,12 @@ export default function PDFPage({
         ctx.fillStyle = ann.color;
         for (const r of ann.rects) ctx.fillRect(r.x, r.y, r.width, r.height);
         ctx.restore();
+      } else if (ann.type !== "text") {
+        drawShapeOnCtx(ctx, ann as ShapeAnnotation);
       }
     }
   }
 
-  // Highlight canvas coordinate scaling
   const getCanvasPos = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = drawCanvasRef.current!;
     const rect = canvas.getBoundingClientRect();
@@ -425,7 +468,158 @@ export default function PDFPage({
     }
   }, [pageNum, highlightColor, onAnnotationAdd]);
 
-  // Text tool click on transparent overlay
+  const onShapeMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (e.button !== 0) return;
+    const pos = getCanvasPos(e);
+    shapeDrawRef.current = {
+      active: true,
+      startX: pos.x,
+      startY: pos.y,
+      points: [{ x: pos.x, y: pos.y }],
+      shiftKey: e.shiftKey,
+    };
+  }, []);
+
+  const onShapeMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const state = shapeDrawRef.current;
+    if (!state?.active) return;
+    const pos = getCanvasPos(e);
+    state.shiftKey = e.shiftKey;
+
+    if (tool === "freehand") {
+      state.points.push({ x: pos.x, y: pos.y });
+    }
+
+    const canvas = drawCanvasRef.current!;
+    const ctx = canvas.getContext("2d")!;
+    redrawAnnotations();
+
+    ctx.save();
+    ctx.strokeStyle = drawColor;
+    ctx.lineWidth = LINE_WIDTH * (canvas.width / pageSize.w);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    const { startX, startY, shiftKey, points } = state;
+
+    switch (tool) {
+      case "freehand": {
+        if (points.length < 2) break;
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+        ctx.stroke();
+        break;
+      }
+      case "line": {
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        break;
+      }
+      case "arrow": {
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        drawArrowhead(ctx, startX, startY, pos.x, pos.y, 14 * ctx.lineWidth / 2);
+        break;
+      }
+      case "oval": {
+        let rx = Math.abs(pos.x - startX) / 2;
+        let ry = Math.abs(pos.y - startY) / 2;
+        if (shiftKey) { const r = Math.max(rx, ry); rx = r; ry = r; }
+        const cx = (startX + pos.x) / 2;
+        const cy = (startY + pos.y) / 2;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, 2 * Math.PI);
+        ctx.stroke();
+        break;
+      }
+      case "rectangle": {
+        let w = pos.x - startX;
+        let h = pos.y - startY;
+        if (shiftKey) {
+          const side = Math.max(Math.abs(w), Math.abs(h));
+          w = Math.sign(w) * side;
+          h = Math.sign(h) * side;
+        }
+        ctx.strokeRect(startX, startY, w, h);
+        break;
+      }
+    }
+    ctx.restore();
+  }, [tool, drawColor, annotations, pageSize]);
+
+  const onShapeMouseUp = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const state = shapeDrawRef.current;
+    if (!state?.active) return;
+    const pos = getCanvasPos(e);
+    state.shiftKey = e.shiftKey;
+    shapeDrawRef.current = null;
+
+    const canvas = drawCanvasRef.current!;
+    const lw = LINE_WIDTH * (canvas.width / pageSize.w);
+    const { startX, startY, shiftKey, points } = state;
+
+    let ann: ShapeAnnotation | null = null;
+
+    switch (tool) {
+      case "freehand": {
+        points.push({ x: pos.x, y: pos.y });
+        if (points.length >= 2) {
+          ann = { id: genId(), type: "freehand", page: pageNum, points, color: drawColor, lineWidth: lw };
+        }
+        break;
+      }
+      case "line": {
+        const dx = pos.x - startX, dy = pos.y - startY;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+          ann = { id: genId(), type: "line", page: pageNum, x1: startX, y1: startY, x2: pos.x, y2: pos.y, color: drawColor, lineWidth: lw };
+        }
+        break;
+      }
+      case "arrow": {
+        const dx = pos.x - startX, dy = pos.y - startY;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+          ann = { id: genId(), type: "arrow", page: pageNum, x1: startX, y1: startY, x2: pos.x, y2: pos.y, color: drawColor, lineWidth: lw };
+        }
+        break;
+      }
+      case "oval": {
+        let rx = Math.abs(pos.x - startX) / 2;
+        let ry = Math.abs(pos.y - startY) / 2;
+        if (shiftKey) { const r = Math.max(rx, ry); rx = r; ry = r; }
+        if (rx > 3 && ry > 3) {
+          const cx = (startX + pos.x) / 2;
+          const cy = (startY + pos.y) / 2;
+          ann = { id: genId(), type: "oval", page: pageNum, cx, cy, rx, ry, color: drawColor, lineWidth: lw };
+        }
+        break;
+      }
+      case "rectangle": {
+        let w = pos.x - startX;
+        let h = pos.y - startY;
+        if (shiftKey) {
+          const side = Math.max(Math.abs(w), Math.abs(h));
+          w = Math.sign(w) * side;
+          h = Math.sign(h) * side;
+        }
+        if (Math.abs(w) > 3 && Math.abs(h) > 3) {
+          ann = { id: genId(), type: "rect", page: pageNum, x: startX, y: startY, w, h, color: drawColor, lineWidth: lw };
+        }
+        break;
+      }
+    }
+
+    if (ann) {
+      onAnnotationAdd(ann);
+    } else {
+      redrawAnnotations();
+    }
+  }, [tool, pageNum, drawColor, onAnnotationAdd, pageSize]);
+
   const handleTextClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (tool !== "text") return;
     setEditingText({ id: genId(), x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
@@ -444,6 +638,8 @@ export default function PDFPage({
 
   const textAnnotations = annotations.filter(a => a.type === "text") as TextAnnotation[];
 
+  const drawCanvasActive = tool === "highlight" || isShapeTool(tool);
+
   return (
     <div
       ref={wrapperRef}
@@ -453,30 +649,26 @@ export default function PDFPage({
     >
       <canvas ref={pageCanvasRef} className="pdf-page-canvas" />
 
-      {/* pdfjs text layer — always interactive; higher-z tool overlays block it
-           when highlight or text tools are active */}
       <div
         ref={textLayerRef}
         className="textLayer"
       />
 
-      {/* Highlight drawing canvas (z-index 3) */}
       <canvas
         ref={drawCanvasRef}
         style={{
           position: "absolute", top: 0, left: 0,
           display: "block",
           zIndex: 3,
-          pointerEvents: tool === "highlight" ? "all" : "none",
-          cursor: tool === "highlight" ? "crosshair" : "inherit",
+          pointerEvents: drawCanvasActive ? "all" : "none",
+          cursor: drawCanvasActive ? "crosshair" : "inherit",
         }}
-        onMouseDown={onHighlightMouseDown}
-        onMouseMove={onHighlightMouseMove}
-        onMouseUp={onHighlightMouseUp}
-        onMouseLeave={onHighlightMouseUp}
+        onMouseDown={tool === "highlight" ? onHighlightMouseDown : isShapeTool(tool) ? onShapeMouseDown : undefined}
+        onMouseMove={tool === "highlight" ? onHighlightMouseMove : isShapeTool(tool) ? onShapeMouseMove : undefined}
+        onMouseUp={tool === "highlight" ? onHighlightMouseUp : isShapeTool(tool) ? onShapeMouseUp : undefined}
+        onMouseLeave={tool === "highlight" ? onHighlightMouseUp : isShapeTool(tool) ? onShapeMouseUp : undefined}
       />
 
-      {/* "Copied!" toast (shown after native text selection auto-copy) */}
       {copiedToast && (
         <div style={{
           position: "absolute", top: 8, left: "50%",
@@ -493,7 +685,6 @@ export default function PDFPage({
         </div>
       )}
 
-      {/* Text tool transparent click overlay */}
       {tool === "text" && (
         <div
           style={{
@@ -505,7 +696,6 @@ export default function PDFPage({
         />
       )}
 
-      {/* Committed draggable text annotations */}
       {textAnnotations.map(ann => (
         <DraggableTextBox
           key={ann.id}
@@ -516,7 +706,6 @@ export default function PDFPage({
         />
       ))}
 
-      {/* Active text input (being typed right now) */}
       {editingText && (
         <textarea
           autoFocus

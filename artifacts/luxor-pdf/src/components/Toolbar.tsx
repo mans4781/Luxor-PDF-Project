@@ -16,7 +16,21 @@ const TEXT_COLORS = [
   { label: "Red",   value: "#dc2626" },
 ];
 
-const ZOOM_PRESETS = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0];
+const DRAW_COLORS = [
+  { label: "Black",       value: "#1a1a1a" },
+  { label: "Dark Red",    value: "#8B0000" },
+  { label: "Dark Blue",   value: "#1a3a8a" },
+  { label: "Dark Green",  value: "#006400" },
+  { label: "Dark Purple", value: "#4B0082" },
+];
+
+const SHAPE_TOOLS: { id: ToolType; label: string }[] = [
+  { id: "freehand",  label: "Freehand" },
+  { id: "line",      label: "Straight Line" },
+  { id: "arrow",     label: "Line with Arrow" },
+  { id: "oval",      label: "Oval (Shift = Circle)" },
+  { id: "rectangle", label: "Rectangle (Shift = Square)" },
+];
 
 interface ToolbarProps {
   fileName: string;
@@ -24,6 +38,7 @@ interface ToolbarProps {
   highlightColor: string;
   textColor: string;
   textSize: number;
+  drawColor: string;
   isSpeaking: boolean;
   showContents: boolean;
   searchOpen: boolean;
@@ -35,6 +50,7 @@ interface ToolbarProps {
   onHighlightColorChange: (c: string) => void;
   onTextColorChange: (c: string) => void;
   onTextSizeChange: (s: number) => void;
+  onDrawColorChange: (c: string) => void;
   onEraseAll: () => void;
   onReadAloud: () => void;
   onOpenFile: () => void;
@@ -42,15 +58,17 @@ interface ToolbarProps {
   onPrint: () => void;
 }
 
-type PopoverType = "highlight" | "text" | null;
+type PopoverType = "highlight" | "text" | "tools" | null;
+
+const isShapeTool = (t: ToolType) => ["freehand", "line", "arrow", "oval", "rectangle"].includes(t);
 
 export default function Toolbar({
   fileName, tool,
-  highlightColor, textColor, textSize, isSpeaking,
+  highlightColor, textColor, textSize, drawColor, isSpeaking,
   showContents, searchOpen, splitView,
   onToggleContents, onToggleSearch, onToggleSplit,
   onToolChange,
-  onHighlightColorChange, onTextColorChange, onTextSizeChange,
+  onHighlightColorChange, onTextColorChange, onTextSizeChange, onDrawColorChange,
   onEraseAll, onReadAloud, onOpenFile, onDownload, onPrint,
 }: ToolbarProps) {
   const [popover, setPopover] = useState<PopoverType>(null);
@@ -71,7 +89,6 @@ export default function Toolbar({
     setPopover(prev => prev === p ? null : p);
   }, []);
 
-  // Close popover on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
@@ -111,7 +128,7 @@ export default function Toolbar({
 
       <div className="toolbar-sep" />
 
-      {/* ── Feature 1: Highlight ────────────────────────────────────────── */}
+      {/* ── Highlight ────────────────────────────────────────── */}
       <div style={{ position: "relative" }}>
         <button
           className={`toolbar-btn ${tool === "highlight" ? "active" : ""}`}
@@ -120,7 +137,6 @@ export default function Toolbar({
           style={{ gap: 0, width: 38 }}
         >
           <span className="toolbar-tip">Highlight</span>
-          {/* Highlighter icon — diagonal marker pen, same gradient as eraser */}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
             <defs>
               <linearGradient id="mg" x1="1" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
@@ -128,21 +144,14 @@ export default function Toolbar({
                 <stop offset="100%" stopColor="#00cfff"/>
               </linearGradient>
             </defs>
-            {/* Whole marker rotated -45° around centre */}
             <g transform="rotate(-45, 12, 12)">
-              {/* Cap */}
               <rect x="9" y="1" width="6" height="4.5" rx="2" fill="#3a50f0"/>
-              {/* Body */}
               <rect x="9" y="5.5" width="6" height="11" rx="1" fill="url(#mg)"/>
-              {/* Shine stripe */}
               <rect x="10.2" y="7" width="1.6" height="7" rx="0.8" fill="white" fillOpacity="0.35"/>
-              {/* Chisel tip */}
               <path d="M9 16.5 L10.5 21 L13.5 21 L15 16.5 Z" fill="#00cfff"/>
-              {/* Tip point */}
               <path d="M10.5 21 L12 23.5 L13.5 21 Z" fill="#00cfff" fillOpacity="0.7"/>
             </g>
           </svg>
-          {/* Color dot */}
           <div style={{
             position: "absolute", bottom: 3, right: 3,
             width: 7, height: 7, borderRadius: "50%",
@@ -168,7 +177,7 @@ export default function Toolbar({
         )}
       </div>
 
-      {/* ── Feature 2: Eraser ──────────────────────────────────────────── */}
+      {/* ── Eraser ──────────────────────────────────────────── */}
       <div style={{ position: "relative" }}>
         <button
           className="toolbar-btn"
@@ -188,7 +197,6 @@ export default function Toolbar({
                   <stop offset="100%" stopColor="#3a50f0"/>
                 </linearGradient>
               </defs>
-              {/* Flip horizontally around centre x=12 */}
               <g transform="scale(-1,1) translate(-24,0)">
                 <g transform="rotate(-42, 12, 11)">
                   <rect x="6" y="2" width="12" height="13" rx="3" fill="url(#eg)"/>
@@ -209,7 +217,7 @@ export default function Toolbar({
         />
       </div>
 
-      {/* ── Feature 3: Text Box ────────────────────────────────────────── */}
+      {/* ── Text Box ────────────────────────────────────────── */}
       <div style={{ position: "relative" }}>
         <button
           className={`toolbar-btn ${tool === "text" ? "active" : ""}`}
@@ -218,19 +226,9 @@ export default function Toolbar({
           style={{ width: 38 }}
         >
           <span className="toolbar-tip">Text Box</span>
-          {/* Times New Roman T inside a dotted box */}
           <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-            {/* Dotted border box */}
             <rect x="1" y="1" width="22" height="22" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeDasharray="3 2"/>
-            {/* T rendered in Times New Roman */}
-            <text
-              x="12" y="20"
-              textAnchor="middle"
-              fontFamily="'Times New Roman', Times, serif"
-              fontSize="20"
-              fontWeight="normal"
-              fill="currentColor"
-            >T</text>
+            <text x="12" y="20" textAnchor="middle" fontFamily="'Times New Roman', Times, serif" fontSize="20" fontWeight="normal" fill="currentColor">T</text>
           </svg>
         </button>
 
@@ -264,7 +262,91 @@ export default function Toolbar({
         )}
       </div>
 
-      {/* ── Feature 4: Read Aloud ─────────────────────────────────────── */}
+      {/* ── Tools (drawing shapes) ──────────────────────────── */}
+      <div style={{ position: "relative" }}>
+        <button
+          className={`toolbar-btn ${isShapeTool(tool) ? "active" : ""}`}
+          onClick={() => toggle("tools")}
+          title="Drawing tools"
+          style={{ width: 38 }}
+        >
+          <span className="toolbar-tip">Tools</span>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+            <path d="M2 2l7.586 7.586"/>
+            <circle cx="11" cy="11" r="2"/>
+          </svg>
+          <div style={{
+            position: "absolute", bottom: 3, right: 3,
+            width: 7, height: 7, borderRadius: "50%",
+            background: drawColor, border: "1px solid rgba(255,255,255,0.4)"
+          }} />
+        </button>
+
+        {popover === "tools" && (
+          <div className="popover-panel" style={{ minWidth: 190 }}>
+            <div className="popover-label">Drawing Tool</div>
+            {SHAPE_TOOLS.map(st => (
+              <button
+                key={st.id}
+                onClick={() => { onToolChange(st.id); }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  width: "100%", padding: "5px 8px", marginBottom: 2,
+                  background: tool === st.id ? "rgba(255,255,255,0.15)" : "transparent",
+                  border: "none", borderRadius: 4,
+                  color: tool === st.id ? "#fff" : "#ccc",
+                  cursor: "pointer", fontSize: 12, textAlign: "left",
+                }}
+              >
+                {st.id === "freehand" && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M3 17c3-4 6-12 9-12s3 8 6 8 3-4 3-4"/>
+                  </svg>
+                )}
+                {st.id === "line" && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <line x1="4" y1="20" x2="20" y2="4"/>
+                  </svg>
+                )}
+                {st.id === "arrow" && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="4" y1="20" x2="20" y2="4"/>
+                    <polyline points="14 4 20 4 20 10"/>
+                  </svg>
+                )}
+                {st.id === "oval" && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <ellipse cx="12" cy="12" rx="10" ry="7"/>
+                  </svg>
+                )}
+                {st.id === "rectangle" && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
+                    <rect x="3" y="5" width="18" height="14" rx="1"/>
+                  </svg>
+                )}
+                {st.label}
+              </button>
+            ))}
+            <div style={{ height: 6 }} />
+            <div className="popover-label">Color</div>
+            <div style={{ display: "flex", gap: 7 }}>
+              {DRAW_COLORS.map(c => (
+                <button
+                  key={c.value}
+                  className={`color-dot ${drawColor === c.value ? "sel" : ""}`}
+                  style={{ background: c.value }}
+                  title={c.label}
+                  onClick={() => onDrawColorChange(c.value)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Read Aloud ─────────────────────────────────────── */}
       <button
         className={`toolbar-btn ${isSpeaking ? "active" : ""}`}
         onClick={onReadAloud}
@@ -286,7 +368,6 @@ export default function Toolbar({
 
       <div style={{ flex: 1 }} />
 
-      {/* File name */}
       {fileName && (
         <span className="toolbar-label" style={{ maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={fileName}>
           {fileName}
@@ -295,7 +376,6 @@ export default function Toolbar({
 
       <div className="toolbar-sep" />
 
-      {/* ── Split / dual-page view ─────────────────────────────────────── */}
       <button
         className={`toolbar-btn ${splitView ? "active" : ""}`}
         onClick={onToggleSplit}

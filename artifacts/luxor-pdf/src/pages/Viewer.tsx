@@ -39,6 +39,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   const [highlightColor, setHighlightColor] = useState("#FFE566");
   const [textColor, setTextColor] = useState("#1a1a1a");
   const [textSize, setTextSize] = useState(16);
+  const [drawColor, setDrawColor] = useState("#1a1a1a");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [splitView, setSplitView] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -242,6 +243,8 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         onHighlightColorChange={setHighlightColor}
         onTextColorChange={setTextColor}
         onTextSizeChange={setTextSize}
+        drawColor={drawColor}
+        onDrawColorChange={setDrawColor}
         onEraseAll={clearHighlights}
         onReadAloud={handleReadAloud}
         onOpenFile={handleOpenFile}
@@ -409,6 +412,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                     searchTerm={searchQuery.trim()} tool={tool}
                     annotations={getPageAnnotations(left)}
                     highlightColor={highlightColor} textColor={textColor} textSize={textSize}
+                    drawColor={drawColor}
                     onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                     onAnnotationRemove={removeAnnotation}
                     isCurrentPage={left === currentPage} onVisible={handlePageVisible}
@@ -419,6 +423,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                       searchTerm={searchQuery.trim()} tool={tool}
                       annotations={getPageAnnotations(right)}
                       highlightColor={highlightColor} textColor={textColor} textSize={textSize}
+                      drawColor={drawColor}
                       onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                       onAnnotationRemove={removeAnnotation}
                       isCurrentPage={right === currentPage} onVisible={handlePageVisible}
@@ -435,6 +440,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                 searchTerm={searchQuery.trim()} tool={tool}
                 annotations={getPageAnnotations(pageNum)}
                 highlightColor={highlightColor} textColor={textColor} textSize={textSize}
+                drawColor={drawColor}
                 onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                 onAnnotationRemove={removeAnnotation}
                 isCurrentPage={pageNum === currentPage} onVisible={handlePageVisible}
