@@ -218,6 +218,10 @@ html, body, #root {
 
 .sidebar-page-input:focus { border-color: var(--accent); }
 
+.sidebar-page-input::-webkit-inner-spin-button,
+.sidebar-page-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.sidebar-page-input { -moz-appearance: textfield; }
+
 .sidebar-page-total {
   color: #555;
   font-size: 9px;
