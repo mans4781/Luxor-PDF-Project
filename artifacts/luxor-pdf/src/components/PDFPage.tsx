@@ -238,6 +238,90 @@ export default function PDFPage({
   const renderTaskRef = useRef<any>(null);
   const textLayerTaskRef = useRef<any>(null);
 
+  // ── Custom text selection (Adobe / Edge style) ────────────────────────────
+  const selStartRef = useRef<{ x: number; y: number } | null>(null);
+  const selActiveRef = useRef(false);
+  const selTextRef = useRef("");
+  const [selBoxes, setSelBoxes] = useState<{ left: number; top: number; width: number; height: number }[]>([]);
+  const [copiedToast, setCopiedToast] = useState(false);
+
+  function getWrapperRelPos(clientX: number, clientY: number) {
+    const r = wrapperRef.current!.getBoundingClientRect();
+    return { x: clientX - r.left, y: clientY - r.top };
+  }
+
+  function computeSpanSelection(start: { x: number; y: number }, end: { x: number; y: number }) {
+    if (!textLayerRef.current || !wrapperRef.current) return { boxes: [], text: "" };
+    const selL = Math.min(start.x, end.x);
+    const selT = Math.min(start.y, end.y);
+    const selR = Math.max(start.x, end.x);
+    const selB = Math.max(start.y, end.y);
+    // Only trigger on actual drag (not a bare click)
+    if (selR - selL < 3 && selB - selT < 3) return { boxes: [], text: "" };
+
+    const wRect = wrapperRef.current.getBoundingClientRect();
+    const spans = Array.from(
+      textLayerRef.current.querySelectorAll<HTMLElement>("span:not(.endOfContent)")
+    );
+    const boxes: { left: number; top: number; width: number; height: number }[] = [];
+    const texts: string[] = [];
+
+    for (const span of spans) {
+      const t = (span.textContent || "").trim();
+      if (!t) continue;
+      const r = span.getBoundingClientRect();
+      const sl = r.left - wRect.left;
+      const st = r.top - wRect.top;
+      const sr = r.right - wRect.left;
+      const sb = r.bottom - wRect.top;
+      if (sl < selR && sr > selL && st < selB && sb > selT) {
+        boxes.push({ left: sl, top: st, width: Math.max(sr - sl, 2), height: Math.max(sb - st, 2) });
+        texts.push(span.textContent || "");
+      }
+    }
+    return { boxes, text: texts.join("") };
+  }
+
+  const handleSelMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    selActiveRef.current = true;
+    selStartRef.current = getWrapperRelPos(e.clientX, e.clientY);
+    setSelBoxes([]);
+    selTextRef.current = "";
+  }, []);
+
+  const handleSelMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!selActiveRef.current || !selStartRef.current) return;
+    const end = getWrapperRelPos(e.clientX, e.clientY);
+    const { boxes, text } = computeSpanSelection(selStartRef.current, end);
+    setSelBoxes(boxes);
+    selTextRef.current = text;
+  }, []);
+
+  const handleSelMouseUp = useCallback((_e: React.MouseEvent<HTMLDivElement>) => {
+    if (!selActiveRef.current) return;
+    selActiveRef.current = false;
+    const txt = selTextRef.current.trim();
+    if (txt) {
+      navigator.clipboard.writeText(txt).then(() => {
+        setCopiedToast(true);
+        setTimeout(() => setCopiedToast(false), 1800);
+      }).catch(() => {});
+    }
+  }, []);
+
+  // Ctrl+C copies the last text-selected content
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "c" && selTextRef.current.trim()) {
+        navigator.clipboard.writeText(selTextRef.current.trim()).catch(() => {});
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   // Track visible page
   useEffect(() => {
     const el = wrapperRef.current;
@@ -427,18 +511,14 @@ export default function PDFPage({
     >
       <canvas ref={pageCanvasRef} className="pdf-page-canvas" />
 
-      {/* Text selection layer — transparent spans over rendered text */}
+      {/* pdfjs text layer — spans used for search highlight & position queries */}
       <div
         ref={textLayerRef}
         className="textLayer"
-        style={{
-          zIndex: 4,
-          // Disabled when a drawing/text tool is active so those tools still get clicks
-          pointerEvents: (tool === "highlight" || tool === "text") ? "none" : "all",
-        }}
+        style={{ zIndex: 2, pointerEvents: "none" }}
       />
 
-      {/* Highlight drawing canvas — kept below text layer (z-index 3) */}
+      {/* Highlight drawing canvas (z-index 3) */}
       <canvas
         ref={drawCanvasRef}
         style={{
@@ -453,6 +533,53 @@ export default function PDFPage({
         onMouseUp={onHighlightMouseUp}
         onMouseLeave={onHighlightMouseUp}
       />
+
+      {/* ── Custom text-selection overlay (hand tool) — Adobe / Edge style ── */}
+      {tool === "hand" && (
+        <div
+          style={{
+            position: "absolute", inset: 0,
+            zIndex: 5,
+            cursor: "text",
+            userSelect: "none",
+          }}
+          onMouseDown={handleSelMouseDown}
+          onMouseMove={handleSelMouseMove}
+          onMouseUp={handleSelMouseUp}
+          onMouseLeave={handleSelMouseUp}
+        >
+          {/* Blue selection highlight boxes */}
+          {selBoxes.map((b, i) => (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                left: b.left, top: b.top,
+                width: b.width, height: b.height,
+                background: "rgba(0, 120, 215, 0.30)",
+                pointerEvents: "none",
+              }}
+            />
+          ))}
+
+          {/* "Copied!" toast */}
+          {copiedToast && (
+            <div style={{
+              position: "absolute", top: 8, left: "50%",
+              transform: "translateX(-50%)",
+              background: "rgba(30,30,30,0.88)",
+              color: "#fff", fontSize: 12, fontWeight: 600,
+              padding: "4px 12px", borderRadius: 6,
+              pointerEvents: "none",
+              whiteSpace: "nowrap",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+              zIndex: 100,
+            }}>
+              Copied!
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Text tool transparent click overlay */}
       {tool === "text" && (
