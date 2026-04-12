@@ -160,7 +160,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
             title="Zoom in"
             onClick={() => setZoom(z => Math.min(5, parseFloat((z + 0.25).toFixed(2))))}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
             </svg>
@@ -181,7 +181,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
             title="Zoom out"
             onClick={() => setZoom(z => Math.max(0.25, parseFloat((z - 0.25).toFixed(2))))}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               <line x1="8" y1="11" x2="14" y2="11"/>
             </svg>
@@ -199,7 +199,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
               disabled={currentPage <= 1}
               onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="18 15 12 9 6 15"/>
               </svg>
             </button>
@@ -225,7 +225,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
               disabled={currentPage >= totalPages}
               onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
             </button>
@@ -237,10 +237,10 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         {/* Fit to width */}
         <button
           className="sidebar-btn"
-          title="Fit to width"
+          title="Reset zoom (100%)"
           onClick={() => setZoom(1.0)}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
           </svg>
         </button>
