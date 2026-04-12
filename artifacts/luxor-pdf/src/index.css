@@ -427,8 +427,19 @@ mark.search-hl {
   box-shadow: 0 2px 14px rgba(0,0,0,0.35);
   background: white;
   flex-shrink: 0;
-  transform: translateZ(0);
-  will-change: transform;
+}
+
+/* Guarantee text inside the pdfjs text layer is always selectable */
+.pdf-page-wrapper .textLayer {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  cursor: text;
+}
+
+.pdf-page-wrapper .textLayer span,
+.pdf-page-wrapper .textLayer br {
+  user-select: text !important;
+  -webkit-user-select: text !important;
 }
 
 .pdf-page-canvas {

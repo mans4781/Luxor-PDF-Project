@@ -432,23 +432,19 @@ export default function PDFPage({
         ref={textLayerRef}
         className="textLayer"
         style={{
-          width: pageSize.w,
-          height: pageSize.h,
           zIndex: 4,
-          // pdfjs v5 needs --scale-factor so --total-scale-factor resolves correctly
-          ["--scale-factor" as any]: zoom,
-          ["--user-unit" as any]: 1,
           // Disabled when a drawing/text tool is active so those tools still get clicks
           pointerEvents: (tool === "highlight" || tool === "text") ? "none" : "all",
         }}
       />
 
-      {/* Highlight drawing canvas */}
+      {/* Highlight drawing canvas — kept below text layer (z-index 3) */}
       <canvas
         ref={drawCanvasRef}
         style={{
           position: "absolute", top: 0, left: 0,
           display: "block",
+          zIndex: 3,
           pointerEvents: tool === "highlight" ? "all" : "none",
           cursor: tool === "highlight" ? "crosshair" : "inherit",
         }}
