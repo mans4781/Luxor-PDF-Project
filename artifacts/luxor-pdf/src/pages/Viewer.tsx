@@ -24,7 +24,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [zoom, setZoom] = useState(1.0);
+  const [zoom, setZoom] = useState(1.2);
   const [rotation, setRotation] = useState(0);
   const [showContents, setShowContents] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
