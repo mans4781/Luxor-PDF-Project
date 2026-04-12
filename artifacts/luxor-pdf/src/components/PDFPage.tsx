@@ -34,16 +34,18 @@ function genId() {
 
 interface TextBoxProps {
   ann: TextAnnotation;
+  pageWidth: number;
   onMove: (x: number, y: number) => void;
   onContentChange: (content: string) => void;
   onDelete: () => void;
 }
 
-function DraggableTextBox({ ann, onMove, onContentChange, onDelete }: TextBoxProps) {
-  const [selected, setSelected] = useState(false);
+function DraggableTextBox({ ann, pageWidth, onMove, onContentChange, onDelete }: TextBoxProps) {
+  const [hovered, setHovered] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [localPos, setLocalPos] = useState({ x: ann.x, y: ann.y });
   const dragRef = useRef<{ startMouseX: number; startMouseY: number; startX: number; startY: number } | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setLocalPos({ x: ann.x, y: ann.y });
@@ -61,9 +63,10 @@ function DraggableTextBox({ ann, onMove, onContentChange, onDelete }: TextBoxPro
 
     const handleDragMove = (me: MouseEvent) => {
       if (!dragRef.current) return;
-      const newX = dragRef.current.startX + (me.clientX - dragRef.current.startMouseX);
-      const newY = dragRef.current.startY + (me.clientY - dragRef.current.startMouseY);
-      setLocalPos({ x: newX, y: newY });
+      setLocalPos({
+        x: dragRef.current.startX + (me.clientX - dragRef.current.startMouseX),
+        y: dragRef.current.startY + (me.clientY - dragRef.current.startMouseY),
+      });
     };
 
     const handleDragUp = (me: MouseEvent) => {
@@ -81,17 +84,9 @@ function DraggableTextBox({ ann, onMove, onContentChange, onDelete }: TextBoxPro
     document.addEventListener("mouseup", handleDragUp);
   }, [localPos, onMove]);
 
-  useEffect(() => {
-    if (!selected) return;
-    const handler = (e: MouseEvent) => {
-      const el = textareaRef.current?.closest(".text-box-wrapper") as HTMLElement | null;
-      if (el && !el.contains(e.target as Node)) {
-        setSelected(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [selected]);
+  const lineH = Math.round(ann.fontSize * 1.35);
+  const maxW = Math.max(60, pageWidth - localPos.x - 4);
+  const showControls = hovered || editing;
 
   return (
     <div
@@ -100,82 +95,114 @@ function DraggableTextBox({ ann, onMove, onContentChange, onDelete }: TextBoxPro
         position: "absolute",
         left: localPos.x,
         top: localPos.y,
-        zIndex: selected ? 30 : 20,
+        zIndex: editing ? 30 : 20,
         userSelect: "none",
+        maxWidth: maxW,
       }}
-      onMouseDown={() => setSelected(true)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      {selected && (
-        <div
-          style={{
-            position: "absolute",
-            top: -22, left: 0, right: 0, height: 22,
-            background: "#4f8ef7",
-            borderRadius: "4px 4px 0 0",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "0 6px",
-          }}
-        >
+      {showControls && (
+        <div style={{
+          position: "absolute", top: -20, left: 0,
+          display: "flex", alignItems: "center", gap: 2,
+          background: "rgba(50,50,50,0.92)", borderRadius: 4,
+          padding: "1px 4px", zIndex: 40,
+        }}>
           <div
             onMouseDown={startDrag}
-            style={{ flex: 1, display: "flex", alignItems: "center", gap: 3, cursor: "grab", height: "100%" }}
+            style={{ cursor: "grab", display: "flex", alignItems: "center", padding: "2px 4px" }}
             title="Drag to move"
           >
-            {[0,1,2,3,4,5].map(i => (
-              <div key={i} style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.75)" }} />
-            ))}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="2.5" strokeLinecap="round">
+              <circle cx="8" cy="6" r="1.2"/><circle cx="16" cy="6" r="1.2"/>
+              <circle cx="8" cy="12" r="1.2"/><circle cx="16" cy="12" r="1.2"/>
+              <circle cx="8" cy="18" r="1.2"/><circle cx="16" cy="18" r="1.2"/>
+            </svg>
           </div>
           <button
             onMouseDown={e => e.stopPropagation()}
             onClick={e => { e.stopPropagation(); onDelete(); }}
-            title="Delete text box"
+            title="Delete"
             style={{
-              background: "none", border: "none",
-              color: "rgba(255,255,255,0.9)", cursor: "pointer",
-              fontSize: 14, lineHeight: 1, padding: "0 2px",
-              display: "flex", alignItems: "center", borderRadius: 3,
+              background: "none", border: "none", color: "#ccc", cursor: "pointer",
+              fontSize: 13, lineHeight: 1, padding: "2px 4px",
+              display: "flex", alignItems: "center",
             }}
-            onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
-            onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
+            onMouseEnter={e => (e.currentTarget.style.color = "#ff6b6b")}
+            onMouseLeave={e => (e.currentTarget.style.color = "#ccc")}
           >
-            ✕
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
           </button>
         </div>
       )}
 
-      <textarea
-        ref={textareaRef}
-        defaultValue={ann.content}
-        rows={1}
-        style={{
-          fontSize: ann.fontSize,
-          color: ann.color,
-          fontFamily: "Times New Roman, serif",
-          background: "transparent",
-          border: selected ? "1.5px solid #4f8ef7" : "none",
-          borderTop: selected ? "1.5px solid #4f8ef7" : "none",
-          outline: "none",
-          resize: selected ? "both" : "none",
-          cursor: "text",
-          minWidth: 80, minHeight: 28,
-          padding: selected ? "4px 8px" : "0",
-          lineHeight: 1.5,
-          pointerEvents: "all",
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          overflow: "hidden",
-          display: "block",
-          boxShadow: selected ? "0 2px 8px rgba(79,142,247,0.18)" : "none",
-          borderRadius: selected ? "0 4px 4px 4px" : 0,
-          transition: "background 0.1s, box-shadow 0.1s",
-        }}
-        onFocus={() => setSelected(true)}
-        onBlur={e => {
-          if (e.target.value !== ann.content) {
-            onContentChange(e.target.value);
-          }
-        }}
-      />
+      {editing ? (
+        <input
+          ref={inputRef}
+          autoFocus
+          defaultValue={ann.content}
+          style={{
+            fontSize: ann.fontSize,
+            color: ann.color,
+            fontFamily: "Times New Roman, serif",
+            background: "rgba(255,255,255,0.95)",
+            border: "1.5px solid #4f8ef7",
+            outline: "none",
+            height: lineH,
+            width: maxW,
+            padding: "0 4px",
+            lineHeight: `${lineH}px`,
+            pointerEvents: "all",
+            boxShadow: "0 1px 6px rgba(79,142,247,0.18)",
+            borderRadius: 2,
+            boxSizing: "border-box",
+          }}
+          onKeyDown={e => {
+            if (e.key === "Escape") { e.stopPropagation(); setEditing(false); }
+            if (e.key === "Enter") {
+              e.preventDefault();
+              const val = e.currentTarget.value.trim();
+              if (val) { onContentChange(val); }
+              else { onDelete(); }
+              setEditing(false);
+            }
+          }}
+          onBlur={e => {
+            const val = e.target.value.trim();
+            if (val && val !== ann.content) { onContentChange(val); }
+            else if (!val) { onDelete(); }
+            setEditing(false);
+          }}
+        />
+      ) : (
+        <div
+          onDoubleClick={() => setEditing(true)}
+          style={{
+            fontSize: ann.fontSize,
+            color: ann.color,
+            fontFamily: "Times New Roman, serif",
+            lineHeight: `${lineH}px`,
+            height: lineH,
+            maxWidth: maxW,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            cursor: "default",
+            pointerEvents: "all",
+            borderRadius: 2,
+            border: showControls ? "1px dashed rgba(79,142,247,0.5)" : "1px dashed transparent",
+            padding: "0 4px",
+            boxSizing: "border-box",
+            transition: "border-color 0.15s",
+          }}
+          title="Double-click to edit"
+        >
+          {ann.content}
+        </div>
+      )}
     </div>
   );
 }
@@ -699,41 +726,49 @@ export default function PDFPage({
         <DraggableTextBox
           key={ann.id}
           ann={ann}
+          pageWidth={pageSize.w}
           onMove={(x, y) => onAnnotationUpdate(ann.id, { x, y } as any)}
           onContentChange={content => onAnnotationUpdate(ann.id, { content } as any)}
           onDelete={() => onAnnotationRemove(ann.id)}
         />
       ))}
 
-      {editingText && (
-        <textarea
-          autoFocus
-          style={{
-            position: "absolute",
-            left: editingText.x, top: editingText.y,
-            fontSize: textSize, color: textColor,
-            fontFamily: "Times New Roman, serif",
-            background: "rgba(255,255,255,0.97)",
-            border: "2px solid #4f8ef7",
-            borderRadius: "0 4px 4px 4px",
-            outline: "none", resize: "none",
-            minWidth: 140, minHeight: 40,
-            padding: "4px 8px", lineHeight: 1.5,
-            pointerEvents: "all", zIndex: 50,
-            boxShadow: "0 2px 10px rgba(79,142,247,0.25)",
-          }}
-          rows={2}
-          placeholder="Type here… (Enter to save)"
-          onKeyDown={e => {
-            if (e.key === "Escape") { e.stopPropagation(); setEditingText(null); }
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleTextCommit(editingText.id, e.currentTarget.value, editingText.x, editingText.y);
-            }
-          }}
-          onBlur={e => handleTextCommit(editingText.id, e.target.value, editingText.x, editingText.y)}
-        />
-      )}
+      {editingText && (() => {
+        const inputLineH = Math.round(textSize * 1.35);
+        const inputMaxW = Math.max(60, pageSize.w - editingText.x - 4);
+        return (
+          <input
+            autoFocus
+            type="text"
+            style={{
+              position: "absolute",
+              left: editingText.x, top: editingText.y,
+              fontSize: textSize, color: textColor,
+              fontFamily: "Times New Roman, serif",
+              background: "rgba(255,255,255,0.95)",
+              border: "1.5px solid #4f8ef7",
+              outline: "none",
+              width: inputMaxW,
+              height: inputLineH,
+              lineHeight: `${inputLineH}px`,
+              padding: "0 4px",
+              pointerEvents: "all", zIndex: 50,
+              boxShadow: "0 1px 6px rgba(79,142,247,0.18)",
+              borderRadius: 2,
+              boxSizing: "border-box",
+            }}
+            placeholder="Type here…"
+            onKeyDown={e => {
+              if (e.key === "Escape") { e.stopPropagation(); setEditingText(null); }
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleTextCommit(editingText.id, e.currentTarget.value, editingText.x, editingText.y);
+              }
+            }}
+            onBlur={e => handleTextCommit(editingText.id, e.target.value, editingText.x, editingText.y)}
+          />
+        );
+      })()}
     </div>
   );
 }
