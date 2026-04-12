@@ -309,12 +309,28 @@ export default function PDFPage({
     const lastLineCy  = nearestCy(lastY);
     const singleLine  = Math.abs(firstLineCy - lastLineCy) < lineThresh;
 
-    // ── Step 3: classify every span ──────────────────────────────────────
+    // ── Step 3: determine the column x-range from the first selected line ──
+    // Collect all spans that would be on the first line (right of startAnchorX).
+    // Their combined x-range defines which "column" the user is selecting in.
+    // Middle lines are then restricted to this column — preventing the right
+    // column from being swept in when selecting within the left column.
+    const firstLineSpans = all.filter(
+      s => Math.abs(s.cy - firstLineCy) < lineThresh && s.sr > startAnchorX
+    );
+    const colLeft  = firstLineSpans.length > 0
+      ? Math.min(...firstLineSpans.map(s => s.sl))
+      : 0;
+    const colRight = firstLineSpans.length > 0
+      ? Math.max(...firstLineSpans.map(s => s.sr))
+      : wRect.width;
+
+    // ── Step 4: classify every span ──────────────────────────────────────
     // • On first line  → include if right edge is past the start anchor x
-    // • On last line   → include if left  edge is before the end anchor x
-    // • Both (single-line drag) → must lie inside [min(anchors), max(anchors)]
-    // • Strictly between the two lines (middle) → always include (full width)
-    // • Before first line or after last line → exclude
+    // • On last line   → include if left edge is before the end anchor x,
+    //                    and within the column detected above
+    // • Single-line    → bounded by both anchor x values
+    // • Middle lines   → within the column x-range (not full-page-width)
+    // • Outside        → ignored
     const selected: SI[] = [];
 
     for (const s of all) {
@@ -324,21 +340,18 @@ export default function PDFPage({
                        s.cy < lastLineCy  - lineThresh;
 
       if (singleLine) {
-        // Single-line: both anchors are on the same line
         const selL = Math.min(startAnchorX, endAnchorX);
         const selR = Math.max(startAnchorX, endAnchorX);
         if (onFirst && s.sr > selL && s.sl < selR) selected.push(s);
-      } else if (onFirst && onLast) {
-        // Shouldn't happen when !singleLine, but be safe
-        selected.push(s);
       } else if (onFirst) {
-        if (s.sr > startAnchorX) selected.push(s);   // right of start cursor
+        if (s.sr > startAnchorX) selected.push(s);
       } else if (onLast) {
-        if (s.sl < endAnchorX) selected.push(s);     // left of end cursor
+        // Stay within the same column as the first line
+        if (s.sl < endAnchorX && s.sr > colLeft) selected.push(s);
       } else if (inMiddle) {
-        selected.push(s);                             // middle: full width
+        // Column-safe: only spans that overlap with the first-line column
+        if (s.sl < colRight && s.sr > colLeft) selected.push(s);
       }
-      // else: outside the selection range → ignore
     }
 
     if (selected.length === 0) return { boxes: [], text: "" };
