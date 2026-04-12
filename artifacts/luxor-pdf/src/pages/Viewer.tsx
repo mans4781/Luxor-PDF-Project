@@ -11,6 +11,8 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).href;
 
+const ZOOM_PRESETS = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0];
+
 interface ViewerProps {
   file: File;
   onClose: () => void;
@@ -28,6 +30,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   const [textSize, setTextSize] = useState(16);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pageInputRef = useRef<HTMLInputElement>(null);
 
   const { annotations, addAnnotation, updateAnnotation, removeAnnotation, clearHighlights, getPageAnnotations } = useAnnotations();
 
@@ -72,7 +75,6 @@ export default function Viewer({ file, onClose }: ViewerProps) {
 
   const handlePageVisible = useCallback((page: number) => setCurrentPage(page), []);
 
-  // ── Feature 4: Read Aloud ────────────────────────────────────────────────
   const handleReadAloud = useCallback(async () => {
     if (isSpeaking) {
       speechSynthesis.cancel();
@@ -109,6 +111,14 @@ export default function Viewer({ file, onClose }: ViewerProps) {
     a.click();
   };
 
+  const handlePageInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      const val = parseInt((e.target as HTMLInputElement).value, 10);
+      if (!isNaN(val) && val >= 1 && val <= totalPages) handlePageChange(val);
+      else if (pageInputRef.current) pageInputRef.current.value = String(currentPage);
+    }
+  };
+
   const allPageNums = useMemo(() => Array.from({ length: totalPages }, (_, i) => i + 1), [totalPages]);
 
   if (loading) {
@@ -124,16 +134,11 @@ export default function Viewer({ file, onClose }: ViewerProps) {
     <>
       <Toolbar
         fileName={file.name}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        zoom={zoom}
         tool={tool}
         highlightColor={highlightColor}
         textColor={textColor}
         textSize={textSize}
         isSpeaking={isSpeaking}
-        onPageChange={handlePageChange}
-        onZoomChange={setZoom}
         onToolChange={setTool}
         onHighlightColorChange={setHighlightColor}
         onTextColorChange={setTextColor}
@@ -144,6 +149,103 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         onDownload={handleDownload}
         onPrint={() => window.print()}
       />
+
+      {/* ── Right sidebar: zoom + page navigation ── */}
+      <div className="right-sidebar">
+
+        {/* Zoom controls */}
+        <div className="sidebar-group">
+          <button
+            className="sidebar-btn"
+            title="Zoom in"
+            onClick={() => setZoom(z => Math.min(5, parseFloat((z + 0.25).toFixed(2))))}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+          </button>
+
+          <select
+            className="sidebar-zoom-select"
+            value={ZOOM_PRESETS.includes(zoom) ? zoom : "custom"}
+            onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setZoom(v); }}
+            title="Zoom level"
+          >
+            {ZOOM_PRESETS.map(z => <option key={z} value={z}>{Math.round(z * 100)}%</option>)}
+            {!ZOOM_PRESETS.includes(zoom) && <option value="custom">{Math.round(zoom * 100)}%</option>}
+          </select>
+
+          <button
+            className="sidebar-btn"
+            title="Zoom out"
+            onClick={() => setZoom(z => Math.max(0.25, parseFloat((z - 0.25).toFixed(2))))}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+          </button>
+        </div>
+
+        <div className="sidebar-sep" />
+
+        {/* Page navigation */}
+        {totalPages > 0 && (
+          <div className="sidebar-group">
+            <button
+              className="sidebar-btn"
+              title="Previous page"
+              disabled={currentPage <= 1}
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="18 15 12 9 6 15"/>
+              </svg>
+            </button>
+
+            <div className="sidebar-page-indicator">
+              <input
+                ref={pageInputRef}
+                type="number"
+                className="sidebar-page-input"
+                defaultValue={currentPage}
+                key={currentPage}
+                min={1}
+                max={totalPages}
+                onKeyDown={handlePageInput}
+                title="Go to page"
+              />
+              <span className="sidebar-page-total">/ {totalPages}</span>
+            </div>
+
+            <button
+              className="sidebar-btn"
+              title="Next page"
+              disabled={currentPage >= totalPages}
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+          </div>
+        )}
+
+        <div className="sidebar-sep" />
+
+        {/* Fit to width */}
+        <button
+          className="sidebar-btn"
+          title="Fit to width"
+          onClick={() => setZoom(1.0)}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+        </button>
+
+      </div>
 
       <div className="luxor-viewer">
         {pdfDoc && allPageNums.map(pageNum => (

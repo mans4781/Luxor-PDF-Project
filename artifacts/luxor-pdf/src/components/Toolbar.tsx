@@ -20,16 +20,11 @@ const ZOOM_PRESETS = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0];
 
 interface ToolbarProps {
   fileName: string;
-  currentPage: number;
-  totalPages: number;
-  zoom: number;
   tool: ToolType;
   highlightColor: string;
   textColor: string;
   textSize: number;
   isSpeaking: boolean;
-  onPageChange: (page: number) => void;
-  onZoomChange: (zoom: number) => void;
   onToolChange: (tool: ToolType) => void;
   onHighlightColorChange: (c: string) => void;
   onTextColorChange: (c: string) => void;
@@ -44,13 +39,12 @@ interface ToolbarProps {
 type PopoverType = "highlight" | "text" | null;
 
 export default function Toolbar({
-  fileName, currentPage, totalPages, zoom, tool,
+  fileName, tool,
   highlightColor, textColor, textSize, isSpeaking,
-  onPageChange, onZoomChange, onToolChange,
+  onToolChange,
   onHighlightColorChange, onTextColorChange, onTextSizeChange,
   onEraseAll, onReadAloud, onOpenFile, onDownload, onPrint,
 }: ToolbarProps) {
-  const pageInputRef = useRef<HTMLInputElement>(null);
   const [popover, setPopover] = useState<PopoverType>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const [eraserIcon, setEraserIcon] = useState<string | null>(null);
@@ -80,14 +74,6 @@ export default function Toolbar({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handlePageInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      const val = parseInt((e.target as HTMLInputElement).value, 10);
-      if (!isNaN(val) && val >= 1 && val <= totalPages) onPageChange(val);
-      else (e.target as HTMLInputElement).value = String(currentPage);
-    }
-  };
-
   return (
     <div className="luxor-toolbar" ref={popoverRef}>
       {/* Brand */}
@@ -100,51 +86,6 @@ export default function Toolbar({
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
         </svg>
-      </button>
-
-      <div className="toolbar-sep" />
-
-      {/* Page navigation */}
-      {totalPages > 0 && (
-        <>
-          <button className="toolbar-btn" onClick={() => onPageChange(Math.max(1, currentPage - 1))} disabled={currentPage <= 1}>
-            <span className="toolbar-tip">Previous</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-          </button>
-          <input
-            ref={pageInputRef}
-            type="number"
-            className="toolbar-input"
-            defaultValue={currentPage}
-            key={currentPage}
-            onKeyDown={handlePageInput}
-            style={{ width: 40 }}
-          />
-          <span className="toolbar-label">/ {totalPages}</span>
-          <button className="toolbar-btn" onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} disabled={currentPage >= totalPages}>
-            <span className="toolbar-tip">Next</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-          </button>
-          <div className="toolbar-sep" />
-        </>
-      )}
-
-      {/* Zoom */}
-      <button className="toolbar-btn" onClick={() => onZoomChange(Math.max(0.25, zoom - 0.15))}>
-        <span className="toolbar-tip">Zoom out</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-      </button>
-      <select
-        className="toolbar-select"
-        value={ZOOM_PRESETS.includes(zoom) ? zoom : "custom"}
-        onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) onZoomChange(v); }}
-      >
-        {ZOOM_PRESETS.map(z => <option key={z} value={z}>{Math.round(z * 100)}%</option>)}
-        {!ZOOM_PRESETS.includes(zoom) && <option value="custom">{Math.round(zoom * 100)}%</option>}
-      </select>
-      <button className="toolbar-btn" onClick={() => onZoomChange(Math.min(5, zoom + 0.15))}>
-        <span className="toolbar-tip">Zoom in</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
       </button>
 
       <div className="toolbar-sep" />

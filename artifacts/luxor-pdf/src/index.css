@@ -131,13 +131,103 @@ html, body, #root {
 .luxor-viewer {
   position: fixed;
   top: var(--toolbar-height); bottom: 0;
-  left: 0; right: 0;
+  left: 0; right: 80px;
   overflow-y: auto; overflow-x: auto;
   background: #525659;
   display: flex; flex-direction: column;
   align-items: center;
   padding: 20px 20px 80px;
   gap: 16px;
+}
+
+/* ── Right sidebar ───────────────────────────────────────────────────────── */
+
+.right-sidebar {
+  position: fixed;
+  top: var(--toolbar-height); bottom: 0; right: 0;
+  width: 80px;
+  background: #1e1e1e;
+  border-left: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0;
+  gap: 4px;
+  z-index: 90;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.3);
+}
+
+.sidebar-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 0 8px;
+}
+
+.sidebar-btn {
+  width: 44px; height: 44px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #aaa;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s, color 0.12s;
+  flex-shrink: 0;
+}
+
+.sidebar-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.sidebar-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.sidebar-zoom-select {
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 5px;
+  color: #ddd;
+  font-size: 11px;
+  padding: 4px 2px;
+  width: 58px;
+  text-align: center;
+  outline: none;
+  cursor: pointer;
+  text-align-last: center;
+}
+
+.sidebar-page-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.sidebar-page-input {
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 5px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 3px;
+  width: 52px;
+  text-align: center;
+  outline: none;
+}
+
+.sidebar-page-input:focus { border-color: var(--accent); }
+
+.sidebar-page-total {
+  color: #666;
+  font-size: 10px;
+}
+
+.sidebar-sep {
+  width: 48px;
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin: 8px 0;
+  flex-shrink: 0;
 }
 
 .pdf-page-wrapper {
