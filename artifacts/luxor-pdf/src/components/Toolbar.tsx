@@ -101,6 +101,83 @@ export default function Toolbar({
 
   return (
     <div className="luxor-toolbar" ref={popoverRef}>
+      {/* ── Tools text menu (top-left) ─────────────────────── */}
+      <div style={{ position: "relative" }}>
+        <button
+          className={`toolbar-menu-word ${popover === "tools" || isShapeTool(tool) ? "active" : ""}`}
+          onClick={() => toggle("tools")}
+          title="Drawing tools"
+        >
+          Tools
+          <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" style={{ marginLeft: 2, opacity: 0.6 }}>
+            <path d="M5 8l5 5 5-5z"/>
+          </svg>
+        </button>
+
+        {popover === "tools" && (
+          <div className="popover-panel" style={{ minWidth: 200, left: 0 }}>
+            <div className="popover-label">Drawing Tool</div>
+            {SHAPE_TOOLS.map(st => (
+              <button
+                key={st.id}
+                onClick={() => { onToolChange(st.id); }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  width: "100%", padding: "5px 8px", marginBottom: 2,
+                  background: tool === st.id ? "rgba(255,255,255,0.15)" : "transparent",
+                  border: "none", borderRadius: 4,
+                  color: tool === st.id ? "#fff" : "#ccc",
+                  cursor: "pointer", fontSize: 12, textAlign: "left",
+                }}
+              >
+                {st.id === "freehand" && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M3 17c3-4 6-12 9-12s3 8 6 8 3-4 3-4"/>
+                  </svg>
+                )}
+                {st.id === "line" && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <line x1="4" y1="20" x2="20" y2="4"/>
+                  </svg>
+                )}
+                {st.id === "arrow" && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="4" y1="20" x2="20" y2="4"/>
+                    <polyline points="14 4 20 4 20 10"/>
+                  </svg>
+                )}
+                {st.id === "oval" && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <ellipse cx="12" cy="12" rx="10" ry="7"/>
+                  </svg>
+                )}
+                {st.id === "rectangle" && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
+                    <rect x="3" y="5" width="18" height="14" rx="1"/>
+                  </svg>
+                )}
+                {st.label}
+              </button>
+            ))}
+            <div style={{ height: 6 }} />
+            <div className="popover-label">Color</div>
+            <div style={{ display: "flex", gap: 7 }}>
+              {DRAW_COLORS.map(c => (
+                <button
+                  key={c.value}
+                  className={`color-dot ${drawColor === c.value ? "sel" : ""}`}
+                  style={{ background: c.value }}
+                  title={c.label}
+                  onClick={() => onDrawColorChange(c.value)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="toolbar-sep" />
+
       <button
         className={`toolbar-btn ${showContents ? "active" : ""}`}
         onClick={onToggleContents}
@@ -255,90 +332,6 @@ export default function Toolbar({
                   style={{ background: c.value }}
                   title={c.label}
                   onClick={() => onTextColorChange(c.value)}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ── Tools (drawing shapes) ──────────────────────────── */}
-      <div style={{ position: "relative" }}>
-        <button
-          className={`toolbar-btn ${isShapeTool(tool) ? "active" : ""}`}
-          onClick={() => toggle("tools")}
-          title="Drawing tools"
-          style={{ width: 38 }}
-        >
-          <span className="toolbar-tip">Tools</span>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 19l7-7 3 3-7 7-3-3z"/>
-            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
-            <path d="M2 2l7.586 7.586"/>
-            <circle cx="11" cy="11" r="2"/>
-          </svg>
-          <div style={{
-            position: "absolute", bottom: 3, right: 3,
-            width: 7, height: 7, borderRadius: "50%",
-            background: drawColor, border: "1px solid rgba(255,255,255,0.4)"
-          }} />
-        </button>
-
-        {popover === "tools" && (
-          <div className="popover-panel" style={{ minWidth: 190 }}>
-            <div className="popover-label">Drawing Tool</div>
-            {SHAPE_TOOLS.map(st => (
-              <button
-                key={st.id}
-                onClick={() => { onToolChange(st.id); }}
-                style={{
-                  display: "flex", alignItems: "center", gap: 8,
-                  width: "100%", padding: "5px 8px", marginBottom: 2,
-                  background: tool === st.id ? "rgba(255,255,255,0.15)" : "transparent",
-                  border: "none", borderRadius: 4,
-                  color: tool === st.id ? "#fff" : "#ccc",
-                  cursor: "pointer", fontSize: 12, textAlign: "left",
-                }}
-              >
-                {st.id === "freehand" && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <path d="M3 17c3-4 6-12 9-12s3 8 6 8 3-4 3-4"/>
-                  </svg>
-                )}
-                {st.id === "line" && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <line x1="4" y1="20" x2="20" y2="4"/>
-                  </svg>
-                )}
-                {st.id === "arrow" && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="4" y1="20" x2="20" y2="4"/>
-                    <polyline points="14 4 20 4 20 10"/>
-                  </svg>
-                )}
-                {st.id === "oval" && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <ellipse cx="12" cy="12" rx="10" ry="7"/>
-                  </svg>
-                )}
-                {st.id === "rectangle" && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
-                    <rect x="3" y="5" width="18" height="14" rx="1"/>
-                  </svg>
-                )}
-                {st.label}
-              </button>
-            ))}
-            <div style={{ height: 6 }} />
-            <div className="popover-label">Color</div>
-            <div style={{ display: "flex", gap: 7 }}>
-              {DRAW_COLORS.map(c => (
-                <button
-                  key={c.value}
-                  className={`color-dot ${drawColor === c.value ? "sel" : ""}`}
-                  style={{ background: c.value }}
-                  title={c.label}
-                  onClick={() => onDrawColorChange(c.value)}
                 />
               ))}
             </div>

@@ -65,6 +65,26 @@ html, body, #root {
   font-weight: 800;
 }
 
+.toolbar-menu-word {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #ccc;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  font-size: 13px;
+  font-weight: 500;
+  flex-shrink: 0;
+  position: relative;
+  letter-spacing: 0.2px;
+}
+.toolbar-menu-word:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.toolbar-menu-word.active { background: rgba(79,142,247,0.22); color: #4f8ef7; }
+
 .toolbar-btn {
   display: flex;
   align-items: center;
