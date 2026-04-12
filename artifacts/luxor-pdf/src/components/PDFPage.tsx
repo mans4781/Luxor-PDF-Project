@@ -448,7 +448,7 @@ export default function PDFPage({
     <div
       ref={wrapperRef}
       className="pdf-page-wrapper"
-      style={{ width: pageSize.w || "auto", height: pageSize.h || "auto" }}
+      style={{ width: pageSize.w || "auto", height: pageSize.h || "auto", "--scale-factor": zoom } as React.CSSProperties}
       id={`page-${pageNum}`}
     >
       <canvas ref={pageCanvasRef} className="pdf-page-canvas" />

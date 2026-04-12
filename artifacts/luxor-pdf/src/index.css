@@ -427,6 +427,8 @@ mark.search-hl {
   box-shadow: 0 2px 14px rgba(0,0,0,0.35);
   background: white;
   flex-shrink: 0;
+  --user-unit: 1;
+  --total-scale-factor: calc(var(--scale-factor, 1) * var(--user-unit));
 }
 
 /* Microsoft Edge-style blue selection highlight on the pdfjs text layer */
