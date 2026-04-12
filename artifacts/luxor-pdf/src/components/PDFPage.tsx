@@ -238,184 +238,31 @@ export default function PDFPage({
   const renderTaskRef = useRef<any>(null);
   const textLayerTaskRef = useRef<any>(null);
 
-  // ── Custom text selection (Adobe / Edge style) ────────────────────────────
-  // We store the drag start as RAW clientX/Y so we can always re-resolve it
-  // relative to the CURRENT wrapper rect on every mousemove — this means
-  // scrolling and any zoom level work perfectly.
-  const selClientStartRef = useRef<{ x: number; y: number } | null>(null);
-  const selTextRef = useRef("");
-  const [selBoxes, setSelBoxes] = useState<{ left: number; top: number; width: number; height: number }[]>([]);
+  // ── Native text selection (Edge-style) ──────────────────────────────────
+  // When the hand tool is active the text layer gets pointer-events so the
+  // browser's own selection engine handles columns, word boundaries, etc.
+  // On mouseup we auto-copy the selected text and show a brief toast.
   const [copiedToast, setCopiedToast] = useState(false);
 
-  function computeSpanSelection(
-    startClient: { x: number; y: number },
-    endClient:   { x: number; y: number }
-  ) {
-    if (!textLayerRef.current || !wrapperRef.current) return { boxes: [], text: "" };
-
-    // Re-resolve both endpoints against the CURRENT wrapper rect on every call
-    const wRect = wrapperRef.current.getBoundingClientRect();
-    const sx = startClient.x - wRect.left;
-    const sy = startClient.y - wRect.top;
-    const ex = endClient.x   - wRect.left;
-    const ey = endClient.y   - wRect.top;
-
-    // Skip bare clicks
-    if (Math.abs(sx - ex) < 3 && Math.abs(sy - ey) < 3) return { boxes: [], text: "" };
-
-    // Canonical direction: "first" = top of drag, "last" = bottom
-    const draggingDown  = sy <= ey;
-    const startAnchorX  = draggingDown ? sx : ex; // x where selection opens
-    const endAnchorX    = draggingDown ? ex : sx; // x where selection closes
-    const firstY        = draggingDown ? sy : ey; // y of the selection start
-    const lastY         = draggingDown ? ey : sy; // y of the selection end
-
-    // ── Step 1: measure every span on this page ───────────────────────────
-    type SI = { sl: number; st: number; sr: number; sb: number; cy: number; t: string };
-    const rawSpans = Array.from(
-      textLayerRef.current.querySelectorAll<HTMLElement>("span:not(.endOfContent)")
-    );
-    const all: SI[] = [];
-    for (const span of rawSpans) {
-      const t = span.textContent ?? "";
-      if (!t.trim()) continue;
-      const r  = span.getBoundingClientRect();
-      const sl = r.left   - wRect.left;
-      const st = r.top    - wRect.top;
-      const sr = r.right  - wRect.left;
-      const sb = r.bottom - wRect.top;
-      all.push({ sl, st, sr, sb, cy: (st + sb) / 2, t });
-    }
-    if (all.length === 0) return { boxes: [], text: "" };
-
-    // ── Step 2: find which visual line the drag start/end land on ─────────
-    // "Line" = group of spans with similar vertical centre (cy).
-    // We locate the span whose cy is closest to firstY / lastY, then use
-    // that cy as the canonical y for that line.  All spans within ±lineThresh
-    // of that cy are considered to be on the same line.
-    const lineThresh = zoom * 8; // ≈ half a line height at any zoom level
-
-    function nearestCy(targetY: number): number {
-      let best = all[0];
-      let bestD = Math.abs(best.cy - targetY);
-      for (const s of all) {
-        const d = Math.abs(s.cy - targetY);
-        if (d < bestD) { bestD = d; best = s; }
-      }
-      return best.cy;
-    }
-
-    const firstLineCy = nearestCy(firstY);
-    const lastLineCy  = nearestCy(lastY);
-    const singleLine  = Math.abs(firstLineCy - lastLineCy) < lineThresh;
-
-    // ── Step 3: classify every span ──────────────────────────────────────
-    // • On first line  → include if right edge is past the start anchor x
-    // • On last line   → include if left edge is before the end anchor x
-    // • Single-line    → bounded by both anchor x values
-    // • Middle lines   → include everything (full width)
-    // • Outside        → ignored
-    const selected: SI[] = [];
-
-    for (const s of all) {
-      const onFirst  = Math.abs(s.cy - firstLineCy) < lineThresh;
-      const onLast   = Math.abs(s.cy - lastLineCy)  < lineThresh;
-      const inMiddle = s.cy > firstLineCy + lineThresh &&
-                       s.cy < lastLineCy  - lineThresh;
-
-      if (singleLine) {
-        const selL = Math.min(startAnchorX, endAnchorX);
-        const selR = Math.max(startAnchorX, endAnchorX);
-        if (onFirst && s.sr > selL && s.sl < selR) selected.push(s);
-      } else if (onFirst) {
-        if (s.sr > startAnchorX) selected.push(s);
-      } else if (onLast) {
-        if (s.sl < endAnchorX) selected.push(s);
-      } else if (inMiddle) {
-        selected.push(s);
-      }
-    }
-
-    if (selected.length === 0) return { boxes: [], text: "" };
-
-    // ── Step 4: group selected spans into visual lines ────────────────────
-    selected.sort((a, b) => a.cy - b.cy || a.sl - b.sl);
-    type Line = { top: number; bot: number; items: SI[] };
-    const lines: Line[] = [];
-    for (const s of selected) {
-      const last = lines[lines.length - 1];
-      if (last && Math.abs(s.cy - (last.top + last.bot) / 2) < lineThresh) {
-        last.items.push(s);
-        last.top = Math.min(last.top, s.st);
-        last.bot = Math.max(last.bot, s.sb);
-      } else {
-        lines.push({ top: s.st, bot: s.sb, items: [s] });
-      }
-    }
-
-    // ── Step 5: build one highlight box per line ──────────────────────────
-    const boxes: { left: number; top: number; width: number; height: number }[] = [];
-    const texts: string[] = [];
-    for (const line of lines) {
-      line.items.sort((a, b) => a.sl - b.sl);
-      const left   = Math.min(...line.items.map(s => s.sl));
-      const right  = Math.max(...line.items.map(s => s.sr));
-      boxes.push({ left, top: line.top, width: right - left, height: line.bot - line.top });
-      texts.push(line.items.map(s => s.t).join(""));
-    }
-
-    return { boxes, text: texts.join("\n").trim() };
-  }
-
-  /**
-   * On mousedown we attach DOCUMENT-level listeners so selection is never
-   * interrupted by the mouse leaving the page wrapper or a sibling element.
-   */
-  const handleSelMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return;
-    e.preventDefault();
-
-    // Store the raw viewport coords
-    selClientStartRef.current = { x: e.clientX, y: e.clientY };
-    selTextRef.current = "";
-    setSelBoxes([]);
-
-    const onMove = (ev: MouseEvent) => {
-      if (!selClientStartRef.current) return;
-      const { boxes, text } = computeSpanSelection(
-        selClientStartRef.current,
-        { x: ev.clientX, y: ev.clientY }
-      );
-      setSelBoxes(boxes);
-      selTextRef.current = text;
-    };
+  useEffect(() => {
+    if (tool !== "hand") return;
+    const layer = textLayerRef.current;
+    if (!layer) return;
 
     const onUp = () => {
-      const txt = selTextRef.current.trim();
+      const sel = window.getSelection();
+      const txt = sel?.toString().trim();
       if (txt) {
         navigator.clipboard.writeText(txt).then(() => {
           setCopiedToast(true);
           setTimeout(() => setCopiedToast(false), 1800);
         }).catch(() => {});
       }
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
     };
 
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
-  }, []);
-
-  // Ctrl+C re-copies the last selection
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "c" && selTextRef.current.trim()) {
-        navigator.clipboard.writeText(selTextRef.current.trim()).catch(() => {});
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
+    layer.addEventListener("mouseup", onUp);
+    return () => layer.removeEventListener("mouseup", onUp);
+  }, [tool]);
 
   // Track visible page
   useEffect(() => {
@@ -606,11 +453,15 @@ export default function PDFPage({
     >
       <canvas ref={pageCanvasRef} className="pdf-page-canvas" />
 
-      {/* pdfjs text layer — spans used for search highlight & position queries */}
+      {/* pdfjs text layer — native browser selection when hand tool is active */}
       <div
         ref={textLayerRef}
         className="textLayer"
-        style={{ zIndex: 2, pointerEvents: "none" }}
+        style={{
+          zIndex: tool === "hand" ? 10 : 2,
+          pointerEvents: tool === "hand" ? "auto" : "none",
+          cursor: tool === "hand" ? "text" : "default",
+        }}
       />
 
       {/* Highlight drawing canvas (z-index 3) */}
@@ -629,47 +480,20 @@ export default function PDFPage({
         onMouseLeave={onHighlightMouseUp}
       />
 
-      {/* ── Custom text-selection overlay (hand tool) — Adobe / Edge style ── */}
-      {tool === "hand" && (
-        <div
-          style={{
-            position: "absolute", inset: 0,
-            zIndex: 5,
-            cursor: "text",
-            userSelect: "none",
-          }}
-          onMouseDown={handleSelMouseDown}
-        >
-          {/* Blue selection highlight — opacity scales with zoom */}
-          {selBoxes.map((b, i) => (
-            <div
-              key={i}
-              style={{
-                position: "absolute",
-                left: b.left, top: b.top,
-                width: b.width, height: b.height,
-                background: `rgba(144, 238, 144, ${Math.min(0.55, Math.max(0.22, 0.35 * (zoom / 1.5))).toFixed(2)})`,
-                pointerEvents: "none",
-              }}
-            />
-          ))}
-
-          {/* "Copied!" toast */}
-          {copiedToast && (
-            <div style={{
-              position: "absolute", top: 8, left: "50%",
-              transform: "translateX(-50%)",
-              background: "rgba(30,30,30,0.88)",
-              color: "#fff", fontSize: 12, fontWeight: 600,
-              padding: "4px 12px", borderRadius: 6,
-              pointerEvents: "none",
-              whiteSpace: "nowrap",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
-              zIndex: 100,
-            }}>
-              Copied!
-            </div>
-          )}
+      {/* "Copied!" toast (shown after native text selection auto-copy) */}
+      {copiedToast && (
+        <div style={{
+          position: "absolute", top: 8, left: "50%",
+          transform: "translateX(-50%)",
+          background: "rgba(30,30,30,0.88)",
+          color: "#fff", fontSize: 12, fontWeight: 600,
+          padding: "4px 12px", borderRadius: 6,
+          pointerEvents: "none",
+          whiteSpace: "nowrap",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+          zIndex: 100,
+        }}>
+          Copied!
         </div>
       )}
 

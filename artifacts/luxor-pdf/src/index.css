@@ -429,7 +429,7 @@ mark.search-hl {
   flex-shrink: 0;
 }
 
-/* Guarantee text inside the pdfjs text layer is always selectable */
+/* Text layer: selectable when hand tool is active (controlled via inline style) */
 .pdf-page-wrapper .textLayer {
   user-select: text !important;
   -webkit-user-select: text !important;
@@ -440,6 +440,14 @@ mark.search-hl {
 .pdf-page-wrapper .textLayer br {
   user-select: text !important;
   -webkit-user-select: text !important;
+}
+
+/* Light-green native selection highlight (Edge-style) */
+.pdf-page-wrapper .textLayer ::selection {
+  background: rgba(144, 238, 144, 0.45) !important;
+}
+.pdf-page-wrapper .textLayer ::-moz-selection {
+  background: rgba(144, 238, 144, 0.45) !important;
 }
 
 .pdf-page-canvas {
