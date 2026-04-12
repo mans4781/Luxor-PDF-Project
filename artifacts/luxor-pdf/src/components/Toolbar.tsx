@@ -27,8 +27,10 @@ interface ToolbarProps {
   isSpeaking: boolean;
   showContents: boolean;
   searchOpen: boolean;
+  splitView: boolean;
   onToggleContents: () => void;
   onToggleSearch: () => void;
+  onToggleSplit: () => void;
   onToolChange: (tool: ToolType) => void;
   onHighlightColorChange: (c: string) => void;
   onTextColorChange: (c: string) => void;
@@ -45,7 +47,8 @@ type PopoverType = "highlight" | "text" | null;
 export default function Toolbar({
   fileName, tool,
   highlightColor, textColor, textSize, isSpeaking,
-  showContents, searchOpen, onToggleContents, onToggleSearch,
+  showContents, searchOpen, splitView,
+  onToggleContents, onToggleSearch, onToggleSplit,
   onToolChange,
   onHighlightColorChange, onTextColorChange, onTextSizeChange,
   onEraseAll, onReadAloud, onOpenFile, onDownload, onPrint,
@@ -291,6 +294,19 @@ export default function Toolbar({
       )}
 
       <div className="toolbar-sep" />
+
+      {/* ── Split / dual-page view ─────────────────────────────────────── */}
+      <button
+        className={`toolbar-btn ${splitView ? "active" : ""}`}
+        onClick={onToggleSplit}
+        title="Toggle two-page spread"
+      >
+        <span className="toolbar-tip">Two-page view</span>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="1" y="3" width="10" height="18" rx="1.5"/>
+          <rect x="13" y="3" width="10" height="18" rx="1.5"/>
+        </svg>
+      </button>
 
       <button
         className={`toolbar-btn ${searchOpen ? "active" : ""}`}

@@ -37,6 +37,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   const [textColor, setTextColor] = useState("#1a1a1a");
   const [textSize, setTextSize] = useState(16);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [splitView, setSplitView] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pageInputRef = useRef<HTMLInputElement>(null);
 
@@ -230,8 +231,10 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         isSpeaking={isSpeaking}
         showContents={showContents}
         searchOpen={searchOpen}
+        splitView={splitView}
         onToggleContents={() => setShowContents(s => !s)}
         onToggleSearch={() => { setSearchOpen(s => !s); if (searchOpen) { setSearchQuery(""); setSearchMatchList([]); } }}
+        onToggleSplit={() => setSplitView(s => !s)}
         onToolChange={setTool}
         onHighlightColorChange={setHighlightColor}
         onTextColorChange={setTextColor}
@@ -391,26 +394,50 @@ export default function Viewer({ file, onClose }: ViewerProps) {
       </div>
 
       <div className={`luxor-viewer${showContents ? " viewer-with-panel" : ""}`}>
-        {pdfDoc && allPageNums.map(pageNum => (
-          <PDFPage
-            key={pageNum}
-            pdfDocument={pdfDoc}
-            pageNum={pageNum}
-            zoom={zoom}
-            rotation={rotation}
-            searchTerm={searchQuery.trim()}
-            tool={tool}
-            annotations={getPageAnnotations(pageNum)}
-            highlightColor={highlightColor}
-            textColor={textColor}
-            textSize={textSize}
-            onAnnotationAdd={addAnnotation}
-            onAnnotationUpdate={updateAnnotation}
-            onAnnotationRemove={removeAnnotation}
-            isCurrentPage={pageNum === currentPage}
-            onVisible={handlePageVisible}
-          />
-        ))}
+        {pdfDoc && (splitView
+          /* ── Two-page spread: render pairs side by side ── */
+          ? Array.from({ length: Math.ceil(totalPages / 2) }, (_, i) => {
+              const left  = i * 2 + 1;
+              const right = i * 2 + 2;
+              return (
+                <div key={left} style={{ display: "flex", gap: 12, alignItems: "flex-start", flexShrink: 0 }}>
+                  <PDFPage
+                    pdfDocument={pdfDoc} pageNum={left} zoom={zoom} rotation={rotation}
+                    searchTerm={searchQuery.trim()} tool={tool}
+                    annotations={getPageAnnotations(left)}
+                    highlightColor={highlightColor} textColor={textColor} textSize={textSize}
+                    onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
+                    onAnnotationRemove={removeAnnotation}
+                    isCurrentPage={left === currentPage} onVisible={handlePageVisible}
+                  />
+                  {right <= totalPages && (
+                    <PDFPage
+                      pdfDocument={pdfDoc} pageNum={right} zoom={zoom} rotation={rotation}
+                      searchTerm={searchQuery.trim()} tool={tool}
+                      annotations={getPageAnnotations(right)}
+                      highlightColor={highlightColor} textColor={textColor} textSize={textSize}
+                      onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
+                      onAnnotationRemove={removeAnnotation}
+                      isCurrentPage={right === currentPage} onVisible={handlePageVisible}
+                    />
+                  )}
+                </div>
+              );
+            })
+          /* ── Single-page view ── */
+          : allPageNums.map(pageNum => (
+              <PDFPage
+                key={pageNum}
+                pdfDocument={pdfDoc} pageNum={pageNum} zoom={zoom} rotation={rotation}
+                searchTerm={searchQuery.trim()} tool={tool}
+                annotations={getPageAnnotations(pageNum)}
+                highlightColor={highlightColor} textColor={textColor} textSize={textSize}
+                onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
+                onAnnotationRemove={removeAnnotation}
+                isCurrentPage={pageNum === currentPage} onVisible={handlePageVisible}
+              />
+            ))
+        )}
       </div>
 
       <input
