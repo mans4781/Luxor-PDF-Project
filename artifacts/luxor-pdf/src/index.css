@@ -128,7 +128,7 @@ html, body, #root {
   padding: 4px 5px; outline: none; cursor: pointer;
 }
 
-.toolbar-label { color: #999; font-size: 12.6px; white-space: nowrap; }
+.toolbar-label { color: #999; font-size: 13.23px; white-space: nowrap; }
 
 /* ── Viewer ──────────────────────────────────────────────────────────────── */
 
