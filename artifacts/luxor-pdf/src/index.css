@@ -146,13 +146,13 @@ html, body, #root {
   box-shadow: 0 2px 14px rgba(0,0,0,0.35);
   background: white;
   flex-shrink: 0;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .pdf-page-canvas {
   display: block;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  image-rendering: pixelated;
+  image-rendering: auto;
 }
 
 /* ── Home screen ─────────────────────────────────────────────────────────── */

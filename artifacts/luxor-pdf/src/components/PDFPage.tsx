@@ -250,8 +250,9 @@ export default function PDFPage({
         setPageSize({ w: cssW, h: cssH });
 
         const ctx = canvas.getContext("2d")!;
-        // Disable smoothing so pixel-perfect text stays sharp when scaling
-        ctx.imageSmoothingEnabled = false;
+        // High-quality smoothing for sharp text and images at all zoom levels
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
         const task = page.render({ canvasContext: ctx, viewport });
         renderTaskRef.current = task;
         await task.promise;
