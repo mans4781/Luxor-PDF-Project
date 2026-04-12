@@ -279,7 +279,34 @@ export default function PDFPage({
         texts.push(span.textContent || "");
       }
     }
-    return { boxes, text: texts.join("") };
+    if (boxes.length === 0) return { boxes: [], text: texts.join("") };
+
+    // Sort spans by top then left so line-merging works correctly
+    const paired = boxes.map((b, i) => ({ b, t: texts[i] }));
+    paired.sort((a, b) => a.b.top - b.b.top || a.b.left - b.b.left);
+
+    // Merge spans that share the same visual line into one continuous rectangle
+    // (fills the gaps between words, just like Adobe / Edge selection)
+    const merged: { left: number; top: number; width: number; height: number }[] = [];
+    const orderedTexts: string[] = [];
+    for (const { b, t } of paired) {
+      const last = merged[merged.length - 1];
+      // Two boxes are on the same line if their vertical centres are within 4px of each other
+      const bCy = b.top + b.height / 2;
+      const lCy = last ? last.top + last.height / 2 : NaN;
+      if (last && Math.abs(bCy - lCy) < 4) {
+        // Extend the existing line rectangle to cover the new span (including any gap)
+        const newRight = Math.max(last.left + last.width, b.left + b.width);
+        last.top = Math.min(last.top, b.top);
+        last.height = Math.max(last.height, b.height);
+        last.width = newRight - last.left;
+        orderedTexts[orderedTexts.length - 1] += t;
+      } else {
+        merged.push({ ...b });
+        orderedTexts.push(t);
+      }
+    }
+    return { boxes: merged, text: orderedTexts.join(" ").replace(/\s+/g, " ").trim() };
   }
 
   const handleSelMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
