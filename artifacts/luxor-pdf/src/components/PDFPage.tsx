@@ -274,6 +274,13 @@ export default function PDFPage({
     const lastAnchorX  = draggingDown ? ex : sx;
 
     // ── Step 1: collect all spans within the vertical selection band ──────
+    // Enforce a minimum band height so purely horizontal drags (selT ≈ selB)
+    // still capture spans whose centre is near the cursor's y position.
+    const midY    = (selT + selB) / 2;
+    const halfBand = Math.max((selB - selT) / 2, zoom * 10); // at least 10× zoom px
+    const bandT   = midY - halfBand;
+    const bandB   = midY + halfBand;
+
     type SpanItem = { sl: number; st: number; sr: number; sb: number; t: string };
     const allSpans = Array.from(
       textLayerRef.current.querySelectorAll<HTMLElement>("span:not(.endOfContent)")
@@ -287,8 +294,9 @@ export default function PDFPage({
       const st = r.top    - wRect.top;
       const sr = r.right  - wRect.left;
       const sb = r.bottom - wRect.top;
+      // Include span if its centre falls inside the (padded) vertical band
       const cy = (st + sb) / 2;
-      if (cy >= selT && cy <= selB) items.push({ sl, st, sr, sb, t });
+      if (cy >= bandT && cy <= bandB) items.push({ sl, st, sr, sb, t });
     }
     if (items.length === 0) return { boxes: [], text: "" };
 
