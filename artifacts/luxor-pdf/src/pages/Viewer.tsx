@@ -13,7 +13,10 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).href;
 
-const ZOOM_PRESETS = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0];
+// Actual zoom values where 1.5 = "100%" (the new baseline)
+const ZOOM_BASE = 1.5;
+const ZOOM_PRESETS = [0.375, 0.75, 1.125, 1.5, 1.875, 2.25, 3.0];
+const zoomLabel = (z: number) => `${Math.round((z / ZOOM_BASE) * 100)}%`;
 
 interface ViewerProps {
   file: File;
@@ -24,7 +27,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [zoom, setZoom] = useState(1.38);
+  const [zoom, setZoom] = useState(ZOOM_BASE);
   const [rotation, setRotation] = useState(0);
   const [showContents, setShowContents] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -292,8 +295,8 @@ export default function Viewer({ file, onClose }: ViewerProps) {
             onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setZoom(v); }}
             title="Zoom level"
           >
-            {ZOOM_PRESETS.map(z => <option key={z} value={z}>{Math.round(z * 100)}%</option>)}
-            {!ZOOM_PRESETS.includes(zoom) && <option value="custom">{Math.round(zoom * 100)}%</option>}
+            {ZOOM_PRESETS.map(z => <option key={z} value={z}>{zoomLabel(z)}</option>)}
+            {!ZOOM_PRESETS.includes(zoom) && <option value="custom">{zoomLabel(zoom)}</option>}
           </select>
 
           <button
@@ -384,7 +387,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         <button
           className="sidebar-btn"
           title="Reset zoom (100%)"
-          onClick={() => setZoom(1.0)}
+          onClick={() => setZoom(ZOOM_BASE)}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
