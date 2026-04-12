@@ -249,120 +249,127 @@ export default function PDFPage({
 
   function computeSpanSelection(
     startClient: { x: number; y: number },
-    endClient: { x: number; y: number }
+    endClient:   { x: number; y: number }
   ) {
     if (!textLayerRef.current || !wrapperRef.current) return { boxes: [], text: "" };
 
-    // Re-resolve BOTH endpoints against the CURRENT wrapper rect every time
+    // Re-resolve both endpoints against the CURRENT wrapper rect on every call
     const wRect = wrapperRef.current.getBoundingClientRect();
     const sx = startClient.x - wRect.left;
     const sy = startClient.y - wRect.top;
     const ex = endClient.x   - wRect.left;
     const ey = endClient.y   - wRect.top;
 
-    const selT = Math.min(sy, ey);
-    const selB = Math.max(sy, ey);
-
     // Skip bare clicks
     if (Math.abs(sx - ex) < 3 && Math.abs(sy - ey) < 3) return { boxes: [], text: "" };
 
-    // Drag direction: are we going down the page?
-    const draggingDown = sy <= ey;
-    // First-line anchor x (where the drag started on the first line)
-    const firstAnchorX = draggingDown ? sx : ex;
-    // Last-line anchor x (where the drag ended on the last line)
-    const lastAnchorX  = draggingDown ? ex : sx;
+    // Canonical direction: "first" = top of drag, "last" = bottom
+    const draggingDown  = sy <= ey;
+    const startAnchorX  = draggingDown ? sx : ex; // x where selection opens
+    const endAnchorX    = draggingDown ? ex : sx; // x where selection closes
+    const firstY        = draggingDown ? sy : ey; // y of the selection start
+    const lastY         = draggingDown ? ey : sy; // y of the selection end
 
-    // ── Step 1: collect all spans within the vertical selection band ──────
-    // Enforce a minimum band height so purely horizontal drags (selT ≈ selB)
-    // still capture spans whose centre is near the cursor's y position.
-    const midY    = (selT + selB) / 2;
-    const halfBand = Math.max((selB - selT) / 2, zoom * 10); // at least 10× zoom px
-    const bandT   = midY - halfBand;
-    const bandB   = midY + halfBand;
-
-    type SpanItem = { sl: number; st: number; sr: number; sb: number; t: string };
-    const allSpans = Array.from(
+    // ── Step 1: measure every span on this page ───────────────────────────
+    type SI = { sl: number; st: number; sr: number; sb: number; cy: number; t: string };
+    const rawSpans = Array.from(
       textLayerRef.current.querySelectorAll<HTMLElement>("span:not(.endOfContent)")
     );
-    const items: SpanItem[] = [];
-    for (const span of allSpans) {
-      const t = span.textContent || "";
+    const all: SI[] = [];
+    for (const span of rawSpans) {
+      const t = span.textContent ?? "";
       if (!t.trim()) continue;
-      const r = span.getBoundingClientRect();
+      const r  = span.getBoundingClientRect();
       const sl = r.left   - wRect.left;
       const st = r.top    - wRect.top;
       const sr = r.right  - wRect.left;
       const sb = r.bottom - wRect.top;
-      // Include span if its centre falls inside the (padded) vertical band
-      const cy = (st + sb) / 2;
-      if (cy >= bandT && cy <= bandB) items.push({ sl, st, sr, sb, t });
+      all.push({ sl, st, sr, sb, cy: (st + sb) / 2, t });
     }
-    if (items.length === 0) return { boxes: [], text: "" };
+    if (all.length === 0) return { boxes: [], text: "" };
 
-    // ── Step 2: sort & group into lines ──────────────────────────────────
-    items.sort((a, b) => a.st - b.st || a.sl - b.sl);
-    type Line = { top: number; height: number; items: SpanItem[] };
-    const lines: Line[] = [];
-    for (const item of items) {
-      const cy = (item.st + item.sb) / 2;
-      const last = lines[lines.length - 1];
-      if (last) {
-        const lastCy = last.top + last.height / 2;
-        const threshold = (item.sb - item.st + last.height) / 2 * 0.55;
-        if (Math.abs(cy - lastCy) < threshold) {
-          last.items.push(item);
-          last.top    = Math.min(last.top, item.st);
-          last.height = Math.max(last.height, item.sb - last.top);
-          continue;
-        }
+    // ── Step 2: find which visual line the drag start/end land on ─────────
+    // "Line" = group of spans with similar vertical centre (cy).
+    // We locate the span whose cy is closest to firstY / lastY, then use
+    // that cy as the canonical y for that line.  All spans within ±lineThresh
+    // of that cy are considered to be on the same line.
+    const lineThresh = zoom * 8; // ≈ half a line height at any zoom level
+
+    function nearestCy(targetY: number): number {
+      let best = all[0];
+      let bestD = Math.abs(best.cy - targetY);
+      for (const s of all) {
+        const d = Math.abs(s.cy - targetY);
+        if (d < bestD) { bestD = d; best = s; }
       }
-      lines.push({ top: item.st, height: item.sb - item.st, items: [item] });
+      return best.cy;
     }
 
-    // ── Step 3: apply per-line x-clipping ────────────────────────────────
-    // • First line  → spans whose right edge is past the drag-start x
-    // • Middle lines → spans within the drag rectangle's x bounds (preserves columns)
-    // • Last line   → spans whose left edge is before the drag-end x
-    // This way a two-column drag stays in its column, and the last word is never cut off.
-    const selL = Math.min(sx, ex);
-    const selR = Math.max(sx, ex);
+    const firstLineCy = nearestCy(firstY);
+    const lastLineCy  = nearestCy(lastY);
+    const singleLine  = Math.abs(firstLineCy - lastLineCy) < lineThresh;
 
+    // ── Step 3: classify every span ──────────────────────────────────────
+    // • On first line  → include if right edge is past the start anchor x
+    // • On last line   → include if left  edge is before the end anchor x
+    // • Both (single-line drag) → must lie inside [min(anchors), max(anchors)]
+    // • Strictly between the two lines (middle) → always include (full width)
+    // • Before first line or after last line → exclude
+    const selected: SI[] = [];
+
+    for (const s of all) {
+      const onFirst  = Math.abs(s.cy - firstLineCy) < lineThresh;
+      const onLast   = Math.abs(s.cy - lastLineCy)  < lineThresh;
+      const inMiddle = s.cy > firstLineCy + lineThresh &&
+                       s.cy < lastLineCy  - lineThresh;
+
+      if (singleLine) {
+        // Single-line: both anchors are on the same line
+        const selL = Math.min(startAnchorX, endAnchorX);
+        const selR = Math.max(startAnchorX, endAnchorX);
+        if (onFirst && s.sr > selL && s.sl < selR) selected.push(s);
+      } else if (onFirst && onLast) {
+        // Shouldn't happen when !singleLine, but be safe
+        selected.push(s);
+      } else if (onFirst) {
+        if (s.sr > startAnchorX) selected.push(s);   // right of start cursor
+      } else if (onLast) {
+        if (s.sl < endAnchorX) selected.push(s);     // left of end cursor
+      } else if (inMiddle) {
+        selected.push(s);                             // middle: full width
+      }
+      // else: outside the selection range → ignore
+    }
+
+    if (selected.length === 0) return { boxes: [], text: "" };
+
+    // ── Step 4: group selected spans into visual lines ────────────────────
+    selected.sort((a, b) => a.cy - b.cy || a.sl - b.sl);
+    type Line = { top: number; bot: number; items: SI[] };
+    const lines: Line[] = [];
+    for (const s of selected) {
+      const last = lines[lines.length - 1];
+      if (last && Math.abs(s.cy - (last.top + last.bot) / 2) < lineThresh) {
+        last.items.push(s);
+        last.top = Math.min(last.top, s.st);
+        last.bot = Math.max(last.bot, s.sb);
+      } else {
+        lines.push({ top: s.st, bot: s.sb, items: [s] });
+      }
+    }
+
+    // ── Step 5: build one highlight box per line ──────────────────────────
     const boxes: { left: number; top: number; width: number; height: number }[] = [];
     const texts: string[] = [];
-    const isMulti = lines.length > 1;
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      let lineItems = line.items;
-
-      if (isMulti) {
-        if (i === 0) {
-          // First line: right of the start anchor, within the drag's right bound
-          lineItems = lineItems.filter(s => s.sr > firstAnchorX && s.sl < selR);
-        } else if (i === lines.length - 1) {
-          // Last line: left of the end anchor, within the drag's left bound
-          lineItems = lineItems.filter(s => s.sl < lastAnchorX && s.sr > selL);
-        } else {
-          // Middle lines: respect the horizontal drag bounds → column-safe
-          lineItems = lineItems.filter(s => s.sl < selR && s.sr > selL);
-        }
-      } else {
-        // Single-line drag: honour both x bounds
-        lineItems = lineItems.filter(s => s.sl < selR && s.sr > selL);
-      }
-
-      if (lineItems.length === 0) continue;
-
-      const left   = Math.min(...lineItems.map(s => s.sl));
-      const right  = Math.max(...lineItems.map(s => s.sr));
-      const top    = Math.min(...lineItems.map(s => s.st));
-      const bottom = Math.max(...lineItems.map(s => s.sb));
-      boxes.push({ left, top, width: right - left, height: bottom - top });
-      texts.push(lineItems.map(s => s.t).join(""));
+    for (const line of lines) {
+      line.items.sort((a, b) => a.sl - b.sl);
+      const left   = Math.min(...line.items.map(s => s.sl));
+      const right  = Math.max(...line.items.map(s => s.sr));
+      boxes.push({ left, top: line.top, width: right - left, height: line.bot - line.top });
+      texts.push(line.items.map(s => s.t).join(""));
     }
 
-    return { boxes, text: texts.join(" ").replace(/\s+/g, " ").trim() };
+    return { boxes, text: texts.join("\n").trim() };
   }
 
   /**
