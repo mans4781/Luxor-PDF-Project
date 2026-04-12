@@ -544,26 +544,62 @@ export default function PDFPage({
   } | null>(null);
 
   const [copiedToast, setCopiedToast] = useState(false);
+  const [selectionPopup, setSelectionPopup] = useState<{ x: number; y: number; rects: { x: number; y: number; width: number; height: number }[] } | null>(null);
+
+  const SELECTION_HL_COLORS = [
+    { label: "Yellow", value: "rgba(255,235,59,0.4)" },
+    { label: "Green",  value: "rgba(76,175,80,0.35)" },
+    { label: "Blue",   value: "rgba(33,150,243,0.3)" },
+    { label: "Pink",   value: "rgba(233,30,99,0.3)" },
+  ];
 
   useEffect(() => {
-    if (tool !== "hand") return;
     const layer = textLayerRef.current;
-    if (!layer) return;
+    const wrapper = wrapperRef.current;
+    if (!layer || !wrapper) return;
 
     const onUp = () => {
       const sel = window.getSelection();
       const txt = sel?.toString().trim();
-      if (txt) {
-        navigator.clipboard.writeText(txt).then(() => {
-          setCopiedToast(true);
-          setTimeout(() => setCopiedToast(false), 1800);
-        }).catch(() => {});
+      if (!txt || !sel || sel.rangeCount === 0) {
+        setSelectionPopup(null);
+        return;
       }
+
+      navigator.clipboard.writeText(txt).then(() => {
+        setCopiedToast(true);
+        setTimeout(() => setCopiedToast(false), 1800);
+      }).catch(() => {});
+
+      const range = sel.getRangeAt(0);
+      const clientRects = range.getClientRects();
+      if (clientRects.length === 0) return;
+
+      const wrapperRect = wrapper.getBoundingClientRect();
+      const scaleX = pageSize.w / wrapperRect.width;
+      const scaleY = pageSize.h / wrapperRect.height;
+
+      const rects: { x: number; y: number; width: number; height: number }[] = [];
+      for (let i = 0; i < clientRects.length; i++) {
+        const r = clientRects[i];
+        rects.push({
+          x: (r.left - wrapperRect.left) * scaleX,
+          y: (r.top - wrapperRect.top) * scaleY,
+          width: r.width * scaleX,
+          height: r.height * scaleY,
+        });
+      }
+
+      const lastRect = clientRects[clientRects.length - 1];
+      const popX = (lastRect.right - wrapperRect.left) * scaleX;
+      const popY = (lastRect.bottom - wrapperRect.top) * scaleY;
+
+      setSelectionPopup({ x: Math.min(popX, pageSize.w - 120), y: popY + 4, rects });
     };
 
     layer.addEventListener("mouseup", onUp);
     return () => layer.removeEventListener("mouseup", onUp);
-  }, [tool]);
+  }, [tool, pageSize]);
 
   useEffect(() => {
     const el = wrapperRef.current;
@@ -928,6 +964,66 @@ export default function PDFPage({
           zIndex: 100,
         }}>
           Copied!
+        </div>
+      )}
+
+      {selectionPopup && (
+        <div
+          style={{
+            position: "absolute",
+            left: selectionPopup.x,
+            top: selectionPopup.y,
+            zIndex: 60,
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            background: "rgba(40,40,40,0.95)",
+            borderRadius: 6,
+            padding: "5px 8px",
+            boxShadow: "0 3px 12px rgba(0,0,0,0.4)",
+            pointerEvents: "all",
+          }}
+          onMouseDown={e => e.stopPropagation()}
+        >
+          <span style={{ color: "#ccc", fontSize: 11, marginRight: 2 }}>Highlight:</span>
+          {SELECTION_HL_COLORS.map(c => (
+            <div
+              key={c.value}
+              title={c.label}
+              onClick={() => {
+                const ann: HighlightAnnotation = {
+                  id: genId(), type: "highlight", page: pageNum,
+                  rects: selectionPopup.rects,
+                  color: c.value,
+                };
+                onAnnotationAdd(ann);
+                setSelectionPopup(null);
+                window.getSelection()?.removeAllRanges();
+              }}
+              style={{
+                width: 18, height: 18, borderRadius: "50%",
+                background: c.value.replace(/[\d.]+\)$/, "1)"),
+                cursor: "pointer",
+                border: "2px solid rgba(255,255,255,0.4)",
+                boxSizing: "border-box",
+                transition: "transform 0.1s",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.2)")}
+              onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+            />
+          ))}
+          <div
+            title="Dismiss"
+            onClick={() => { setSelectionPopup(null); window.getSelection()?.removeAllRanges(); }}
+            style={{
+              marginLeft: 2, color: "#999", cursor: "pointer", fontSize: 14,
+              display: "flex", alignItems: "center", padding: "0 2px",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
+            onMouseLeave={e => (e.currentTarget.style.color = "#999")}
+          >
+            ✕
+          </div>
         </div>
       )}
 
