@@ -554,11 +554,11 @@ export default function PDFPage({
   const [commentInput, setCommentInput] = useState<{ open: boolean; text: string }>({ open: false, text: "" });
 
   const SELECTION_HL_COLORS = [
-    { label: "Yellow", value: "rgba(255,235,59,0.4)" },
-    { label: "Green",  value: "rgba(76,175,80,0.35)" },
-    { label: "Blue",   value: "rgba(33,150,243,0.3)" },
-    { label: "Pink",   value: "rgba(233,30,99,0.3)" },
-    { label: "Orange", value: "rgba(255,152,0,0.35)" },
+    { value: "#FFFF00" },
+    { value: "#C1F0C8" },
+    { value: "#C0E6F5" },
+    { value: "#F2CEEF" },
+    { value: "#FBE2D5" },
   ];
 
   const getSelectionRects = useCallback(() => {
@@ -1053,7 +1053,6 @@ export default function PDFPage({
                 {SELECTION_HL_COLORS.map(c => (
                   <div
                     key={c.value}
-                    title={c.label}
                     onClick={() => {
                       const ann: HighlightAnnotation = {
                         id: genId(), type: "highlight", page: pageNum,
@@ -1065,7 +1064,7 @@ export default function PDFPage({
                     }}
                     style={{
                       width: 22, height: 22, borderRadius: "50%",
-                      background: c.value.replace(/[\d.]+\)$/, "1)"),
+                      background: c.value,
                       cursor: "pointer",
                       border: "2px solid rgba(255,255,255,0.3)",
                       boxSizing: "border-box",
