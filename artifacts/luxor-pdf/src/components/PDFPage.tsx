@@ -555,10 +555,10 @@ export default function PDFPage({
 
   const SELECTION_HL_COLORS = [
     { value: "#FFFF00" },
-    { value: "#C1F0C8" },
-    { value: "#C0E6F5" },
-    { value: "#F2CEEF" },
-    { value: "#FBE2D5" },
+    { value: "#00FF00" },
+    { value: "#00FFFF" },
+    { value: "#FF00FF" },
+    { value: "#FF0000" },
   ];
 
   const getSelectionRects = useCallback(() => {
