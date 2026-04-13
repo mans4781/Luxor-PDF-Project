@@ -8,6 +8,47 @@ import {
 
 const SHAPE_TOOLS: ToolType[] = ["freehand", "line", "arrow", "oval", "rectangle"];
 const isShapeTool = (t: ToolType) => SHAPE_TOOLS.includes(t);
+
+type Rect = { x: number; y: number; width: number; height: number };
+function mergeOverlappingRects(rects: Rect[]): Rect[] {
+  if (rects.length <= 1) return rects;
+  const rows: Rect[][] = [];
+  for (const r of rects) {
+    let placed = false;
+    for (const row of rows) {
+      const sample = row[0];
+      if (Math.abs(r.y - sample.y) < sample.height * 0.5) {
+        row.push(r);
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) rows.push([r]);
+  }
+  const merged: Rect[] = [];
+  for (const row of rows) {
+    row.sort((a, b) => a.x - b.x);
+    let cur = { ...row[0] };
+    for (let i = 1; i < row.length; i++) {
+      const r = row[i];
+      const curRight = cur.x + cur.width;
+      if (r.x <= curRight + 2) {
+        const newRight = Math.max(curRight, r.x + r.width);
+        const newY = Math.min(cur.y, r.y);
+        const newBottom = Math.max(cur.y + cur.height, r.y + r.height);
+        cur.x = Math.min(cur.x, r.x);
+        cur.y = newY;
+        cur.width = newRight - cur.x;
+        cur.height = newBottom - newY;
+      } else {
+        merged.push(cur);
+        cur = { ...r };
+      }
+    }
+    merged.push(cur);
+  }
+  return merged;
+}
 interface PDFPageProps {
   pdfDocument: any;
   pageNum: number;
@@ -578,16 +619,17 @@ export default function PDFPage({
     const scaleX = canvasW / wrapperRect.width;
     const scaleY = canvasH / wrapperRect.height;
 
-    const rects: { x: number; y: number; width: number; height: number }[] = [];
+    const rawRects: { x: number; y: number; width: number; height: number }[] = [];
     for (let i = 0; i < clientRects.length; i++) {
       const r = clientRects[i];
-      rects.push({
+      rawRects.push({
         x: (r.left - wrapperRect.left) * scaleX,
         y: (r.top - wrapperRect.top) * scaleY,
         width: r.width * scaleX,
         height: r.height * scaleY,
       });
     }
+    const rects = mergeOverlappingRects(rawRects);
     return { text: txt, rects };
   }, [pageSize]);
 
