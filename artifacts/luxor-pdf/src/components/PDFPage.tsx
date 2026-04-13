@@ -613,20 +613,15 @@ export default function PDFPage({
     if (clientRects.length === 0) return null;
 
     const wrapperRect = wrapper.getBoundingClientRect();
-    const drawCanvas = drawCanvasRef.current;
-    const canvasW = drawCanvas ? drawCanvas.width : pageSize.w;
-    const canvasH = drawCanvas ? drawCanvas.height : pageSize.h;
-    const scaleX = canvasW / wrapperRect.width;
-    const scaleY = canvasH / wrapperRect.height;
 
     const rawRects: { x: number; y: number; width: number; height: number }[] = [];
     for (let i = 0; i < clientRects.length; i++) {
       const r = clientRects[i];
       rawRects.push({
-        x: (r.left - wrapperRect.left) * scaleX,
-        y: (r.top - wrapperRect.top) * scaleY,
-        width: r.width * scaleX,
-        height: r.height * scaleY,
+        x: (r.left - wrapperRect.left) / wrapperRect.width,
+        y: (r.top - wrapperRect.top) / wrapperRect.height,
+        width: r.width / wrapperRect.width,
+        height: r.height / wrapperRect.height,
       });
     }
     const rects = mergeOverlappingRects(rawRects);
@@ -768,13 +763,13 @@ export default function PDFPage({
       if (ann.type === "highlight") {
         ctx.save();
         ctx.fillStyle = ann.color;
-        for (const r of ann.rects) ctx.fillRect(r.x, r.y, r.width, r.height);
+        for (const r of ann.rects) ctx.fillRect(r.x * canvas.width, r.y * canvas.height, r.width * canvas.width, r.height * canvas.height);
         ctx.restore();
       } else if (ann.type === "comment") {
         ctx.save();
         ctx.globalAlpha = 0.18;
         ctx.fillStyle = "#4169E1";
-        for (const r of ann.rects) ctx.fillRect(r.x, r.y, r.width, r.height);
+        for (const r of ann.rects) ctx.fillRect(r.x * canvas.width, r.y * canvas.height, r.width * canvas.width, r.height * canvas.height);
         ctx.restore();
       } else if (ann.type !== "text") {
         drawShapeOnCtx(ctx, ann as ShapeAnnotation);
@@ -817,9 +812,15 @@ export default function PDFPage({
     highlightRef.current = null;
     const w = pos.x - startX, h = pos.y - startY;
     if (Math.abs(w) > 4 && Math.abs(h) > 4) {
+      const canvas = drawCanvasRef.current!;
       const ann: HighlightAnnotation = {
         id: genId(), type: "highlight", page: pageNum,
-        rects: [{ x: Math.min(startX, pos.x), y: Math.min(startY, pos.y), width: Math.abs(w), height: Math.abs(h) }],
+        rects: [{
+          x: Math.min(startX, pos.x) / canvas.width,
+          y: Math.min(startY, pos.y) / canvas.height,
+          width: Math.abs(w) / canvas.width,
+          height: Math.abs(h) / canvas.height,
+        }],
         color: highlightColor,
       };
       onAnnotationAdd(ann);
@@ -1285,11 +1286,8 @@ export default function PDFPage({
       ))}
 
       {commentAnnotations.map(ann => {
-        const drawCanvas = drawCanvasRef.current;
-        const dprX = drawCanvas ? drawCanvas.width / pageSize.w : 1;
-        const dprY = drawCanvas ? drawCanvas.height / pageSize.h : 1;
-        const iconX = ann.rects[0] ? ann.rects[0].x / dprX : ann.x / dprX;
-        const iconY = ann.rects[0] ? ann.rects[0].y / dprY : ann.y / dprY;
+        const iconX = ann.rects[0] ? ann.rects[0].x * pageSize.w : ann.x * pageSize.w;
+        const iconY = ann.rects[0] ? ann.rects[0].y * pageSize.h : ann.y * pageSize.h;
         return (
           <div
             key={ann.id}
