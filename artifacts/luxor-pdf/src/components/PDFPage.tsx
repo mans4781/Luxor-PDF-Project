@@ -576,8 +576,13 @@ export default function PDFPage({
       if (clientRects.length === 0) return;
 
       const wrapperRect = wrapper.getBoundingClientRect();
-      const scaleX = pageSize.w / wrapperRect.width;
-      const scaleY = pageSize.h / wrapperRect.height;
+      const drawCanvas = drawCanvasRef.current;
+      const canvasW = drawCanvas ? drawCanvas.width : pageSize.w;
+      const canvasH = drawCanvas ? drawCanvas.height : pageSize.h;
+      const scaleX = canvasW / wrapperRect.width;
+      const scaleY = canvasH / wrapperRect.height;
+      const popScaleX = pageSize.w / wrapperRect.width;
+      const popScaleY = pageSize.h / wrapperRect.height;
 
       const rects: { x: number; y: number; width: number; height: number }[] = [];
       for (let i = 0; i < clientRects.length; i++) {
@@ -591,8 +596,8 @@ export default function PDFPage({
       }
 
       const lastRect = clientRects[clientRects.length - 1];
-      const popX = (lastRect.right - wrapperRect.left) * scaleX;
-      const popY = (lastRect.bottom - wrapperRect.top) * scaleY;
+      const popX = (lastRect.right - wrapperRect.left) * popScaleX;
+      const popY = (lastRect.bottom - wrapperRect.top) * popScaleY;
 
       setSelectionPopup({ x: Math.min(popX, pageSize.w - 120), y: popY + 4, rects });
     };
