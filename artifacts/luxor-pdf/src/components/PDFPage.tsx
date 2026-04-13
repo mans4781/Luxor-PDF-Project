@@ -554,11 +554,11 @@ export default function PDFPage({
   const [commentInput, setCommentInput] = useState<{ open: boolean; text: string }>({ open: false, text: "" });
 
   const SELECTION_HL_COLORS = [
-    { value: "#FFFF00" },
-    { value: "#00FF00" },
-    { value: "#00FFFF" },
-    { value: "#FF00FF" },
-    { value: "#FF0000" },
+    { value: "rgba(255,255,0,0.3)", circle: "#FFFF00" },
+    { value: "rgba(0,255,0,0.3)", circle: "#00FF00" },
+    { value: "rgba(0,255,255,0.3)", circle: "#00FFFF" },
+    { value: "rgba(255,0,255,0.3)", circle: "#FF00FF" },
+    { value: "rgba(255,0,0,0.3)", circle: "#FF0000" },
   ];
 
   const getSelectionRects = useCallback(() => {
@@ -725,7 +725,6 @@ export default function PDFPage({
     for (const ann of annotations) {
       if (ann.type === "highlight") {
         ctx.save();
-        ctx.globalAlpha = 0.42;
         ctx.fillStyle = ann.color;
         for (const r of ann.rects) ctx.fillRect(r.x, r.y, r.width, r.height);
         ctx.restore();
@@ -1064,7 +1063,7 @@ export default function PDFPage({
                     }}
                     style={{
                       width: 22, height: 22, borderRadius: "50%",
-                      background: c.value,
+                      background: c.circle,
                       cursor: "pointer",
                       border: "2px solid rgba(255,255,255,0.3)",
                       boxSizing: "border-box",
