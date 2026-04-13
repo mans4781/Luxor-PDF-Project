@@ -22,6 +22,17 @@ export interface TextAnnotation {
   letterSpacing?: number;
 }
 
+export interface CommentAnnotation {
+  id: string;
+  type: "comment";
+  page: number;
+  x: number;
+  y: number;
+  text: string;
+  selectedText: string;
+  rects: { x: number; y: number; width: number; height: number }[];
+}
+
 export interface FreehandAnnotation {
   id: string;
   type: "freehand";
@@ -81,4 +92,4 @@ export interface RectAnnotation {
 
 export type ShapeAnnotation = FreehandAnnotation | LineAnnotation | ArrowAnnotation | OvalAnnotation | RectAnnotation;
 
-export type Annotation = HighlightAnnotation | TextAnnotation | ShapeAnnotation;
+export type Annotation = HighlightAnnotation | TextAnnotation | CommentAnnotation | ShapeAnnotation;

@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { TextLayer } from "pdfjs-dist";
 import {
-  Annotation, HighlightAnnotation, TextAnnotation, ToolType,
+  Annotation, HighlightAnnotation, TextAnnotation, CommentAnnotation, ToolType,
   FreehandAnnotation, LineAnnotation, ArrowAnnotation, OvalAnnotation, RectAnnotation,
   ShapeAnnotation, Point,
 } from "@/lib/annotationTypes";
@@ -26,6 +26,7 @@ interface PDFPageProps {
   onAnnotationRemove: (id: string) => void;
   isCurrentPage: boolean;
   onVisible: (page: number) => void;
+  onSearchTermChange?: (term: string) => void;
 }
 
 function genId() {
@@ -523,7 +524,7 @@ export default function PDFPage({
   pdfDocument, pageNum, zoom, rotation, searchTerm, tool, annotations,
   highlightColor, textColor, textSize, drawThickness, drawColor,
   onAnnotationAdd, onAnnotationUpdate, onAnnotationRemove,
-  onVisible,
+  onVisible, onSearchTermChange,
 }: PDFPageProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const pageCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -544,67 +545,92 @@ export default function PDFPage({
   } | null>(null);
 
   const [copiedToast, setCopiedToast] = useState(false);
-  const [selectionPopup, setSelectionPopup] = useState<{ x: number; y: number; rects: { x: number; y: number; width: number; height: number }[] } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number; y: number;
+    selectedText: string;
+    rects: { x: number; y: number; width: number; height: number }[];
+  } | null>(null);
+  const [hlSubmenuOpen, setHlSubmenuOpen] = useState(false);
+  const [commentInput, setCommentInput] = useState<{ open: boolean; text: string }>({ open: false, text: "" });
 
   const SELECTION_HL_COLORS = [
     { label: "Yellow", value: "rgba(255,235,59,0.4)" },
     { label: "Green",  value: "rgba(76,175,80,0.35)" },
     { label: "Blue",   value: "rgba(33,150,243,0.3)" },
     { label: "Pink",   value: "rgba(233,30,99,0.3)" },
+    { label: "Orange", value: "rgba(255,152,0,0.35)" },
   ];
+
+  const getSelectionRects = useCallback(() => {
+    const wrapper = wrapperRef.current;
+    const sel = window.getSelection();
+    if (!wrapper || !sel || sel.rangeCount === 0) return null;
+    const txt = sel.toString().trim();
+    if (!txt) return null;
+    const range = sel.getRangeAt(0);
+    const clientRects = range.getClientRects();
+    if (clientRects.length === 0) return null;
+
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const drawCanvas = drawCanvasRef.current;
+    const canvasW = drawCanvas ? drawCanvas.width : pageSize.w;
+    const canvasH = drawCanvas ? drawCanvas.height : pageSize.h;
+    const scaleX = canvasW / wrapperRect.width;
+    const scaleY = canvasH / wrapperRect.height;
+
+    const rects: { x: number; y: number; width: number; height: number }[] = [];
+    for (let i = 0; i < clientRects.length; i++) {
+      const r = clientRects[i];
+      rects.push({
+        x: (r.left - wrapperRect.left) * scaleX,
+        y: (r.top - wrapperRect.top) * scaleY,
+        width: r.width * scaleX,
+        height: r.height * scaleY,
+      });
+    }
+    return { text: txt, rects };
+  }, [pageSize]);
 
   useEffect(() => {
     const layer = textLayerRef.current;
     const wrapper = wrapperRef.current;
     if (!layer || !wrapper) return;
 
-    const onUp = () => {
-      const sel = window.getSelection();
-      const txt = sel?.toString().trim();
-      if (!txt || !sel || sel.rangeCount === 0) {
-        setSelectionPopup(null);
-        return;
-      }
-
-      navigator.clipboard.writeText(txt).then(() => {
-        setCopiedToast(true);
-        setTimeout(() => setCopiedToast(false), 1800);
-      }).catch(() => {});
-
-      const range = sel.getRangeAt(0);
-      const clientRects = range.getClientRects();
-      if (clientRects.length === 0) return;
-
+    const onContextMenu = (e: MouseEvent) => {
+      const result = getSelectionRects();
+      if (!result) return;
+      e.preventDefault();
+      e.stopPropagation();
       const wrapperRect = wrapper.getBoundingClientRect();
-      const drawCanvas = drawCanvasRef.current;
-      const canvasW = drawCanvas ? drawCanvas.width : pageSize.w;
-      const canvasH = drawCanvas ? drawCanvas.height : pageSize.h;
-      const scaleX = canvasW / wrapperRect.width;
-      const scaleY = canvasH / wrapperRect.height;
       const popScaleX = pageSize.w / wrapperRect.width;
       const popScaleY = pageSize.h / wrapperRect.height;
-
-      const rects: { x: number; y: number; width: number; height: number }[] = [];
-      for (let i = 0; i < clientRects.length; i++) {
-        const r = clientRects[i];
-        rects.push({
-          x: (r.left - wrapperRect.left) * scaleX,
-          y: (r.top - wrapperRect.top) * scaleY,
-          width: r.width * scaleX,
-          height: r.height * scaleY,
-        });
-      }
-
-      const lastRect = clientRects[clientRects.length - 1];
-      const popX = (lastRect.right - wrapperRect.left) * popScaleX;
-      const popY = (lastRect.bottom - wrapperRect.top) * popScaleY;
-
-      setSelectionPopup({ x: Math.min(popX, pageSize.w - 120), y: popY + 4, rects });
+      const menuX = (e.clientX - wrapperRect.left) * popScaleX;
+      const menuY = (e.clientY - wrapperRect.top) * popScaleY;
+      setContextMenu({
+        x: Math.min(menuX, pageSize.w - 180),
+        y: Math.min(menuY, pageSize.h - 200),
+        selectedText: result.text,
+        rects: result.rects,
+      });
+      setHlSubmenuOpen(false);
+      setCommentInput({ open: false, text: "" });
     };
 
-    layer.addEventListener("mouseup", onUp);
-    return () => layer.removeEventListener("mouseup", onUp);
-  }, [tool, pageSize]);
+    const onClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest("[data-ctx-menu]")) return;
+      setContextMenu(null);
+      setHlSubmenuOpen(false);
+      setCommentInput({ open: false, text: "" });
+    };
+
+    layer.addEventListener("contextmenu", onContextMenu);
+    document.addEventListener("mousedown", onClickOutside);
+    return () => {
+      layer.removeEventListener("contextmenu", onContextMenu);
+      document.removeEventListener("mousedown", onClickOutside);
+    };
+  }, [tool, pageSize, getSelectionRects]);
 
   useEffect(() => {
     const el = wrapperRef.current;
@@ -701,6 +727,12 @@ export default function PDFPage({
         ctx.save();
         ctx.globalAlpha = 0.42;
         ctx.fillStyle = ann.color;
+        for (const r of ann.rects) ctx.fillRect(r.x, r.y, r.width, r.height);
+        ctx.restore();
+      } else if (ann.type === "comment") {
+        ctx.save();
+        ctx.globalAlpha = 0.18;
+        ctx.fillStyle = "#4169E1";
         for (const r of ann.rects) ctx.fillRect(r.x, r.y, r.width, r.height);
         ctx.restore();
       } else if (ann.type !== "text") {
@@ -924,6 +956,8 @@ export default function PDFPage({
   };
 
   const textAnnotations = annotations.filter(a => a.type === "text") as TextAnnotation[];
+  const commentAnnotations = annotations.filter(a => a.type === "comment") as CommentAnnotation[];
+  const [hoveredComment, setHoveredComment] = useState<string | null>(null);
 
   const drawCanvasActive = tool === "highlight" || isShapeTool(tool);
 
@@ -972,62 +1006,218 @@ export default function PDFPage({
         </div>
       )}
 
-      {selectionPopup && (
+      {contextMenu && (
         <div
+          data-ctx-menu
           style={{
             position: "absolute",
-            left: selectionPopup.x,
-            top: selectionPopup.y,
-            zIndex: 60,
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-            background: "rgba(40,40,40,0.95)",
-            borderRadius: 6,
-            padding: "5px 8px",
-            boxShadow: "0 3px 12px rgba(0,0,0,0.4)",
+            left: contextMenu.x,
+            top: contextMenu.y,
+            zIndex: 200,
+            background: "#2a2a2e",
+            borderRadius: 8,
+            padding: "4px 0",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)",
+            minWidth: 180,
             pointerEvents: "all",
+            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
           }}
           onMouseDown={e => e.stopPropagation()}
         >
-          <span style={{ color: "#ccc", fontSize: 11, marginRight: 2 }}>Highlight:</span>
-          {SELECTION_HL_COLORS.map(c => (
-            <div
-              key={c.value}
-              title={c.label}
-              onClick={() => {
-                const ann: HighlightAnnotation = {
-                  id: genId(), type: "highlight", page: pageNum,
-                  rects: selectionPopup.rects,
-                  color: c.value,
-                };
-                onAnnotationAdd(ann);
-                setSelectionPopup(null);
-                window.getSelection()?.removeAllRanges();
-              }}
-              style={{
-                width: 18, height: 18, borderRadius: "50%",
-                background: c.value.replace(/[\d.]+\)$/, "1)"),
-                cursor: "pointer",
-                border: "2px solid rgba(255,255,255,0.4)",
-                boxSizing: "border-box",
-                transition: "transform 0.1s",
-              }}
-              onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.2)")}
-              onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-            />
-          ))}
           <div
-            title="Dismiss"
-            onClick={() => { setSelectionPopup(null); window.getSelection()?.removeAllRanges(); }}
             style={{
-              marginLeft: 2, color: "#999", cursor: "pointer", fontSize: 14,
-              display: "flex", alignItems: "center", padding: "0 2px",
+              padding: "7px 14px", color: "#e0e0e0", fontSize: 13,
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 10,
+              position: "relative",
             }}
-            onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
-            onMouseLeave={e => (e.currentTarget.style.color = "#999")}
+            onMouseEnter={e => { e.currentTarget.style.background = "#3a3a40"; setHlSubmenuOpen(true); }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; setHlSubmenuOpen(false); }}
           >
-            ✕
+            <span style={{ fontSize: 15, width: 20, textAlign: "center" }}>🖍️</span>
+            <span style={{ flex: 1 }}>Highlight</span>
+            <span style={{ fontSize: 11, color: "#888" }}>▶</span>
+            {hlSubmenuOpen && (
+              <div
+                data-ctx-menu
+                style={{
+                  position: "absolute", left: "100%", top: -4,
+                  background: "#2a2a2e",
+                  borderRadius: 8, padding: "6px 10px",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)",
+                  display: "flex", gap: 6, alignItems: "center",
+                  whiteSpace: "nowrap",
+                }}
+                onMouseEnter={() => setHlSubmenuOpen(true)}
+                onMouseLeave={() => setHlSubmenuOpen(false)}
+              >
+                {SELECTION_HL_COLORS.map(c => (
+                  <div
+                    key={c.value}
+                    title={c.label}
+                    onClick={() => {
+                      const ann: HighlightAnnotation = {
+                        id: genId(), type: "highlight", page: pageNum,
+                        rects: contextMenu.rects, color: c.value,
+                      };
+                      onAnnotationAdd(ann);
+                      setContextMenu(null);
+                      window.getSelection()?.removeAllRanges();
+                    }}
+                    style={{
+                      width: 22, height: 22, borderRadius: "50%",
+                      background: c.value.replace(/[\d.]+\)$/, "1)"),
+                      cursor: "pointer",
+                      border: "2px solid rgba(255,255,255,0.3)",
+                      boxSizing: "border-box",
+                      transition: "transform 0.12s",
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.2)")}
+                    onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div
+            style={{
+              padding: "7px 14px", color: "#e0e0e0", fontSize: 13,
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 10,
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#3a3a40")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            onClick={() => {
+              navigator.clipboard.writeText(contextMenu.selectedText).then(() => {
+                setCopiedToast(true);
+                setTimeout(() => setCopiedToast(false), 1800);
+              }).catch(() => {});
+              setContextMenu(null);
+              window.getSelection()?.removeAllRanges();
+            }}
+          >
+            <span style={{ fontSize: 15, width: 20, textAlign: "center" }}>📋</span>
+            <span>Copy</span>
+          </div>
+
+          <div
+            style={{
+              padding: "7px 14px", color: "#e0e0e0", fontSize: 13,
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 10,
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#3a3a40")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            onClick={() => {
+              if (onSearchTermChange) onSearchTermChange(contextMenu.selectedText);
+              setContextMenu(null);
+              window.getSelection()?.removeAllRanges();
+            }}
+          >
+            <span style={{ fontSize: 15, width: 20, textAlign: "center" }}>🔍</span>
+            <span>Search</span>
+          </div>
+
+          <div
+            style={{
+              padding: "7px 14px", color: "#e0e0e0", fontSize: 13,
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 10,
+              position: "relative",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#3a3a40")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            onClick={() => setCommentInput({ open: true, text: "" })}
+          >
+            <span style={{ fontSize: 15, width: 20, textAlign: "center" }}>💬</span>
+            <span>Add Comment</span>
+          </div>
+
+          {commentInput.open && (
+            <div data-ctx-menu style={{ padding: "4px 10px 8px" }}>
+              <textarea
+                autoFocus
+                value={commentInput.text}
+                onChange={e => setCommentInput({ open: true, text: e.target.value })}
+                placeholder="Type your comment..."
+                style={{
+                  width: "100%", minHeight: 50, maxHeight: 120,
+                  background: "#1e1e22", border: "1px solid #555",
+                  borderRadius: 5, color: "#e0e0e0", fontSize: 12,
+                  padding: "6px 8px", resize: "vertical",
+                  outline: "none", fontFamily: "inherit",
+                  boxSizing: "border-box",
+                }}
+                onKeyDown={e => {
+                  if (e.key === "Enter" && !e.shiftKey && commentInput.text.trim()) {
+                    e.preventDefault();
+                    const firstRect = contextMenu.rects[0];
+                    const ann: CommentAnnotation = {
+                      id: genId(), type: "comment", page: pageNum,
+                      x: firstRect.x, y: firstRect.y,
+                      text: commentInput.text.trim(),
+                      selectedText: contextMenu.selectedText,
+                      rects: contextMenu.rects,
+                    };
+                    onAnnotationAdd(ann);
+                    setContextMenu(null);
+                    setCommentInput({ open: false, text: "" });
+                    window.getSelection()?.removeAllRanges();
+                  }
+                }}
+              />
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 4 }}>
+                <button
+                  style={{
+                    background: "transparent", border: "1px solid #555",
+                    color: "#aaa", borderRadius: 4, padding: "3px 10px",
+                    fontSize: 11, cursor: "pointer",
+                  }}
+                  onClick={() => setCommentInput({ open: false, text: "" })}
+                >Cancel</button>
+                <button
+                  style={{
+                    background: "#4169E1", border: "none",
+                    color: "#fff", borderRadius: 4, padding: "3px 10px",
+                    fontSize: 11, cursor: "pointer",
+                    opacity: commentInput.text.trim() ? 1 : 0.5,
+                  }}
+                  disabled={!commentInput.text.trim()}
+                  onClick={() => {
+                    if (!commentInput.text.trim()) return;
+                    const firstRect = contextMenu.rects[0];
+                    const ann: CommentAnnotation = {
+                      id: genId(), type: "comment", page: pageNum,
+                      x: firstRect.x, y: firstRect.y,
+                      text: commentInput.text.trim(),
+                      selectedText: contextMenu.selectedText,
+                      rects: contextMenu.rects,
+                    };
+                    onAnnotationAdd(ann);
+                    setContextMenu(null);
+                    setCommentInput({ open: false, text: "" });
+                    window.getSelection()?.removeAllRanges();
+                  }}
+                >Save</button>
+              </div>
+            </div>
+          )}
+
+          <div style={{ height: 1, background: "#444", margin: "2px 8px" }} />
+
+          <div
+            style={{
+              padding: "7px 14px", color: "#e0e0e0", fontSize: 13,
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 10,
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#3a3a40")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            onClick={() => {
+              const q = encodeURIComponent(contextMenu.selectedText);
+              window.open(`https://www.google.com/search?q=${q}`, "_blank");
+              setContextMenu(null);
+              window.getSelection()?.removeAllRanges();
+            }}
+          >
+            <span style={{ fontSize: 15, width: 20, textAlign: "center" }}>🌐</span>
+            <span>Search the Web</span>
           </div>
         </div>
       )}
@@ -1053,6 +1243,63 @@ export default function PDFPage({
           onDelete={() => onAnnotationRemove(ann.id)}
         />
       ))}
+
+      {commentAnnotations.map(ann => {
+        const drawCanvas = drawCanvasRef.current;
+        const dprX = drawCanvas ? drawCanvas.width / pageSize.w : 1;
+        const dprY = drawCanvas ? drawCanvas.height / pageSize.h : 1;
+        const iconX = ann.rects[0] ? ann.rects[0].x / dprX : ann.x / dprX;
+        const iconY = ann.rects[0] ? ann.rects[0].y / dprY : ann.y / dprY;
+        return (
+          <div
+            key={ann.id}
+            style={{
+              position: "absolute",
+              left: iconX - 10,
+              top: iconY - 10,
+              zIndex: 50,
+              cursor: "pointer",
+              pointerEvents: "all",
+            }}
+            onMouseEnter={() => setHoveredComment(ann.id)}
+            onMouseLeave={() => setHoveredComment(null)}
+          >
+            <div style={{
+              width: 22, height: 22, borderRadius: "50%",
+              background: "#4169E1", display: "flex",
+              alignItems: "center", justifyContent: "center",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+              fontSize: 12, color: "#fff",
+            }}>💬</div>
+            {hoveredComment === ann.id && (
+              <div style={{
+                position: "absolute", left: 28, top: -8,
+                background: "#2a2a2e", color: "#e0e0e0",
+                borderRadius: 8, padding: "8px 12px",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
+                fontSize: 12, minWidth: 140, maxWidth: 260,
+                zIndex: 100, lineHeight: 1.4,
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}>
+                <div style={{ fontSize: 10, color: "#888", marginBottom: 4, fontStyle: "italic" }}>
+                  "{ann.selectedText.length > 60 ? ann.selectedText.slice(0, 60) + "…" : ann.selectedText}"
+                </div>
+                <div>{ann.text}</div>
+                <div
+                  style={{
+                    marginTop: 6, fontSize: 10, color: "#f44",
+                    cursor: "pointer", textAlign: "right",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAnnotationRemove(ann.id);
+                  }}
+                >Delete</div>
+              </div>
+            )}
+          </div>
+        );
+      })}
 
       {editingText && <ActiveTextInput
         editingText={editingText}

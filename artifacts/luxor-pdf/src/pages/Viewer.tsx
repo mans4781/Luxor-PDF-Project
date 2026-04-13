@@ -169,6 +169,11 @@ export default function Viewer({ file, onClose }: ViewerProps) {
     setMatchIndex(0);
   }, []);
 
+  const handleSearchFromContext = useCallback((term: string) => {
+    setSearchOpen(true);
+    setSearchQuery(term);
+  }, []);
+
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
     document.getElementById(`page-${page}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -425,6 +430,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                     onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                     onAnnotationRemove={removeAnnotation}
                     isCurrentPage={left === currentPage} onVisible={handlePageVisible}
+                    onSearchTermChange={handleSearchFromContext}
                   />
                   {right <= totalPages && (
                     <PDFPage
@@ -436,6 +442,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                       onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                       onAnnotationRemove={removeAnnotation}
                       isCurrentPage={right === currentPage} onVisible={handlePageVisible}
+                      onSearchTermChange={handleSearchFromContext}
                     />
                   )}
                 </div>
@@ -453,6 +460,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                 onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                 onAnnotationRemove={removeAnnotation}
                 isCurrentPage={pageNum === currentPage} onVisible={handlePageVisible}
+                onSearchTermChange={handleSearchFromContext}
               />
             ))
         )}
