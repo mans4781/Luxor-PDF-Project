@@ -54,6 +54,30 @@ uri = "file://attached_assets/generated_images/luxor_logo_concept_4.png"
 type = "image"
 title = "luxor logo stacked pages"
 
+[[generated]]
+id = "-PDdLs4i4ilNrfpoz-AYJ"
+uri = "file://attached_assets/generated_images/luxor_v2_concept_1.png"
+type = "image"
+title = "luxor v2 crimson gold"
+
+[[generated]]
+id = "Zj1yCfXnpUVDu_KQBuUxA"
+uri = "file://attached_assets/generated_images/luxor_v2_concept_2.png"
+type = "image"
+title = "luxor v2 navy gold"
+
+[[generated]]
+id = "evZ0q-1rPbrmtEHWgFzM3"
+uri = "file://attached_assets/generated_images/luxor_v2_concept_3.png"
+type = "image"
+title = "luxor v2 emerald gold"
+
+[[generated]]
+id = "xu98Gxa_3anUiScrYcTVv"
+uri = "file://attached_assets/generated_images/luxor_v2_concept_4.png"
+type = "image"
+title = "luxor v2 black gold"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
