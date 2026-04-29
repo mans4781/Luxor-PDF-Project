@@ -102,6 +102,36 @@ uri = "file://attached_assets/generated_images/luxor_v3_concept_4.png"
 type = "image"
 title = "luxor v3 minimal monochrome"
 
+[[generated]]
+id = "FF6ZJB3KMmWaxyglUpLJO"
+uri = "file://attached_assets/generated_images/luxor_concept_A_obelisk.png"
+type = "image"
+title = "Concept A obelisk"
+
+[[generated]]
+id = "DCkJdsELs9Tv9LzOavZRv"
+uri = "file://attached_assets/generated_images/luxor_concept_B_eye.png"
+type = "image"
+title = "Concept B eye"
+
+[[generated]]
+id = "MxNO-vivI0npv8LMSuqCm"
+uri = "file://attached_assets/generated_images/luxor_concept_C_lotus.png"
+type = "image"
+title = "Concept C lotus"
+
+[[generated]]
+id = "9RFw0lB_Z9cwUXq0lgtQA"
+uri = "file://attached_assets/generated_images/luxor_concept_D_cartouche.png"
+type = "image"
+title = "Concept D cartouche"
+
+[[generated]]
+id = "8nXjt0aQP-igjo7REJnll"
+uri = "file://attached_assets/generated_images/luxor_concept_E_pyramid_L.png"
+type = "image"
+title = "Concept E negative space"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
