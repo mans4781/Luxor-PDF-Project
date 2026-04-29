@@ -78,6 +78,30 @@ uri = "file://attached_assets/generated_images/luxor_v2_concept_4.png"
 type = "image"
 title = "luxor v2 black gold"
 
+[[generated]]
+id = "HjcVPmX8F8BATMXWZKSlA"
+uri = "file://attached_assets/generated_images/luxor_v3_concept_1.png"
+type = "image"
+title = "luxor v3 orange wordmark"
+
+[[generated]]
+id = "kW6l2wlera5VoqT6T2WU4"
+uri = "file://attached_assets/generated_images/luxor_v3_concept_2.png"
+type = "image"
+title = "luxor v3 gold luxury"
+
+[[generated]]
+id = "vtjdIkBoVOx5UMg7cXboW"
+uri = "file://attached_assets/generated_images/luxor_v3_concept_3.png"
+type = "image"
+title = "luxor v3 pyramid navy"
+
+[[generated]]
+id = "fcBQ77eZhApTE2_dUW_NI"
+uri = "file://attached_assets/generated_images/luxor_v3_concept_4.png"
+type = "image"
+title = "luxor v3 minimal monochrome"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
