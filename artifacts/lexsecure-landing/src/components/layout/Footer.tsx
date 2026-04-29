@@ -11,7 +11,7 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="inline-flex items-center mb-6 bg-white/95 rounded-lg px-3 py-2 shadow-sm">
               <img
-                src={`${import.meta.env.BASE_URL}brand/luxor-logo.png?v=1777495366`}
+                src={`${import.meta.env.BASE_URL}brand/luxor-logo.png?v=1777495436`}
                 alt="Luxor PDF"
                 className="h-9 w-auto select-none"
                 draggable={false}
