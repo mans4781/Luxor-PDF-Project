@@ -1,110 +1,157 @@
 import { motion } from "framer-motion";
-import { Lock, FileStack, RefreshCw, FileImage, FileText, SplitSquareHorizontal } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Zap, Layers, Shield, FileSearch, Pen, Clock, ArrowRight } from "lucide-react";
+import { Link } from "wouter";
 
 const FADE_UP = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
 };
 
-const FEATURES = [
+const READER_FEATURES = [
   {
-    id: "expiry",
-    title: "PDF Expiry & Control",
-    description: "Set an expiration date for your shared documents. After the deadline, the download returns corrupted data, enforcing document control globally.",
-    icon: Lock,
-    color: "bg-rose-50 text-rose-600",
-    borderColor: "border-rose-100",
-    image: `${import.meta.env.BASE_URL}feature-expiry.png`
+    title: "Lightning-fast rendering",
+    description: "Open 1,000-page contracts in under a second. Built on a custom rendering engine optimized for legal & business documents.",
+    icon: Zap,
   },
   {
-    id: "tool",
-    title: "Precision PDF Tools",
-    description: "Merge multiple documents, split large files into parts, or extract specific pages. All processing happens locally in your browser—no uploads required.",
-    icon: FileStack,
-    color: "bg-violet-50 text-violet-600",
-    borderColor: "border-violet-100",
-    image: `${import.meta.env.BASE_URL}feature-tool.png`
+    title: "Tabs & multi-doc workflows",
+    description: "Compare contracts side-by-side, jump between exhibits, manage entire case files in one window — like a browser, but for PDFs.",
+    icon: Layers,
   },
   {
-    id: "to-pdf",
-    title: "Convert to PDF",
-    description: "Instantly convert JPG, PNG, WEBP, GIF, and BMP images into high-quality PDFs. Pristine document generation, 100% client-side.",
-    icon: RefreshCw,
-    color: "bg-emerald-50 text-emerald-600",
-    borderColor: "border-emerald-100",
-    image: `${import.meta.env.BASE_URL}feature-to-pdf.png`
+    title: "Privacy-first by design",
+    description: "Files stay on your device. No cloud uploads, no telemetry, no AI training on your documents. Your data is yours, period.",
+    icon: Shield,
   },
   {
-    id: "from-pdf",
-    title: "Convert from PDF",
-    description: "Extract text or images from existing PDFs effortlessly. Turn locked documents back into editable, usable assets securely on your machine.",
-    icon: FileImage,
-    color: "bg-amber-50 text-amber-600",
-    borderColor: "border-amber-100",
-    image: `${import.meta.env.BASE_URL}feature-from-pdf.png`
-  }
+    title: "Smart search & annotations",
+    description: "Find any clause across hundreds of files. Highlight, comment, redact. Annotations are saved with your document, never on our servers.",
+    icon: FileSearch,
+  },
+];
+
+const ADDON_APPS = [
+  {
+    name: "LuxorSign",
+    tagline: "Legally-binding eSignatures",
+    icon: Pen,
+    href: "/products/esign",
+    color: "text-emerald-700 bg-emerald-50 border-emerald-100",
+  },
+  {
+    name: "PDF Expiry",
+    tagline: "Self-destructing documents",
+    icon: Clock,
+    href: "/products/pdf-security",
+    color: "text-rose-700 bg-rose-50 border-rose-100",
+  },
 ];
 
 export function Features() {
   return (
-    <section id="features" className="py-24 bg-gray-50/50">
+    <section id="features" className="py-24 md:py-32 bg-white border-t border-slate-100">
       <div className="container mx-auto px-6">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <motion.h2 
+        {/* Header */}
+        <div className="text-center max-w-3xl mx-auto mb-20">
+          <motion.div
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: "-80px" }}
             variants={FADE_UP}
-            className="text-4xl md:text-5xl font-serif text-foreground mb-6"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium mb-6"
           >
-            A full suite of tools.<br />Zero compromises on trust.
+            Luxor PDF Reader
+          </motion.div>
+          <motion.h2
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={FADE_UP}
+            className="text-4xl md:text-6xl font-serif text-slate-900 mb-6 tracking-[-0.02em] leading-[1.05]"
+          >
+            The PDF reader<br/>
+            <span className="italic text-[#0C4782]">your business actually trusts.</span>
           </motion.h2>
-          <motion.p 
+          <motion.p
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: "-80px" }}
             variants={FADE_UP}
-            className="text-lg text-muted-foreground"
+            className="text-lg text-slate-600"
           >
-            Luxor PDF combines powerful document manipulation with an uncompromising security model. Every feature is designed for professionals who handle sensitive data.
+            Built for lawyers, finance teams, and operators who handle sensitive PDFs every day.
+            Fast, private, and beautifully designed.
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-          {FEATURES.map((feature, index) => (
+        {/* Reader features grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto mb-24">
+          {READER_FEATURES.map((feature, index) => (
             <motion.div
-              key={feature.id}
+              key={feature.title}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-50px" }}
               variants={{
-                hidden: { opacity: 0, y: 40 },
-                visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] } }
+                hidden: { opacity: 0, y: 30 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] } }
               }}
+              className="group p-8 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-lg hover:shadow-slate-900/5 transition-all duration-300"
             >
-              <Card className={`overflow-hidden border-2 transition-all duration-300 hover:shadow-xl ${feature.borderColor}`}>
-                <div className="aspect-[16/9] w-full overflow-hidden bg-gray-100 border-b border-gray-100 relative group">
-                  <img 
-                    src={feature.image} 
-                    alt={feature.title} 
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none" />
-                </div>
-                <CardContent className="p-8">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 ${feature.color}`}>
-                    <feature.icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-2xl font-serif font-semibold text-foreground mb-3">{feature.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {feature.description}
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="w-11 h-11 rounded-xl bg-[#0C4782]/5 border border-[#0C4782]/10 flex items-center justify-center mb-5">
+                <feature.icon className="w-5 h-5 text-[#0C4782]" strokeWidth={2} />
+              </div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-2 tracking-tight">{feature.title}</h3>
+              <p className="text-slate-600 leading-relaxed text-[15px]">{feature.description}</p>
             </motion.div>
           ))}
         </div>
+
+        {/* Add-ons section */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
+          variants={FADE_UP}
+          className="max-w-5xl mx-auto"
+        >
+          <div className="rounded-3xl bg-gradient-to-br from-slate-50 to-white border border-slate-200 p-10 lg:p-14">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 mb-10">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">More from Luxor</p>
+                <h3 className="text-3xl md:text-4xl font-serif text-slate-900 tracking-[-0.02em] leading-tight">
+                  Add powerful tools<br/>to your subscription.
+                </h3>
+              </div>
+              <Link
+                href="/pricing"
+                className="inline-flex items-center gap-2 text-[#0C4782] font-semibold hover:gap-3 transition-all"
+              >
+                See all add-ons
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {ADDON_APPS.map((app) => (
+                <Link
+                  key={app.name}
+                  href={app.href}
+                  className="group flex items-center gap-5 p-6 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all"
+                >
+                  <div className={`w-14 h-14 rounded-xl border flex items-center justify-center shrink-0 ${app.color}`}>
+                    <app.icon className="w-6 h-6" strokeWidth={2} />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-lg font-semibold text-slate-900 mb-0.5">{app.name}</h4>
+                    <p className="text-sm text-slate-600">{app.tagline}</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-1 transition-all" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

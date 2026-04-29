@@ -1,55 +1,31 @@
 import { Link } from "wouter";
-import { ChevronDown, BookOpen, PenTool, FileSignature, Lock } from "lucide-react";
+import { ChevronDown, BookOpen, FileSignature, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoginModal } from "@/components/LoginModal";
-
-const navLinks = [
-  { label: "Home",     href: "BASE_URL",  route: false, gradient: "from-rose-500 to-orange-400"  },
-  { label: "About Us", href: "/about",    route: true,  gradient: "from-violet-500 to-purple-400" },
-];
 
 const productItems = [
   {
     label: "Luxor PDF Reader",
     href: "/products/pdf-reader",
     icon: BookOpen,
-    desc: "Fast, lightweight PDF viewer",
-    gradient: "from-sky-500 to-blue-500",
-    bg: "bg-sky-50",
-    iconColor: "#0284c7",
-    strokeWidth: 1.5,
+    desc: "Flagship PDF reader",
+    badge: "Flagship",
   },
   {
-    label: "Luxor PDF Editor",
-    href: "/products/pdf-editor",
-    icon: PenTool,
-    desc: "Edit text, images & pages",
-    gradient: "from-violet-500 to-purple-500",
-    bg: "bg-violet-50",
-    iconColor: "#7c3aed",
-    strokeWidth: 2,
-  },
-  {
-    label: "Luxor eSign",
+    label: "LuxorSign",
     href: "/products/esign",
     icon: FileSignature,
-    desc: "Legally binding e-signatures",
-    gradient: "from-emerald-500 to-teal-500",
-    bg: "bg-emerald-50",
-    iconColor: "#059669",
-    strokeWidth: 1.75,
+    desc: "Legally-binding eSignatures",
+    badge: "Add-on",
   },
   {
-    label: "Luxor PDF Security",
+    label: "PDF Expiry",
     href: "/products/pdf-security",
     icon: Lock,
-    desc: "Encrypt, redact & set expiry",
-    gradient: "from-rose-500 to-orange-500",
-    bg: "bg-rose-50",
-    iconColor: "#e11d48",
-    strokeWidth: 2.5,
+    desc: "Self-destructing documents",
+    badge: "Add-on",
   },
 ];
 
@@ -75,55 +51,31 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  const linkCls = "text-[15px] font-medium text-slate-700 hover:text-[#0C4782] transition-colors";
+
   return (
     <motion.header
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
-        scrolled ? "bg-background/80 backdrop-blur-lg border-b" : "bg-transparent"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled ? "bg-white/85 backdrop-blur-lg border-b border-slate-200/70" : "bg-transparent"
       }`}
     >
       <div className="container mx-auto px-6 h-20 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center">
+        <Link href={import.meta.env.BASE_URL} className="flex items-center">
           <img
             src={`${import.meta.env.BASE_URL}brand/luxor-logo.png?v=1777495436`}
             alt="Luxor PDF"
-            className="h-11 w-auto select-none"
+            className="h-10 w-auto select-none"
             draggable={false}
           />
         </Link>
 
         {/* Nav links */}
         <nav className="hidden md:flex items-center gap-8">
-          {navLinks.map(({ label, href, route, gradient }) => {
-            const inner = (
-              <>
-                <span className={`bg-gradient-to-r ${gradient} bg-clip-text text-blue-700 font-bold group-hover:text-transparent transition-colors duration-300`}>
-                  {label}
-                </span>
-                <span className={`absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r ${gradient} transition-all duration-300 group-hover:w-full`} />
-              </>
-            );
-            return route ? (
-              <Link
-                key={label}
-                href={href}
-                className="group relative text-[1.05rem] font-medium transition-colors duration-300"
-              >
-                {inner}
-              </Link>
-            ) : (
-              <a
-                key={label}
-                href={href === "BASE_URL" ? import.meta.env.BASE_URL : href}
-                className="group relative text-[1.05rem] font-medium transition-colors duration-300"
-              >
-                {inner}
-              </a>
-            );
-          })}
+          <a href={import.meta.env.BASE_URL} className={linkCls}>Home</a>
 
           {/* Products dropdown */}
           <div
@@ -134,108 +86,71 @@ export function Navbar() {
           >
             <button
               onClick={() => setProductsOpen(o => !o)}
-              className="group flex items-center gap-1 text-[1.05rem] font-bold text-blue-700 transition-colors duration-300 hover:text-transparent bg-clip-text hover:bg-gradient-to-r hover:from-sky-500 hover:to-blue-400 relative"
+              className={`${linkCls} flex items-center gap-1`}
             >
-              <span className="bg-gradient-to-r from-sky-500 to-blue-400 bg-clip-text text-blue-700 font-bold group-hover:text-transparent transition-colors duration-300">
-                Products
-              </span>
-              <ChevronDown
-                className={`w-4 h-4 text-blue-700 transition-transform duration-200 ${productsOpen ? "rotate-180" : ""}`}
-              />
-              <span className={`absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r from-sky-500 to-blue-400 transition-all duration-300 group-hover:w-full`} />
+              Products
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${productsOpen ? "rotate-180" : ""}`} />
             </button>
 
             <AnimatePresence>
               {productsOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-72 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50"
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-80 bg-white rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200 overflow-hidden z-50"
                 >
-                  {/* Arrow */}
-                  <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-l border-t border-slate-100 rotate-45" />
-
                   <div className="p-2">
-                    {productItems.map(({ label, href, icon: Icon, desc, gradient, bg, iconColor, strokeWidth }) => (
+                    {productItems.map(({ label, href, icon: Icon, desc, badge }) => (
                       <Link
                         key={label}
                         href={href}
                         onClick={() => setProductsOpen(false)}
-                        className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-slate-50 transition-colors duration-150 group/item"
+                        className="flex items-center gap-3 rounded-xl px-3 py-3 hover:bg-slate-50 transition-colors duration-150"
                       >
-                        <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center shrink-0 shadow-sm`}>
-                          <Icon
-                            size={20}
-                            color={iconColor}
-                            strokeWidth={strokeWidth}
-                          />
+                        <div className="w-10 h-10 rounded-lg bg-[#0C4782]/5 border border-[#0C4782]/10 flex items-center justify-center shrink-0">
+                          <Icon size={18} className="text-[#0C4782]" strokeWidth={2} />
                         </div>
-                        <div>
-                          <p className={`text-sm font-semibold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}>{label}</p>
-                          <p className="text-xs text-slate-400 leading-tight">{desc}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-slate-900 truncate">{label}</p>
+                            <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded ${
+                              badge === "Flagship" ? "bg-[#EE1125]/10 text-[#EE1125]" : "bg-slate-100 text-slate-600"
+                            }`}>
+                              {badge}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 leading-tight mt-0.5">{desc}</p>
                         </div>
                       </Link>
                     ))}
-                  </div>
-
-                  <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-100">
-                    <a href="#products" className="text-xs text-slate-500 hover:text-blue-600 transition-colors">View all products →</a>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* Features link */}
-          <Link
-            href="/features"
-            className="group relative text-[1.05rem] font-medium transition-colors duration-300"
-          >
-            <span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-blue-700 font-bold group-hover:text-transparent transition-colors duration-300">
-              Features
-            </span>
-            <span className="absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 group-hover:w-full" />
-          </Link>
-
-          {/* Pricing link */}
-          <Link
-            href="/pricing"
-            className="group relative text-[1.05rem] font-medium transition-colors duration-300"
-          >
-            <span className="bg-gradient-to-r from-violet-600 to-indigo-500 bg-clip-text text-blue-700 font-bold group-hover:text-transparent transition-colors duration-300">
-              Pricing
-            </span>
-            <span className="absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r from-violet-600 to-indigo-500 transition-all duration-300 group-hover:w-full" />
-          </Link>
-
-          {/* Contact link */}
-          <Link
-            href="/contact"
-            className="group relative text-[1.05rem] font-medium transition-colors duration-300"
-          >
-            <span className="bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-blue-700 font-bold group-hover:text-transparent transition-colors duration-300">
-              Contact Us
-            </span>
-            <span className="absolute -bottom-1 left-0 h-[2px] w-0 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 transition-all duration-300 group-hover:w-full" />
-          </Link>
+          <Link href="/features" className={linkCls}>Features</Link>
+          <Link href="/pricing" className={linkCls}>Pricing</Link>
+          <Link href="/about" className={linkCls}>About</Link>
+          <Link href="/contact" className={linkCls}>Contact</Link>
         </nav>
 
-        {/* Buy Now + Login */}
-        <div className="flex items-center gap-3">
-          <Button
-            asChild
-            className="text-[1.05rem] font-bold bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-white border-0 shadow-md transition-all duration-300 hidden sm:inline-flex"
-          >
-            <a href="#buy">Buy Now</a>
-          </Button>
+        {/* CTA */}
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             onClick={() => setLoginOpen(true)}
-            className="text-[1.05rem] font-bold text-blue-700 hidden sm:inline-flex hover:bg-blue-50 hover:text-blue-800 transition-colors duration-300 border border-blue-200"
+            className="text-[15px] font-medium text-slate-700 hover:text-[#0C4782] hover:bg-slate-100 hidden sm:inline-flex"
           >
-            Login
+            Sign in
+          </Button>
+          <Button
+            asChild
+            className="text-[15px] font-semibold bg-[#0C4782] hover:bg-[#0a3a6b] text-white shadow-sm rounded-lg hidden sm:inline-flex"
+          >
+            <Link href="/pricing">Start free →</Link>
           </Button>
         </div>
       </div>

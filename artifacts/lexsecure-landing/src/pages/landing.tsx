@@ -8,7 +8,6 @@ import { DesktopApp } from "@/components/sections/DesktopApp";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { FAQ } from "@/components/sections/FAQ";
 import { CTA } from "@/components/sections/CTA";
-import { MobileDownload } from "@/components/sections/MobileDownload";
 
 export default function LandingPage() {
   return (
@@ -23,7 +22,6 @@ export default function LandingPage() {
         <Testimonials />
         <FAQ />
         <CTA />
-        <MobileDownload />
       </main>
       <Footer />
     </div>

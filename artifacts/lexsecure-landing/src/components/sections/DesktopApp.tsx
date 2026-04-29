@@ -1,80 +1,82 @@
 import { motion } from "framer-motion";
-import { Download, Monitor, WifiOff, FileCheck } from "lucide-react";
+import { ArrowRight, Monitor, WifiOff, Cpu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 
 export function DesktopApp() {
   return (
-    <section id="desktop" className="py-24 bg-white border-y border-gray-100 overflow-hidden">
+    <section id="desktop" className="py-24 md:py-32 bg-slate-50 border-t border-slate-200 overflow-hidden">
       <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="order-2 lg:order-1"
           >
-             <div className="relative w-full max-w-lg mx-auto aspect-[4/3] rounded-xl border border-gray-200 shadow-2xl bg-gray-50 flex items-center justify-center p-8 overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-10 bg-gray-200 flex items-center px-4 gap-2">
-                  <div className="w-3 h-3 rounded-full bg-rose-500" />
-                  <div className="w-3 h-3 rounded-full bg-amber-500" />
-                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
+            <div className="relative w-full max-w-lg mx-auto aspect-[4/3] rounded-2xl border border-slate-200 shadow-2xl shadow-slate-900/10 bg-white flex items-center justify-center p-8 overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-9 bg-slate-50 border-b border-slate-200 flex items-center px-4 gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+              </div>
+              <div className="mt-8 text-center">
+                <Monitor className="w-14 h-14 text-[#0C4782] mx-auto mb-4" strokeWidth={1.5} />
+                <div className="h-2 w-32 bg-slate-200 rounded mx-auto mb-2" />
+                <div className="h-2 w-48 bg-slate-200 rounded mx-auto mb-6" />
+                <div className="grid grid-cols-3 gap-3 mt-8">
+                  <div className="h-14 w-14 bg-slate-100 rounded-md" />
+                  <div className="h-14 w-14 bg-slate-100 rounded-md" />
+                  <div className="h-14 w-14 bg-slate-100 rounded-md" />
                 </div>
-                <div className="mt-8 text-center">
-                  <Monitor className="w-16 h-16 text-primary mx-auto mb-4" strokeWidth={1.5} />
-                  <div className="h-2 w-32 bg-gray-300 rounded mx-auto mb-2" />
-                  <div className="h-2 w-48 bg-gray-300 rounded mx-auto mb-6" />
-                  <div className="grid grid-cols-3 gap-4 mt-8">
-                     <div className="h-16 w-16 bg-gray-200 rounded-md" />
-                     <div className="h-16 w-16 bg-gray-200 rounded-md" />
-                     <div className="h-16 w-16 bg-gray-200 rounded-md" />
-                  </div>
-                </div>
-             </div>
+              </div>
+            </div>
           </motion.div>
-          
+
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="order-1 lg:order-2"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-100 text-amber-700 text-xs font-semibold uppercase tracking-wider mb-6">
-              <Monitor className="w-4 h-4" />
-              <span>Native Experience</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 text-xs font-medium mb-6">
+              Included with every plan
             </div>
-            
-            <h2 className="text-4xl md:text-5xl font-serif text-foreground mb-6 leading-tight">
-              Powerful desktop app.<br />No internet required.
+
+            <h2 className="text-4xl md:text-5xl font-serif text-slate-900 mb-6 tracking-[-0.02em] leading-[1.1]">
+              The native desktop app,<br/>
+              <span className="italic text-[#0C4782]">included.</span>
             </h2>
-            
-            <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              For ultimate security, download the Windows application. It runs entirely offline, guaranteeing your sensitive documents never leave your physical hardware.
+
+            <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+              Every Luxor subscription unlocks the Windows desktop app. Same license key, same account.
+              Use it offline, in court, on a flight — wherever your work takes you.
             </p>
-            
-            <ul className="space-y-4 mb-10">
+
+            <ul className="space-y-3 mb-10">
               {[
                 { icon: WifiOff, text: "Works completely offline in air-gapped environments" },
-                { icon: FileCheck, text: "Bypasses browser memory limits for massive files" },
-                { icon: Monitor, text: "Native OS integration and file system access" }
+                { icon: Cpu, text: "Native performance on huge files (1000+ pages)" },
+                { icon: Monitor, text: "Deep OS integration — file associations, shortcuts, drag & drop" }
               ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 text-foreground font-medium">
-                  <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <item.icon className="w-4 h-4 text-primary" />
+                <li key={i} className="flex items-center gap-3 text-slate-700">
+                  <div className="w-6 h-6 rounded-md bg-[#0C4782]/5 border border-[#0C4782]/10 flex items-center justify-center flex-shrink-0">
+                    <item.icon className="w-3.5 h-3.5 text-[#0C4782]" />
                   </div>
-                  {item.text}
+                  <span className="text-[15px]">{item.text}</span>
                 </li>
               ))}
             </ul>
-            
-            <a href="#download">
-              <Button size="lg" className="h-14 px-8 text-base bg-primary hover:bg-primary/90 rounded-md shadow-lg shadow-primary/20">
-                <Download className="w-5 h-5 mr-2" />
-                Download for Windows (64-bit)
-              </Button>
-            </a>
-            <p className="text-xs text-muted-foreground mt-4">Version 1.0.0 • 45MB • Requires Windows 10/11</p>
+
+            <Button asChild size="lg" className="h-12 px-7 text-base font-semibold bg-[#0C4782] hover:bg-[#0a3a6b] text-white rounded-lg shadow-sm group">
+              <Link href="/pricing">
+                See plans
+                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </Button>
+            <p className="text-xs text-slate-500 mt-4">Windows 10/11 · macOS coming soon · Web app available now</p>
           </motion.div>
         </div>
       </div>
