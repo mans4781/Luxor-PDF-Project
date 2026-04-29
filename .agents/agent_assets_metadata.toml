@@ -30,6 +30,30 @@ uri = "file://artifacts/lexsecure-landing/public/feature-from-pdf.png"
 type = "image"
 title = "Convert from PDF artwork"
 
+[[generated]]
+id = "L30l04KFTSJTg9-iEAsaO"
+uri = "file://attached_assets/generated_images/luxor_logo_concept_1.png"
+type = "image"
+title = "luxor logo monogram L"
+
+[[generated]]
+id = "fypLDGNGEpa8P_hH2ihUm"
+uri = "file://attached_assets/generated_images/luxor_logo_concept_2.png"
+type = "image"
+title = "luxor logo folded document"
+
+[[generated]]
+id = "v8TMrlbcBaGSrkta40J7f"
+uri = "file://attached_assets/generated_images/luxor_logo_concept_3.png"
+type = "image"
+title = "luxor logo circle mark"
+
+[[generated]]
+id = "rmslKDt0NEm3tALC9L1jn"
+uri = "file://attached_assets/generated_images/luxor_logo_concept_4.png"
+type = "image"
+title = "luxor logo stacked pages"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
