@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1700 360" fill="none" role="img" aria-label="Luxor PDF">
+  <defs>
+    <clipPath id="luxor-doc-clip-full">
+      <path d="M24 28 Q24 0 56 0 L220 0 L304 96 L304 332 Q304 360 276 360 L52 360 Q24 360 24 332 Z"/>
+    </clipPath>
+    <style>
+      .luxor-word { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-weight: 800; letter-spacing: -4px; }
+    </style>
+  </defs>
+
+  <!-- ========== Icon ========== -->
+  <g>
+    <path d="M24 28 Q24 0 56 0 L220 0 L304 96 L304 332 Q304 360 276 360 L52 360 Q24 360 24 332 Z"
+          fill="#1E3A8A"/>
+    <g clip-path="url(#luxor-doc-clip-full)">
+      <path d="M-40 245 C70 365 230 365 370 215 L370 380 L-40 380 Z" fill="#DC2626"/>
+    </g>
+    <path d="M220 0 L304 96 L228 96 Q220 96 220 88 Z" fill="#DC2626"/>
+    <path d="M88 70 L88 268 L226 268 L226 218 L142 218 L142 70 Z" fill="#FFFFFF"/>
+  </g>
+
+  <!-- ========== Wordmark — single text with tspan for auto-spacing ========== -->
+  <text x="380" y="252" class="luxor-word" font-size="220">
+    <tspan fill="#1E3A8A">Luxor</tspan><tspan fill="#DC2626" dx="40">PDF</tspan>
+  </text>
+</svg>

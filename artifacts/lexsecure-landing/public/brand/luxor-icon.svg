@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 360" fill="none" role="img" aria-label="Luxor PDF icon">
+  <defs>
+    <clipPath id="luxor-doc-clip">
+      <path d="M24 28 Q24 0 56 0 L220 0 L304 96 L304 332 Q304 360 276 360 L52 360 Q24 360 24 332 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- Blue document body with cut top-right corner -->
+  <path d="M24 28 Q24 0 56 0 L220 0 L304 96 L304 332 Q304 360 276 360 L52 360 Q24 360 24 332 Z"
+        fill="#1E3A8A"/>
+
+  <!-- Red bottom sweep, clipped to the document silhouette -->
+  <g clip-path="url(#luxor-doc-clip)">
+    <path d="M-40 245 C70 365 230 365 370 215 L370 380 L-40 380 Z" fill="#DC2626"/>
+  </g>
+
+  <!-- Red folded corner (underside of the page fold) -->
+  <path d="M220 0 L304 96 L228 96 Q220 96 220 88 Z" fill="#DC2626"/>
+
+  <!-- White 'L' letterform carved into the document -->
+  <path d="M88 70 L88 268 L226 268 L226 218 L142 218 L142 70 Z" fill="#FFFFFF"/>
+</svg>
