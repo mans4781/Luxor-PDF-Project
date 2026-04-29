@@ -1,4 +1,3 @@
-import { Shield } from "lucide-react";
 import { Link } from "wouter";
 import { useVisitorCount } from "@/hooks/useVisitorCount";
 
@@ -10,11 +9,13 @@ export function Footer() {
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-2">
-            <Link href="/" className="flex items-center gap-3 mb-6">
-              <div className="bg-[#E11D48] p-2 rounded-md">
-                <Shield className="w-5 h-5 text-white" strokeWidth={2.5} />
-              </div>
-              <span className="font-serif font-bold text-xl text-white tracking-tight">Luxor PDF</span>
+            <Link href="/" className="inline-flex items-center mb-6 bg-white/95 rounded-lg px-3 py-2 shadow-sm">
+              <img
+                src={`${import.meta.env.BASE_URL}brand/luxor-logo.png`}
+                alt="Luxor PDF"
+                className="h-9 w-auto select-none"
+                draggable={false}
+              />
             </Link>
             <p className="text-gray-400 text-sm max-w-sm leading-relaxed">
               The professional PDF suite that respects your privacy. Built for law firms, businesses, and professionals who demand uncompromising document control.

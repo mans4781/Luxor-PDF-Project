@@ -132,11 +132,13 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
                 <div className="absolute bottom-0 right-0 w-48 h-48 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3" />
 
                 <div className="relative z-10 flex flex-col items-center gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-white/20 p-2 rounded-lg">
-                      <Shield className="w-5 h-5 text-white" strokeWidth={2.5} />
-                    </div>
-                    <span className="font-serif font-bold text-white text-xl">Luxor PDF</span>
+                  <div className="bg-white/95 rounded-lg px-3 py-2 shadow-md">
+                    <img
+                      src={`${import.meta.env.BASE_URL}brand/luxor-logo.png`}
+                      alt="Luxor PDF"
+                      className="h-8 w-auto select-none"
+                      draggable={false}
+                    />
                   </div>
                   <p className="text-white/60 text-xs text-center">Professional PDF Suite</p>
                 </div>
