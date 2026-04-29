@@ -1,24 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 360" fill="none" role="img" aria-label="Luxor">
   <defs>
     <clipPath id="luxor-doc-clip-full">
-      <path d="M24 28 Q24 0 56 0 L220 0 L304 96 L304 332 Q304 360 276 360 L52 360 Q24 360 24 332 Z"/>
+      <path d="M28 32 Q28 0 60 0 L218 0 L308 96 L308 328 Q308 360 276 360 L60 360 Q28 360 28 328 Z"/>
     </clipPath>
     <style>
-      .luxor-word { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-weight: 800; letter-spacing: -4px; }
+      .luxor-word { font-family: 'Poppins', 'Inter', 'Helvetica Neue', Arial, sans-serif; font-weight: 800; letter-spacing: -6px; }
     </style>
   </defs>
 
-  <!-- ========== Icon ========== -->
+  <!-- ========== Icon (matches luxor-icon.svg) ========== -->
   <g>
-    <path d="M24 28 Q24 0 56 0 L220 0 L304 96 L304 332 Q304 360 276 360 L52 360 Q24 360 24 332 Z"
+    <path d="M28 32 Q28 0 60 0 L218 0 L308 96 L308 328 Q308 360 276 360 L60 360 Q28 360 28 328 Z"
           fill="#1E3A8A"/>
     <g clip-path="url(#luxor-doc-clip-full)">
-      <path d="M-40 245 C70 365 230 365 370 215 L370 380 L-40 380 Z" fill="#DC2626"/>
+      <path d="M-30 270 C 80 360 220 360 360 200 L360 380 L-30 380 Z" fill="#DC2626"/>
     </g>
-    <path d="M220 0 L304 96 L228 96 Q220 96 220 88 Z" fill="#DC2626"/>
-    <path d="M88 70 L88 268 L226 268 L226 218 L142 218 L142 70 Z" fill="#FFFFFF"/>
+    <path d="M218 32 L 80 330" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.55"/>
+    <path d="M218 0 L308 96 L228 96 Q218 96 218 86 Z" fill="#DC2626"/>
+    <path d="M86 70 L86 270 L238 270 L238 222 L150 222 L150 70 Z" fill="#FFFFFF"/>
   </g>
 
-  <!-- ========== Wordmark — "Luxor" only ========== -->
-  <text x="380" y="252" class="luxor-word" font-size="220" fill="#1E3A8A">Luxor</text>
+  <!-- ========== Wordmark — "Luxor" in Poppins ExtraBold ========== -->
+  <text x="380" y="252" class="luxor-word" font-size="240" fill="#1E3A8A">Luxor</text>
 </svg>
