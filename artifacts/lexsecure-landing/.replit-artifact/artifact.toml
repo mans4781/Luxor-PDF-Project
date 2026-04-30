@@ -1,5 +1,5 @@
 kind = "web"
-previewPath = "/lexsecure-landing/"
+previewPath = "/"
 title = "luxorpdf.com"
 version = "1.0.0"
 id = "artifacts/lexsecure-landing"
@@ -11,7 +11,7 @@ version = "1.0.0"
 
 [[services]]
 name = "web"
-paths = [ "/lexsecure-landing/" ]
+paths = [ "/" ]
 localPort = 21447
 
 [services.development]
@@ -28,4 +28,4 @@ to = "/index.html"
 
 [services.env]
 PORT = "21447"
-BASE_PATH = "/lexsecure-landing/"
+BASE_PATH = "/"
