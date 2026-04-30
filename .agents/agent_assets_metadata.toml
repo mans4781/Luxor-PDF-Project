@@ -132,6 +132,30 @@ uri = "file://attached_assets/generated_images/luxor_concept_E_pyramid_L.png"
 type = "image"
 title = "Concept E negative space"
 
+[[generated]]
+id = "2mZZqYLDprMN5_K5SOCOe"
+uri = "file://attached_assets/generated_images/logo_aurora_vault.png"
+type = "image"
+title = "Aurora Vault logo concept"
+
+[[generated]]
+id = "ymvY3YA_W7CtUdgQcFlvS"
+uri = "file://attached_assets/generated_images/logo_quantum_quill.png"
+type = "image"
+title = "Quantum Quill logo concept"
+
+[[generated]]
+id = "GnJkVcVnB37DdNcoCTpS-"
+uri = "file://attached_assets/generated_images/logo_sentinel_shield.png"
+type = "image"
+title = "Sentinel Shield logo concept"
+
+[[generated]]
+id = "35FBuB81ob_vxijo9if-x"
+uri = "file://attached_assets/generated_images/logo_refraction_prism.png"
+type = "image"
+title = "Refraction Prism logo concept"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
