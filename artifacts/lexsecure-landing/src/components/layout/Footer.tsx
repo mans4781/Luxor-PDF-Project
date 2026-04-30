@@ -143,7 +143,7 @@ export function Footer() {
                   href={href}
                   aria-label={label}
                   style={{ color }}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white transition-all duration-200 hover:scale-110 hover:shadow-md hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#312E81] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+                  className="flex h-10 w-10 items-center justify-center rounded-[3px] border border-slate-200 bg-white transition-all duration-200 hover:scale-110 hover:shadow-md hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#312E81] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
                 >
                   <svg
                     viewBox="0 0 24 24"
