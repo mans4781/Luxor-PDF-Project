@@ -1,6 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "wouter";
-import { Mail, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useVisitorCount } from "@/hooks/useVisitorCount";
 
 type LinkItem = { label: string; href: string };
@@ -256,26 +256,6 @@ export function Footer() {
             >
               Thanks — we'll be in touch.
             </p>
-            <div className="mt-6 space-y-2 text-sm font-semibold text-[#312E81]">
-              <div className="flex items-center gap-2">
-                <Mail className="h-3.5 w-3.5 text-[#312E81]" strokeWidth={2.4} />
-                <a
-                  href="mailto:hello@luxorpdf.com"
-                  className="transition-colors hover:text-[#1E1B4B] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
-                >
-                  hello@luxorpdf.com
-                </a>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="h-3.5 w-3.5 text-[#312E81]" strokeWidth={2.4} />
-                <a
-                  href="mailto:support@luxorpdf.com"
-                  className="transition-colors hover:text-[#1E1B4B] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
-                >
-                  support@luxorpdf.com
-                </a>
-              </div>
-            </div>
           </div>
         </div>
 
