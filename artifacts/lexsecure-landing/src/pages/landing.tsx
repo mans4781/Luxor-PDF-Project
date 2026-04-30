@@ -17,9 +17,9 @@ export default function LandingPage() {
       <Navbar />
       <main className="flex-1">
         <Hero />
+        <WorkflowGrid />
         <AppPreview />
         <Features />
-        <WorkflowGrid />
         <Security />
         <SecurityMetrics />
         <DesktopApp />
