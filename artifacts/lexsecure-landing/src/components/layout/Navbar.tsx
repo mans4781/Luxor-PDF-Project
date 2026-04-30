@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ChevronDown, BookOpen, FileSignature, Lock } from "lucide-react";
+import { ChevronDown, BookOpen, FileSignature, Lock, Home, Layers, Sparkles, Tag, Info, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -60,7 +60,8 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const linkCls = "relative text-[15px] font-medium text-slate-700 hover:text-[#312E81] transition-colors after:absolute after:bottom-[-6px] after:left-0 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-[#312E81] after:via-[#2563EB] after:to-[#FB7185] after:rounded-full after:transition-all after:duration-300 hover:after:w-full";
+  const linkCls = "relative inline-flex items-center gap-1.5 text-[15px] font-medium text-slate-700 hover:text-[#312E81] transition-colors after:absolute after:bottom-[-6px] after:left-0 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-[#312E81] after:via-[#2563EB] after:to-[#FB7185] after:rounded-full after:transition-all after:duration-300 hover:after:w-full";
+  const linkIconCls = "w-4 h-4 text-slate-500 group-hover:text-[#DC2626] transition-colors";
 
   return (
     <motion.header
@@ -83,8 +84,11 @@ export function Navbar() {
         </Link>
 
         {/* Nav links */}
-        <nav className="hidden md:flex items-center gap-8">
-          <a href={import.meta.env.BASE_URL} className={linkCls}>Home</a>
+        <nav className="hidden lg:flex items-center gap-6">
+          <a href={import.meta.env.BASE_URL} className={`group ${linkCls}`}>
+            <Home className={linkIconCls} strokeWidth={2.2} />
+            Home
+          </a>
 
           {/* Products dropdown */}
           <div
@@ -95,10 +99,11 @@ export function Navbar() {
           >
             <button
               onClick={() => setProductsOpen(o => !o)}
-              className={`${linkCls} flex items-center gap-1`}
+              className={`group ${linkCls}`}
             >
+              <Layers className={linkIconCls} strokeWidth={2.2} />
               Products
-              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${productsOpen ? "rotate-180" : ""}`} />
+              <ChevronDown className={`w-4 h-4 ml-0.5 transition-transform duration-200 ${productsOpen ? "rotate-180" : ""}`} />
             </button>
 
             <AnimatePresence>
@@ -143,10 +148,22 @@ export function Navbar() {
             </AnimatePresence>
           </div>
 
-          <Link href="/features" className={linkCls}>Features</Link>
-          <Link href="/pricing" className={linkCls}>Pricing</Link>
-          <Link href="/about" className={linkCls}>About</Link>
-          <Link href="/contact" className={linkCls}>Contact</Link>
+          <Link href="/features" className={`group ${linkCls}`}>
+            <Sparkles className={linkIconCls} strokeWidth={2.2} />
+            Features
+          </Link>
+          <Link href="/pricing" className={`group ${linkCls}`}>
+            <Tag className={linkIconCls} strokeWidth={2.2} />
+            Pricing
+          </Link>
+          <Link href="/about" className={`group ${linkCls}`}>
+            <Info className={linkIconCls} strokeWidth={2.2} />
+            About
+          </Link>
+          <Link href="/contact" className={`group ${linkCls}`}>
+            <Mail className={linkIconCls} strokeWidth={2.2} />
+            Contact
+          </Link>
         </nav>
 
         {/* CTA */}
