@@ -116,7 +116,7 @@ export function Footer() {
 
           {/* Products column */}
           <div>
-            <h3 className="text-xs font-black uppercase tracking-[0.22em] text-[#E11D48]">
+            <h3 className="text-xs font-black uppercase tracking-[0.22em] text-[#312E81]">
               Products
             </h3>
             <ul className="mt-5 space-y-3">
@@ -124,7 +124,7 @@ export function Footer() {
                 <li key={label}>
                   <Link
                     href={href}
-                    className="block text-left text-sm text-slate-600 transition-colors hover:text-slate-900 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+                    className="block text-left text-sm font-semibold text-[#312E81] transition-colors hover:text-[#1E1B4B] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
                   >
                     {label}
                   </Link>
@@ -135,7 +135,7 @@ export function Footer() {
 
           {/* Company column */}
           <div>
-            <h3 className="text-xs font-black uppercase tracking-[0.22em] text-[#E11D48]">
+            <h3 className="text-xs font-black uppercase tracking-[0.22em] text-[#312E81]">
               Company
             </h3>
             <ul className="mt-5 space-y-3">
@@ -143,7 +143,7 @@ export function Footer() {
                 <li key={label}>
                   <Link
                     href={href}
-                    className="block text-left text-sm text-slate-600 transition-colors hover:text-slate-900 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+                    className="block text-left text-sm font-semibold text-[#312E81] transition-colors hover:text-[#1E1B4B] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
                   >
                     {label}
                   </Link>
@@ -154,7 +154,7 @@ export function Footer() {
 
           {/* Resources column */}
           <div>
-            <h3 className="text-xs font-black uppercase tracking-[0.22em] text-[#E11D48]">
+            <h3 className="text-xs font-black uppercase tracking-[0.22em] text-[#312E81]">
               Resources
             </h3>
             <ul className="mt-5 space-y-3">
@@ -162,7 +162,7 @@ export function Footer() {
                 <li key={label}>
                   <Link
                     href={href}
-                    className="block text-left text-sm text-slate-600 transition-colors hover:text-slate-900 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+                    className="block text-left text-sm font-semibold text-[#312E81] transition-colors hover:text-[#1E1B4B] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
                   >
                     {label}
                   </Link>
@@ -173,7 +173,7 @@ export function Footer() {
 
           {/* Newsletter column */}
           <div>
-            <h3 className="text-xs font-black uppercase tracking-[0.22em] text-[#E11D48]">
+            <h3 className="text-xs font-black uppercase tracking-[0.22em] text-[#312E81]">
               Stay updated
             </h3>
             <p className="mt-5 text-sm leading-7 text-slate-600">
@@ -212,21 +212,21 @@ export function Footer() {
             >
               Thanks — we'll be in touch.
             </p>
-            <div className="mt-6 space-y-2 text-sm text-slate-600">
+            <div className="mt-6 space-y-2 text-sm font-semibold text-[#312E81]">
               <div className="flex items-center gap-2">
-                <Mail className="h-3.5 w-3.5 text-[#E11D48]" strokeWidth={2.4} />
+                <Mail className="h-3.5 w-3.5 text-[#312E81]" strokeWidth={2.4} />
                 <a
                   href="mailto:hello@luxorpdf.com"
-                  className="transition-colors hover:text-slate-900 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+                  className="transition-colors hover:text-[#1E1B4B] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
                 >
                   hello@luxorpdf.com
                 </a>
               </div>
               <div className="flex items-center gap-2">
-                <Mail className="h-3.5 w-3.5 text-[#E11D48]" strokeWidth={2.4} />
+                <Mail className="h-3.5 w-3.5 text-[#312E81]" strokeWidth={2.4} />
                 <a
                   href="mailto:support@luxorpdf.com"
-                  className="transition-colors hover:text-slate-900 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+                  className="transition-colors hover:text-[#1E1B4B] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
                 >
                   support@luxorpdf.com
                 </a>
@@ -258,13 +258,13 @@ export function Footer() {
           </div>
           <nav
             aria-label="Legal"
-            className="flex flex-wrap gap-x-5 gap-y-2"
+            className="flex flex-wrap gap-x-5 gap-y-2 font-semibold text-[#312E81]"
           >
             {LEGAL_LINKS.map(({ label, href }) => (
               <Link
                 key={label}
                 href={href}
-                className="transition-colors hover:text-slate-900 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+                className="transition-colors hover:text-[#1E1B4B] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
               >
                 {label}
               </Link>

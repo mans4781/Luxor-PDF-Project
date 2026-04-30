@@ -60,8 +60,8 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const linkCls = "relative inline-flex items-center gap-1.5 text-[15px] font-medium text-slate-700 hover:text-[#312E81] transition-colors after:absolute after:bottom-[-6px] after:left-0 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-[#312E81] after:via-[#2563EB] after:to-[#FB7185] after:rounded-full after:transition-all after:duration-300 hover:after:w-full";
-  const linkIconCls = "w-4 h-4 text-slate-500 group-hover:text-[#DC2626] transition-colors";
+  const linkCls = "relative inline-flex items-center gap-1.5 text-[15px] font-semibold text-[#312E81] hover:text-[#1E1B4B] transition-colors after:absolute after:bottom-[-6px] after:left-0 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-[#312E81] after:via-[#2563EB] after:to-[#FB7185] after:rounded-full after:transition-all after:duration-300 hover:after:w-full";
+  const linkIconCls = "w-4 h-4 text-[#312E81]/70 group-hover:text-[#DC2626] transition-colors";
 
   return (
     <motion.header
@@ -181,7 +181,7 @@ export function Navbar() {
           <Button
             variant="ghost"
             onClick={() => setLoginOpen(true)}
-            className="text-[15px] font-medium text-slate-700 hover:text-[#312E81] hover:bg-slate-100 hidden sm:inline-flex"
+            className="text-[15px] font-semibold text-[#312E81] hover:text-[#1E1B4B] hover:bg-slate-100 hidden sm:inline-flex"
           >
             Sign in
           </Button>
