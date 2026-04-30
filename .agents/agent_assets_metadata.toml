@@ -156,6 +156,12 @@ uri = "file://attached_assets/generated_images/logo_refraction_prism.png"
 type = "image"
 title = "Refraction Prism logo concept"
 
+[[generated]]
+id = "K91wMvOQbSN88JGX5yNyn"
+uri = "file://attached_assets/generated_images/logo_sentinel_shield_v2.png"
+type = "image"
+title = "Sentinel Shield refined with red"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
