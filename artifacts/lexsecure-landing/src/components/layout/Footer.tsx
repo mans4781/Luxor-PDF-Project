@@ -123,7 +123,7 @@ export function Footer() {
                 />
               </span>
               <div>
-                <div className="text-[23px] font-black tracking-tight">
+                <div className="text-[26px] font-black tracking-tight">
                   <span className="text-[#1e3a8a]">Luxor</span>{" "}
                   <span className="text-[#DC2626]">PDF</span>
                 </div>
