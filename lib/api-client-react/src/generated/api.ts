@@ -17,10 +17,14 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  DeletePdfParams,
+  DownloadPdfParams,
   ErrorResponse,
+  GetPdfParams,
   HealthStatus,
   PdfRecord,
   PdfStats,
+  PdfUploadResult,
   UploadPdfBody,
 } from "./api.schemas";
 
@@ -110,71 +114,6 @@ export function useHealthCheck<
 }
 
 /**
- * @summary List all uploaded PDFs
- */
-export const getListPdfsUrl = () => {
-  return `/api/pdfs`;
-};
-
-export const listPdfs = async (options?: RequestInit): Promise<PdfRecord[]> => {
-  return customFetch<PdfRecord[]>(getListPdfsUrl(), {
-    ...options,
-    method: "GET",
-  });
-};
-
-export const getListPdfsQueryKey = () => {
-  return [`/api/pdfs`] as const;
-};
-
-export const getListPdfsQueryOptions = <
-  TData = Awaited<ReturnType<typeof listPdfs>>,
-  TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof listPdfs>>, TError, TData>;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getListPdfsQueryKey();
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof listPdfs>>> = ({
-    signal,
-  }) => listPdfs({ signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof listPdfs>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey };
-};
-
-export type ListPdfsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof listPdfs>>
->;
-export type ListPdfsQueryError = ErrorType<unknown>;
-
-/**
- * @summary List all uploaded PDFs
- */
-
-export function useListPdfs<
-  TData = Awaited<ReturnType<typeof listPdfs>>,
-  TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof listPdfs>>, TError, TData>;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getListPdfsQueryOptions(options);
-
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
-
-  return { ...query, queryKey: queryOptions.queryKey };
-}
-
-/**
  * @summary Upload a PDF and set an expiry date
  */
 export const getUploadPdfUrl = () => {
@@ -184,12 +123,12 @@ export const getUploadPdfUrl = () => {
 export const uploadPdf = async (
   uploadPdfBody: UploadPdfBody,
   options?: RequestInit,
-): Promise<PdfRecord> => {
+): Promise<PdfUploadResult> => {
   const formData = new FormData();
   formData.append(`file`, uploadPdfBody.file);
   formData.append(`expiryDate`, uploadPdfBody.expiryDate);
 
-  return customFetch<PdfRecord>(getUploadPdfUrl(), {
+  return customFetch<PdfUploadResult>(getUploadPdfUrl(), {
     ...options,
     method: "POST",
     body: formData,
@@ -264,24 +203,37 @@ export const useUploadPdf = <
 };
 
 /**
- * @summary Get PDF metadata
+ * @summary Get PDF metadata (requires shareToken)
  */
-export const getGetPdfUrl = (id: number) => {
-  return `/api/pdfs/${id}`;
+export const getGetPdfUrl = (id: number, params: GetPdfParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/pdfs/${id}?${stringifiedParams}`
+    : `/api/pdfs/${id}`;
 };
 
 export const getPdf = async (
   id: number,
+  params: GetPdfParams,
   options?: RequestInit,
 ): Promise<PdfRecord> => {
-  return customFetch<PdfRecord>(getGetPdfUrl(id), {
+  return customFetch<PdfRecord>(getGetPdfUrl(id, params), {
     ...options,
     method: "GET",
   });
 };
 
-export const getGetPdfQueryKey = (id: number) => {
-  return [`/api/pdfs/${id}`] as const;
+export const getGetPdfQueryKey = (id: number, params?: GetPdfParams) => {
+  return [`/api/pdfs/${id}`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetPdfQueryOptions = <
@@ -289,6 +241,7 @@ export const getGetPdfQueryOptions = <
   TError = ErrorType<ErrorResponse>,
 >(
   id: number,
+  params: GetPdfParams,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getPdf>>, TError, TData>;
     request?: SecondParameter<typeof customFetch>;
@@ -296,11 +249,11 @@ export const getGetPdfQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetPdfQueryKey(id);
+  const queryKey = queryOptions?.queryKey ?? getGetPdfQueryKey(id, params);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getPdf>>> = ({
     signal,
-  }) => getPdf(id, { signal, ...requestOptions });
+  }) => getPdf(id, params, { signal, ...requestOptions });
 
   return {
     queryKey,
@@ -316,7 +269,7 @@ export type GetPdfQueryResult = NonNullable<Awaited<ReturnType<typeof getPdf>>>;
 export type GetPdfQueryError = ErrorType<ErrorResponse>;
 
 /**
- * @summary Get PDF metadata
+ * @summary Get PDF metadata (requires shareToken)
  */
 
 export function useGetPdf<
@@ -324,12 +277,13 @@ export function useGetPdf<
   TError = ErrorType<ErrorResponse>,
 >(
   id: number,
+  params: GetPdfParams,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getPdf>>, TError, TData>;
     request?: SecondParameter<typeof customFetch>;
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetPdfQueryOptions(id, options);
+  const queryOptions = getGetPdfQueryOptions(id, params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -339,17 +293,30 @@ export function useGetPdf<
 }
 
 /**
- * @summary Delete a PDF
+ * @summary Delete a PDF (requires shareToken)
  */
-export const getDeletePdfUrl = (id: number) => {
-  return `/api/pdfs/${id}`;
+export const getDeletePdfUrl = (id: number, params: DeletePdfParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/pdfs/${id}?${stringifiedParams}`
+    : `/api/pdfs/${id}`;
 };
 
 export const deletePdf = async (
   id: number,
+  params: DeletePdfParams,
   options?: RequestInit,
 ): Promise<void> => {
-  return customFetch<void>(getDeletePdfUrl(id), {
+  return customFetch<void>(getDeletePdfUrl(id, params), {
     ...options,
     method: "DELETE",
   });
@@ -362,14 +329,14 @@ export const getDeletePdfMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof deletePdf>>,
     TError,
-    { id: number },
+    { id: number; params: DeletePdfParams },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof deletePdf>>,
   TError,
-  { id: number },
+  { id: number; params: DeletePdfParams },
   TContext
 > => {
   const mutationKey = ["deletePdf"];
@@ -383,11 +350,11 @@ export const getDeletePdfMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof deletePdf>>,
-    { id: number }
+    { id: number; params: DeletePdfParams }
   > = (props) => {
-    const { id } = props ?? {};
+    const { id, params } = props ?? {};
 
-    return deletePdf(id, requestOptions);
+    return deletePdf(id, params, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -400,7 +367,7 @@ export type DeletePdfMutationResult = NonNullable<
 export type DeletePdfMutationError = ErrorType<ErrorResponse>;
 
 /**
- * @summary Delete a PDF
+ * @summary Delete a PDF (requires shareToken)
  */
 export const useDeletePdf = <
   TError = ErrorType<ErrorResponse>,
@@ -409,38 +376,54 @@ export const useDeletePdf = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof deletePdf>>,
     TError,
-    { id: number },
+    { id: number; params: DeletePdfParams },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof deletePdf>>,
   TError,
-  { id: number },
+  { id: number; params: DeletePdfParams },
   TContext
 > => {
   return useMutation(getDeletePdfMutationOptions(options));
 };
 
 /**
- * @summary Download the PDF (returns corrupted data if expired)
+ * @summary Download the PDF (requires shareToken)
  */
-export const getDownloadPdfUrl = (id: number) => {
-  return `/api/pdfs/${id}/download`;
+export const getDownloadPdfUrl = (id: number, params: DownloadPdfParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/pdfs/${id}/download?${stringifiedParams}`
+    : `/api/pdfs/${id}/download`;
 };
 
 export const downloadPdf = async (
   id: number,
+  params: DownloadPdfParams,
   options?: RequestInit,
 ): Promise<Blob> => {
-  return customFetch<Blob>(getDownloadPdfUrl(id), {
+  return customFetch<Blob>(getDownloadPdfUrl(id, params), {
     ...options,
     method: "GET",
   });
 };
 
-export const getDownloadPdfQueryKey = (id: number) => {
-  return [`/api/pdfs/${id}/download`] as const;
+export const getDownloadPdfQueryKey = (
+  id: number,
+  params?: DownloadPdfParams,
+) => {
+  return [`/api/pdfs/${id}/download`, ...(params ? [params] : [])] as const;
 };
 
 export const getDownloadPdfQueryOptions = <
@@ -448,6 +431,7 @@ export const getDownloadPdfQueryOptions = <
   TError = ErrorType<ErrorResponse>,
 >(
   id: number,
+  params: DownloadPdfParams,
   options?: {
     query?: UseQueryOptions<
       Awaited<ReturnType<typeof downloadPdf>>,
@@ -459,11 +443,11 @@ export const getDownloadPdfQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getDownloadPdfQueryKey(id);
+  const queryKey = queryOptions?.queryKey ?? getDownloadPdfQueryKey(id, params);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadPdf>>> = ({
     signal,
-  }) => downloadPdf(id, { signal, ...requestOptions });
+  }) => downloadPdf(id, params, { signal, ...requestOptions });
 
   return {
     queryKey,
@@ -483,7 +467,7 @@ export type DownloadPdfQueryResult = NonNullable<
 export type DownloadPdfQueryError = ErrorType<ErrorResponse>;
 
 /**
- * @summary Download the PDF (returns corrupted data if expired)
+ * @summary Download the PDF (requires shareToken)
  */
 
 export function useDownloadPdf<
@@ -491,6 +475,7 @@ export function useDownloadPdf<
   TError = ErrorType<ErrorResponse>,
 >(
   id: number,
+  params: DownloadPdfParams,
   options?: {
     query?: UseQueryOptions<
       Awaited<ReturnType<typeof downloadPdf>>,
@@ -500,7 +485,7 @@ export function useDownloadPdf<
     request?: SecondParameter<typeof customFetch>;
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getDownloadPdfQueryOptions(id, options);
+  const queryOptions = getDownloadPdfQueryOptions(id, params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

@@ -10,9 +10,10 @@ import {
   ShieldCheck, Calendar, Lock, Printer,
   Upload, X, Eye, EyeOff, Copy, ShieldOff, Download, CheckCircle2, RotateCcw,
 } from "lucide-react";
-import { useUploadPdf, getListPdfsQueryKey, getGetPdfStatsQueryKey } from "@workspace/api-client-react";
+import { useUploadPdf, getGetPdfStatsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { saveToLocalHistory } from "./history";
 import { formatBytes } from "@/lib/utils";
 import { format, addDays } from "date-fns";
 
@@ -101,8 +102,8 @@ function FileRow({ name, size, onRemove }: { name: string; size: number; onRemov
   );
 }
 
-function SuccessCard({ label, downloadId, fileName, onReset, accentBtn }: {
-  label: string; downloadId: number; fileName: string;
+function SuccessCard({ label, downloadId, shareToken, fileName, onReset, accentBtn }: {
+  label: string; downloadId: number; shareToken: string; fileName: string;
   onReset: () => void; accentBtn: string;
 }) {
   const { toast } = useToast();
@@ -112,7 +113,7 @@ function SuccessCard({ label, downloadId, fileName, onReset, accentBtn }: {
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      const res = await fetch(`/api/pdfs/${downloadId}/download`);
+      const res = await fetch(`/api/pdfs/${downloadId}/download?shareToken=${encodeURIComponent(shareToken)}`);
       if (res.status === 410) {
         setExpired(true);
         toast({
@@ -190,13 +191,14 @@ function ExpiryTab() {
   const [file, setFile] = useState<File | null>(null);
   const [expiryDate, setExpiryDate] = useState(format(addDays(new Date(), 1), "yyyy-MM-dd"));
   const [uploadedId, setUploadedId] = useState<number | null>(null);
+  const [uploadedShareToken, setUploadedShareToken] = useState("");
   const [uploadedName, setUploadedName] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const uploadMutation = useUploadPdf();
 
   const reset = () => {
-    setFile(null); setUploadedId(null); setUploadedName("");
+    setFile(null); setUploadedId(null); setUploadedShareToken(""); setUploadedName("");
     setExpiryDate(format(addDays(new Date(), 1), "yyyy-MM-dd"));
   };
 
@@ -205,8 +207,8 @@ function ExpiryTab() {
     const name = file.name;
     uploadMutation.mutate({ data: { file, expiryDate } }, {
       onSuccess: (data) => {
-        setUploadedId(data.id); setUploadedName(name); setFile(null);
-        queryClient.invalidateQueries({ queryKey: getListPdfsQueryKey() });
+        setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null);
+        saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
         queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
       },
       onError: () => toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" }),
@@ -228,7 +230,7 @@ function ExpiryTab() {
       {uploadedId !== null ? (
         <SuccessCard
           label={`Expires on ${format(new Date(expiryDate + "T00:00:00"), "MMMM d, yyyy")}`}
-          downloadId={uploadedId} fileName={uploadedName} onReset={reset}
+          downloadId={uploadedId} shareToken={uploadedShareToken} fileName={uploadedName} onReset={reset}
           accentBtn="border-rose-200 text-rose-600 hover:bg-rose-50"
         />
       ) : (
@@ -272,12 +274,13 @@ function PasswordTab() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [uploadedId, setUploadedId] = useState<number | null>(null);
+  const [uploadedShareToken, setUploadedShareToken] = useState("");
   const [uploadedName, setUploadedName] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const uploadMutation = useUploadPdf();
 
-  const reset = () => { setFile(null); setPassword(""); setShowPassword(false); setUploadedId(null); setUploadedName(""); };
+  const reset = () => { setFile(null); setPassword(""); setShowPassword(false); setUploadedId(null); setUploadedShareToken(""); setUploadedName(""); };
 
   const handleUpload = async () => {
     if (!file) return;
@@ -306,8 +309,8 @@ function PasswordTab() {
 
     uploadMutation.mutate({ data: { file: encryptedFile, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd") } }, {
       onSuccess: (data) => {
-        setUploadedId(data.id); setUploadedName(name); setFile(null); setPassword("");
-        queryClient.invalidateQueries({ queryKey: getListPdfsQueryKey() });
+        setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null); setPassword("");
+        saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
         queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
       },
       onError: () => toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" }),
@@ -329,7 +332,7 @@ function PasswordTab() {
       {uploadedId !== null ? (
         <SuccessCard
           label="Password protection applied"
-          downloadId={uploadedId} fileName={uploadedName} onReset={reset}
+          downloadId={uploadedId} shareToken={uploadedShareToken} fileName={uploadedName} onReset={reset}
           accentBtn="border-indigo-200 text-indigo-600 hover:bg-indigo-50"
         />
       ) : (
@@ -380,13 +383,14 @@ function PrintControlTab() {
   const [restrictPrint, setRestrictPrint] = useState(false);
   const [restrictCopy, setRestrictCopy] = useState(false);
   const [uploadedId, setUploadedId] = useState<number | null>(null);
+  const [uploadedShareToken, setUploadedShareToken] = useState("");
   const [uploadedName, setUploadedName] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const uploadMutation = useUploadPdf();
 
-  const reset = () => { setFile(null); setRestrictPrint(false); setRestrictCopy(false); setUploadedId(null); setUploadedName(""); };
+  const reset = () => { setFile(null); setRestrictPrint(false); setRestrictCopy(false); setUploadedId(null); setUploadedShareToken(""); setUploadedName(""); };
 
   const handleUpload = async () => {
     if (!file) return;
@@ -427,8 +431,8 @@ function PrintControlTab() {
 
     uploadMutation.mutate({ data: { file: restrictedFile, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd") } }, {
       onSuccess: (data) => {
-        setUploadedId(data.id); setUploadedName(name); setFile(null);
-        queryClient.invalidateQueries({ queryKey: getListPdfsQueryKey() });
+        setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null);
+        saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
         queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
       },
       onError: () => toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" }),
@@ -464,7 +468,7 @@ function PrintControlTab() {
       {uploadedId !== null ? (
         <SuccessCard
           label={`Printing ${restrictPrint ? "restricted" : "allowed"} · Copying ${restrictCopy ? "restricted" : "allowed"}`}
-          downloadId={uploadedId} fileName={uploadedName} onReset={reset}
+          downloadId={uploadedId} shareToken={uploadedShareToken} fileName={uploadedName} onReset={reset}
           accentBtn="border-amber-200 text-amber-600 hover:bg-amber-50"
         />
       ) : (

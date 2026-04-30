@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { useUploadPdf, getListPdfsQueryKey, getGetPdfStatsQueryKey } from "@workspace/api-client-react";
+import { useUploadPdf, getGetPdfStatsQueryKey } from "@workspace/api-client-react";
+import { saveToLocalHistory } from "@/pages/history";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -126,12 +127,12 @@ export function PdfUploadForm() {
     uploadMutation.mutate(
       { data: { file, expiryDate: expiryEnabled ? expiryDate : undefined } },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           toast({ title: "Document secured & uploaded", description: "Your PDF has been protected and stored." });
           setFile(null);
           setPassword("");
           if (fileInputRef.current) fileInputRef.current.value = "";
-          queryClient.invalidateQueries({ queryKey: getListPdfsQueryKey() });
+          saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
           queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
         },
         onError: () => {

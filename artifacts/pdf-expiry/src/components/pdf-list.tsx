@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { Download, Trash2, ShieldAlert, ShieldCheck } from "lucide-react";
-import { PdfRecord } from "@workspace/api-client-react";
-import { useDeletePdf, getListPdfsQueryKey, getGetPdfStatsQueryKey } from "@workspace/api-client-react";
+import { useDeletePdf, getGetPdfStatsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,28 +10,55 @@ import { formatBytes } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export function PdfList({ pdfs, isLoading, showFilters = false }: { pdfs: PdfRecord[], isLoading: boolean, showFilters?: boolean }) {
+export interface LocalPdfEntry {
+  id: number;
+  shareToken: string;
+  originalName: string;
+  fileSize: number;
+  expiryDate: string;
+  isExpired: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function PdfList({
+  pdfs,
+  isLoading,
+  showFilters = false,
+  onDeleted,
+}: {
+  pdfs: LocalPdfEntry[];
+  isLoading: boolean;
+  showFilters?: boolean;
+  onDeleted?: (id: number) => void;
+}) {
   const [filter, setFilter] = useState("all");
   const deleteMutation = useDeletePdf();
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const filteredPdfs = pdfs.filter(pdf => {
+  const filteredPdfs = pdfs.filter((pdf) => {
     if (filter === "active") return !pdf.isExpired;
     if (filter === "expired") return pdf.isExpired;
     return true;
   });
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: number, shareToken: string) => {
     if (!confirm("Are you sure you want to delete this document?")) return;
 
-    deleteMutation.mutate({ id }, {
-      onSuccess: () => {
-        toast({ title: "Document deleted" });
-        queryClient.invalidateQueries({ queryKey: getListPdfsQueryKey() });
-        queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
-      }
-    });
+    deleteMutation.mutate(
+      { id, params: { shareToken } },
+      {
+        onSuccess: () => {
+          toast({ title: "Document deleted" });
+          queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
+          onDeleted?.(id);
+        },
+        onError: () => {
+          toast({ title: "Delete failed", description: "Could not delete this document.", variant: "destructive" });
+        },
+      },
+    );
   };
 
   if (isLoading) {
@@ -86,32 +112,33 @@ export function PdfList({ pdfs, isLoading, showFilters = false }: { pdfs: PdfRec
                         <ShieldAlert className="w-3 h-3" /> Expired
                       </Badge>
                     ) : (
-                      <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100 flex w-fit items-center gap-1">
+                      <Badge
+                        variant="secondary"
+                        className="bg-green-100 text-green-800 hover:bg-green-100 flex w-fit items-center gap-1"
+                      >
                         <ShieldCheck className="w-3 h-3" /> Active
                       </Badge>
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm">
-                      {format(new Date(pdf.expiryDate), "MMM d, yyyy")}
-                    </div>
+                    <div className="text-sm">{format(new Date(pdf.expiryDate), "MMM d, yyyy")}</div>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        asChild
-                      >
-                        <a href={`/api/pdfs/${pdf.id}/download`} target="_blank" rel="noopener noreferrer">
+                      <Button variant="outline" size="sm" asChild>
+                        <a
+                          href={`/api/pdfs/${pdf.id}/download?shareToken=${encodeURIComponent(pdf.shareToken)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           <Download className="w-4 h-4" />
                         </a>
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                        onClick={() => handleDelete(pdf.id)}
+                        onClick={() => handleDelete(pdf.id, pdf.shareToken)}
                         disabled={deleteMutation.isPending}
                       >
                         <Trash2 className="w-4 h-4" />

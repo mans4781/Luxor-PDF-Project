@@ -26,21 +26,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
 
-  /pdfs:
-    get:
-      operationId: listPdfs
-      tags: [pdfs]
-      summary: List all uploaded PDFs
-      responses:
-        "200":
-          description: List of PDFs
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/PdfRecord"
-
   /pdfs/upload:
     post:
       operationId: uploadPdf
@@ -69,9 +54,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PdfRecord"
+                $ref: "#/components/schemas/PdfUploadResult"
         "400":
           description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "413":
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Too many requests
           content:
             application/json:
               schema:
@@ -81,13 +78,19 @@ paths:
     get:
       operationId: getPdf
       tags: [pdfs]
-      summary: Get PDF metadata
+      summary: Get PDF metadata (requires shareToken)
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: integer
+        - name: shareToken
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The share token returned at upload time
       responses:
         "200":
           description: PDF metadata
@@ -95,6 +98,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PdfRecord"
+        "403":
+          description: Forbidden – invalid or missing share token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: PDF not found
           content:
@@ -104,16 +113,28 @@ paths:
     delete:
       operationId: deletePdf
       tags: [pdfs]
-      summary: Delete a PDF
+      summary: Delete a PDF (requires shareToken)
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: integer
+        - name: shareToken
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The share token returned at upload time
       responses:
         "204":
           description: PDF deleted
+        "403":
+          description: Forbidden – invalid or missing share token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Not found
           content:
@@ -125,13 +146,19 @@ paths:
     get:
       operationId: downloadPdf
       tags: [pdfs]
-      summary: Download the PDF (returns corrupted data if expired)
+      summary: Download the PDF (requires shareToken)
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: integer
+        - name: shareToken
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The share token returned at upload time
       responses:
         "200":
           description: PDF file
@@ -140,8 +167,20 @@ paths:
               schema:
                 type: string
                 format: binary
+        "403":
+          description: Forbidden – invalid or missing share token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "410":
+          description: PDF has expired
           content:
             application/json:
               schema:
@@ -192,6 +231,39 @@ components:
           format: date-time
       required:
         - id
+        - originalName
+        - fileSize
+        - expiryDate
+        - isExpired
+        - createdAt
+        - updatedAt
+
+    PdfUploadResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        shareToken:
+          type: string
+          description: Token required for all subsequent operations on this document
+        originalName:
+          type: string
+        fileSize:
+          type: integer
+        expiryDate:
+          type: string
+          format: date
+        isExpired:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - shareToken
         - originalName
         - fileSize
         - expiryDate

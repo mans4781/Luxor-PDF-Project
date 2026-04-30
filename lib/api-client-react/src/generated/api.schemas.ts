@@ -19,6 +19,18 @@ export interface PdfRecord {
   updatedAt: string;
 }
 
+export interface PdfUploadResult {
+  id: number;
+  /** Token required for all subsequent operations on this document */
+  shareToken: string;
+  originalName: string;
+  fileSize: number;
+  expiryDate: string;
+  isExpired: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PdfStats {
   total: number;
   active: number;
@@ -34,4 +46,25 @@ export type UploadPdfBody = {
   file: Blob;
   /** ISO date string (YYYY-MM-DD) after which the PDF becomes inaccessible */
   expiryDate: string;
+};
+
+export type GetPdfParams = {
+  /**
+   * The share token returned at upload time
+   */
+  shareToken: string;
+};
+
+export type DeletePdfParams = {
+  /**
+   * The share token returned at upload time
+   */
+  shareToken: string;
+};
+
+export type DownloadPdfParams = {
+  /**
+   * The share token returned at upload time
+   */
+  shareToken: string;
 };

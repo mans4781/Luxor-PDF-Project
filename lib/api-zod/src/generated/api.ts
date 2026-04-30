@@ -16,20 +16,6 @@ export const HealthCheckResponse = zod.object({
 });
 
 /**
- * @summary List all uploaded PDFs
- */
-export const ListPdfsResponseItem = zod.object({
-  id: zod.number(),
-  originalName: zod.string(),
-  fileSize: zod.number(),
-  expiryDate: zod.coerce.date(),
-  isExpired: zod.boolean(),
-  createdAt: zod.coerce.date(),
-  updatedAt: zod.coerce.date(),
-});
-export const ListPdfsResponse = zod.array(ListPdfsResponseItem);
-
-/**
  * @summary Upload a PDF and set an expiry date
  */
 export const UploadPdfBody = zod.object({
@@ -42,10 +28,16 @@ export const UploadPdfBody = zod.object({
 });
 
 /**
- * @summary Get PDF metadata
+ * @summary Get PDF metadata (requires shareToken)
  */
 export const GetPdfParams = zod.object({
   id: zod.coerce.number(),
+});
+
+export const GetPdfQueryParams = zod.object({
+  shareToken: zod.coerce
+    .string()
+    .describe("The share token returned at upload time"),
 });
 
 export const GetPdfResponse = zod.object({
@@ -59,17 +51,29 @@ export const GetPdfResponse = zod.object({
 });
 
 /**
- * @summary Delete a PDF
+ * @summary Delete a PDF (requires shareToken)
  */
 export const DeletePdfParams = zod.object({
   id: zod.coerce.number(),
 });
 
+export const DeletePdfQueryParams = zod.object({
+  shareToken: zod.coerce
+    .string()
+    .describe("The share token returned at upload time"),
+});
+
 /**
- * @summary Download the PDF (returns corrupted data if expired)
+ * @summary Download the PDF (requires shareToken)
  */
 export const DownloadPdfParams = zod.object({
   id: zod.coerce.number(),
+});
+
+export const DownloadPdfQueryParams = zod.object({
+  shareToken: zod.coerce
+    .string()
+    .describe("The share token returned at upload time"),
 });
 
 /**

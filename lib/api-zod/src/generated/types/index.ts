@@ -6,8 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./deletePdfParams";
+export * from "./downloadPdfParams";
 export * from "./errorResponse";
+export * from "./getPdfParams";
 export * from "./healthStatus";
 export * from "./pdfRecord";
 export * from "./pdfStats";
+export * from "./pdfUploadResult";
 export * from "./uploadPdfBody";

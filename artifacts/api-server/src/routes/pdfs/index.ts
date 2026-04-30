@@ -1,17 +1,68 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import { eq, sql } from "drizzle-orm";
 import { db, pdfsTable } from "@workspace/db";
 import fs from "fs";
 import path from "path";
 import multer from "multer";
+import { randomUUID } from "crypto";
 import { logger } from "../../lib/logger";
 
 const router: IRouter = Router();
 
 const UPLOADS_DIR = path.resolve(process.cwd(), "uploads");
 
+// 50 MB per file — matches the advertised UI limit
+const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
+
+// 10 GB global total storage cap; override with MAX_STORAGE_BYTES env var
+const MAX_TOTAL_STORAGE_BYTES = parseInt(process.env.MAX_STORAGE_BYTES ?? "", 10) || 10 * 1024 * 1024 * 1024;
+
+// Maximum number of stored (non-deleted) documents
+const MAX_TOTAL_FILES = parseInt(process.env.MAX_TOTAL_FILES ?? "", 10) || 10_000;
+
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+/**
+ * Runs once at startup: backfill any rows that somehow lack a share_token,
+ * and ensure the column exists (idempotent — safe on fresh deployments too).
+ */
+export async function runPdfMigrations(): Promise<void> {
+  try {
+    // Ensure column exists (no-op if already present)
+    await db.execute(
+      sql`ALTER TABLE pdfs ADD COLUMN IF NOT EXISTS share_token TEXT`,
+    );
+
+    // Backfill rows missing a token
+    const { rowCount } = await db.execute(
+      sql`UPDATE pdfs SET share_token = gen_random_uuid()::text WHERE share_token IS NULL`,
+    );
+
+    // Enforce NOT NULL + UNIQUE after backfill
+    await db.execute(
+      sql`ALTER TABLE pdfs ALTER COLUMN share_token SET NOT NULL`,
+    );
+
+    await db.execute(sql`
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints
+          WHERE constraint_name = 'pdfs_share_token_unique' AND table_name = 'pdfs'
+        ) THEN
+          ALTER TABLE pdfs ADD CONSTRAINT pdfs_share_token_unique UNIQUE (share_token);
+        END IF;
+      END $$
+    `);
+
+    if ((rowCount ?? 0) > 0) {
+      logger.info({ backfilled: rowCount }, "PDF migration: backfilled share_token for existing rows");
+    }
+  } catch (err) {
+    logger.error({ err }, "PDF migration failed");
+    throw err;
+  }
 }
 
 const storage = multer.diskStorage({
@@ -26,6 +77,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
+  limits: {
+    fileSize: MAX_FILE_SIZE_BYTES,
+    files: 1,
+  },
   fileFilter: (_req, file, cb) => {
     if (file.mimetype !== "application/pdf") {
       cb(new Error("Only PDF files are allowed"));
@@ -35,17 +90,56 @@ const upload = multer({
   },
 });
 
+// ─── Rate limiter ─────────────────────────────────────────────────────────────
+
+const uploadRateLimiter = (() => {
+  const windowMs = 60 * 1000;
+  const maxRequests = 10;
+  const requests = new Map<string, number[]>();
+
+  return (ip: string): boolean => {
+    const now = Date.now();
+    const windowStart = now - windowMs;
+    const timestamps = (requests.get(ip) ?? []).filter((t) => t > windowStart);
+    if (timestamps.length >= maxRequests) {
+      return false;
+    }
+    timestamps.push(now);
+    requests.set(ip, timestamps);
+    return true;
+  };
+})();
+
+// ─── Storage quota middleware ─────────────────────────────────────────────────
+
+async function checkStorageQuota(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  const [stats] = await db
+    .select({ count: sql<number>`count(*)`, total: sql<number>`coalesce(sum(file_size), 0)` })
+    .from(pdfsTable);
+
+  if (stats.count >= MAX_TOTAL_FILES) {
+    res.status(507).json({ error: "Storage limit reached: maximum number of documents exceeded." });
+    return;
+  }
+  if (stats.total >= MAX_TOTAL_STORAGE_BYTES) {
+    res.status(507).json({ error: "Storage limit reached: total storage capacity exceeded." });
+    return;
+  }
+  next();
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function isExpired(expiryDate: string): boolean {
-  // Compare in UTC to avoid timezone drift.
-  // expiryDate is YYYY-MM-DD — the file is valid through the END of that day UTC.
   const expiry = new Date(expiryDate + "T23:59:59.999Z");
   const now = new Date();
   return now > expiry;
 }
 
-function formatPdfRecord(record: typeof pdfsTable.$inferSelect) {
+function formatPdfRecord(record: typeof pdfsTable.$inferSelect, includeToken = false) {
   return {
     id: record.id,
+    ...(includeToken ? { shareToken: record.shareToken } : {}),
     originalName: record.originalName,
     fileSize: record.fileSize,
     expiryDate: record.expiryDate,
@@ -54,6 +148,20 @@ function formatPdfRecord(record: typeof pdfsTable.$inferSelect) {
     updatedAt: record.updatedAt.toISOString(),
   };
 }
+
+function requireShareToken(
+  shareToken: string | undefined,
+  record: typeof pdfsTable.$inferSelect,
+  res: Response,
+): boolean {
+  if (!shareToken || shareToken !== record.shareToken) {
+    res.status(403).json({ error: "Forbidden: invalid or missing share token" });
+    return false;
+  }
+  return true;
+}
+
+// ─── Routes ───────────────────────────────────────────────────────────────────
 
 router.get("/pdfs/stats", async (_req, res): Promise<void> => {
   const records = await db.select().from(pdfsTable);
@@ -77,45 +185,59 @@ router.get("/pdfs/stats", async (_req, res): Promise<void> => {
   res.json({ total: records.length, active, expired, totalSize });
 });
 
-router.get("/pdfs", async (_req, res): Promise<void> => {
-  const records = await db.select().from(pdfsTable).orderBy(sql`${pdfsTable.createdAt} DESC`);
-  res.json(records.map(formatPdfRecord));
-});
+router.post(
+  "/pdfs/upload",
+  // 1. Rate limit
+  (req: Request, res: Response, next: NextFunction) => {
+    const ip = req.ip ?? "unknown";
+    if (!uploadRateLimiter(ip)) {
+      res.status(429).json({ error: "Too many uploads. Please wait before trying again." });
+      return;
+    }
+    next();
+  },
+  // 2. Storage quota check (runs before Multer writes to disk)
+  checkStorageQuota,
+  // 3. Multer — file size and type enforced
+  upload.single("file"),
+  async (req, res): Promise<void> => {
+    if (!req.file) {
+      res.status(400).json({ error: "No file uploaded" });
+      return;
+    }
 
-router.post("/pdfs/upload", upload.single("file"), async (req, res): Promise<void> => {
-  if (!req.file) {
-    res.status(400).json({ error: "No file uploaded" });
-    return;
-  }
+    const { expiryDate } = req.body as { expiryDate?: string };
 
-  const { expiryDate } = req.body as { expiryDate?: string };
+    if (!expiryDate) {
+      fs.unlinkSync(req.file.path);
+      res.status(400).json({ error: "expiryDate is required" });
+      return;
+    }
 
-  if (!expiryDate) {
-    fs.unlinkSync(req.file.path);
-    res.status(400).json({ error: "expiryDate is required" });
-    return;
-  }
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(expiryDate)) {
+      fs.unlinkSync(req.file.path);
+      res.status(400).json({ error: "expiryDate must be in YYYY-MM-DD format" });
+      return;
+    }
 
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!dateRegex.test(expiryDate)) {
-    fs.unlinkSync(req.file.path);
-    res.status(400).json({ error: "expiryDate must be in YYYY-MM-DD format" });
-    return;
-  }
+    const shareToken = randomUUID();
 
-  const [record] = await db
-    .insert(pdfsTable)
-    .values({
-      originalName: req.file.originalname,
-      storedPath: req.file.path,
-      fileSize: req.file.size,
-      expiryDate,
-    })
-    .returning();
+    const [record] = await db
+      .insert(pdfsTable)
+      .values({
+        shareToken,
+        originalName: req.file.originalname,
+        storedPath: req.file.path,
+        fileSize: req.file.size,
+        expiryDate,
+      })
+      .returning();
 
-  req.log.info({ id: record.id, name: record.originalName }, "PDF uploaded");
-  res.status(201).json(formatPdfRecord(record));
-});
+    req.log.info({ id: record.id, name: record.originalName }, "PDF uploaded");
+    res.status(201).json(formatPdfRecord(record, true));
+  },
+);
 
 router.get("/pdfs/:id", async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
@@ -126,12 +248,16 @@ router.get("/pdfs/:id", async (req, res): Promise<void> => {
     return;
   }
 
+  const shareToken = req.query.shareToken as string | undefined;
+
   const [record] = await db.select().from(pdfsTable).where(eq(pdfsTable.id, id));
 
   if (!record) {
     res.status(404).json({ error: "PDF not found" });
     return;
   }
+
+  if (!requireShareToken(shareToken, record, res)) return;
 
   res.json(formatPdfRecord(record));
 });
@@ -151,6 +277,8 @@ router.get("/pdfs/:id/download", async (req, res): Promise<void> => {
     return;
   }
 
+  const shareToken = req.query.shareToken as string | undefined;
+
   const [record] = await db.select().from(pdfsTable).where(eq(pdfsTable.id, id));
 
   if (!record) {
@@ -158,9 +286,9 @@ router.get("/pdfs/:id/download", async (req, res): Promise<void> => {
     return;
   }
 
+  if (!requireShareToken(shareToken, record, res)) return;
+
   if (isExpired(record.expiryDate)) {
-    // Delete the physical file from disk immediately so it cannot be
-    // retrieved by any means — even if someone had the stored path.
     if (fs.existsSync(record.storedPath)) {
       try {
         fs.unlinkSync(record.storedPath);
@@ -196,12 +324,18 @@ router.delete("/pdfs/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const [record] = await db.delete(pdfsTable).where(eq(pdfsTable.id, id)).returning();
+  const shareToken = req.query.shareToken as string | undefined;
+
+  const [record] = await db.select().from(pdfsTable).where(eq(pdfsTable.id, id));
 
   if (!record) {
     res.status(404).json({ error: "PDF not found" });
     return;
   }
+
+  if (!requireShareToken(shareToken, record, res)) return;
+
+  await db.delete(pdfsTable).where(eq(pdfsTable.id, id));
 
   if (fs.existsSync(record.storedPath)) {
     fs.unlinkSync(record.storedPath);
@@ -211,4 +345,5 @@ router.delete("/pdfs/:id", async (req, res): Promise<void> => {
   res.sendStatus(204);
 });
 
+export { router as pdfsRouter };
 export default router;

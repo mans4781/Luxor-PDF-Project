@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const pdfsTable = pgTable("pdfs", {
   id: serial("id").primaryKey(),
+  shareToken: text("share_token").notNull().unique(),
   originalName: text("original_name").notNull(),
   storedPath: text("stored_path").notNull(),
   fileSize: integer("file_size").notNull(),
