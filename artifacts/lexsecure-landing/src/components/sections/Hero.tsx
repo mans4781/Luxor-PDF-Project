@@ -32,7 +32,7 @@ export function Hero() {
 
             <motion.h1 variants={FADE_UP} className="text-5xl md:text-[5.5rem] text-slate-900 leading-[1.05] tracking-[-0.02em] mb-6">
               Premium PDF tools,<br />
-              <span className="text-neutral-400 font-semibold">on subscription.</span>
+              <span className="text-[#2563EB] font-semibold">on subscription.</span>
             </motion.h1>
 
             <motion.p variants={FADE_UP} className="text-lg md:text-xl text-slate-600 mb-10 leading-relaxed max-w-xl">
