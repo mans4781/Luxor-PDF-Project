@@ -149,7 +149,7 @@ export function Footer() {
                     viewBox="0 0 24 24"
                     fill="currentColor"
                     aria-hidden="true"
-                    className="h-5 w-5"
+                    className="h-[22px] w-[22px]"
                   >
                     {path}
                   </svg>
