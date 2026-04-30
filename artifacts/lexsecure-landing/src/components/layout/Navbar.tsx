@@ -100,6 +100,11 @@ export function Navbar() {
             Home
           </a>
 
+          <Link href="/about" className={`group ${linkCls}`}>
+            <Info className={linkIconCls} strokeWidth={2.2} />
+            About
+          </Link>
+
           {/* Products dropdown */}
           <div
             ref={dropdownRef}
@@ -165,10 +170,6 @@ export function Navbar() {
           <Link href="/pricing" className={`group ${linkCls}`}>
             <Tag className={linkIconCls} strokeWidth={2.2} />
             Pricing
-          </Link>
-          <Link href="/about" className={`group ${linkCls}`}>
-            <Info className={linkIconCls} strokeWidth={2.2} />
-            About
           </Link>
           <Link href="/contact" className={`group ${linkCls}`}>
             <Mail className={linkIconCls} strokeWidth={2.2} />
