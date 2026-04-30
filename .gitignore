@@ -48,5 +48,8 @@ Thumbs.db
 .cache/
 .local/
 
+# Uploaded PDF documents — runtime data, never committed
+artifacts/api-server/uploads/
+
 # Electron app runtime data (generated at runtime)
 electron/.data/
