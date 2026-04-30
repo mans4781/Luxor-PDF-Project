@@ -3,6 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/sections/Hero";
 import { AppPreview } from "@/components/sections/AppPreview";
 import { Features } from "@/components/sections/Features";
+import { WorkflowGrid } from "@/components/sections/WorkflowGrid";
 import { Security } from "@/components/sections/Security";
 import { SecurityMetrics } from "@/components/sections/SecurityMetrics";
 import { DesktopApp } from "@/components/sections/DesktopApp";
@@ -18,6 +19,7 @@ export default function LandingPage() {
         <Hero />
         <AppPreview />
         <Features />
+        <WorkflowGrid />
         <Security />
         <SecurityMetrics />
         <DesktopApp />
