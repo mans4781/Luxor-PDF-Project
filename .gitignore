@@ -47,3 +47,6 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Electron app runtime data (generated at runtime)
+electron/.data/
