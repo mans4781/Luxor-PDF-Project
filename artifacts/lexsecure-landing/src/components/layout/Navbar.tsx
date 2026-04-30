@@ -75,7 +75,7 @@ export function Navbar() {
         {/* Logo */}
         <Link href={import.meta.env.BASE_URL} className="flex items-center">
           <img
-            src={`${import.meta.env.BASE_URL}brand/luxor-logo.png?v=1777495436`}
+            src={`${import.meta.env.BASE_URL}brand/luxor-logo.png?v=1777537132`}
             alt="Luxor PDF"
             className="h-10 w-auto select-none"
             draggable={false}
