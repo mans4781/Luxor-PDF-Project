@@ -90,7 +90,7 @@ export function Features() {
             className="text-4xl md:text-6xl text-slate-900 mb-6 tracking-[-0.02em] leading-[1.05]"
           >
             The PDF reader<br/>
-            <span className="text-neutral-400 font-semibold">your business actually trusts.</span>
+            <span className="text-[#2563EB] font-semibold">your business actually trusts.</span>
           </motion.h2>
           <motion.p
             initial="hidden"
