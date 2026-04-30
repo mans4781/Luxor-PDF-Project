@@ -82,7 +82,7 @@ export function Footer() {
                 <img
                   src={`${import.meta.env.BASE_URL}brand/luxor-icon.png`}
                   alt=""
-                  className="h-[34px] w-[34px] select-none"
+                  className="h-[39px] w-[39px] select-none"
                   draggable={false}
                 />
               </span>
