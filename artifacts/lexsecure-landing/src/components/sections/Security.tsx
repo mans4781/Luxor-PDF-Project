@@ -21,35 +21,51 @@ export function Security() {
               Unlike cloud-based PDF tools that silently upload your sensitive contracts and financial records to third-party servers, Luxor PDF processes everything directly on your machine using WebAssembly.
             </p>
             
-            <div className="space-y-6">
+            <div className="space-y-5">
               {[
                 {
                   icon: ServerOff,
                   title: "Zero Server Uploads",
-                  desc: "We don't want your data. All merging, splitting, and converting happens client-side in your browser or desktop app."
+                  desc: "We don't want your data. All merging, splitting, and converting happens client-side in your browser or desktop app.",
+                  iconBg: "bg-[#FB7185]/15 border-[#FB7185]/30",
+                  iconColor: "text-[#FB7185]",
+                  glow: "group-hover:shadow-[#FB7185]/20",
                 },
                 {
                   icon: ShieldAlert,
                   title: "Enforced Expiry Control",
-                  desc: "When sharing, you set the deadline. The server strictly enforces access, permanently corrupting the download after the expiry date."
+                  desc: "When sharing, you set the deadline. The server strictly enforces access, permanently corrupting the download after the expiry date.",
+                  iconBg: "bg-white/15 border-white/30",
+                  iconColor: "text-white",
+                  glow: "group-hover:shadow-white/20",
                 },
                 {
                   icon: Cpu,
                   title: "Offline Capable",
-                  desc: "The Windows desktop app requires zero internet connection. Work securely on planes, in courtrooms, or air-gapped environments."
+                  desc: "The Windows desktop app requires zero internet connection. Work securely on planes, in courtrooms, or air-gapped environments.",
+                  iconBg: "bg-[#2563EB]/20 border-[#2563EB]/40",
+                  iconColor: "text-[#93C5FD]",
+                  glow: "group-hover:shadow-[#2563EB]/30",
                 }
               ].map((item, i) => (
-                <div key={i} className="flex gap-4">
-                  <div className="flex-shrink-0 mt-1">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
-                      <item.icon className="w-5 h-5 text-primary-foreground" />
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
+                  className="group flex gap-4 p-4 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/20 hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="flex-shrink-0">
+                    <div className={`w-11 h-11 rounded-xl border flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[-6deg] ${item.iconBg} ${item.glow}`}>
+                      <item.icon className={`w-5 h-5 ${item.iconColor}`} strokeWidth={2.2} />
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-xl font-semibold mb-1">{item.title}</h4>
-                    <p className="text-gray-400 text-sm leading-relaxed">{item.desc}</p>
+                    <h4 className="text-lg font-semibold mb-1 text-white">{item.title}</h4>
+                    <p className="text-slate-300 text-sm leading-relaxed">{item.desc}</p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>
@@ -63,19 +79,20 @@ export function Security() {
           >
              <div className="aspect-square max-w-md mx-auto relative">
                 {/* Abstract security rings illustration */}
-                <div className="absolute inset-0 rounded-full border border-gray-800 animate-[spin_60s_linear_infinite]" />
-                <div className="absolute inset-4 rounded-full border border-gray-700 animate-[spin_40s_linear_infinite_reverse]" />
-                <div className="absolute inset-12 rounded-full border border-primary/30 bg-primary/5 backdrop-blur-sm" />
+                <div className="absolute inset-0 rounded-full border-2 border-[#2563EB]/20 animate-[spin_60s_linear_infinite]" />
+                <div className="absolute inset-4 rounded-full border border-[#FB7185]/25 animate-[spin_40s_linear_infinite_reverse]" />
+                <div className="absolute inset-12 rounded-full border border-white/15 bg-white/[0.03] backdrop-blur-sm" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-32 h-32 bg-primary rounded-2xl rotate-45 flex items-center justify-center shadow-[0_0_50px_rgba(37,99,235,0.3)]">
+                  <div className="w-32 h-32 bg-gradient-to-br from-[#2563EB] to-[#312E81] rounded-2xl rotate-45 flex items-center justify-center shadow-[0_0_60px_rgba(37,99,235,0.55)] hover:shadow-[0_0_80px_rgba(251,113,133,0.4)] transition-shadow duration-700">
                     <ShieldAlert className="w-12 h-12 text-white -rotate-45" />
                   </div>
                 </div>
-                
-                {/* Floating data nodes */}
-                <div className="absolute top-1/4 left-0 w-4 h-4 bg-rose-500 rounded-full shadow-[0_0_15px_rgba(244,63,94,0.5)]" />
-                <div className="absolute bottom-1/4 right-0 w-4 h-4 bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
-                <div className="absolute top-0 right-1/4 w-4 h-4 bg-violet-500 rounded-full shadow-[0_0_15px_rgba(139,92,246,0.5)]" />
+
+                {/* Floating data nodes — Scheme 1 trio */}
+                <div className="absolute top-1/4 left-0 w-4 h-4 bg-[#FB7185] rounded-full shadow-[0_0_20px_rgba(251,113,133,0.7)] animate-pulse" />
+                <div className="absolute bottom-1/4 right-0 w-4 h-4 bg-[#2563EB] rounded-full shadow-[0_0_20px_rgba(37,99,235,0.7)] animate-pulse [animation-delay:600ms]" />
+                <div className="absolute top-0 right-1/4 w-4 h-4 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.6)] animate-pulse [animation-delay:1200ms]" />
+                <div className="absolute bottom-0 left-1/3 w-3 h-3 bg-[#FB7185] rounded-full shadow-[0_0_18px_rgba(251,113,133,0.6)] animate-pulse [animation-delay:1800ms]" />
              </div>
           </motion.div>
         </div>

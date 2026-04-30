@@ -12,21 +12,37 @@ const READER_FEATURES = [
     title: "Lightning-fast rendering",
     description: "Open 1,000-page contracts in under a second. Built on a custom rendering engine optimized for legal & business documents.",
     icon: Zap,
+    iconBg: "bg-[#2563EB]/10 border-[#2563EB]/25",
+    iconColor: "text-[#2563EB]",
+    glow: "from-[#2563EB]/0 via-[#2563EB]/0 to-[#2563EB]/15",
+    ring: "group-hover:border-[#2563EB]/40",
   },
   {
     title: "Tabs & multi-doc workflows",
     description: "Compare contracts side-by-side, jump between exhibits, manage entire case files in one window — like a browser, but for PDFs.",
     icon: Layers,
+    iconBg: "bg-[#312E81]/8 border-[#312E81]/20",
+    iconColor: "text-[#312E81]",
+    glow: "from-[#312E81]/0 via-[#312E81]/0 to-[#312E81]/15",
+    ring: "group-hover:border-[#312E81]/40",
   },
   {
     title: "Privacy-first by design",
     description: "Files stay on your device. No cloud uploads, no telemetry, no AI training on your documents. Your data is yours, period.",
     icon: Shield,
+    iconBg: "bg-[#312E81]/8 border-[#312E81]/20",
+    iconColor: "text-[#312E81]",
+    glow: "from-[#312E81]/0 via-[#312E81]/0 to-[#312E81]/15",
+    ring: "group-hover:border-[#312E81]/40",
   },
   {
     title: "Smart search & annotations",
     description: "Find any clause across hundreds of files. Highlight, comment, redact. Annotations are saved with your document, never on our servers.",
     icon: FileSearch,
+    iconBg: "bg-[#2563EB]/10 border-[#2563EB]/25",
+    iconColor: "text-[#2563EB]",
+    glow: "from-[#2563EB]/0 via-[#2563EB]/0 to-[#2563EB]/15",
+    ring: "group-hover:border-[#2563EB]/40",
   },
 ];
 
@@ -36,14 +52,18 @@ const ADDON_APPS = [
     tagline: "Legally-binding eSignatures",
     icon: Pen,
     href: "/products/esign",
-    color: "text-emerald-700 bg-emerald-50 border-emerald-100",
+    color: "text-[#2563EB] bg-[#2563EB]/8 border-[#2563EB]/20",
+    glow: "shadow-[#2563EB]/15",
+    ring: "group-hover:border-[#2563EB]/40",
   },
   {
     name: "PDF Expiry",
     tagline: "Self-destructing documents",
     icon: Clock,
     href: "/products/pdf-security",
-    color: "text-rose-700 bg-rose-50 border-rose-100",
+    color: "text-[#E11D48] bg-[#FB7185]/10 border-[#FB7185]/25",
+    glow: "shadow-[#FB7185]/20",
+    ring: "group-hover:border-[#FB7185]/40",
   },
 ];
 
@@ -96,13 +116,15 @@ export function Features() {
                 hidden: { opacity: 0, y: 30 },
                 visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] } }
               }}
-              className="group p-8 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-lg hover:shadow-slate-900/5 transition-all duration-300"
+              className={`group relative p-8 rounded-2xl border border-slate-200 bg-white hover:shadow-xl hover:shadow-slate-900/5 hover:-translate-y-1 transition-all duration-300 overflow-hidden ${feature.ring}`}
             >
-              <div className="w-11 h-11 rounded-xl bg-[#312E81]/5 border border-[#312E81]/10 flex items-center justify-center mb-5">
-                <feature.icon className="w-5 h-5 text-[#312E81]" strokeWidth={2} />
+              {/* corner glow */}
+              <div className={`pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br ${feature.glow} opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500`} />
+              <div className={`relative w-12 h-12 rounded-xl border flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-[-6deg] ${feature.iconBg}`}>
+                <feature.icon className={`w-5 h-5 ${feature.iconColor}`} strokeWidth={2.2} />
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-2 tracking-tight">{feature.title}</h3>
-              <p className="text-slate-600 leading-relaxed text-[15px]">{feature.description}</p>
+              <h3 className="relative text-xl font-semibold text-slate-900 mb-2 tracking-tight">{feature.title}</h3>
+              <p className="relative text-slate-600 leading-relaxed text-[15px]">{feature.description}</p>
             </motion.div>
           ))}
         </div>
@@ -137,16 +159,16 @@ export function Features() {
                 <Link
                   key={app.name}
                   href={app.href}
-                  className="group flex items-center gap-5 p-6 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all"
+                  className={`group flex items-center gap-5 p-6 rounded-2xl bg-white border border-slate-200 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ${app.ring} ${app.glow}`}
                 >
-                  <div className={`w-14 h-14 rounded-xl border flex items-center justify-center shrink-0 ${app.color}`}>
-                    <app.icon className="w-6 h-6" strokeWidth={2} />
+                  <div className={`w-14 h-14 rounded-xl border flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:rotate-[-6deg] ${app.color}`}>
+                    <app.icon className="w-6 h-6" strokeWidth={2.2} />
                   </div>
                   <div className="flex-1">
-                    <h4 className="text-lg font-semibold text-slate-900 mb-0.5">{app.name}</h4>
+                    <h4 className="text-lg font-semibold text-slate-900 mb-0.5 group-hover:text-[#312E81] transition-colors">{app.name}</h4>
                     <p className="text-sm text-slate-600">{app.tagline}</p>
                   </div>
-                  <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-1 transition-all" />
+                  <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-[#312E81] group-hover:translate-x-1 transition-all" />
                 </Link>
               ))}
             </div>

@@ -14,10 +14,11 @@ export function CTA() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-5xl mx-auto rounded-3xl bg-[#312E81] relative overflow-hidden p-12 md:p-20"
         >
-          {/* Decorative gradient */}
-          <div className="absolute inset-0 pointer-events-none opacity-30">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#2563EB] rounded-full blur-[120px]" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#2563EB] rounded-full blur-[120px]" />
+          {/* Decorative gradient — Scheme 1 trio */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-0 right-0 w-[28rem] h-[28rem] bg-[#2563EB] rounded-full blur-[120px] opacity-35" />
+            <div className="absolute bottom-0 left-0 w-[28rem] h-[28rem] bg-[#FB7185] rounded-full blur-[120px] opacity-25" />
+            <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
           </div>
 
           <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-10 items-center">

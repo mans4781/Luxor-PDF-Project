@@ -12,6 +12,9 @@ const productItems = [
     icon: BookOpen,
     desc: "Flagship PDF reader",
     badge: "Flagship",
+    iconBg: "bg-[#312E81]/8 border-[#312E81]/15 group-hover:bg-[#312E81]/15",
+    iconColor: "text-[#312E81]",
+    badgeBg: "bg-[#312E81]/10 text-[#312E81]",
   },
   {
     label: "LuxorSign",
@@ -19,6 +22,9 @@ const productItems = [
     icon: FileSignature,
     desc: "Legally-binding eSignatures",
     badge: "Add-on",
+    iconBg: "bg-[#2563EB]/8 border-[#2563EB]/15 group-hover:bg-[#2563EB]/15",
+    iconColor: "text-[#2563EB]",
+    badgeBg: "bg-[#2563EB]/10 text-[#2563EB]",
   },
   {
     label: "PDF Expiry",
@@ -26,6 +32,9 @@ const productItems = [
     icon: Lock,
     desc: "Self-destructing documents",
     badge: "Add-on",
+    iconBg: "bg-[#FB7185]/10 border-[#FB7185]/20 group-hover:bg-[#FB7185]/20",
+    iconColor: "text-[#E11D48]",
+    badgeBg: "bg-[#FB7185]/15 text-[#9F1239]",
   },
 ];
 
@@ -51,7 +60,7 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const linkCls = "text-[15px] font-medium text-slate-700 hover:text-[#312E81] transition-colors";
+  const linkCls = "relative text-[15px] font-medium text-slate-700 hover:text-[#312E81] transition-colors after:absolute after:bottom-[-6px] after:left-0 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-[#312E81] after:via-[#2563EB] after:to-[#FB7185] after:rounded-full after:transition-all after:duration-300 hover:after:w-full";
 
   return (
     <motion.header
@@ -102,22 +111,20 @@ export function Navbar() {
                   className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-80 bg-white rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200 overflow-hidden z-50"
                 >
                   <div className="p-2">
-                    {productItems.map(({ label, href, icon: Icon, desc, badge }) => (
+                    {productItems.map(({ label, href, icon: Icon, desc, badge, iconBg, iconColor, badgeBg }) => (
                       <Link
                         key={label}
                         href={href}
                         onClick={() => setProductsOpen(false)}
-                        className="flex items-center gap-3 rounded-xl px-3 py-3 hover:bg-slate-50 transition-colors duration-150"
+                        className="group flex items-center gap-3 rounded-xl px-3 py-3 hover:bg-slate-50 transition-colors duration-150"
                       >
-                        <div className="w-10 h-10 rounded-lg bg-[#312E81]/5 border border-[#312E81]/10 flex items-center justify-center shrink-0">
-                          <Icon size={18} className="text-[#312E81]" strokeWidth={2} />
+                        <div className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110 group-hover:rotate-[-4deg] ${iconBg}`}>
+                          <Icon size={18} className={iconColor} strokeWidth={2.2} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="text-sm font-semibold text-slate-900 truncate">{label}</p>
-                            <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded ${
-                              badge === "Flagship" ? "bg-[#2563EB]/10 text-[#2563EB]" : "bg-slate-100 text-slate-600"
-                            }`}>
+                            <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-[#312E81] transition-colors">{label}</p>
+                            <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded ${badgeBg}`}>
                               {badge}
                             </span>
                           </div>
@@ -125,6 +132,11 @@ export function Navbar() {
                         </div>
                       </Link>
                     ))}
+                  </div>
+                  <div className="px-3 py-2.5 bg-gradient-to-r from-[#312E81]/5 via-[#2563EB]/5 to-[#FB7185]/5 border-t border-slate-100">
+                    <p className="text-[11px] text-slate-500 text-center">
+                      One subscription · <span className="font-semibold text-[#312E81]">All three apps</span>
+                    </p>
                   </div>
                 </motion.div>
               )}
@@ -148,7 +160,7 @@ export function Navbar() {
           </Button>
           <Button
             asChild
-            className="text-[15px] font-semibold bg-[#312E81] hover:bg-[#3730A3] text-white shadow-sm rounded-lg hidden sm:inline-flex"
+            className="text-[15px] font-semibold bg-[#312E81] hover:bg-[#3730A3] text-white shadow-md shadow-[#312E81]/20 hover:shadow-lg hover:shadow-[#312E81]/30 hover:-translate-y-0.5 rounded-lg hidden sm:inline-flex transition-all duration-200"
           >
             <Link href="/pricing">Start free →</Link>
           </Button>
