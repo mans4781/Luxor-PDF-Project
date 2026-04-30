@@ -86,7 +86,7 @@ export function MobileDownload() {
               <span>📱</span>
               <span>Mobile App</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-serif text-white leading-tight mb-5">
+            <h2 className="text-4xl md:text-5xl text-white leading-tight mb-5">
               Luxor PDF in your <br />
               <span className="text-violet-300 italic">pocket.</span>
             </h2>

@@ -25,13 +25,13 @@ export function Hero() {
             className="lg:col-span-7"
           >
             <motion.div variants={FADE_UP} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium tracking-tight mb-6">
-              <Sparkles className="w-3.5 h-3.5 text-[#EE1125]" />
+              <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
               <span>The Luxor Suite · Now in subscription</span>
             </motion.div>
 
-            <motion.h1 variants={FADE_UP} className="text-5xl md:text-[5.5rem] font-serif text-slate-900 leading-[1.05] tracking-[-0.02em] mb-6">
+            <motion.h1 variants={FADE_UP} className="text-5xl md:text-[5.5rem] text-slate-900 leading-[1.05] tracking-[-0.02em] mb-6">
               Premium PDF tools,<br />
-              <span className="italic text-[#0C4782]">on subscription.</span>
+              <span className="text-neutral-400 font-semibold">on subscription.</span>
             </motion.h1>
 
             <motion.p variants={FADE_UP} className="text-lg md:text-xl text-slate-600 mb-10 leading-relaxed max-w-xl">
@@ -40,7 +40,7 @@ export function Hero() {
             </motion.p>
 
             <motion.div variants={FADE_UP} className="flex flex-col sm:flex-row items-start gap-4">
-              <Button asChild size="lg" className="w-full sm:w-auto h-12 px-7 text-base font-semibold bg-[#0C4782] hover:bg-[#0a3a6b] text-white rounded-lg shadow-sm group">
+              <Button asChild size="lg" className="w-full sm:w-auto h-12 px-7 text-base font-semibold bg-[#0A0A0A] hover:bg-[#171717] text-white rounded-lg shadow-sm group">
                 <Link href="/pricing">
                   Start free
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -82,7 +82,7 @@ export function Hero() {
             </div>
             <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-xl shadow-xl shadow-slate-900/5 border border-slate-100 flex items-center gap-3">
               <div className="w-10 h-10 bg-[#FDECEE] rounded-lg flex items-center justify-center">
-                <span className="text-[#EE1125] text-lg font-black">L</span>
+                <span className="text-[#2563EB] text-lg font-black">L</span>
               </div>
               <div>
                 <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Flagship</p>

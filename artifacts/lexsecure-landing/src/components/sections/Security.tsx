@@ -14,7 +14,7 @@ export function Security() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h2 className="text-4xl md:text-5xl font-serif mb-6 leading-tight">
+            <h2 className="text-4xl md:text-5xl mb-6 leading-tight">
               Your documents never leave your device.
             </h2>
             <p className="text-lg text-gray-400 mb-8 leading-relaxed max-w-lg">

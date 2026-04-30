@@ -12,27 +12,27 @@ export function CTA() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mx-auto rounded-3xl bg-[#0C4782] relative overflow-hidden p-12 md:p-20"
+          className="max-w-5xl mx-auto rounded-3xl bg-[#0A0A0A] relative overflow-hidden p-12 md:p-20"
         >
           {/* Decorative gradient */}
           <div className="absolute inset-0 pointer-events-none opacity-30">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#EE1125] rounded-full blur-[120px]" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-400 rounded-full blur-[120px]" />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-[#2563EB] rounded-full blur-[120px]" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#2563EB] rounded-full blur-[120px]" />
           </div>
 
           <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-10 items-center">
             <div className="lg:col-span-2">
-              <h2 className="text-4xl md:text-5xl font-serif text-white mb-5 tracking-[-0.02em] leading-[1.1]">
+              <h2 className="text-4xl md:text-5xl text-white mb-5 tracking-[-0.02em] leading-[1.1]">
                 Start free.<br />
-                <span className="italic text-blue-200">Upgrade when you're ready.</span>
+                <span className="text-neutral-300">Upgrade when you're ready.</span>
               </h2>
-              <p className="text-lg text-blue-100/80 max-w-xl">
+              <p className="text-lg text-neutral-300 max-w-xl">
                 Join thousands of professionals who switched to Luxor PDF.
                 No credit card required to start. Cancel any time.
               </p>
             </div>
             <div className="flex flex-col gap-3">
-              <Button asChild size="lg" className="h-14 px-8 text-base font-semibold bg-white text-[#0C4782] hover:bg-blue-50 rounded-lg shadow-xl group">
+              <Button asChild size="lg" className="h-14 px-8 text-base font-semibold bg-white text-[#0A0A0A] hover:bg-neutral-100 rounded-lg shadow-xl group">
                 <Link href="/pricing">
                   Start free
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />

@@ -67,10 +67,10 @@ export function Features() {
             whileInView="visible"
             viewport={{ once: true, margin: "-80px" }}
             variants={FADE_UP}
-            className="text-4xl md:text-6xl font-serif text-slate-900 mb-6 tracking-[-0.02em] leading-[1.05]"
+            className="text-4xl md:text-6xl text-slate-900 mb-6 tracking-[-0.02em] leading-[1.05]"
           >
             The PDF reader<br/>
-            <span className="italic text-[#0C4782]">your business actually trusts.</span>
+            <span className="text-neutral-400 font-semibold">your business actually trusts.</span>
           </motion.h2>
           <motion.p
             initial="hidden"
@@ -98,8 +98,8 @@ export function Features() {
               }}
               className="group p-8 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-lg hover:shadow-slate-900/5 transition-all duration-300"
             >
-              <div className="w-11 h-11 rounded-xl bg-[#0C4782]/5 border border-[#0C4782]/10 flex items-center justify-center mb-5">
-                <feature.icon className="w-5 h-5 text-[#0C4782]" strokeWidth={2} />
+              <div className="w-11 h-11 rounded-xl bg-[#0A0A0A]/5 border border-[#0A0A0A]/10 flex items-center justify-center mb-5">
+                <feature.icon className="w-5 h-5 text-[#0A0A0A]" strokeWidth={2} />
               </div>
               <h3 className="text-xl font-semibold text-slate-900 mb-2 tracking-tight">{feature.title}</h3>
               <p className="text-slate-600 leading-relaxed text-[15px]">{feature.description}</p>
@@ -119,13 +119,13 @@ export function Features() {
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 mb-10">
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">More from Luxor</p>
-                <h3 className="text-3xl md:text-4xl font-serif text-slate-900 tracking-[-0.02em] leading-tight">
+                <h3 className="text-3xl md:text-4xl text-slate-900 tracking-[-0.02em] leading-tight">
                   Add powerful tools<br/>to your subscription.
                 </h3>
               </div>
               <Link
                 href="/pricing"
-                className="inline-flex items-center gap-2 text-[#0C4782] font-semibold hover:gap-3 transition-all"
+                className="inline-flex items-center gap-2 text-[#0A0A0A] font-semibold hover:gap-3 transition-all"
               >
                 See all add-ons
                 <ArrowRight className="w-4 h-4" />

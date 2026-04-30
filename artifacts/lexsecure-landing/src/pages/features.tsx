@@ -298,7 +298,7 @@ const HERO_FEATURES = [
     title: "Read, mark up and comment like a pro",
     body: "A lightning-fast PDF viewer with professional annotation tools: highlight text, draw freehand, add sticky comments, insert text boxes, draw rectangles and use the eraser — with full undo history.",
     color: "from-blue-500 to-indigo-600",
-    bg: "bg-blue-50",
+    bg: "bg-neutral-100",
     border: "border-blue-100",
     icon: BookOpen,
     iconColor: "text-blue-600",
@@ -352,7 +352,7 @@ const HERO_FEATURES = [
 
 const GRID_FEATURES = [
   { icon: Zap,         color: "text-amber-500",  bg: "bg-amber-50",  title: "Lightning Fast",       desc: "PDF.js rendering engine loads even 1000-page docs in under a second." },
-  { icon: Globe,       color: "text-blue-500",   bg: "bg-blue-50",   title: "Works Everywhere",     desc: "Browser-based — no install required on Windows, Mac, Linux or Chromebook." },
+  { icon: Globe,       color: "text-blue-500",   bg: "bg-neutral-100",   title: "Works Everywhere",     desc: "Browser-based — no install required on Windows, Mac, Linux or Chromebook." },
   { icon: Smartphone,  color: "text-violet-500", bg: "bg-violet-50", title: "Mobile Ready",         desc: "Fully responsive. Pinch-to-zoom, swipe-to-turn-page on any phone or tablet." },
   { icon: FileSearch,  color: "text-teal-500",   bg: "bg-teal-50",   title: "Full-Text Search",     desc: "Ctrl+F search across every page. Jump to results instantly." },
   { icon: Layers,      color: "text-indigo-500", bg: "bg-indigo-50", title: "Merge & Split",        desc: "Combine multiple PDFs or split a single doc into individual pages." },
@@ -380,13 +380,13 @@ export default function FeaturesPage() {
           style={{ backgroundImage: "linear-gradient(#000 1px,transparent 1px),linear-gradient(90deg,#000 1px,transparent 1px)", backgroundSize: "40px 40px" }} />
         <div className="container mx-auto px-6 text-center relative z-10">
           <motion.div initial="hidden" animate="visible" custom={0} variants={FADE_UP}
-            className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 rounded-full px-4 py-1.5 text-sm font-semibold mb-6">
-            <Zap className="w-3.5 h-3.5" /> Everything you need in one platform
+            className="inline-flex items-center gap-2 bg-neutral-100 border border-neutral-200 text-neutral-700 rounded-full px-4 py-1.5 text-sm font-semibold mb-6">
+            <Zap className="w-3.5 h-3.5 text-[#2563EB]" /> Everything you need in one platform
           </motion.div>
           <motion.h1 initial="hidden" animate="visible" custom={1} variants={FADE_UP}
-            className="text-5xl md:text-6xl font-serif font-bold text-foreground mb-6 leading-tight">
+            className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
             Powerful features.<br />
-            <span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">Uncompromising security.</span>
+            <span className="text-neutral-400">Uncompromising security.</span>
           </motion.h1>
           <motion.p initial="hidden" animate="visible" custom={2} variants={FADE_UP}
             className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
@@ -394,10 +394,10 @@ export default function FeaturesPage() {
           </motion.p>
           <motion.div initial="hidden" animate="visible" custom={3} variants={FADE_UP}
             className="flex flex-wrap justify-center gap-4">
-            <a href="#features-list" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+            <a href="#features-list" className="inline-flex items-center gap-2 bg-[#0A0A0A] hover:bg-[#171717] text-white px-6 py-3 rounded-lg font-semibold transition-colors">
               Explore features <ArrowRight className="w-4 h-4" />
             </a>
-            <Link href="/pricing" className="inline-flex items-center gap-2 border border-slate-200 hover:border-blue-200 text-foreground px-6 py-3 rounded-xl font-semibold transition-colors">
+            <Link href="/pricing" className="inline-flex items-center gap-2 border border-neutral-200 hover:border-neutral-400 text-foreground px-6 py-3 rounded-lg font-semibold transition-colors">
               See pricing
             </Link>
           </motion.div>
@@ -461,7 +461,7 @@ export default function FeaturesPage() {
                         {feat.tag}
                       </span>
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-5 leading-tight">
+                    <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-5 leading-tight">
                       {feat.title}
                     </h2>
                     <p className="text-lg text-muted-foreground leading-relaxed mb-8">
@@ -511,7 +511,7 @@ export default function FeaturesPage() {
         <div className="container mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} custom={0} variants={FADE_UP}
             className="text-center mb-14">
-            <h2 className="text-4xl font-serif font-bold text-foreground mb-4">And much more</h2>
+            <h2 className="text-4xl font-bold text-foreground mb-4">And much more</h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
               Dozens of thoughtful details that make every workflow faster and safer.
             </p>
@@ -553,7 +553,7 @@ export default function FeaturesPage() {
         <div className="container mx-auto px-6 max-w-4xl">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={FADE_UP}
             className="text-center mb-14">
-            <h2 className="text-4xl font-serif font-bold text-foreground mb-4">How we compare</h2>
+            <h2 className="text-4xl font-bold text-foreground mb-4">How we compare</h2>
             <p className="text-muted-foreground text-lg">See why professionals choose Luxor PDF over the alternatives.</p>
           </motion.div>
           <motion.div
@@ -568,7 +568,7 @@ export default function FeaturesPage() {
                 <tr className="bg-slate-900 text-white">
                   <th className="text-left py-4 px-6 font-semibold">Feature</th>
                   {["Luxor PDF","Adobe Acrobat","DocuSign","Others"].map(h=>(
-                    <th key={h} className={`py-4 px-4 font-semibold text-center ${h==="Luxor PDF" ? "text-blue-300" : "text-slate-400"}`}>{h}</th>
+                    <th key={h} className={`py-4 px-4 font-semibold text-center ${h==="Luxor PDF" ? "text-white" : "text-slate-400"}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -601,7 +601,7 @@ export default function FeaturesPage() {
                           transition={{ type: "spring", stiffness: 400 }}
                           className={`inline-flex items-center justify-center w-6 h-6 rounded-full ${
                             v
-                              ? ci===0 ? "bg-blue-100 text-blue-600" : "bg-emerald-50 text-emerald-500"
+                              ? ci===0 ? "bg-neutral-100 text-neutral-900" : "bg-emerald-50 text-emerald-500"
                               : "bg-slate-100 text-slate-300"
                           }`}
                         >{v ? "✓" : "✕"}</motion.span>
@@ -616,7 +616,7 @@ export default function FeaturesPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-20 bg-gradient-to-br from-blue-600 to-violet-700 overflow-hidden relative">
+      <section className="py-20 bg-[#0A0A0A] overflow-hidden relative">
         {/* Floating blobs */}
         <motion.div
           animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
@@ -630,18 +630,18 @@ export default function FeaturesPage() {
         />
         <div className="container mx-auto px-6 text-center relative z-10">
           <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={FADE_UP}
-            className="text-4xl md:text-5xl font-serif font-bold text-white mb-6">
+            className="text-4xl md:text-5xl font-bold text-white mb-6">
             Ready to get started?
           </motion.h2>
           <motion.p initial="hidden" whileInView="visible" viewport={{ once: true }} custom={1} variants={FADE_UP}
-            className="text-blue-100 text-xl mb-10 max-w-xl mx-auto">
+            className="text-neutral-300 text-xl mb-10 max-w-xl mx-auto">
             Join thousands of professionals who trust Luxor PDF to protect and manage their documents.
           </motion.p>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} custom={2} variants={FADE_UP}
             className="flex flex-wrap justify-center gap-4">
             <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 300 }}>
               <Link href="/pricing"
-                className="inline-flex items-center gap-2 bg-white text-blue-700 px-8 py-3.5 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors shadow-md">
+                className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] px-8 py-3.5 rounded-lg font-bold text-lg hover:bg-neutral-100 transition-colors shadow-md">
                 View Pricing <ArrowRight className="w-5 h-5" />
               </Link>
             </motion.div>

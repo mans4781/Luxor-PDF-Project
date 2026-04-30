@@ -22,7 +22,7 @@ export function DesktopApp() {
                 <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
               </div>
               <div className="mt-8 text-center">
-                <Monitor className="w-14 h-14 text-[#0C4782] mx-auto mb-4" strokeWidth={1.5} />
+                <Monitor className="w-14 h-14 text-[#0A0A0A] mx-auto mb-4" strokeWidth={1.5} />
                 <div className="h-2 w-32 bg-slate-200 rounded mx-auto mb-2" />
                 <div className="h-2 w-48 bg-slate-200 rounded mx-auto mb-6" />
                 <div className="grid grid-cols-3 gap-3 mt-8">
@@ -45,9 +45,9 @@ export function DesktopApp() {
               Included with every plan
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-serif text-slate-900 mb-6 tracking-[-0.02em] leading-[1.1]">
+            <h2 className="text-4xl md:text-5xl text-slate-900 mb-6 tracking-[-0.02em] leading-[1.1]">
               The native desktop app,<br/>
-              <span className="italic text-[#0C4782]">included.</span>
+              <span className="text-neutral-400 font-semibold">included.</span>
             </h2>
 
             <p className="text-lg text-slate-600 mb-8 leading-relaxed">
@@ -62,15 +62,15 @@ export function DesktopApp() {
                 { icon: Monitor, text: "Deep OS integration — file associations, shortcuts, drag & drop" }
               ].map((item, i) => (
                 <li key={i} className="flex items-center gap-3 text-slate-700">
-                  <div className="w-6 h-6 rounded-md bg-[#0C4782]/5 border border-[#0C4782]/10 flex items-center justify-center flex-shrink-0">
-                    <item.icon className="w-3.5 h-3.5 text-[#0C4782]" />
+                  <div className="w-6 h-6 rounded-md bg-[#0A0A0A]/5 border border-[#0A0A0A]/10 flex items-center justify-center flex-shrink-0">
+                    <item.icon className="w-3.5 h-3.5 text-[#0A0A0A]" />
                   </div>
                   <span className="text-[15px]">{item.text}</span>
                 </li>
               ))}
             </ul>
 
-            <Button asChild size="lg" className="h-12 px-7 text-base font-semibold bg-[#0C4782] hover:bg-[#0a3a6b] text-white rounded-lg shadow-sm group">
+            <Button asChild size="lg" className="h-12 px-7 text-base font-semibold bg-[#0A0A0A] hover:bg-[#171717] text-white rounded-lg shadow-sm group">
               <Link href="/pricing">
                 See plans
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />

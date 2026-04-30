@@ -122,12 +122,12 @@ export default function PricingPage() {
         <div className="container mx-auto px-6 relative text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium mb-6">
-              <Sparkles className="w-3.5 h-3.5 text-[#EE1125]" />
+              <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
               Subscription pricing · Cancel anytime
             </div>
-            <h1 className="text-5xl md:text-7xl font-serif text-slate-900 mb-5 tracking-[-0.02em] leading-[1.05]">
+            <h1 className="text-5xl md:text-7xl text-slate-900 mb-5 tracking-[-0.02em] leading-[1.05]">
               Simple, fair pricing.<br />
-              <span className="italic text-[#0C4782]">Start free.</span>
+              <span className="text-neutral-400 font-semibold">Start free.</span>
             </h1>
             <p className="text-lg text-slate-600 max-w-xl mx-auto mb-10">
               One subscription, all of Luxor. Reader is the core — add LuxorSign and PDF Expiry as your needs grow.
@@ -171,19 +171,19 @@ export default function PricingPage() {
                   transition={{ duration: 0.5, delay: i * 0.08 }}
                   className={`relative rounded-2xl p-8 flex flex-col ${
                     plan.highlight
-                      ? "bg-[#0C4782] text-white shadow-2xl shadow-[#0C4782]/20 ring-1 ring-[#0C4782]/30"
+                      ? "bg-[#0A0A0A] text-white shadow-2xl shadow-[#0A0A0A]/20 ring-1 ring-[#0A0A0A]/30"
                       : "bg-white border border-slate-200"
                   }`}
                 >
                   {plan.badge && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-[#EE1125] text-white text-xs font-bold uppercase tracking-wider">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-[#2563EB] text-white text-xs font-bold uppercase tracking-wider">
                       {plan.badge}
                     </div>
                   )}
 
                   <div className="mb-6">
                     <h2 className={`text-xl font-semibold mb-1 ${plan.highlight ? "text-white" : "text-slate-900"}`}>{plan.name}</h2>
-                    <p className={`text-sm ${plan.highlight ? "text-blue-100/80" : "text-slate-500"}`}>{plan.tagline}</p>
+                    <p className={`text-sm ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>{plan.tagline}</p>
                   </div>
 
                   <div className="mb-6">
@@ -191,22 +191,22 @@ export default function PricingPage() {
                       <span className={`text-5xl font-bold tracking-tight ${plan.highlight ? "text-white" : "text-slate-900"}`}>
                         {isFree ? "$0" : `$${price}`}
                       </span>
-                      <span className={`text-sm ${plan.highlight ? "text-blue-100/80" : "text-slate-500"}`}>
+                      <span className={`text-sm ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
                         {isFree ? "" : "/mo"}
                       </span>
                     </div>
                     {!isFree && yearly && (
-                      <p className={`text-xs mt-1 ${plan.highlight ? "text-blue-100/80" : "text-slate-500"}`}>
+                      <p className={`text-xs mt-1 ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
                         Billed ${price * 12}/year
                       </p>
                     )}
                     {!isFree && !yearly && (
-                      <p className={`text-xs mt-1 ${plan.highlight ? "text-blue-100/80" : "text-slate-500"}`}>
+                      <p className={`text-xs mt-1 ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
                         Billed monthly
                       </p>
                     )}
                     {isFree && (
-                      <p className={`text-xs mt-1 ${plan.highlight ? "text-blue-100/80" : "text-slate-500"}`}>
+                      <p className={`text-xs mt-1 ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
                         Free forever
                       </p>
                     )}
@@ -215,7 +215,7 @@ export default function PricingPage() {
                   <Link href={plan.ctaHref}>
                     <button className={`w-full py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 mb-7 ${
                       plan.highlight
-                        ? "bg-white text-[#0C4782] hover:bg-blue-50"
+                        ? "bg-white text-[#0A0A0A] hover:bg-neutral-100"
                         : "bg-slate-900 text-white hover:bg-slate-800"
                     }`}>
                       {plan.cta}
@@ -223,7 +223,7 @@ export default function PricingPage() {
                     </button>
                   </Link>
 
-                  <p className={`text-[11px] uppercase tracking-wider font-semibold mb-4 ${plan.highlight ? "text-blue-100/70" : "text-slate-500"}`}>
+                  <p className={`text-[11px] uppercase tracking-wider font-semibold mb-4 ${plan.highlight ? "text-neutral-400" : "text-slate-500"}`}>
                     {plan.limits}
                   </p>
 
@@ -231,11 +231,11 @@ export default function PricingPage() {
                     {plan.features.map((feature) => (
                       <div key={feature} className="flex items-start gap-2.5">
                         <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                          plan.highlight ? "bg-blue-300/30" : "bg-emerald-50"
+                          plan.highlight ? "bg-neutral-700" : "bg-emerald-50"
                         }`}>
                           <Check className={`w-2.5 h-2.5 ${plan.highlight ? "text-white" : "text-emerald-600"}`} strokeWidth={3} />
                         </div>
-                        <span className={`text-sm leading-snug ${plan.highlight ? "text-blue-50" : "text-slate-700"}`}>{feature}</span>
+                        <span className={`text-sm leading-snug ${plan.highlight ? "text-neutral-100" : "text-slate-700"}`}>{feature}</span>
                       </div>
                     ))}
                   </div>
@@ -246,7 +246,7 @@ export default function PricingPage() {
 
           <p className="text-center text-slate-500 text-sm mt-10">
             Need 100+ seats or custom Enterprise terms?{" "}
-            <a href="mailto:sales@luxorpdf.com" className="text-[#0C4782] font-semibold hover:underline">
+            <a href="mailto:sales@luxorpdf.com" className="text-[#0A0A0A] font-semibold hover:underline">
               Talk to sales →
             </a>
           </p>
@@ -258,7 +258,7 @@ export default function PricingPage() {
         <div className="container mx-auto px-6 max-w-5xl">
           <div className="text-center mb-12">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Every plan includes</p>
-            <h2 className="text-3xl md:text-4xl font-serif text-slate-900 tracking-[-0.02em]">
+            <h2 className="text-3xl md:text-4xl text-slate-900 tracking-[-0.02em]">
               The Luxor essentials.
             </h2>
           </div>
@@ -287,7 +287,7 @@ export default function PricingPage() {
         <div className="container mx-auto px-6 max-w-3xl">
           <div className="text-center mb-12">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">FAQ</p>
-            <h2 className="text-3xl md:text-4xl font-serif text-slate-900 tracking-[-0.02em]">
+            <h2 className="text-3xl md:text-4xl text-slate-900 tracking-[-0.02em]">
               Common questions.
             </h2>
           </div>
@@ -305,12 +305,12 @@ export default function PricingPage() {
       {/* CTA strip */}
       <section className="py-20 bg-slate-50 border-t border-slate-200">
         <div className="container mx-auto px-6 max-w-3xl text-center">
-          <h2 className="text-3xl md:text-5xl font-serif text-slate-900 mb-5 tracking-[-0.02em]">
+          <h2 className="text-3xl md:text-5xl text-slate-900 mb-5 tracking-[-0.02em]">
             Ready to switch to Luxor?
           </h2>
           <p className="text-slate-600 mb-8 text-lg">No credit card. No commitment. 14-day Pro trial included.</p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <Link href="/web-app" className="px-7 py-3.5 rounded-lg bg-[#0C4782] text-white font-semibold hover:bg-[#0a3a6b] transition-colors shadow-sm">
+            <Link href="/web-app" className="px-7 py-3.5 rounded-lg bg-[#0A0A0A] text-white font-semibold hover:bg-[#171717] transition-colors shadow-sm">
               Start free
             </Link>
             <a href="mailto:sales@luxorpdf.com" className="px-7 py-3.5 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-white transition-colors">

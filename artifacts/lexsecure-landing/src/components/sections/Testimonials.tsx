@@ -6,7 +6,7 @@ const TESTIMONIALS = [
     quote: "Finally, a PDF tool we can actually use. Our IT department banned cloud PDF converters years ago due to data sovereignty concerns. LuxorSecure running client-side solves everything.",
     author: "Sarah Jenkins",
     role: "Managing Partner, Jenkins & Croft Legal",
-    color: "bg-blue-50"
+    color: "bg-neutral-100"
   },
   {
     quote: "The expiry feature is brilliant for sending confidential term sheets to prospective investors. We know exactly when access is revoked, and we control it cryptographically.",
@@ -27,7 +27,7 @@ export function Testimonials() {
     <section className="py-24 bg-gray-50">
       <div className="container mx-auto px-6">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-4xl font-serif text-foreground mb-4">Trusted by Professionals</h2>
+          <h2 className="text-4xl text-foreground mb-4">Trusted by Professionals</h2>
           <p className="text-lg text-muted-foreground">Used daily by law firms, financial institutions, and security-conscious businesses.</p>
         </div>
         
@@ -46,7 +46,7 @@ export function Testimonials() {
                 "{t.quote}"
               </p>
               <div>
-                <p className="font-bold text-foreground font-serif">{t.author}</p>
+                <p className="font-bold text-foreground ">{t.author}</p>
                 <p className="text-sm text-muted-foreground">{t.role}</p>
               </div>
             </motion.div>

@@ -14,8 +14,8 @@ export function AppPreview() {
           <span className="inline-block px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium mb-4">
             See it in action
           </span>
-          <h2 className="text-4xl md:text-5xl font-serif text-slate-900 mb-4 tracking-[-0.02em]">
-            Clean. Fast. <span className="italic text-[#0C4782]">Yours.</span>
+          <h2 className="text-4xl md:text-5xl text-slate-900 mb-4 tracking-[-0.02em]">
+            Clean. Fast. <span className="text-neutral-400 font-semibold">Yours.</span>
           </h2>
           <p className="text-lg text-slate-600 leading-relaxed">
             Everything you need from a single dashboard — no clutter, no complexity. Just your tools, ready to go.
