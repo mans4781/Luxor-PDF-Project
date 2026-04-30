@@ -74,13 +74,22 @@ export function Navbar() {
     >
       <div className="container mx-auto px-6 h-20 flex items-center justify-between">
         {/* Logo */}
-        <Link href={import.meta.env.BASE_URL} className="flex items-center">
+        <Link href={import.meta.env.BASE_URL} className="group flex items-center gap-3">
           <img
-            src={`${import.meta.env.BASE_URL}brand/luxor-logo.png?v=1777537273`}
-            alt="Luxor PDF"
-            className="h-10 w-auto select-none"
+            src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=1777537273`}
+            alt=""
+            aria-hidden="true"
+            className="h-11 w-11 select-none transition-transform duration-300 group-hover:scale-105"
             draggable={false}
           />
+          <div className="flex flex-col leading-none">
+            <span className="text-[20px] font-extrabold tracking-tight text-[#DC2626]">
+              Luxor PDF
+            </span>
+            <span className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+              Secure PDF Suite
+            </span>
+          </div>
         </Link>
 
         {/* Nav links */}
