@@ -1,11 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 
-const ADMIN_TOKEN = "luxor-admin-2024";
-const LOCK_PIN = "luxor2024";
 const SIDEBAR_W = 220;
 
 interface AdminStats {
@@ -608,18 +606,34 @@ function SettingsSection({ dark, onToggleDark, onLogout, t }: { dark: boolean; o
 }
 
 // ── Login Screen ─────────────────────────────────────────────────────────────
-function LoginScreen({ onUnlock }: { onUnlock: () => void }) {
+function LoginScreen({ onUnlock }: { onUnlock: (token: string) => void }) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [shake, setShake] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const submit = () => {
-    if (pin === LOCK_PIN) { onUnlock(); }
-    else {
-      setError("Incorrect passphrase");
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
-      setPin("");
+  const submit = async () => {
+    if (!pin) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passphrase: pin }),
+      });
+      if (res.ok) {
+        const data = await res.json() as { token: string };
+        onUnlock(data.token);
+      } else {
+        setError("Incorrect passphrase");
+        setShake(true);
+        setTimeout(() => setShake(false), 500);
+        setPin("");
+      }
+    } catch {
+      setError("Unable to reach server. Try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -634,9 +648,9 @@ function LoginScreen({ onUnlock }: { onUnlock: () => void }) {
       </div>
       <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "36px 40px", width: 340, animation: shake ? "shake 0.4s ease" : undefined }}>
         <div style={{ color: "#ccc", fontSize: 14, marginBottom: 16, textAlign: "center" }}>Enter admin passphrase to continue</div>
-        <input type="password" value={pin} onChange={e => { setPin(e.target.value); setError(""); }} onKeyDown={e => e.key === "Enter" && submit()} placeholder="Passphrase" autoFocus style={{ width: "100%", padding: "10px 14px", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#fff", fontSize: 15, outline: "none", marginBottom: 12, boxSizing: "border-box" }} />
+        <input type="password" value={pin} onChange={e => { setPin(e.target.value); setError(""); }} onKeyDown={e => { if (e.key === "Enter") { void submit(); } }} placeholder="Passphrase" autoFocus style={{ width: "100%", padding: "10px 14px", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#fff", fontSize: 15, outline: "none", marginBottom: 12, boxSizing: "border-box" }} />
         {error && <div style={{ color: "#ef4444", fontSize: 12, marginBottom: 10 }}>{error}</div>}
-        <button onClick={submit} style={{ width: "100%", padding: "11px", background: "#4f8ef7", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Unlock Dashboard</button>
+        <button onClick={() => { void submit(); }} disabled={loading} style={{ width: "100%", padding: "11px", background: "#4f8ef7", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>{loading ? "Verifying…" : "Unlock Dashboard"}</button>
       </div>
       <style>{`@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }`}</style>
     </div>
@@ -644,7 +658,7 @@ function LoginScreen({ onUnlock }: { onUnlock: () => void }) {
 }
 
 // ── Main Dashboard ────────────────────────────────────────────────────────────
-function Dashboard({ onLogout, dark, onToggleDark }: { onLogout: () => void; dark: boolean; onToggleDark: () => void }) {
+function Dashboard({ onLogout, dark, onToggleDark, token }: { onLogout: () => void; dark: boolean; onToggleDark: () => void; token: string }) {
   const [section, setSection] = useState<Section>("overview");
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -652,11 +666,32 @@ function Dashboard({ onLogout, dark, onToggleDark }: { onLogout: () => void; dar
   const t = makeTheme(dark);
 
   useEffect(() => {
-    fetch("/api/admin/stats", { headers: { "x-admin-token": ADMIN_TOKEN } })
-      .then(r => r.json())
-      .then(data => { setStats(data); setLoading(false); })
-      .catch(() => { setError("Failed to load analytics."); setLoading(false); });
-  }, []);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/stats", { headers: { "x-admin-token": token } });
+        if (cancelled) return;
+        if (res.status === 401 || res.status === 403) {
+          onLogout();
+          return;
+        }
+        if (!res.ok) {
+          setError("Failed to load analytics.");
+          setLoading(false);
+          return;
+        }
+        const data = (await res.json()) as AdminStats;
+        if (cancelled) return;
+        setStats(data);
+        setLoading(false);
+      } catch {
+        if (cancelled) return;
+        setError("Failed to load analytics.");
+        setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [token, onLogout]);
 
   const sectionLabel = NAV_ITEMS.find(n => n.id === section)?.label ?? "";
 
@@ -706,17 +741,17 @@ function Dashboard({ onLogout, dark, onToggleDark }: { onLogout: () => void; dar
 
 // ── Page Root ─────────────────────────────────────────────────────────────────
 export default function AdminPage() {
-  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem("luxor_admin") === "1");
+  const [token, setToken] = useState(() => sessionStorage.getItem("luxor_admin_token") ?? "");
   const [dark, setDark] = useState(() => localStorage.getItem("luxor_admin_theme") !== "light");
 
-  const handleUnlock    = () => { sessionStorage.setItem("luxor_admin", "1"); setUnlocked(true); };
-  const handleLogout    = () => { sessionStorage.removeItem("luxor_admin"); setUnlocked(false); };
+  const handleUnlock = useCallback((t: string) => { sessionStorage.setItem("luxor_admin_token", t); setToken(t); }, []);
+  const handleLogout = useCallback(() => { sessionStorage.removeItem("luxor_admin_token"); setToken(""); }, []);
   const handleToggleDark = () => {
     const next = !dark;
     setDark(next);
     localStorage.setItem("luxor_admin_theme", next ? "dark" : "light");
   };
 
-  if (!unlocked) return <LoginScreen onUnlock={handleUnlock} />;
-  return <Dashboard onLogout={handleLogout} dark={dark} onToggleDark={handleToggleDark} />;
+  if (!token) return <LoginScreen onUnlock={handleUnlock} />;
+  return <Dashboard token={token} onLogout={handleLogout} dark={dark} onToggleDark={handleToggleDark} />;
 }

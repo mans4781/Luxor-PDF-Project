@@ -4,12 +4,16 @@ import { eq } from "drizzle-orm";
 
 const router = Router();
 
-// Simple token check — in production, use proper auth
-const ADMIN_TOKEN = "luxor-admin-2024";
+const ADMIN_TOKEN = process.env["ADMIN_TOKEN"];
+const ADMIN_PASSPHRASE = process.env["ADMIN_PASSPHRASE"];
 
 function checkAuth(req: any, res: any): boolean {
-  const token = req.headers["x-admin-token"] || req.query.token;
-  if (token !== ADMIN_TOKEN) {
+  if (!ADMIN_TOKEN) {
+    res.status(503).json({ error: "Admin access not configured" });
+    return false;
+  }
+  const token = req.headers["x-admin-token"];
+  if (!token || token !== ADMIN_TOKEN) {
     res.status(401).json({ error: "Unauthorized" });
     return false;
   }
@@ -19,7 +23,6 @@ function checkAuth(req: any, res: any): boolean {
 function generateMonthlyData() {
   const months: { month: string; revenue: number; users: number; documents: number }[] = [];
   const now = new Date();
-  // Base numbers — grow realistically over 12 months
   const baseRevenue = 3200;
   const baseUsers = 120;
   const baseDocs = 340;
@@ -38,11 +41,23 @@ function generateMonthlyData() {
   return months;
 }
 
+router.post("/admin/login", (req, res): void => {
+  if (!ADMIN_TOKEN || !ADMIN_PASSPHRASE) {
+    res.status(503).json({ error: "Admin access not configured" });
+    return;
+  }
+  const { passphrase } = req.body as { passphrase?: string };
+  if (!passphrase || passphrase !== ADMIN_PASSPHRASE) {
+    res.status(401).json({ error: "Invalid passphrase" });
+    return;
+  }
+  res.json({ token: ADMIN_TOKEN });
+});
+
 router.get("/admin/stats", async (req, res): Promise<void> => {
   if (!checkAuth(req, res)) return;
 
   try {
-    // Real data from DB
     const [visitorRow] = await db
       .select()
       .from(siteStats)
@@ -62,7 +77,6 @@ router.get("/admin/stats", async (req, res): Promise<void> => {
       else activePdfs++;
     }
 
-    // Simulated subscription/revenue data (realistic for a SaaS)
     const plans = {
       free: 684,
       pro: 312,
@@ -74,7 +88,6 @@ router.get("/admin/stats", async (req, res): Promise<void> => {
 
     const monthlyData = generateMonthlyData();
 
-    // Recent activity (simulated)
     const recentActivity = [
       { id: 1, type: "signup", user: "alex.m@gmail.com", plan: "Pro", time: "2 min ago" },
       { id: 2, type: "upgrade", user: "sarah.j@acme.com", plan: "Enterprise", time: "14 min ago" },
@@ -116,7 +129,7 @@ router.get("/admin/stats", async (req, res): Promise<void> => {
       topCountries,
     });
   } catch (err) {
-    console.error(err);
+    req.log.error({ err }, "Failed to load admin stats");
     res.status(500).json({ error: "Failed to load admin stats" });
   }
 });
