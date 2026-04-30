@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/lexsecure-landing/"
-title = "LexSecure PDF — Landing Page"
+title = "luxorpdf.com"
 version = "1.0.0"
 id = "artifacts/lexsecure-landing"
 router = "path"

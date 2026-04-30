@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/luxor-pdf/"
-title = "Luxor PDF Reader"
+title = "PDF Reader"
 version = "1.0.0"
 id = "artifacts/luxor-pdf"
 router = "path"

@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/pdf-expiry/"
-title = "PDF Expiry Tool"
+title = "PDF Security Tool"
 version = "1.0.0"
 id = "artifacts/pdf-expiry"
 router = "path"

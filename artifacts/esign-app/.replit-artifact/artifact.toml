@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/esign-app/"
-title = "LexSign — eSign App"
+title = "eSign App"
 version = "1.0.0"
 id = "artifacts/esign-app"
 router = "path"
