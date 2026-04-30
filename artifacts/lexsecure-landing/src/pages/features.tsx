@@ -262,6 +262,233 @@ function IlluCollaborate() {
   );
 }
 
+function IlluFeaturesHero() {
+  return (
+    <svg
+      viewBox="0 0 520 480"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-full h-auto max-w-[560px] mx-auto"
+      role="img"
+      aria-label="A central PDF document surrounded by floating feature badges representing security, eSignatures, search, organization and verification."
+    >
+      <defs>
+        <radialGradient id="fh-bg" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#312E81" stopOpacity="0.18" />
+          <stop offset="60%" stopColor="#2563EB" stopOpacity="0.06" />
+          <stop offset="100%" stopColor="#312E81" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="fh-doc" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#FFFFFF" />
+          <stop offset="100%" stopColor="#F8FAFC" />
+        </linearGradient>
+        <linearGradient id="fh-header" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#1E1B4B" />
+          <stop offset="100%" stopColor="#312E81" />
+        </linearGradient>
+        <linearGradient id="fh-shield" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#DC2626" />
+          <stop offset="100%" stopColor="#991B1B" />
+        </linearGradient>
+        <linearGradient id="fh-stripe" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#DC2626" />
+          <stop offset="50%" stopColor="#FB7185" />
+          <stop offset="100%" stopColor="#312E81" />
+        </linearGradient>
+      </defs>
+
+      {/* Background glow */}
+      <circle cx="260" cy="240" r="220" fill="url(#fh-bg)" />
+
+      {/* Orbital rings */}
+      <circle
+        cx="260"
+        cy="240"
+        r="190"
+        stroke="#312E81"
+        strokeOpacity="0.12"
+        strokeDasharray="2 6"
+        fill="none"
+      />
+      <circle
+        cx="260"
+        cy="240"
+        r="148"
+        stroke="#2563EB"
+        strokeOpacity="0.12"
+        strokeDasharray="2 4"
+        fill="none"
+      />
+
+      {/* Connection lines (dashed) — drawn before badges so they sit underneath */}
+      <line x1="135" y1="135" x2="200" y2="170" stroke="#DC2626" strokeOpacity="0.35" strokeDasharray="3 3" />
+      <line x1="385" y1="135" x2="320" y2="170" stroke="#2563EB" strokeOpacity="0.35" strokeDasharray="3 3" />
+      <line x1="120" y1="345" x2="200" y2="320" stroke="#059669" strokeOpacity="0.35" strokeDasharray="3 3" />
+      <line x1="400" y1="365" x2="320" y2="320" stroke="#D97706" strokeOpacity="0.35" strokeDasharray="3 3" />
+      <line x1="260" y1="60" x2="260" y2="120" stroke="#E11D48" strokeOpacity="0.35" strokeDasharray="3 3" />
+      <line x1="260" y1="370" x2="260" y2="430" stroke="#312E81" strokeOpacity="0.35" strokeDasharray="3 3" />
+
+      {/* Central PDF document */}
+      <g transform="translate(180, 120)">
+        {/* Document shadow */}
+        <rect x="6" y="10" width="160" height="220" rx="14" fill="#0F172A" opacity="0.08" />
+        {/* Document body */}
+        <rect width="160" height="220" rx="14" fill="url(#fh-doc)" stroke="#E2E8F0" strokeWidth="1.5" />
+        {/* Header bar */}
+        <path
+          d="M0 14 a14 14 0 0 1 14 -14 h132 a14 14 0 0 1 14 14 v32 h-160 z"
+          fill="url(#fh-header)"
+        />
+        <circle cx="18" cy="22" r="4" fill="#FB7185" />
+        <circle cx="32" cy="22" r="4" fill="#FBBF24" />
+        <circle cx="46" cy="22" r="4" fill="#34D399" />
+        <text x="80" y="26" fill="white" fontSize="9" fontWeight="700" fontFamily="system-ui" letterSpacing="0.5">
+          CONFIDENTIAL.PDF
+        </text>
+
+        {/* Top accent stripe */}
+        <rect x="0" y="46" width="160" height="3" fill="url(#fh-stripe)" opacity="0.9" />
+
+        {/* Content lines */}
+        <rect x="20" y="64" width="120" height="9" rx="4" fill="#312E81" opacity="0.25" />
+        <rect x="20" y="84" width="100" height="6" rx="3" fill="#94A3B8" opacity="0.45" />
+        <rect x="20" y="96" width="120" height="6" rx="3" fill="#94A3B8" opacity="0.45" />
+        <rect x="20" y="108" width="78" height="6" rx="3" fill="#94A3B8" opacity="0.45" />
+        <rect x="20" y="126" width="100" height="6" rx="3" fill="#94A3B8" opacity="0.3" />
+        <rect x="20" y="138" width="115" height="6" rx="3" fill="#94A3B8" opacity="0.3" />
+        <rect x="20" y="150" width="90" height="6" rx="3" fill="#94A3B8" opacity="0.3" />
+
+        {/* Signature line */}
+        <line x1="20" y1="180" x2="100" y2="180" stroke="#312E81" strokeOpacity="0.35" strokeDasharray="3 3" />
+        <path
+          d="M22 174 C28 168, 34 180, 42 172 C48 166, 56 180, 64 172 C70 166, 78 178, 86 172"
+          stroke="#2563EB"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <text x="20" y="195" fill="#94A3B8" fontSize="7" fontFamily="system-ui">
+          Authorized signatory
+        </text>
+
+        {/* Shield badge bottom-right */}
+        <g transform="translate(115, 158)">
+          <path
+            d="M22 0 L44 9 L44 26 C44 40 33 50 22 54 C11 50 0 40 0 26 L0 9 Z"
+            fill="url(#fh-shield)"
+          />
+          <path
+            d="M14 26 L19 31 L30 19"
+            stroke="white"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+        </g>
+      </g>
+
+      {/* Floating feature badges */}
+      {/* Top: sparkle */}
+      <g transform="translate(238, 28)">
+        <circle cx="22" cy="22" r="22" fill="white" stroke="#FB7185" strokeOpacity="0.35" />
+        <circle cx="22" cy="22" r="17" fill="#FFE4E6" />
+        <path
+          d="M22 12 L24 19 L31 22 L24 25 L22 32 L20 25 L13 22 L20 19 Z"
+          fill="#E11D48"
+        />
+      </g>
+
+      {/* Top-left: Lock (Security) */}
+      <g transform="translate(70, 80)">
+        <circle cx="32" cy="32" r="32" fill="white" stroke="#DC2626" strokeOpacity="0.35" />
+        <circle cx="32" cy="32" r="25" fill="#FEE2E2" />
+        <rect x="23" y="31" width="18" height="15" rx="2.5" fill="#DC2626" />
+        <path
+          d="M26 31 v-5 a6 6 0 0 1 12 0 v5"
+          stroke="#DC2626"
+          strokeWidth="2.2"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <circle cx="32" cy="38" r="1.8" fill="white" />
+      </g>
+
+      {/* Top-right: eSign pen */}
+      <g transform="translate(388, 80)">
+        <circle cx="32" cy="32" r="32" fill="white" stroke="#2563EB" strokeOpacity="0.35" />
+        <circle cx="32" cy="32" r="25" fill="#DBEAFE" />
+        <path d="M22 42 L38 26 L42 30 L26 46 L20 46 Z" fill="#2563EB" />
+        <line x1="36" y1="28" x2="40" y2="32" stroke="#1E40AF" strokeWidth="2" />
+        <path d="M22 50 H44" stroke="#1E40AF" strokeWidth="1.6" strokeLinecap="round" />
+      </g>
+
+      {/* Bottom-left: Search */}
+      <g transform="translate(60, 320)">
+        <circle cx="32" cy="32" r="32" fill="white" stroke="#059669" strokeOpacity="0.35" />
+        <circle cx="32" cy="32" r="25" fill="#D1FAE5" />
+        <circle cx="29" cy="29" r="9" stroke="#059669" strokeWidth="2.6" fill="none" />
+        <line
+          x1="36"
+          y1="36"
+          x2="44"
+          y2="44"
+          stroke="#059669"
+          strokeWidth="2.8"
+          strokeLinecap="round"
+        />
+      </g>
+
+      {/* Bottom-right: Layers / Organize */}
+      <g transform="translate(388, 340)">
+        <circle cx="32" cy="32" r="32" fill="white" stroke="#D97706" strokeOpacity="0.35" />
+        <circle cx="32" cy="32" r="25" fill="#FEF3C7" />
+        <path d="M32 18 L46 25 L32 32 L18 25 Z" fill="#D97706" />
+        <path
+          d="M18 31 L32 38 L46 31"
+          stroke="#D97706"
+          strokeWidth="2.2"
+          fill="none"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M18 37 L32 44 L46 37"
+          stroke="#D97706"
+          strokeWidth="2.2"
+          fill="none"
+          strokeLinejoin="round"
+          opacity="0.6"
+        />
+      </g>
+
+      {/* Bottom-middle: Verified check */}
+      <g transform="translate(238, 408)">
+        <circle cx="22" cy="22" r="22" fill="white" stroke="#312E81" strokeOpacity="0.35" />
+        <circle cx="22" cy="22" r="17" fill="#E0E7FF" />
+        <circle cx="22" cy="22" r="11" fill="#312E81" />
+        <path
+          d="M16 22 L20 26 L28 17"
+          stroke="white"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+      </g>
+
+      {/* Sparkle particles */}
+      <circle cx="100" cy="200" r="2.5" fill="#312E81" opacity="0.55" />
+      <circle cx="420" cy="200" r="2" fill="#2563EB" opacity="0.55" />
+      <circle cx="80" cy="270" r="3" fill="#FB7185" opacity="0.45" />
+      <circle cx="430" cy="270" r="2.5" fill="#059669" opacity="0.45" />
+      <circle cx="160" cy="380" r="2" fill="#D97706" opacity="0.55" />
+      <circle cx="350" cy="395" r="2.5" fill="#312E81" opacity="0.55" />
+      <circle cx="200" cy="50" r="1.8" fill="#2563EB" opacity="0.5" />
+      <circle cx="320" cy="50" r="1.8" fill="#DC2626" opacity="0.5" />
+    </svg>
+  );
+}
+
 // ── Feature data ──────────────────────────────────────────────────────────────
 const HERO_FEATURES = [
   {
@@ -378,29 +605,48 @@ export default function FeaturesPage() {
         {/* Background grid */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
           style={{ backgroundImage: "linear-gradient(#000 1px,transparent 1px),linear-gradient(90deg,#000 1px,transparent 1px)", backgroundSize: "40px 40px" }} />
-        <div className="container mx-auto px-6 text-center relative z-10">
-          <motion.div initial="hidden" animate="visible" custom={0} variants={FADE_UP}
-            className="inline-flex items-center gap-2 bg-neutral-100 border border-neutral-200 text-neutral-700 rounded-full px-4 py-1.5 text-sm font-semibold mb-6">
-            <Zap className="w-3.5 h-3.5 text-[#2563EB]" /> Everything you need in one platform
-          </motion.div>
-          <motion.h1 initial="hidden" animate="visible" custom={1} variants={FADE_UP}
-            className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
-            Powerful features.<br />
-            <span className="text-neutral-400">Uncompromising security.</span>
-          </motion.h1>
-          <motion.p initial="hidden" animate="visible" custom={2} variants={FADE_UP}
-            className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            Luxor PDF is a complete document platform — from secure sharing and eSignatures to professional annotation and enterprise encryption.
-          </motion.p>
-          <motion.div initial="hidden" animate="visible" custom={3} variants={FADE_UP}
-            className="flex flex-wrap justify-center gap-4">
-            <a href="#features-list" className="inline-flex items-center gap-2 bg-[#312E81] hover:bg-[#3730A3] text-white px-6 py-3 rounded-lg font-semibold transition-colors">
-              Explore features <ArrowRight className="w-4 h-4" />
-            </a>
-            <Link href="/pricing" className="inline-flex items-center gap-2 border border-neutral-200 hover:border-neutral-400 text-foreground px-6 py-3 rounded-lg font-semibold transition-colors">
-              See pricing
-            </Link>
-          </motion.div>
+        {/* Decorative side glows */}
+        <div aria-hidden="true" className="pointer-events-none absolute -left-40 top-1/3 h-96 w-96 rounded-full bg-[#312E81]/8 blur-3xl" />
+        <div aria-hidden="true" className="pointer-events-none absolute -right-40 top-1/4 h-96 w-96 rounded-full bg-[#DC2626]/8 blur-3xl" />
+
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Text column */}
+            <div className="text-center lg:text-left">
+              <motion.div initial="hidden" animate="visible" custom={0} variants={FADE_UP}
+                className="inline-flex items-center gap-2 bg-neutral-100 border border-neutral-200 text-neutral-700 rounded-full px-4 py-1.5 text-sm font-semibold mb-6">
+                <Zap className="w-3.5 h-3.5 text-[#2563EB]" /> Everything you need in one platform
+              </motion.div>
+              <motion.h1 initial="hidden" animate="visible" custom={1} variants={FADE_UP}
+                className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
+                Powerful features.<br />
+                <span className="text-neutral-400">Uncompromising security.</span>
+              </motion.h1>
+              <motion.p initial="hidden" animate="visible" custom={2} variants={FADE_UP}
+                className="text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 mb-10">
+                Luxor PDF is a complete document platform — from secure sharing and eSignatures to professional annotation and enterprise encryption.
+              </motion.p>
+              <motion.div initial="hidden" animate="visible" custom={3} variants={FADE_UP}
+                className="flex flex-wrap justify-center lg:justify-start gap-4">
+                <a href="#features-list" className="inline-flex items-center gap-2 bg-[#312E81] hover:bg-[#3730A3] text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                  Explore features <ArrowRight className="w-4 h-4" />
+                </a>
+                <Link href="/pricing" className="inline-flex items-center gap-2 border border-neutral-200 hover:border-neutral-400 text-foreground px-6 py-3 rounded-lg font-semibold transition-colors">
+                  See pricing
+                </Link>
+              </motion.div>
+            </div>
+
+            {/* Illustration column */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+              className="relative order-first lg:order-last"
+            >
+              <IlluFeaturesHero />
+            </motion.div>
+          </div>
         </div>
       </section>
 
