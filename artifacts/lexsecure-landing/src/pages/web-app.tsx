@@ -9,7 +9,7 @@ export default function WebAppPage() {
           <div className="bg-[#E11D48] p-1.5 rounded-md">
             <Shield className="w-4 h-4 text-white" strokeWidth={2.5} />
           </div>
-          <span className="font-bold text-base text-primary tracking-tight">Luxor PDF</span>
+          <span className="font-bold text-[18px] text-primary tracking-tight">Luxor PDF</span>
         </Link>
         <a
           href={import.meta.env.BASE_URL}

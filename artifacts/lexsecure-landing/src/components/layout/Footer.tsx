@@ -87,7 +87,7 @@ export function Footer() {
                 />
               </span>
               <div>
-                <div className="text-xl font-black tracking-tight">
+                <div className="text-[23px] font-black tracking-tight">
                   Luxor PDF
                 </div>
                 <div className="text-[10px] font-bold uppercase tracking-[0.28em] text-blue-200">

@@ -83,7 +83,7 @@ export function Navbar() {
             draggable={false}
           />
           <div className="flex flex-col leading-none">
-            <span className="text-[20px] font-extrabold tracking-tight">
+            <span className="text-[23px] font-extrabold tracking-tight">
               <span className="text-[#1e3a8a]">Luxor</span>{" "}
               <span className="text-[#DC2626]">PDF</span>
             </span>
