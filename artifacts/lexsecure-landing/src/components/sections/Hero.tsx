@@ -101,7 +101,7 @@ export function Hero() {
           >
             <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl shadow-slate-900/10 border border-slate-200 bg-white">
               <img
-                src={`${import.meta.env.BASE_URL}hero-artwork.png`}
+                src={`${import.meta.env.BASE_URL}hero-artwork.png?v=2`}
                 alt="Luxor PDF Reader interface"
                 className="w-full h-full object-cover object-center"
               />
