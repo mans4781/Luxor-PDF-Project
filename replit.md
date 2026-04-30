@@ -22,6 +22,19 @@ PDF Expiry Tool — a web application for uploading PDFs, setting expiry dates, 
 
 - **pdf-expiry** (react-vite) — Frontend web app at `/` (port 19050)
 - **api-server** (api) — Express backend at `/api` (port 8080)
+- **lexsecure-landing** (react-vite) — Luxor PDF marketing site at `/lexsecure-landing/`
+- **esign-app** (react-vite) — LexSign eSign app
+- **luxor-pdf** (react-vite) — Luxor PDF Reader
+- **mockup-sandbox** (design) — Canvas component preview server
+
+## Luxor PDF Landing — brand & layout
+
+- Palette (Scheme 1): Indigo `#312E81`, Royal Blue `#2563EB`, Coral `#FB7185`, plus Luxor red `#DC2626` used sparingly as the security/active accent (matches the LUXOR shield logo).
+- Brand assets in `artifacts/lexsecure-landing/public/brand/` — `luxor-icon.png` (512), `luxor-favicon.png` (256). Backgrounds removed via ImageMagick floodfill.
+- Section order on `landing.tsx`: Hero → AppPreview → Features → Security (indigo bg, conceptual pillars) → SecurityMetrics (light bg, animated progress bars) → DesktopApp → Testimonials → FAQ → CTA.
+- Hero (`Hero.tsx`) features: stats trio (8+ tools / 256-bit / 24/7) as `<dl>`, plus a floating "Secure PDF" red gradient card overlaying the hero artwork with PRINT/COPY Blocked chips.
+- SecurityMetrics (`SecurityMetrics.tsx`) shows four animated progress bars with `role="progressbar"` ARIA and `useReducedMotion` respect.
+- Vite configs across all 5 web artifacts use `strictPort: true` and a `noCacheDevPlugin`; dev scripts kill the port before binding.
 
 ## Key Commands
 

@@ -1,7 +1,13 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, Wrench, ShieldCheck, Clock, Shield, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+
+const HERO_STATS = [
+  { icon: Wrench,       value: "8+",       label: "PDF tools" },
+  { icon: ShieldCheck,  value: "256-bit",  label: "security-ready" },
+  { icon: Clock,        value: "24/7",     label: "document access" },
+];
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 24 },
@@ -66,6 +72,25 @@ export function Hero() {
                 Windows · macOS · Web
               </span>
             </motion.div>
+
+            {/* Stats trio */}
+            <motion.dl variants={FADE_UP} className="mt-10 grid grid-cols-3 gap-3 max-w-lg">
+              {HERO_STATS.map(({ icon: Icon, value, label }) => (
+                <div
+                  key={label}
+                  className="rounded-2xl border border-slate-200 bg-white/70 backdrop-blur px-4 py-4 hover:border-[#2563EB]/40 hover:shadow-md hover:shadow-[#2563EB]/5 transition-all duration-200"
+                >
+                  <Icon className="w-4 h-4 text-[#2563EB] mb-2" strokeWidth={2.2} aria-hidden="true" />
+                  <dt className="sr-only">{label}</dt>
+                  <dd className="text-xl font-extrabold tracking-tight text-slate-900 leading-none">
+                    {value}
+                  </dd>
+                  <p aria-hidden="true" className="mt-1.5 text-[11px] font-medium text-slate-500 leading-tight">
+                    {label}
+                  </p>
+                </div>
+              ))}
+            </motion.dl>
           </motion.div>
 
           <motion.div
@@ -90,6 +115,43 @@ export function Hero() {
                 <p className="text-sm font-bold text-slate-900">Luxor PDF Reader</p>
               </div>
             </div>
+
+            {/* Floating Secure PDF mock card */}
+            <motion.div
+              initial={{ opacity: 0, y: -16, scale: 0.94 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              aria-hidden="true"
+              className="absolute -top-4 right-2 sm:-right-4 lg:-right-8 w-[210px] sm:w-[240px] lg:w-[260px] bg-white rounded-2xl shadow-2xl shadow-slate-900/10 border border-slate-100 overflow-hidden"
+            >
+              <div className="p-4 bg-gradient-to-br from-[#DC2626] to-[#991B1B] text-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-white/15 backdrop-blur flex items-center justify-center shrink-0">
+                    <Shield className="w-5 h-5 text-white" strokeWidth={2.4} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/90">Active</p>
+                    <p className="text-sm font-extrabold leading-tight">Secure PDF</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-3 grid grid-cols-2 gap-2">
+                <div className="rounded-lg bg-rose-50 border border-rose-100 px-2.5 py-2">
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <Ban className="w-3 h-3 text-rose-600" strokeWidth={2.5} />
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-rose-700">Print</p>
+                  </div>
+                  <p className="text-[11px] font-semibold text-slate-700">Blocked</p>
+                </div>
+                <div className="rounded-lg bg-rose-50 border border-rose-100 px-2.5 py-2">
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <Ban className="w-3 h-3 text-rose-600" strokeWidth={2.5} />
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-rose-700">Copy</p>
+                  </div>
+                  <p className="text-[11px] font-semibold text-slate-700">Blocked</p>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </div>

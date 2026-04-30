@@ -4,6 +4,7 @@ import { Hero } from "@/components/sections/Hero";
 import { AppPreview } from "@/components/sections/AppPreview";
 import { Features } from "@/components/sections/Features";
 import { Security } from "@/components/sections/Security";
+import { SecurityMetrics } from "@/components/sections/SecurityMetrics";
 import { DesktopApp } from "@/components/sections/DesktopApp";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { FAQ } from "@/components/sections/FAQ";
@@ -18,6 +19,7 @@ export default function LandingPage() {
         <AppPreview />
         <Features />
         <Security />
+        <SecurityMetrics />
         <DesktopApp />
         <Testimonials />
         <FAQ />
