@@ -162,6 +162,12 @@ uri = "file://attached_assets/generated_images/logo_sentinel_shield_v2.png"
 type = "image"
 title = "Sentinel Shield refined with red"
 
+[[generated]]
+id = "Kvjs5WCqmX63cqDOuNXqr"
+uri = "file://attached_assets/generated_images/logo_sentinel_shield_v3.png"
+type = "image"
+title = "Sentinel Shield full red"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
