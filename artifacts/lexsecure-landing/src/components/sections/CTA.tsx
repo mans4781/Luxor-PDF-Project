@@ -12,7 +12,7 @@ export function CTA() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mx-auto rounded-3xl bg-[#0A0A0A] relative overflow-hidden p-12 md:p-20"
+          className="max-w-5xl mx-auto rounded-3xl bg-[#312E81] relative overflow-hidden p-12 md:p-20"
         >
           {/* Decorative gradient */}
           <div className="absolute inset-0 pointer-events-none opacity-30">
@@ -32,7 +32,7 @@ export function CTA() {
               </p>
             </div>
             <div className="flex flex-col gap-3">
-              <Button asChild size="lg" className="h-14 px-8 text-base font-semibold bg-white text-[#0A0A0A] hover:bg-neutral-100 rounded-lg shadow-xl group">
+              <Button asChild size="lg" className="h-14 px-8 text-base font-semibold bg-white text-[#312E81] hover:bg-neutral-100 rounded-lg shadow-xl group">
                 <Link href="/pricing">
                   Start free
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />

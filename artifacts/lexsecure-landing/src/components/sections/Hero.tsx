@@ -25,6 +25,7 @@ export function Hero() {
             className="lg:col-span-7"
           >
             <motion.div variants={FADE_UP} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium tracking-tight mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FB7185]" />
               <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
               <span>The Luxor Suite · Now in subscription</span>
             </motion.div>
@@ -40,7 +41,7 @@ export function Hero() {
             </motion.p>
 
             <motion.div variants={FADE_UP} className="flex flex-col sm:flex-row items-start gap-4">
-              <Button asChild size="lg" className="w-full sm:w-auto h-12 px-7 text-base font-semibold bg-[#0A0A0A] hover:bg-[#171717] text-white rounded-lg shadow-sm group">
+              <Button asChild size="lg" className="w-full sm:w-auto h-12 px-7 text-base font-semibold bg-[#312E81] hover:bg-[#3730A3] text-white rounded-lg shadow-sm group">
                 <Link href="/pricing">
                   Start free
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />

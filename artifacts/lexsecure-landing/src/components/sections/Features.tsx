@@ -98,8 +98,8 @@ export function Features() {
               }}
               className="group p-8 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-lg hover:shadow-slate-900/5 transition-all duration-300"
             >
-              <div className="w-11 h-11 rounded-xl bg-[#0A0A0A]/5 border border-[#0A0A0A]/10 flex items-center justify-center mb-5">
-                <feature.icon className="w-5 h-5 text-[#0A0A0A]" strokeWidth={2} />
+              <div className="w-11 h-11 rounded-xl bg-[#312E81]/5 border border-[#312E81]/10 flex items-center justify-center mb-5">
+                <feature.icon className="w-5 h-5 text-[#312E81]" strokeWidth={2} />
               </div>
               <h3 className="text-xl font-semibold text-slate-900 mb-2 tracking-tight">{feature.title}</h3>
               <p className="text-slate-600 leading-relaxed text-[15px]">{feature.description}</p>
@@ -125,7 +125,7 @@ export function Features() {
               </div>
               <Link
                 href="/pricing"
-                className="inline-flex items-center gap-2 text-[#0A0A0A] font-semibold hover:gap-3 transition-all"
+                className="inline-flex items-center gap-2 text-[#312E81] font-semibold hover:gap-3 transition-all"
               >
                 See all add-ons
                 <ArrowRight className="w-4 h-4" />

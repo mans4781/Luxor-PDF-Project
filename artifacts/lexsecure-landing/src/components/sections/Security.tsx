@@ -3,7 +3,7 @@ import { ShieldAlert, ServerOff, Cpu } from "lucide-react";
 
 export function Security() {
   return (
-    <section id="security" className="py-24 bg-foreground text-background overflow-hidden relative">
+    <section id="security" className="py-24 bg-[#312E81] text-white overflow-hidden relative">
       <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
       
       <div className="container mx-auto px-6 relative z-10">

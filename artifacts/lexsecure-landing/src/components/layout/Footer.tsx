@@ -5,7 +5,7 @@ export function Footer() {
   const visitorCount = useVisitorCount();
 
   return (
-    <footer className="bg-foreground text-background py-20">
+    <footer className="bg-[#312E81] text-white py-20">
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-2">

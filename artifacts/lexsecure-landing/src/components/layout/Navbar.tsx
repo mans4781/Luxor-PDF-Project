@@ -51,7 +51,7 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const linkCls = "text-[15px] font-medium text-slate-700 hover:text-[#0A0A0A] transition-colors";
+  const linkCls = "text-[15px] font-medium text-slate-700 hover:text-[#312E81] transition-colors";
 
   return (
     <motion.header
@@ -109,8 +109,8 @@ export function Navbar() {
                         onClick={() => setProductsOpen(false)}
                         className="flex items-center gap-3 rounded-xl px-3 py-3 hover:bg-slate-50 transition-colors duration-150"
                       >
-                        <div className="w-10 h-10 rounded-lg bg-[#0A0A0A]/5 border border-[#0A0A0A]/10 flex items-center justify-center shrink-0">
-                          <Icon size={18} className="text-[#0A0A0A]" strokeWidth={2} />
+                        <div className="w-10 h-10 rounded-lg bg-[#312E81]/5 border border-[#312E81]/10 flex items-center justify-center shrink-0">
+                          <Icon size={18} className="text-[#312E81]" strokeWidth={2} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
@@ -142,13 +142,13 @@ export function Navbar() {
           <Button
             variant="ghost"
             onClick={() => setLoginOpen(true)}
-            className="text-[15px] font-medium text-slate-700 hover:text-[#0A0A0A] hover:bg-slate-100 hidden sm:inline-flex"
+            className="text-[15px] font-medium text-slate-700 hover:text-[#312E81] hover:bg-slate-100 hidden sm:inline-flex"
           >
             Sign in
           </Button>
           <Button
             asChild
-            className="text-[15px] font-semibold bg-[#0A0A0A] hover:bg-[#171717] text-white shadow-sm rounded-lg hidden sm:inline-flex"
+            className="text-[15px] font-semibold bg-[#312E81] hover:bg-[#3730A3] text-white shadow-sm rounded-lg hidden sm:inline-flex"
           >
             <Link href="/pricing">Start free →</Link>
           </Button>

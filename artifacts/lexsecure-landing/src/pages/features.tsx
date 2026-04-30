@@ -394,7 +394,7 @@ export default function FeaturesPage() {
           </motion.p>
           <motion.div initial="hidden" animate="visible" custom={3} variants={FADE_UP}
             className="flex flex-wrap justify-center gap-4">
-            <a href="#features-list" className="inline-flex items-center gap-2 bg-[#0A0A0A] hover:bg-[#171717] text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+            <a href="#features-list" className="inline-flex items-center gap-2 bg-[#312E81] hover:bg-[#3730A3] text-white px-6 py-3 rounded-lg font-semibold transition-colors">
               Explore features <ArrowRight className="w-4 h-4" />
             </a>
             <Link href="/pricing" className="inline-flex items-center gap-2 border border-neutral-200 hover:border-neutral-400 text-foreground px-6 py-3 rounded-lg font-semibold transition-colors">
@@ -405,7 +405,7 @@ export default function FeaturesPage() {
       </section>
 
       {/* ── Stats bar ── */}
-      <section className="bg-slate-900 py-10">
+      <section className="bg-[#312E81] py-10">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {STATS.map((s, i) => (
@@ -565,7 +565,7 @@ export default function FeaturesPage() {
           >
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-900 text-white">
+                <tr className="bg-[#312E81] text-white">
                   <th className="text-left py-4 px-6 font-semibold">Feature</th>
                   {["Luxor PDF","Adobe Acrobat","DocuSign","Others"].map(h=>(
                     <th key={h} className={`py-4 px-4 font-semibold text-center ${h==="Luxor PDF" ? "text-white" : "text-slate-400"}`}>{h}</th>
@@ -616,7 +616,7 @@ export default function FeaturesPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-20 bg-[#0A0A0A] overflow-hidden relative">
+      <section className="py-20 bg-[#312E81] overflow-hidden relative">
         {/* Floating blobs */}
         <motion.div
           animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
@@ -641,7 +641,7 @@ export default function FeaturesPage() {
             className="flex flex-wrap justify-center gap-4">
             <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 300 }}>
               <Link href="/pricing"
-                className="inline-flex items-center gap-2 bg-white text-[#0A0A0A] px-8 py-3.5 rounded-lg font-bold text-lg hover:bg-neutral-100 transition-colors shadow-md">
+                className="inline-flex items-center gap-2 bg-white text-[#312E81] px-8 py-3.5 rounded-lg font-bold text-lg hover:bg-neutral-100 transition-colors shadow-md">
                 View Pricing <ArrowRight className="w-5 h-5" />
               </Link>
             </motion.div>

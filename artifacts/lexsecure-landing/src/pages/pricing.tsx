@@ -171,12 +171,12 @@ export default function PricingPage() {
                   transition={{ duration: 0.5, delay: i * 0.08 }}
                   className={`relative rounded-2xl p-8 flex flex-col ${
                     plan.highlight
-                      ? "bg-[#0A0A0A] text-white shadow-2xl shadow-[#0A0A0A]/20 ring-1 ring-[#0A0A0A]/30"
+                      ? "bg-[#312E81] text-white shadow-2xl shadow-[#312E81]/20 ring-1 ring-[#312E81]/30"
                       : "bg-white border border-slate-200"
                   }`}
                 >
                   {plan.badge && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-[#2563EB] text-white text-xs font-bold uppercase tracking-wider">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-[#FB7185] text-[#7F1D1D] text-xs font-bold uppercase tracking-wider shadow-md shadow-[#FB7185]/30">
                       {plan.badge}
                     </div>
                   )}
@@ -215,8 +215,8 @@ export default function PricingPage() {
                   <Link href={plan.ctaHref}>
                     <button className={`w-full py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 mb-7 ${
                       plan.highlight
-                        ? "bg-white text-[#0A0A0A] hover:bg-neutral-100"
-                        : "bg-slate-900 text-white hover:bg-slate-800"
+                        ? "bg-white text-[#312E81] hover:bg-neutral-100"
+                        : "bg-[#312E81] text-white hover:bg-[#3730A3]"
                     }`}>
                       {plan.cta}
                       <ArrowRight className="w-4 h-4" />
@@ -246,7 +246,7 @@ export default function PricingPage() {
 
           <p className="text-center text-slate-500 text-sm mt-10">
             Need 100+ seats or custom Enterprise terms?{" "}
-            <a href="mailto:sales@luxorpdf.com" className="text-[#0A0A0A] font-semibold hover:underline">
+            <a href="mailto:sales@luxorpdf.com" className="text-[#312E81] font-semibold hover:underline">
               Talk to sales →
             </a>
           </p>
@@ -310,7 +310,7 @@ export default function PricingPage() {
           </h2>
           <p className="text-slate-600 mb-8 text-lg">No credit card. No commitment. 14-day Pro trial included.</p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <Link href="/web-app" className="px-7 py-3.5 rounded-lg bg-[#0A0A0A] text-white font-semibold hover:bg-[#171717] transition-colors shadow-sm">
+            <Link href="/web-app" className="px-7 py-3.5 rounded-lg bg-[#312E81] text-white font-semibold hover:bg-[#3730A3] transition-colors shadow-sm">
               Start free
             </Link>
             <a href="mailto:sales@luxorpdf.com" className="px-7 py-3.5 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-white transition-colors">
