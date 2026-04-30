@@ -143,3 +143,9 @@ id = "tpzh8-KQdsStaYCcnz1u5"
 uri = "file://electron/dist/LexSecurePDF-Windows.zip"
 type = "unspecified"
 title = "LexSecure PDF — Windows Desktop App"
+
+[[outputs]]
+id = "vumKMT_rhBk94SkU-1qh7"
+uri = "file://screenshots/landing-full.jpg"
+type = "image"
+title = "LexSecure Landing Page — top sections"
