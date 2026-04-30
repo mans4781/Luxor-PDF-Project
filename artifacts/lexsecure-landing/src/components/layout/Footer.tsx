@@ -88,7 +88,8 @@ export function Footer() {
               </span>
               <div>
                 <div className="text-[23px] font-black tracking-tight">
-                  Luxor PDF
+                  <span className="text-[#60a5fa]">Luxor</span>{" "}
+                  <span className="text-[#DC2626]">PDF</span>
                 </div>
                 <div className="text-[10px] font-bold uppercase tracking-[0.28em] text-blue-200">
                   Secure PDF Suite
