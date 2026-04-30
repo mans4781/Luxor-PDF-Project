@@ -2,7 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const { v4: uuidv4 } = require("uuid");
+const crypto = require("crypto");
 const JsonDB = require("./db");
 
 const PORT = parseInt(process.env.PORT || "47832", 10);
@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, db.getPdfsDir()),
   filename: (_req, file, cb) => {
-    const unique = `${Date.now()}-${uuidv4().slice(0, 8)}-${file.originalname}`;
+    const unique = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}-${file.originalname}`;
     cb(null, unique);
   },
 });
