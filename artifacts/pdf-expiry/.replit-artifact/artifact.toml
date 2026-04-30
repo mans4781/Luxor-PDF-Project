@@ -1,5 +1,5 @@
 kind = "web"
-previewPath = "/"
+previewPath = "/pdf-expiry/"
 title = "PDF Expiry Tool"
 version = "1.0.0"
 id = "artifacts/pdf-expiry"
@@ -11,21 +11,12 @@ version = "1.0.0"
 
 [[services]]
 name = "web"
-paths = [ "/" ]
+paths = [ "/pdf-expiry/" ]
 localPort = 19050
 
 [services.development]
 run = "pnpm --filter @workspace/pdf-expiry run dev"
 
-[services.production]
-build = [ "pnpm", "--filter", "@workspace/pdf-expiry", "run", "build" ]
-publicDir = "artifacts/pdf-expiry/dist/public"
-serve = "static"
-
-[[services.production.rewrites]]
-from = "/*"
-to = "/index.html"
-
 [services.env]
 PORT = "19050"
-BASE_PATH = "/"
+BASE_PATH = "/pdf-expiry/"
