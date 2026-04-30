@@ -79,7 +79,7 @@ export function Navbar() {
             src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=1777537273`}
             alt=""
             aria-hidden="true"
-            className="h-11 w-11 select-none transition-transform duration-300 group-hover:scale-105"
+            className="h-[53px] w-[53px] select-none transition-transform duration-300 group-hover:scale-105"
             draggable={false}
           />
           <div className="flex flex-col leading-none">

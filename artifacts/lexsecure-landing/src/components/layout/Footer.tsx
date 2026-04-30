@@ -78,11 +78,11 @@ export function Footer() {
               className="flex items-center gap-3 text-left group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FB7185] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1e1b4b]"
               aria-label="Luxor PDF — home"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 backdrop-blur ring-1 ring-white/15 transition-transform duration-300 group-hover:scale-105">
+              <span className="flex h-[53px] w-[53px] items-center justify-center rounded-xl bg-white/10 backdrop-blur ring-1 ring-white/15 transition-transform duration-300 group-hover:scale-105">
                 <img
                   src={`${import.meta.env.BASE_URL}brand/luxor-icon.png`}
                   alt=""
-                  className="h-7 w-7 select-none"
+                  className="h-[34px] w-[34px] select-none"
                   draggable={false}
                 />
               </span>

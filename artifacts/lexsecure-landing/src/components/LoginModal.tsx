@@ -136,7 +136,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
                     <img
                       src={`${import.meta.env.BASE_URL}brand/luxor-logo.png?v=1777537273`}
                       alt="Luxor PDF"
-                      className="h-8 w-auto select-none"
+                      className="h-[38px] w-auto select-none"
                       draggable={false}
                     />
                   </div>
