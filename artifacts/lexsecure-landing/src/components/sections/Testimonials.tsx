@@ -40,7 +40,7 @@ function initials(name: string) {
 
 export function Testimonials() {
   return (
-    <section className="py-24 bg-slate-50 relative overflow-hidden">
+    <section className="py-24 bg-gradient-to-b from-rose-50/40 via-white to-rose-50/30 relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] bg-gradient-radial from-[#312E81]/[0.03] via-transparent to-transparent pointer-events-none" />
 
       <div className="container mx-auto px-6 relative">

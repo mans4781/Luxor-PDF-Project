@@ -40,7 +40,7 @@ const FAQS = [
 
 export function FAQ() {
   return (
-    <section className="py-24 bg-white">
+    <section className="py-24 bg-gradient-to-b from-white via-blue-50/30 to-white">
       <div className="container mx-auto px-6 max-w-3xl">
         <div className="text-center mb-14">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#312E81]/5 border border-[#312E81]/15 text-[#312E81] text-xs font-medium mb-5">

@@ -50,7 +50,7 @@ export function SecurityMetrics() {
   return (
     <section
       id="security-metrics"
-      className="relative py-24 bg-gradient-to-br from-slate-50 via-white to-slate-50 overflow-hidden"
+      className="relative py-24 bg-gradient-to-br from-emerald-50/40 via-white to-blue-50/40 overflow-hidden"
     >
       <div className="absolute inset-0 pointer-events-none opacity-60">
         <div className="absolute top-1/4 -left-24 w-96 h-96 bg-[#312E81]/5 rounded-full blur-3xl" />

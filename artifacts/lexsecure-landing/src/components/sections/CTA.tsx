@@ -5,7 +5,7 @@ import { Link } from "wouter";
 
 export function CTA() {
   return (
-    <section className="py-24 md:py-32 relative overflow-hidden bg-white border-t border-slate-100">
+    <section className="py-24 md:py-32 relative overflow-hidden bg-gradient-to-b from-white via-indigo-50/30 to-white border-t border-slate-100">
       <div className="container mx-auto px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

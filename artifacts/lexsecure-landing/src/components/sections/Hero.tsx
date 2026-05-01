@@ -16,7 +16,7 @@ const FADE_UP = {
 
 export function Hero() {
   return (
-    <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-white">
+    <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-br from-blue-50/60 via-white to-rose-50/40">
       <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute top-[-15%] right-[-10%] w-[55%] h-[60%] bg-[#EAF2FB] rounded-full filter blur-[120px] opacity-80" />
         <div className="absolute bottom-[-15%] left-[-10%] w-[45%] h-[50%] bg-[#FDECEE] rounded-full filter blur-[120px] opacity-70" />

@@ -119,7 +119,7 @@ export function WorkflowGrid() {
     <section
       id="workflow"
       aria-labelledby="workflow-heading"
-      className="py-24 md:py-32 bg-gradient-to-b from-slate-50 via-white to-slate-50 border-t border-slate-100 relative overflow-hidden"
+      className="py-24 md:py-32 bg-gradient-to-b from-indigo-50/50 via-white to-blue-50/40 border-t border-slate-100 relative overflow-hidden"
     >
       {/* Section-level decorative glows */}
       <div

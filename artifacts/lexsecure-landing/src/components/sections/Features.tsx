@@ -135,7 +135,7 @@ export function Features() {
   return (
     <section
       id="features"
-      className="relative py-24 md:py-32 bg-gradient-to-b from-white via-slate-50/40 to-white border-t border-slate-100 overflow-hidden"
+      className="relative py-24 md:py-32 bg-gradient-to-b from-rose-50/30 via-white to-amber-50/30 border-t border-slate-100 overflow-hidden"
     >
       {/* Section-level decorative glows */}
       <div

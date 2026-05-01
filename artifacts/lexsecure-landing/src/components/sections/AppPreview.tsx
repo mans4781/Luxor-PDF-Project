@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export function AppPreview() {
   return (
-    <section className="py-20 md:py-24 bg-white overflow-hidden border-t border-slate-100">
+    <section className="py-20 md:py-24 bg-gradient-to-b from-white via-slate-50/60 to-white overflow-hidden border-t border-slate-100">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
