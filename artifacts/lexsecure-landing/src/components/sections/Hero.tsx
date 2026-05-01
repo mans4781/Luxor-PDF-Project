@@ -95,8 +95,9 @@ export function Hero() {
 
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
+            animate={{ opacity: 1, scale: 1.2 }}
             transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            style={{ transformOrigin: "right center" }}
             className="lg:col-span-5 relative"
           >
             <div className="aspect-[3/2] rounded-2xl overflow-hidden shadow-2xl shadow-slate-900/10 border border-slate-200 bg-gradient-to-br from-blue-50 to-rose-50">
