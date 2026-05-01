@@ -99,16 +99,16 @@ export function Hero() {
             transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="lg:col-span-5 relative"
           >
-            <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl shadow-slate-900/10 border border-slate-200 bg-white">
+            <div className="aspect-[3/2] rounded-2xl overflow-hidden shadow-2xl shadow-slate-900/10 border border-slate-200 bg-gradient-to-br from-blue-50 to-rose-50">
               <img
-                src={`${import.meta.env.BASE_URL}hero-artwork.png?v=2`}
-                alt="Luxor PDF Reader interface"
+                src={`${import.meta.env.BASE_URL}hero-artwork.png?v=3`}
+                alt="Luxor PDF — secure document tools"
                 className="w-full h-full object-cover object-center"
               />
             </div>
             <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-xl shadow-xl shadow-slate-900/5 border border-slate-100 flex items-center gap-3">
               <div className="w-10 h-10 bg-[#FDECEE] rounded-lg flex items-center justify-center">
-                <span className="text-[#2563EB] text-lg font-black">L</span>
+                <span className="text-[#DC2626] text-lg font-black">L</span>
               </div>
               <div>
                 <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Flagship</p>
