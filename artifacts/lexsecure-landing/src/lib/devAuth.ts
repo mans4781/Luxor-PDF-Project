@@ -6,7 +6,7 @@
 //     For real production protection, add a server-side check.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const DEV_PASSWORD = "luxor2026";
+export const DEV_PASSWORD = "Delux**2026#SSE";
 
 const STORAGE_KEY = "luxor-dev-auth";
 

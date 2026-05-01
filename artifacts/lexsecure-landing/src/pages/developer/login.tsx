@@ -159,8 +159,7 @@ export default function DeveloperLoginPage() {
               </div>
               <p className="mt-1.5 text-[11px] text-slate-500 flex items-center gap-1.5">
                 <KeyRound className="w-3 h-3" />
-                Default password is <code className="px-1 py-0.5 rounded bg-slate-100 font-mono text-[10px] text-slate-700">luxor2026</code>
-                <span className="text-slate-400">— change in <code className="font-mono">src/lib/devAuth.ts</code></span>
+                Use the developer password configured in <code className="px-1 py-0.5 rounded bg-slate-100 font-mono text-[10px] text-slate-700">src/lib/devAuth.ts</code>
               </p>
             </div>
 
