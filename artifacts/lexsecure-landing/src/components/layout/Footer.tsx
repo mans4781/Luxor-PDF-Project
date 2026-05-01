@@ -23,6 +23,7 @@ const RESOURCE_LINKS: LinkItem[] = [
   { label: "Help Center", href: "/contact" },
   { label: "Documentation", href: "/features" },
   { label: "Security Guide", href: "/#security" },
+  { label: "Brand Assets", href: "/brand" },
   { label: "Release Notes", href: "/about" },
 ];
 
