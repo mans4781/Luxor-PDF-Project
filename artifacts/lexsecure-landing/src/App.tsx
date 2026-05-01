@@ -14,6 +14,8 @@ import ESignPage from "@/pages/products/esign";
 import PdfSecurityPage from "@/pages/products/pdf-security";
 import AdminPage from "@/pages/admin";
 import FeaturesPage from "@/pages/features";
+import DeveloperLoginPage from "@/pages/developer/login";
+import DeveloperDashboardPage from "@/pages/developer/dashboard";
 import NotFound from "@/pages/not-found";
 import { Chatbot } from "@/components/Chatbot";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -42,6 +44,9 @@ function Router() {
       <Route path="/products/pdf-security" component={PdfSecurityPage} />
       <Route path="/features" component={FeaturesPage} />
       <Route path="/admin" component={AdminPage} />
+      <Route path="/developer/login" component={DeveloperLoginPage} />
+      <Route path="/developer/dashboard" component={DeveloperDashboardPage} />
+      <Route path="/developer" component={DeveloperLoginPage} />
       <Route component={NotFound} />
     </Switch>
   );
