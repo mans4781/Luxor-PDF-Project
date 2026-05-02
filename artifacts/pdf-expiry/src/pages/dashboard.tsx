@@ -565,6 +565,19 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* ── Left: tool list ── */}
         <aside className="lg:col-span-4 xl:col-span-3 flex flex-col gap-2.5">
+          <div className="mb-1">
+            <h2 className="text-[18px] font-extrabold tracking-tight text-slate-900">
+              Your{" "}
+              <span className="bg-gradient-to-r from-[#1e3a8a] to-[#DC2626] bg-clip-text text-transparent">
+                PDF Secure
+              </span>{" "}
+              Toolkit
+            </h2>
+            <p className="mt-1 text-[12px] text-slate-500 leading-relaxed">
+              Edit, convert and secure documents — everything runs locally in
+              your browser for complete privacy.
+            </p>
+          </div>
           {TOOLS.map((item) => {
             const Icon = item.icon;
             const isActive = active === item.key;
