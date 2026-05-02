@@ -43,7 +43,7 @@ export default defineConfig({
   base: basePath,
   plugins: [
     react(),
-    tailwindcss(),
+    tailwindcss({ optimize: false }),
     runtimeErrorOverlay(),
     noCacheDevPlugin,
     ...(process.env.NODE_ENV !== "production" &&

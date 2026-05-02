@@ -76,6 +76,8 @@
   },
   "dependencies": {
     "@cantoo/pdf-lib": "^2.6.5",
+    "@clerk/react": "^6.5.0",
+    "@clerk/themes": "^2.4.57",
     "docx": "^9.6.1",
     "jszip": "^3.10.1",
     "pdf-lib": "^1.17.1",

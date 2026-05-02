@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { ShieldCheck } from "lucide-react";
+import { AccountMenu } from "@/components/account-menu";
 
 export function Layout({ children }: { children: ReactNode }) {
   const baseUrl = import.meta.env.BASE_URL;
@@ -29,9 +30,12 @@ export function Layout({ children }: { children: ReactNode }) {
             </div>
           </a>
 
-          <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1.5">
-            <ShieldCheck className="w-3.5 h-3.5" strokeWidth={2.25} />
-            <span>Processed in your browser · Private by design</span>
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1.5">
+              <ShieldCheck className="w-3.5 h-3.5" strokeWidth={2.25} />
+              <span>Processed in your browser · Private by design</span>
+            </div>
+            <AccountMenu />
           </div>
         </div>
       </header>

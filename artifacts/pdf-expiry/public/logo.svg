@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 64" width="240" height="64">
+  <rect x="2" y="8" width="48" height="48" rx="10" fill="#fff" stroke="#DC2626" stroke-opacity=".5" stroke-width="2"/>
+  <text x="26" y="40" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="20" fill="#1e3a8a">L</text>
+  <text x="38" y="40" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="20" fill="#DC2626">P</text>
+  <text x="64" y="32" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="22" fill="#1e3a8a">Luxor</text>
+  <text x="138" y="32" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="22" fill="#DC2626">PDF</text>
+  <text x="64" y="50" font-family="Inter, system-ui, sans-serif" font-weight="600" font-size="9" letter-spacing="1.5" fill="#64748b">SECURE PDF SUITE</text>
+</svg>

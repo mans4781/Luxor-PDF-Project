@@ -65,4 +65,16 @@ The server stores PDFs on disk under `/uploads/`. On download:
 
 - `pdfs` table: id, original_name, stored_path, file_size, expiry_date, created_at, updated_at
 
+## Authentication (Clerk)
+
+- `pdf-expiry` artifact uses Replit-managed Clerk Auth (provisioned via `setupClerkWhitelabelAuth`).
+- Server: `artifacts/api-server/src/app.ts` mounts `clerkProxyMiddleware()` at `CLERK_PROXY_PATH` BEFORE body parsers, then `clerkMiddleware()` after CORS/parsers. `getAuth(req)` available on requests.
+- Client: `artifacts/pdf-expiry/src/App.tsx` wraps app in `<ClerkProvider>` with branded shadcn theme; routes `/sign-in/*?` and `/sign-up/*?` use `routing="path"` with full base-path-prefixed `path` props.
+- Vite v4 layer order set in `index.css` (`@layer theme, base, clerk, components, utilities;`) and `tailwindcss({ optimize: false })` in `vite.config.ts` — required for Clerk styles to survive prod builds.
+- Branded SVG logo at `artifacts/pdf-expiry/public/logo.svg`. Appearance object in `src/lib/clerk-appearance.ts` (brand: indigo `#1e3a8a`, red `#DC2626`, Inter font).
+- Top-right account UI in `src/components/account-menu.tsx`: signed-out shows "Sign in" + "Create account"; signed-in shows avatar (or initials) dropdown with name/email, "Manage account" (opens Clerk UserProfile modal), and "Sign out".
+- Home page (`/`) remains publicly accessible per skill guidance — no auth gate on landing.
+- Auth env vars (auto-set, never commit): `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`. In prod, `VITE_CLERK_PROXY_URL` is set automatically.
+- Not yet wired: Stripe subscription billing, paywall gating on premium tabs, 11-day grace period logic.
+
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
