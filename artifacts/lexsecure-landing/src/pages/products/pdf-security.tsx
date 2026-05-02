@@ -562,7 +562,7 @@ export default function PdfSecurityPage() {
               { role: "HR & recruiting", use: "Distribute offer letters that lock themselves if the candidate doesn't accept by the deadline.",   icon: Clock },
               { role: "Finance & audit", use: "Share quarterly statements with print blocking and a tight expiry — no copies floating around.",   icon: FileLock2 },
               { role: "Consultants",     use: "Deliver proposals with a kill switch. Lose the lead? Revoke the link and the deck is gone.",       icon: Zap },
-              { role: "Publishers",      use: "Send pre-release manuscripts and review galleys with a hard embargo date. When the embargo lifts — or a draft leaks — revoke instantly. No early reviews, no pirated PDFs in circulation.", icon: Newspaper },
+              { role: "Publishers",      use: "Send review galleys with a hard embargo date. Revoke the link the moment a draft leaks early.",                                  icon: Newspaper },
             ].map(({ role, use, icon: Icon }) => (
               <motion.div
                 key={role}
