@@ -104,7 +104,7 @@ function RightPanel({ active }: { active: ToolKey | null }) {
       {active === "convert-to" && (
         <ConvertToolContent
           defaultTab="images-to-pdf"
-          tabs={["images-to-pdf"]}
+          tabs={["images-to-pdf", "word-to-pdf", "excel-to-pdf"]}
         />
       )}
       {active === "secure-pdf" && <SecurePdfContent />}

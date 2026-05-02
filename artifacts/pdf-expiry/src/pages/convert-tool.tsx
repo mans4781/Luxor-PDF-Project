@@ -48,7 +48,7 @@ function readAsDataURL(file: File): Promise<string> {
 
 // saveFile is imported from @/lib/save-file — opens a native Save As dialog
 
-type ConvertColorScheme = "emerald" | "orange" | "amber" | "green";
+type ConvertColorScheme = "emerald" | "orange" | "amber" | "green" | "sky" | "lime";
 
 const convertDropColors: Record<ConvertColorScheme, {
   drag: string; idle: string; icon: string; iconBg: string; label: string; hint: string;
@@ -76,6 +76,18 @@ const convertDropColors: Record<ConvertColorScheme, {
     idle: "border-green-200 hover:border-green-500 hover:bg-green-50/60 bg-gradient-to-br from-green-50/50 to-emerald-50/30",
     icon: "text-white", iconBg: "bg-gradient-to-br from-green-600 to-emerald-700",
     label: "text-green-700", hint: "text-green-500",
+  },
+  sky: {
+    drag: "border-sky-500 bg-sky-50 scale-[1.01]",
+    idle: "border-sky-200 hover:border-sky-500 hover:bg-sky-50/60 bg-gradient-to-br from-sky-50/50 to-blue-50/30",
+    icon: "text-white", iconBg: "bg-gradient-to-br from-sky-600 to-blue-700",
+    label: "text-sky-700", hint: "text-sky-500",
+  },
+  lime: {
+    drag: "border-lime-500 bg-lime-50 scale-[1.01]",
+    idle: "border-lime-200 hover:border-lime-500 hover:bg-lime-50/60 bg-gradient-to-br from-lime-50/50 to-green-50/30",
+    icon: "text-white", iconBg: "bg-gradient-to-br from-lime-600 to-green-700",
+    label: "text-lime-700", hint: "text-lime-500",
   },
 };
 
@@ -246,6 +258,357 @@ function ImagesToPdf() {
       >
         {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Converting...</> : <><Download className="w-4 h-4 mr-2" />Convert to PDF &amp; Download</>}
       </Button>
+    </div>
+  );
+}
+
+// ─── Word → PDF ───────────────────────────────────────────────────────────────
+
+function WordToPdf() {
+  const [file, setFile] = useState<File | null>(null);
+  const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+
+  function handleFile(files: File[]) {
+    const f = files[0];
+    if (!f) return;
+    setError(null);
+    setDone(false);
+    setProgress("");
+    if (!/\.docx$/i.test(f.name)) {
+      setFile(null);
+      setError("Only .docx files are supported. Older .doc files must be saved as .docx first.");
+      return;
+    }
+    setFile(f);
+  }
+
+  async function convert() {
+    if (!file) return;
+    setLoading(true);
+    setError(null);
+    setDone(false);
+    setProgress("Reading Word document…");
+
+    let container: HTMLDivElement | null = null;
+
+    try {
+      const buf = await readAsArrayBuffer(file);
+      // Vite resolves "mammoth" to its browser bundle via the package's `browser` field
+      const mammoth = await import("mammoth");
+      const { value: html, messages } = await mammoth.convertToHtml({ arrayBuffer: buf });
+      if (!html || html.trim() === "") {
+        setError("This Word document is empty or could not be read.");
+        setProgress("");
+        return;
+      }
+      if (messages?.length) {
+        // Non-fatal: log unsupported features but keep going
+        console.warn("mammoth conversion warnings:", messages);
+      }
+
+      setProgress("Rendering layout…");
+
+      // Render the HTML in a hidden A4-width container so jsPDF.html()
+      // can rasterise it page-by-page with html2canvas.
+      container = document.createElement("div");
+      container.style.position = "fixed";
+      container.style.left = "-99999px";
+      container.style.top = "0";
+      container.style.width = "794px"; // A4 width @ 96dpi
+      container.style.padding = "40px";
+      container.style.background = "#ffffff";
+      container.style.color = "#000000";
+      container.style.fontFamily = "Calibri, Arial, sans-serif";
+      container.style.fontSize = "11pt";
+      container.style.lineHeight = "1.45";
+      container.innerHTML = `
+        <style>
+          h1 { font-size: 20pt; font-weight: 700; margin: 12pt 0 6pt; }
+          h2 { font-size: 16pt; font-weight: 700; margin: 10pt 0 5pt; }
+          h3 { font-size: 13pt; font-weight: 700; margin: 8pt 0 4pt; }
+          p  { margin: 4pt 0; }
+          ul, ol { margin: 4pt 0 4pt 18pt; padding: 0; }
+          li { margin: 2pt 0; }
+          table { border-collapse: collapse; width: 100%; margin: 6pt 0; }
+          td, th { border: 1px solid #999; padding: 4pt 6pt; vertical-align: top; }
+          img { max-width: 100%; height: auto; }
+          a  { color: #1d4ed8; text-decoration: underline; }
+        </style>
+        ${html}
+      `;
+      document.body.appendChild(container);
+
+      setProgress("Building PDF…");
+
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+
+      await doc.html(container, {
+        x: 40,
+        y: 40,
+        width: 515, // A4 width 595pt − 80pt margins
+        windowWidth: 794,
+        autoPaging: "text",
+        html2canvas: {
+          scale: 0.6,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+        },
+      });
+
+      const blob = doc.output("blob");
+      const baseName = file.name.replace(/\.docx$/i, "");
+      await saveFile(blob, `${baseName}.pdf`);
+      setDone(true);
+      setProgress("");
+    } catch (e) {
+      console.error(e);
+      setError("Conversion failed. The Word document may be corrupted or use unsupported features.");
+      setProgress("");
+    } finally {
+      if (container && container.parentNode) container.parentNode.removeChild(container);
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      {!file ? (
+        <DropZone
+          onFiles={handleFile}
+          accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          label="Click or drag a Word document here"
+          hint="Supports .docx — formatting, tables and images are preserved as best as possible"
+          colorScheme="sky"
+        />
+      ) : (
+        <div className="flex items-center justify-between bg-muted rounded-md px-3 py-2">
+          <div>
+            <p className="text-sm font-medium">{file.name}</p>
+            <p className="text-xs text-muted-foreground">{formatBytes(file.size)}</p>
+          </div>
+          <button
+            onClick={() => { setFile(null); setDone(false); setError(null); setProgress(""); }}
+            className="text-muted-foreground hover:text-destructive transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {progress && <p className="text-sm text-sky-700 font-medium">{progress}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
+
+      {done && (
+        <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+          <FileOutput className="w-5 h-5 text-emerald-600 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-emerald-800">PDF saved!</p>
+            <p className="text-xs text-emerald-600">Check your downloads folder for the .pdf file.</p>
+          </div>
+        </div>
+      )}
+
+      <Button
+        onClick={convert}
+        disabled={!file || loading}
+        className="w-full bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white border-0 shadow-md"
+        data-testid="button-word-to-pdf"
+      >
+        {loading
+          ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{progress || "Converting…"}</>
+          : <><FileOutput className="w-4 h-4 mr-2" />Convert to PDF</>}
+      </Button>
+
+      {done && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => { setFile(null); setDone(false); setError(null); }}
+          className="w-full text-muted-foreground"
+        >
+          Convert another document
+        </Button>
+      )}
+    </div>
+  );
+}
+
+// ─── Excel → PDF ──────────────────────────────────────────────────────────────
+
+function ExcelToPdf() {
+  const [file, setFile] = useState<File | null>(null);
+  const [sheetCount, setSheetCount] = useState<number | null>(null);
+  const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleFile(files: File[]) {
+    const f = files[0];
+    if (!f) return;
+    setError(null);
+    setDone(false);
+    setProgress("");
+    if (!/\.(xlsx|xls|csv)$/i.test(f.name)) {
+      setFile(null);
+      setSheetCount(null);
+      setError("Please pick a .xlsx, .xls or .csv file.");
+      return;
+    }
+    try {
+      const buf = await readAsArrayBuffer(f);
+      const wb = XLSX.read(buf, { type: "array" });
+      setFile(f);
+      setSheetCount(wb.SheetNames.length);
+    } catch {
+      setFile(null);
+      setSheetCount(null);
+      setError("Could not read this spreadsheet. Make sure it is a valid .xlsx file.");
+    }
+  }
+
+  async function convert() {
+    if (!file) return;
+    setLoading(true);
+    setError(null);
+    setDone(false);
+    setProgress("Reading workbook…");
+
+    try {
+      const buf = await readAsArrayBuffer(file);
+      const wb = XLSX.read(buf, { type: "array" });
+
+      const { jsPDF } = await import("jspdf");
+      const autoTableMod = await import("jspdf-autotable");
+      // Guard against ESM/CJS module-shape differences across bundlers
+      const autoTable = (autoTableMod.default ?? (autoTableMod as unknown)) as typeof autoTableMod.default;
+
+      const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+      let firstSheet = true;
+      let anyData = false;
+
+      for (let i = 0; i < wb.SheetNames.length; i++) {
+        const name = wb.SheetNames[i];
+        setProgress(`Rendering sheet ${i + 1} of ${wb.SheetNames.length} (${name})…`);
+
+        const sheet = wb.Sheets[name];
+        const rows: unknown[][] = XLSX.utils.sheet_to_json(sheet, {
+          header: 1,
+          defval: "",
+          blankrows: false,
+        });
+
+        if (!rows.length) continue;
+        anyData = true;
+
+        if (!firstSheet) doc.addPage();
+        firstSheet = false;
+
+        // Sheet name as page title
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text(name, 40, 36);
+
+        const head = [rows[0].map((c) => String(c ?? ""))];
+        const body = rows.slice(1).map((r) => r.map((c) => String(c ?? "")));
+
+        autoTable(doc, {
+          head,
+          body,
+          startY: 50,
+          margin: { left: 40, right: 40 },
+          styles: { fontSize: 9, cellPadding: 4, overflow: "linebreak", valign: "top" },
+          headStyles: { fillColor: [22, 163, 74], textColor: 255, fontStyle: "bold" },
+          alternateRowStyles: { fillColor: [240, 253, 244] },
+          theme: "grid",
+        });
+      }
+
+      if (!anyData) {
+        setError("All sheets in this workbook are empty.");
+        return;
+      }
+
+      const blob = doc.output("blob");
+      const baseName = file.name.replace(/\.(xlsx|xls|csv)$/i, "");
+      await saveFile(blob, `${baseName}.pdf`);
+      setDone(true);
+      setProgress("");
+    } catch (e) {
+      console.error(e);
+      setError("Conversion failed. The spreadsheet may be password-protected or corrupted.");
+      setProgress("");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      {!file ? (
+        <DropZone
+          onFiles={handleFile}
+          accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+          label="Click or drag a spreadsheet here"
+          hint="Supports .xlsx, .xls and .csv — every sheet becomes a page in the PDF"
+          colorScheme="lime"
+        />
+      ) : (
+        <div className="flex items-center justify-between bg-muted rounded-md px-3 py-2">
+          <div>
+            <p className="text-sm font-medium">{file.name}</p>
+            <p className="text-xs text-muted-foreground">
+              {formatBytes(file.size)}
+              {sheetCount !== null && ` · ${sheetCount} sheet${sheetCount !== 1 ? "s" : ""}`}
+            </p>
+          </div>
+          <button
+            onClick={() => { setFile(null); setSheetCount(null); setDone(false); setError(null); setProgress(""); }}
+            className="text-muted-foreground hover:text-destructive transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {progress && <p className="text-sm text-lime-700 font-medium">{progress}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
+
+      {done && (
+        <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+          <FileSpreadsheet className="w-5 h-5 text-emerald-600 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-emerald-800">PDF saved!</p>
+            <p className="text-xs text-emerald-600">Each worksheet became its own landscape PDF page.</p>
+          </div>
+        </div>
+      )}
+
+      <Button
+        onClick={convert}
+        disabled={!file || loading}
+        className="w-full bg-gradient-to-r from-lime-600 to-green-700 hover:from-lime-700 hover:to-green-800 text-white border-0 shadow-md"
+        data-testid="button-excel-to-pdf"
+      >
+        {loading
+          ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{progress || "Converting…"}</>
+          : <><FileSpreadsheet className="w-4 h-4 mr-2" />Convert to PDF</>}
+      </Button>
+
+      {done && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => { setFile(null); setSheetCount(null); setDone(false); setError(null); }}
+          className="w-full text-muted-foreground"
+        >
+          Convert another spreadsheet
+        </Button>
+      )}
     </div>
   );
 }
@@ -968,7 +1331,13 @@ function PdfToExcel() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export type ConvertTabKey = "images-to-pdf" | "pdf-to-images" | "pdf-to-word" | "pdf-to-excel";
+export type ConvertTabKey =
+  | "images-to-pdf"
+  | "word-to-pdf"
+  | "excel-to-pdf"
+  | "pdf-to-images"
+  | "pdf-to-word"
+  | "pdf-to-excel";
 
 interface TabSpec {
   key: ConvertTabKey;
@@ -1057,15 +1426,58 @@ const TAB_SPECS: Record<ConvertTabKey, TabSpec> = {
     chipLabel: "PDF → Excel",
     Component: PdfToExcel,
   },
+  "word-to-pdf": {
+    key: "word-to-pdf",
+    testId: "tab-word-to-pdf",
+    triggerLabel: "Word → PDF",
+    triggerIcon: FileOutput,
+    triggerActiveBg: "data-[state=active]:bg-sky-700",
+    bannerWrap: "bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-100",
+    bannerIconWrap: "bg-gradient-to-br from-sky-600 to-blue-700",
+    bannerIcon: FileOutput,
+    bannerTitle: "Word to PDF",
+    bannerTitleClass: "text-sky-900",
+    bannerDesc: "Convert a .docx Word document into a paginated PDF, formatting and tables preserved.",
+    bannerDescClass: "text-sky-700",
+    chipIcon: FileOutput,
+    chipLabel: "Word → PDF",
+    Component: WordToPdf,
+  },
+  "excel-to-pdf": {
+    key: "excel-to-pdf",
+    testId: "tab-excel-to-pdf",
+    triggerLabel: "Excel → PDF",
+    triggerIcon: FileSpreadsheet,
+    triggerActiveBg: "data-[state=active]:bg-lime-700",
+    bannerWrap: "bg-gradient-to-r from-lime-50 to-green-50 border border-lime-100",
+    bannerIconWrap: "bg-gradient-to-br from-lime-600 to-green-700",
+    bannerIcon: FileSpreadsheet,
+    bannerTitle: "Excel to PDF",
+    bannerTitleClass: "text-lime-900",
+    bannerDesc: "Turn every worksheet of a .xlsx, .xls or .csv file into a landscape PDF page with proper table styling.",
+    bannerDescClass: "text-lime-700",
+    chipIcon: FileSpreadsheet,
+    chipLabel: "Excel → PDF",
+    Component: ExcelToPdf,
+  },
 };
 
-const ALL_TABS: ConvertTabKey[] = ["images-to-pdf", "pdf-to-images", "pdf-to-word", "pdf-to-excel"];
+const ALL_TABS: ConvertTabKey[] = [
+  "images-to-pdf",
+  "word-to-pdf",
+  "excel-to-pdf",
+  "pdf-to-images",
+  "pdf-to-word",
+  "pdf-to-excel",
+];
 
 const TABS_GRID_BY_COUNT: Record<number, string> = {
   1: "grid-cols-1",
   2: "grid-cols-2",
   3: "grid-cols-1 sm:grid-cols-3",
   4: "grid-cols-2 sm:grid-cols-4",
+  5: "grid-cols-2 sm:grid-cols-5",
+  6: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6",
 };
 
 export function ConvertToolContent({

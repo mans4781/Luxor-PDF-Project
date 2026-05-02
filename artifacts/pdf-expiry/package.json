@@ -79,7 +79,11 @@
     "@clerk/react": "^6.5.0",
     "@clerk/themes": "^2.4.57",
     "docx": "^9.6.1",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
     "jszip": "^3.10.1",
+    "mammoth": "^1.12.0",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^5.6.205",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
