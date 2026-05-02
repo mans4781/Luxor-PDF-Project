@@ -29,6 +29,7 @@ import { saveToLocalHistory, loadLocalHistory } from "./history";
 import type { LocalPdfEntry } from "@/components/pdf-list";
 import { formatBytes } from "@/lib/utils";
 import { useGuardedAction } from "@/license/useGuardedAction";
+import { useUploadAuthGate } from "@/license/useUploadAuthGate";
 import { format, addDays } from "date-fns";
 
 // ─── Drop zone (matches PDF Tool style) ───────────────────────────────────────
@@ -70,19 +71,23 @@ function FileDropZone({
   const inputRef = useRef<HTMLInputElement>(null);
   const accentDrop = useAccentDrop();
   const c = accentDrop ?? dropColors[colorScheme];
+  const upload = useUploadAuthGate();
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
-    const files = Array.from(e.dataTransfer.files).filter(
-      (f) => f.type === "application/pdf" || f.name.endsWith(".pdf")
-    );
-    if (files.length) onFiles(files);
-  }, [onFiles]);
+    upload.requireAuth(() => {
+      const files = Array.from(e.dataTransfer.files).filter(
+        (f) => f.type === "application/pdf" || f.name.endsWith(".pdf")
+      );
+      if (files.length) onFiles(files);
+    });
+  }, [onFiles, upload]);
 
   return (
+    <>
     <div
-      onClick={() => inputRef.current?.click()}
+      onClick={() => upload.requireAuth(() => inputRef.current?.click())}
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
@@ -96,10 +101,12 @@ function FileDropZone({
       <input ref={inputRef} type="file" accept=".pdf" className="hidden"
         onChange={(e) => {
           const files = Array.from(e.target.files || []);
-          if (files.length) onFiles(files);
           e.target.value = "";
+          if (files.length) upload.requireAuth(() => onFiles(files));
         }} />
     </div>
+    {upload.modal}
+    </>
   );
 }
 

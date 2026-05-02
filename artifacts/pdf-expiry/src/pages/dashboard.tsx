@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearch } from "wouter";
 import { Layout } from "@/components/layout";
 import {
   Wrench,
@@ -695,8 +696,24 @@ function RightPanel({ active }: { active: ToolKey | null }) {
   );
 }
 
+const VALID_TOOL_KEYS: ToolKey[] = [
+  "pdf-tool",
+  "convert-from",
+  "convert-to",
+  "secure-pdf",
+  "compress-pdf",
+  "user-guide",
+];
+
 export default function Dashboard() {
-  const [active, setActive] = useState<ToolKey | null>("pdf-tool");
+  const search = useSearch();
+  const initial = (() => {
+    const requested = new URLSearchParams(search).get("tool") as ToolKey | null;
+    return requested && VALID_TOOL_KEYS.includes(requested)
+      ? requested
+      : "pdf-tool";
+  })();
+  const [active, setActive] = useState<ToolKey | null>(initial);
 
   return (
     <Layout>

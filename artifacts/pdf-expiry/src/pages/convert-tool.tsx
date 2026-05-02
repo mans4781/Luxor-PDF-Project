@@ -28,6 +28,7 @@ import {
   HeadingLevel, AlignmentType, LineRuleType,
 } from "docx";
 import { useGuardedAction } from "@/license/useGuardedAction";
+import { useUploadAuthGate } from "@/license/useUploadAuthGate";
 
 // Set the worker source
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -121,20 +122,24 @@ function DropZone({
   const c = accentDrop
     ? { ...accentDrop, icon: "text-white" }
     : convertDropColors[colorScheme];
+  const upload = useUploadAuthGate();
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setDragging(false);
-      const files = Array.from(e.dataTransfer.files);
-      if (files.length) onFiles(files);
+      upload.requireAuth(() => {
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length) onFiles(files);
+      });
     },
-    [onFiles]
+    [onFiles, upload]
   );
 
   return (
+    <>
     <div
-      onClick={() => ref.current?.click()}
+      onClick={() => upload.requireAuth(() => ref.current?.click())}
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
@@ -155,11 +160,13 @@ function DropZone({
         className="hidden"
         onChange={(e) => {
           const files = Array.from(e.target.files || []);
-          if (files.length) onFiles(files);
           e.target.value = "";
+          if (files.length) upload.requireAuth(() => onFiles(files));
         }}
       />
     </div>
+    {upload.modal}
+    </>
   );
 }
 

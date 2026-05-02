@@ -17,6 +17,7 @@ import { formatBytes } from "@/lib/utils";
 import { saveFile } from "@/lib/save-file";
 import { scheduleAutoRefresh } from "@/lib/auto-refresh";
 import { AccentProvider, useAccentBtn, useAccentDrop } from "@/lib/accent";
+import { useUploadAuthGate } from "@/license/useUploadAuthGate";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -87,23 +88,27 @@ function FileDropZone({
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const accentDrop = useAccentDrop();
+  const upload = useUploadAuthGate();
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setDragging(false);
-      const dropped = Array.from(e.dataTransfer.files).filter(
-        (f) => f.type === "application/pdf" || f.name.endsWith(".pdf")
-      );
-      if (dropped.length) onFiles(dropped);
+      upload.requireAuth(() => {
+        const dropped = Array.from(e.dataTransfer.files).filter(
+          (f) => f.type === "application/pdf" || f.name.endsWith(".pdf")
+        );
+        if (dropped.length) onFiles(dropped);
+      });
     },
-    [onFiles]
+    [onFiles, upload]
   );
 
   return (
+    <>
     <div
       data-testid="compress-drop-zone"
-      onClick={() => inputRef.current?.click()}
+      onClick={() => upload.requireAuth(() => inputRef.current?.click())}
       onDragOver={(e) => {
         e.preventDefault();
         setDragging(true);
@@ -132,11 +137,13 @@ function FileDropZone({
         className="hidden"
         onChange={(e) => {
           const files = Array.from(e.target.files || []);
-          if (files.length) onFiles(files);
           e.target.value = "";
+          if (files.length) upload.requireAuth(() => onFiles(files));
         }}
       />
     </div>
+    {upload.modal}
+    </>
   );
 }
 

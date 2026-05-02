@@ -70,7 +70,7 @@ const TOOLS: ToolCard[] = [
   {
     title: "Compress your PDF",
     blurb: "Shrink large PDFs to 15, 10, 5 or 1 MB without losing clarity.",
-    href: `${SUITE_BASE}/`,
+    href: `${SUITE_BASE}/?tool=compress-pdf`,
     icon: Minimize2,
     iconBg: "bg-[#F37311]",
     iconRing: "ring-[#F37311]/20",

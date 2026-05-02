@@ -12,6 +12,7 @@ import { scheduleAutoRefresh } from "@/lib/auto-refresh";
 import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Wrench, Trash2, FilePlus } from "lucide-react";
 import { AccentProvider, useAccentBtn, useAccentInnerBanner, useAccentDrop } from "@/lib/accent";
 import { useGuardedAction } from "@/license/useGuardedAction";
+import { useUploadAuthGate } from "@/license/useUploadAuthGate";
 
 type DropColorScheme = "violet" | "indigo" | "purple" | "rose" | "emerald";
 
@@ -69,23 +70,27 @@ function FileDropZone({
   const inputRef = useRef<HTMLInputElement>(null);
   const accentDrop = useAccentDrop();
   const c = accentDrop ? { ...accentDrop, icon: "text-white" } : dropColors[colorScheme];
+  const upload = useUploadAuthGate();
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setDragging(false);
-      const dropped = Array.from(e.dataTransfer.files).filter((f) =>
-        f.type === "application/pdf" || f.name.endsWith(".pdf")
-      );
-      if (dropped.length) onFiles(dropped);
+      upload.requireAuth(() => {
+        const dropped = Array.from(e.dataTransfer.files).filter((f) =>
+          f.type === "application/pdf" || f.name.endsWith(".pdf")
+        );
+        if (dropped.length) onFiles(dropped);
+      });
     },
-    [onFiles]
+    [onFiles, upload]
   );
 
   return (
+    <>
     <div
       data-testid="file-drop-zone"
-      onClick={() => inputRef.current?.click()}
+      onClick={() => upload.requireAuth(() => inputRef.current?.click())}
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
@@ -106,11 +111,13 @@ function FileDropZone({
         className="hidden"
         onChange={(e) => {
           const files = Array.from(e.target.files || []);
-          if (files.length) onFiles(files);
           e.target.value = "";
+          if (files.length) upload.requireAuth(() => onFiles(files));
         }}
       />
     </div>
+    {upload.modal}
+    </>
   );
 }
 
