@@ -27,6 +27,7 @@ import { ConvertToolContent } from "./convert-tool";
 import { SecurePdfContent } from "./secure-pdf";
 import { CompressPdfContent } from "./compress-pdf";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type ToolKey =
   | "pdf-tool"
@@ -116,7 +117,7 @@ const TOOLS: ToolItem[] = [
 
 function UserGuideContent() {
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto flex flex-col gap-4 h-[calc(100vh-180px)] min-h-[520px]">
       {/* Header banner */}
       <div className="bg-gradient-to-br from-[#F4B711] via-[#E5AB10] to-[#D49E0E] rounded-2xl p-6 text-white shadow-lg">
         <div className="flex items-center gap-4">
@@ -132,6 +133,35 @@ function UserGuideContent() {
         </div>
       </div>
 
+      <Tabs defaultValue="edit" className="flex-1 flex flex-col min-h-0">
+        <TabsList className="grid w-full grid-cols-3 gap-1 bg-amber-50 border border-amber-200 p-1 rounded-xl h-auto shrink-0">
+          <TabsTrigger
+            value="edit"
+            className="flex items-center justify-center gap-1.5 text-xs sm:text-sm py-2 rounded-md text-amber-900 data-[state=active]:bg-[#F4B711] data-[state=active]:text-white data-[state=active]:shadow-sm"
+            data-testid="guide-tab-edit"
+          >
+            <Wrench className="w-3.5 h-3.5" />
+            Edit pages
+          </TabsTrigger>
+          <TabsTrigger
+            value="expiry"
+            className="flex items-center justify-center gap-1.5 text-xs sm:text-sm py-2 rounded-md text-amber-900 data-[state=active]:bg-[#F4B711] data-[state=active]:text-white data-[state=active]:shadow-sm"
+            data-testid="guide-tab-expiry"
+          >
+            <CalendarClock className="w-3.5 h-3.5" />
+            Set expiry
+          </TabsTrigger>
+          <TabsTrigger
+            value="revoke"
+            className="flex items-center justify-center gap-1.5 text-xs sm:text-sm py-2 rounded-md text-amber-900 data-[state=active]:bg-[#F4B711] data-[state=active]:text-white data-[state=active]:shadow-sm"
+            data-testid="guide-tab-revoke"
+          >
+            <Ban className="w-3.5 h-3.5" />
+            Revoke PDF
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="edit" className="mt-4 flex-1 overflow-y-auto pr-1 data-[state=inactive]:hidden">
       {/* ── 1. Edit Your PDF — Extract / Delete / Insert ─────────────────── */}
       <Card data-testid="guide-section-edit" className="border-indigo-100 shadow-sm">
         <CardContent className="pt-6">
@@ -263,6 +293,9 @@ function UserGuideContent() {
         </CardContent>
       </Card>
 
+        </TabsContent>
+
+        <TabsContent value="expiry" className="mt-4 flex-1 overflow-y-auto pr-1 data-[state=inactive]:hidden">
       {/* ── 2. Set an Expiry Date ────────────────────────────────────────── */}
       <Card data-testid="guide-section-expiry" className="border-amber-100 shadow-sm">
         <CardContent className="pt-6">
@@ -391,6 +424,9 @@ function UserGuideContent() {
         </CardContent>
       </Card>
 
+        </TabsContent>
+
+        <TabsContent value="revoke" className="mt-4 flex-1 overflow-y-auto pr-1 data-[state=inactive]:hidden">
       {/* ── 3. Revoke a PDF ──────────────────────────────────────────────── */}
       <Card data-testid="guide-section-revoke" className="border-rose-100 shadow-sm">
         <CardContent className="pt-6">
@@ -507,6 +543,8 @@ function UserGuideContent() {
           </div>
         </CardContent>
       </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
