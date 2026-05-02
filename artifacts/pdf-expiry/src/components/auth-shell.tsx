@@ -179,13 +179,10 @@ export function AuthShell({ children, variant }: AuthShellProps) {
             <div className="flex flex-col leading-none">
               <span className="text-[20px] font-extrabold tracking-tight">
                 <span className="text-[#1e3a8a]">Luxor</span>{" "}
-                <span className="text-[#DC2626]">PDF</span>{" "}
-                <span className="bg-gradient-to-r from-amber-500 to-amber-700 bg-clip-text text-transparent">
-                  Suite
-                </span>
+                <span className="text-[#DC2626]">PDF</span>
               </span>
               <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Private PDF Suite
+                Secure PDF Suite
               </span>
             </div>
           </Link>
