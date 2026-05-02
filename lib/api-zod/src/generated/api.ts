@@ -152,9 +152,9 @@ decide whether to allow PDF actions. Auto-provisions a license profile
 on first call after sign-in. All trial / subscription windows are
 computed against server time (UTC).
 
-At this stage paid-subscription fields (`isPaid`, `subscriptionActive`,
+Paid-subscription fields (`isPaid`, `subscriptionActive`,
 `subscriptionDaysRemaining`, `subscriptionExpired`, `planName`) are
-always false / null — they will be wired up in the product-keys task.
+populated when the caller has at least one active license row.
 
  * @summary Get the caller's license, trial, and usage status
  */
@@ -335,6 +335,230 @@ export const RecordUsageResponse = zod.object({
     .describe("Why PDF tools are currently blocked, or `none` if allowed."),
   todayUsage: zod.number(),
   dailyLimit: zod.number(),
+});
+
+/**
+ * Atomically: looks up the key by SHA-256 hash, checks the slot count
+(`current_activations < max_activations`) and key validity, upserts
+the device row, inserts a new `licenses` row whose subscription
+window starts now and ends `now + duration_days`, and increments
+the key's slot counter. Writes a `license_activated` audit event.
+
+ * @summary Redeem a product key for the caller on a specific device
+ */
+export const ActivateLicenseBody = zod.object({
+  productKey: zod
+    .string()
+    .describe("The raw `LUXOR-XXXX-XXXX-XXXX-XXXX` key shown to the customer."),
+  deviceId: zod
+    .string()
+    .describe("Opaque client-generated UUID identifying this install."),
+  deviceName: zod.string().nullish(),
+  os: zod.string().nullish(),
+});
+
+export const ActivateLicenseResponse = zod.object({
+  licenseId: zod.number(),
+  planName: zod
+    .enum(["monthly", "quarterly", "yearly", "lifetime"])
+    .describe("Subscription tier a product key unlocks."),
+  subscriptionStartDate: zod.coerce.date(),
+  subscriptionEndDate: zod.coerce.date(),
+  slotsRemaining: zod
+    .number()
+    .describe(
+      "Activations still available on this product key after this redemption.",
+    ),
+});
+
+/**
+ * @summary Non-mutating check that a product key is currently redeemable
+ */
+export const VerifyProductKeyBody = zod.object({
+  productKey: zod.string(),
+});
+
+export const VerifyProductKeyResponse = zod
+  .object({
+    valid: zod.boolean(),
+    planName: zod
+      .union([
+        zod
+          .enum(["monthly", "quarterly", "yearly", "lifetime"])
+          .describe("Subscription tier a product key unlocks."),
+        zod.null(),
+      ])
+      .optional(),
+    durationDays: zod.number().nullish(),
+    slotsAvailable: zod.number().nullish(),
+    reason: zod
+      .union([
+        zod.literal("malformed"),
+        zod.literal("not_found"),
+        zod.literal("revoked"),
+        zod.literal("expired"),
+        zod.literal("max_activations_reached"),
+        zod.literal(null),
+      ])
+      .nullish(),
+  })
+  .describe(
+    "Read-only check before showing the activation confirmation dialog.\nAlways returns 200 — `valid: false` + a `reason` describes failures\n(malformed, not_found, revoked, expired, max_activations_reached).\n",
+  );
+
+/**
+ * Adds `additionalDays` to `subscription_end_date`. The caller must
+own the license. Writes a `license_renewed` audit event. Will be
+called by the Stripe webhook in Task #9 once the customer's
+recurring charge succeeds.
+
+ * @summary Extend the subscription window of one of the caller's licenses
+ */
+export const RenewLicenseBody = zod
+  .object({
+    licenseId: zod.number(),
+    productKey: zod.string(),
+  })
+  .describe(
+    "Redeem a fresh product key against one of the caller's existing\nlicenses, extending its `subscription_end_date` by the new key's\n`duration_days`. Consumes one activation slot on the new key. Used\nby the Stripe payment-success webhook in Task #9 (which mints a\nper-renewal key under the hood) and by the in-app renewal flow.\n",
+  );
+
+export const RenewLicenseResponse = zod.object({
+  licenseId: zod.number(),
+  subscriptionEndDate: zod.coerce.date(),
+});
+
+/**
+ * Marks the license as `deactivated` and decrements the parent product
+key's `current_activations` so the slot can be reused on another
+device. The caller must own the license.
+
+ * @summary Free up an activation slot by deactivating one of the caller's licenses
+ */
+export const DeactivateDeviceBody = zod.object({
+  licenseId: zod.number(),
+});
+
+export const DeactivateDeviceResponse = zod.object({
+  licenseId: zod.number(),
+  status: zod.string(),
+  slotsRemaining: zod.number(),
+});
+
+/**
+ * @summary Mint a batch of product keys (admin only)
+ */
+export const AdminGenerateProductKeysHeader = zod.object({
+  "X-Admin-Token": zod.string(),
+});
+
+export const adminGenerateProductKeysBodyCountDefault = 1;
+export const adminGenerateProductKeysBodyCountMax = 1000;
+
+export const adminGenerateProductKeysBodyMaxActivationsDefault = 1;
+
+export const AdminGenerateProductKeysBody = zod.object({
+  planName: zod
+    .enum(["monthly", "quarterly", "yearly", "lifetime"])
+    .describe("Subscription tier a product key unlocks."),
+  count: zod
+    .number()
+    .min(1)
+    .max(adminGenerateProductKeysBodyCountMax)
+    .default(adminGenerateProductKeysBodyCountDefault),
+  maxActivations: zod
+    .number()
+    .min(1)
+    .default(adminGenerateProductKeysBodyMaxActivationsDefault),
+  expiresAt: zod.coerce
+    .date()
+    .nullish()
+    .describe(
+      "Optional cut-off after which this key can no longer be redeemed.",
+    ),
+  notes: zod.string().nullish(),
+});
+
+export const AdminGenerateProductKeysResponse = zod.object({
+  keys: zod.array(
+    zod
+      .object({
+        id: zod.number(),
+        rawKey: zod.string(),
+        keyPrefix: zod.string(),
+        planName: zod
+          .enum(["monthly", "quarterly", "yearly", "lifetime"])
+          .describe("Subscription tier a product key unlocks."),
+        durationDays: zod.number(),
+        maxActivations: zod.number(),
+        expiresAt: zod.coerce.date().nullish(),
+      })
+      .describe(
+        "A single freshly-minted key. The `rawKey` field is returned ONCE in\nthe generate response and never again — only its hash is stored.\n",
+      ),
+  ),
+});
+
+/**
+ * @summary List minted product keys (admin only)
+ */
+export const AdminListProductKeysHeader = zod.object({
+  "X-Admin-Token": zod.string(),
+});
+
+export const AdminListProductKeysResponse = zod.object({
+  keys: zod.array(
+    zod
+      .object({
+        id: zod.number(),
+        keyPrefix: zod.string(),
+        planName: zod
+          .enum(["monthly", "quarterly", "yearly", "lifetime"])
+          .describe("Subscription tier a product key unlocks."),
+        durationDays: zod.number(),
+        maxActivations: zod.number(),
+        currentActivations: zod.number(),
+        status: zod.string(),
+        expiresAt: zod.coerce.date().nullish(),
+        notes: zod.string().nullish(),
+        createdAt: zod.coerce.date(),
+        revokedAt: zod.coerce.date().nullish(),
+      })
+      .describe("Listing row — never includes the raw key or its hash."),
+  ),
+});
+
+/**
+ * @summary Mark a product key as revoked so it can no longer be activated (admin only)
+ */
+export const AdminRevokeProductKeyHeader = zod.object({
+  "X-Admin-Token": zod.string(),
+});
+
+export const AdminRevokeProductKeyBody = zod.object({
+  id: zod.number(),
+});
+
+export const AdminRevokeProductKeyResponse = zod.object({
+  id: zod.number(),
+  status: zod.string(),
+});
+
+/**
+ * @summary Increase the duration_days on a not-yet-redeemed product key (admin only)
+ */
+export const AdminExtendProductKeyHeader = zod.object({
+  "X-Admin-Token": zod.string(),
+});
+
+export const AdminExtendProductKeyBody = zod.object({
+  id: zod.number(),
+  additionalDays: zod.number().min(1),
+});
+
+export const AdminExtendProductKeyResponse = zod.object({
+  id: zod.number(),
+  durationDays: zod.number(),
 });
 
 /**

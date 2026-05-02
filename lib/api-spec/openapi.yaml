@@ -15,6 +15,8 @@ tags:
     description: License, trial, and subscription status
   - name: usage
     description: Daily usage tracking and limits
+  - name: admin
+    description: Admin-only operations (X-Admin-Token header required)
 paths:
   /healthz:
     get:
@@ -343,9 +345,9 @@ paths:
         on first call after sign-in. All trial / subscription windows are
         computed against server time (UTC).
 
-        At this stage paid-subscription fields (`isPaid`, `subscriptionActive`,
+        Paid-subscription fields (`isPaid`, `subscriptionActive`,
         `subscriptionDaysRemaining`, `subscriptionExpired`, `planName`) are
-        always false / null — they will be wired up in the product-keys task.
+        populated when the caller has at least one active license row.
       responses:
         "200":
           description: |
@@ -424,6 +426,287 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UsageRecordResult"
+
+  /license/activate:
+    post:
+      operationId: activateLicense
+      tags: [license]
+      summary: Redeem a product key for the caller on a specific device
+      description: |
+        Atomically: looks up the key by SHA-256 hash, checks the slot count
+        (`current_activations < max_activations`) and key validity, upserts
+        the device row, inserts a new `licenses` row whose subscription
+        window starts now and ends `now + duration_days`, and increments
+        the key's slot counter. Writes a `license_activated` audit event.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivateLicenseBody"
+      responses:
+        "200":
+          description: Activation successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivateLicenseResult"
+        "400":
+          description: Malformed product key or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Caller is not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Product key does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Key revoked, expired, or out of activation slots
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /license/verify-product-key:
+    post:
+      operationId: verifyProductKey
+      tags: [license]
+      summary: Non-mutating check that a product key is currently redeemable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyProductKeyBody"
+      responses:
+        "200":
+          description: Verification result (always 200; see `valid` and `reason`)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerifyProductKeyResult"
+        "401":
+          description: Caller is not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /license/renew:
+    post:
+      operationId: renewLicense
+      tags: [license]
+      summary: Extend the subscription window of one of the caller's licenses
+      description: |
+        Adds `additionalDays` to `subscription_end_date`. The caller must
+        own the license. Writes a `license_renewed` audit event. Will be
+        called by the Stripe webhook in Task #9 once the customer's
+        recurring charge succeeds.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RenewLicenseBody"
+      responses:
+        "200":
+          description: Renewal applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenewLicenseResult"
+        "401":
+          description: Caller is not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: License not found or not owned by caller
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /license/deactivate-device:
+    post:
+      operationId: deactivateDevice
+      tags: [license]
+      summary: Free up an activation slot by deactivating one of the caller's licenses
+      description: |
+        Marks the license as `deactivated` and decrements the parent product
+        key's `current_activations` so the slot can be reused on another
+        device. The caller must own the license.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeactivateDeviceBody"
+      responses:
+        "200":
+          description: Device deactivated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeactivateDeviceResult"
+        "401":
+          description: Caller is not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: License not found or not owned by caller
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/product-keys/generate:
+    post:
+      operationId: adminGenerateProductKeys
+      tags: [admin]
+      summary: Mint a batch of product keys (admin only)
+      parameters:
+        - name: X-Admin-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminGenerateKeysBody"
+      responses:
+        "200":
+          description: Keys minted; raw key strings returned exactly once
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminGenerateKeysResult"
+        "401":
+          description: Missing or invalid X-Admin-Token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Admin access not configured on this server
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/product-keys:
+    get:
+      operationId: adminListProductKeys
+      tags: [admin]
+      summary: List minted product keys (admin only)
+      parameters:
+        - name: X-Admin-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of product keys (no raw keys, no hashes)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminListKeysResult"
+        "401":
+          description: Missing or invalid X-Admin-Token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/product-keys/revoke:
+    post:
+      operationId: adminRevokeProductKey
+      tags: [admin]
+      summary: Mark a product key as revoked so it can no longer be activated (admin only)
+      parameters:
+        - name: X-Admin-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminRevokeKeyBody"
+      responses:
+        "200":
+          description: Key revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminRevokeKeyResult"
+        "401":
+          description: Missing or invalid X-Admin-Token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Key not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/product-keys/extend:
+    post:
+      operationId: adminExtendProductKey
+      tags: [admin]
+      summary: Increase the duration_days on a not-yet-redeemed product key (admin only)
+      parameters:
+        - name: X-Admin-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminExtendKeyBody"
+      responses:
+        "200":
+          description: Duration extended
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminExtendKeyResult"
+        "401":
+          description: Missing or invalid X-Admin-Token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Key not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /usage/today:
     get:
@@ -769,3 +1052,294 @@ components:
         - secureCount
         - totalCount
         - dailyLimit
+
+    ProductKeyPlan:
+      type: string
+      description: Subscription tier a product key unlocks.
+      enum:
+        - monthly
+        - quarterly
+        - yearly
+        - lifetime
+
+    ActivateLicenseBody:
+      type: object
+      properties:
+        productKey:
+          type: string
+          description: The raw `LUXOR-XXXX-XXXX-XXXX-XXXX` key shown to the customer.
+        deviceId:
+          type: string
+          description: Opaque client-generated UUID identifying this install.
+        deviceName:
+          type: ["string", "null"]
+        os:
+          type: ["string", "null"]
+      required:
+        - productKey
+        - deviceId
+
+    ActivateLicenseResult:
+      type: object
+      properties:
+        licenseId:
+          type: integer
+        planName:
+          $ref: "#/components/schemas/ProductKeyPlan"
+        subscriptionStartDate:
+          type: string
+          format: date-time
+        subscriptionEndDate:
+          type: string
+          format: date-time
+        slotsRemaining:
+          type: integer
+          description: Activations still available on this product key after this redemption.
+      required:
+        - licenseId
+        - planName
+        - subscriptionStartDate
+        - subscriptionEndDate
+        - slotsRemaining
+
+    VerifyProductKeyBody:
+      type: object
+      properties:
+        productKey:
+          type: string
+      required:
+        - productKey
+
+    VerifyProductKeyResult:
+      type: object
+      description: |
+        Read-only check before showing the activation confirmation dialog.
+        Always returns 200 — `valid: false` + a `reason` describes failures
+        (malformed, not_found, revoked, expired, max_activations_reached).
+      properties:
+        valid:
+          type: boolean
+        planName:
+          oneOf:
+            - $ref: "#/components/schemas/ProductKeyPlan"
+            - type: "null"
+        durationDays:
+          type: ["integer", "null"]
+        slotsAvailable:
+          type: ["integer", "null"]
+        reason:
+          type: ["string", "null"]
+          enum:
+            - malformed
+            - not_found
+            - revoked
+            - expired
+            - max_activations_reached
+            - null
+      required:
+        - valid
+
+    RenewLicenseBody:
+      type: object
+      description: |
+        Redeem a fresh product key against one of the caller's existing
+        licenses, extending its `subscription_end_date` by the new key's
+        `duration_days`. Consumes one activation slot on the new key. Used
+        by the Stripe payment-success webhook in Task #9 (which mints a
+        per-renewal key under the hood) and by the in-app renewal flow.
+      properties:
+        licenseId:
+          type: integer
+        productKey:
+          type: string
+      required:
+        - licenseId
+        - productKey
+
+    RenewLicenseResult:
+      type: object
+      properties:
+        licenseId:
+          type: integer
+        subscriptionEndDate:
+          type: string
+          format: date-time
+      required:
+        - licenseId
+        - subscriptionEndDate
+
+    DeactivateDeviceBody:
+      type: object
+      properties:
+        licenseId:
+          type: integer
+      required:
+        - licenseId
+
+    DeactivateDeviceResult:
+      type: object
+      properties:
+        licenseId:
+          type: integer
+        status:
+          type: string
+        slotsRemaining:
+          type: integer
+      required:
+        - licenseId
+        - status
+        - slotsRemaining
+
+    AdminGenerateKeysBody:
+      type: object
+      properties:
+        planName:
+          $ref: "#/components/schemas/ProductKeyPlan"
+        count:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 1
+        maxActivations:
+          type: integer
+          minimum: 1
+          default: 1
+        expiresAt:
+          type: ["string", "null"]
+          format: date-time
+          description: Optional cut-off after which this key can no longer be redeemed.
+        notes:
+          type: ["string", "null"]
+      required:
+        - planName
+        - count
+
+    AdminMintedKey:
+      type: object
+      description: |
+        A single freshly-minted key. The `rawKey` field is returned ONCE in
+        the generate response and never again — only its hash is stored.
+      properties:
+        id:
+          type: integer
+        rawKey:
+          type: string
+        keyPrefix:
+          type: string
+        planName:
+          $ref: "#/components/schemas/ProductKeyPlan"
+        durationDays:
+          type: integer
+        maxActivations:
+          type: integer
+        expiresAt:
+          type: ["string", "null"]
+          format: date-time
+      required:
+        - id
+        - rawKey
+        - keyPrefix
+        - planName
+        - durationDays
+        - maxActivations
+
+    AdminGenerateKeysResult:
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminMintedKey"
+      required:
+        - keys
+
+    AdminProductKeySummary:
+      type: object
+      description: Listing row — never includes the raw key or its hash.
+      properties:
+        id:
+          type: integer
+        keyPrefix:
+          type: string
+        planName:
+          $ref: "#/components/schemas/ProductKeyPlan"
+        durationDays:
+          type: integer
+        maxActivations:
+          type: integer
+        currentActivations:
+          type: integer
+        status:
+          type: string
+        expiresAt:
+          type: ["string", "null"]
+          format: date-time
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        revokedAt:
+          type: ["string", "null"]
+          format: date-time
+      required:
+        - id
+        - keyPrefix
+        - planName
+        - durationDays
+        - maxActivations
+        - currentActivations
+        - status
+        - createdAt
+
+    AdminListKeysResult:
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminProductKeySummary"
+      required:
+        - keys
+
+    AdminRevokeKeyBody:
+      type: object
+      properties:
+        id:
+          type: integer
+      required:
+        - id
+
+    AdminRevokeKeyResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+      required:
+        - id
+        - status
+
+    AdminExtendKeyBody:
+      type: object
+      properties:
+        id:
+          type: integer
+        additionalDays:
+          type: integer
+          minimum: 1
+      required:
+        - id
+        - additionalDays
+
+    AdminExtendKeyResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        durationDays:
+          type: integer
+      required:
+        - id
+        - durationDays

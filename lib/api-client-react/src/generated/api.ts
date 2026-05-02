@@ -17,6 +17,17 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  ActivateLicenseBody,
+  ActivateLicenseResult,
+  AdminExtendKeyBody,
+  AdminExtendKeyResult,
+  AdminGenerateKeysBody,
+  AdminGenerateKeysResult,
+  AdminListKeysResult,
+  AdminRevokeKeyBody,
+  AdminRevokeKeyResult,
+  DeactivateDeviceBody,
+  DeactivateDeviceResult,
   DeletePdfParams,
   DownloadPdfParams,
   ErrorResponse,
@@ -26,6 +37,8 @@ import type {
   PdfRecord,
   PdfStats,
   PdfUploadResult,
+  RenewLicenseBody,
+  RenewLicenseResult,
   RequestRevokeOtpBody,
   RevokeOtpRequestResult,
   TodayUsage,
@@ -34,6 +47,8 @@ import type {
   UsageCheckResult,
   UsageRecordBody,
   UsageRecordResult,
+  VerifyProductKeyBody,
+  VerifyProductKeyResult,
   VerifyRevokeOtpBody,
 } from "./api.schemas";
 
@@ -762,9 +777,9 @@ decide whether to allow PDF actions. Auto-provisions a license profile
 on first call after sign-in. All trial / subscription windows are
 computed against server time (UTC).
 
-At this stage paid-subscription fields (`isPaid`, `subscriptionActive`,
+Paid-subscription fields (`isPaid`, `subscriptionActive`,
 `subscriptionDaysRemaining`, `subscriptionExpired`, `planName`) are
-always false / null — they will be wired up in the product-keys task.
+populated when the caller has at least one active license row.
 
  * @summary Get the caller's license, trial, and usage status
  */
@@ -1022,6 +1037,702 @@ export const useRecordUsage = <
   TContext
 > => {
   return useMutation(getRecordUsageMutationOptions(options));
+};
+
+/**
+ * Atomically: looks up the key by SHA-256 hash, checks the slot count
+(`current_activations < max_activations`) and key validity, upserts
+the device row, inserts a new `licenses` row whose subscription
+window starts now and ends `now + duration_days`, and increments
+the key's slot counter. Writes a `license_activated` audit event.
+
+ * @summary Redeem a product key for the caller on a specific device
+ */
+export const getActivateLicenseUrl = () => {
+  return `/api/license/activate`;
+};
+
+export const activateLicense = async (
+  activateLicenseBody: ActivateLicenseBody,
+  options?: RequestInit,
+): Promise<ActivateLicenseResult> => {
+  return customFetch<ActivateLicenseResult>(getActivateLicenseUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(activateLicenseBody),
+  });
+};
+
+export const getActivateLicenseMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof activateLicense>>,
+    TError,
+    { data: BodyType<ActivateLicenseBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof activateLicense>>,
+  TError,
+  { data: BodyType<ActivateLicenseBody> },
+  TContext
+> => {
+  const mutationKey = ["activateLicense"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof activateLicense>>,
+    { data: BodyType<ActivateLicenseBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return activateLicense(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ActivateLicenseMutationResult = NonNullable<
+  Awaited<ReturnType<typeof activateLicense>>
+>;
+export type ActivateLicenseMutationBody = BodyType<ActivateLicenseBody>;
+export type ActivateLicenseMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Redeem a product key for the caller on a specific device
+ */
+export const useActivateLicense = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof activateLicense>>,
+    TError,
+    { data: BodyType<ActivateLicenseBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof activateLicense>>,
+  TError,
+  { data: BodyType<ActivateLicenseBody> },
+  TContext
+> => {
+  return useMutation(getActivateLicenseMutationOptions(options));
+};
+
+/**
+ * @summary Non-mutating check that a product key is currently redeemable
+ */
+export const getVerifyProductKeyUrl = () => {
+  return `/api/license/verify-product-key`;
+};
+
+export const verifyProductKey = async (
+  verifyProductKeyBody: VerifyProductKeyBody,
+  options?: RequestInit,
+): Promise<VerifyProductKeyResult> => {
+  return customFetch<VerifyProductKeyResult>(getVerifyProductKeyUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(verifyProductKeyBody),
+  });
+};
+
+export const getVerifyProductKeyMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof verifyProductKey>>,
+    TError,
+    { data: BodyType<VerifyProductKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof verifyProductKey>>,
+  TError,
+  { data: BodyType<VerifyProductKeyBody> },
+  TContext
+> => {
+  const mutationKey = ["verifyProductKey"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof verifyProductKey>>,
+    { data: BodyType<VerifyProductKeyBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return verifyProductKey(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type VerifyProductKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof verifyProductKey>>
+>;
+export type VerifyProductKeyMutationBody = BodyType<VerifyProductKeyBody>;
+export type VerifyProductKeyMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Non-mutating check that a product key is currently redeemable
+ */
+export const useVerifyProductKey = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof verifyProductKey>>,
+    TError,
+    { data: BodyType<VerifyProductKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof verifyProductKey>>,
+  TError,
+  { data: BodyType<VerifyProductKeyBody> },
+  TContext
+> => {
+  return useMutation(getVerifyProductKeyMutationOptions(options));
+};
+
+/**
+ * Adds `additionalDays` to `subscription_end_date`. The caller must
+own the license. Writes a `license_renewed` audit event. Will be
+called by the Stripe webhook in Task #9 once the customer's
+recurring charge succeeds.
+
+ * @summary Extend the subscription window of one of the caller's licenses
+ */
+export const getRenewLicenseUrl = () => {
+  return `/api/license/renew`;
+};
+
+export const renewLicense = async (
+  renewLicenseBody: RenewLicenseBody,
+  options?: RequestInit,
+): Promise<RenewLicenseResult> => {
+  return customFetch<RenewLicenseResult>(getRenewLicenseUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(renewLicenseBody),
+  });
+};
+
+export const getRenewLicenseMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof renewLicense>>,
+    TError,
+    { data: BodyType<RenewLicenseBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof renewLicense>>,
+  TError,
+  { data: BodyType<RenewLicenseBody> },
+  TContext
+> => {
+  const mutationKey = ["renewLicense"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof renewLicense>>,
+    { data: BodyType<RenewLicenseBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return renewLicense(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RenewLicenseMutationResult = NonNullable<
+  Awaited<ReturnType<typeof renewLicense>>
+>;
+export type RenewLicenseMutationBody = BodyType<RenewLicenseBody>;
+export type RenewLicenseMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Extend the subscription window of one of the caller's licenses
+ */
+export const useRenewLicense = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof renewLicense>>,
+    TError,
+    { data: BodyType<RenewLicenseBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof renewLicense>>,
+  TError,
+  { data: BodyType<RenewLicenseBody> },
+  TContext
+> => {
+  return useMutation(getRenewLicenseMutationOptions(options));
+};
+
+/**
+ * Marks the license as `deactivated` and decrements the parent product
+key's `current_activations` so the slot can be reused on another
+device. The caller must own the license.
+
+ * @summary Free up an activation slot by deactivating one of the caller's licenses
+ */
+export const getDeactivateDeviceUrl = () => {
+  return `/api/license/deactivate-device`;
+};
+
+export const deactivateDevice = async (
+  deactivateDeviceBody: DeactivateDeviceBody,
+  options?: RequestInit,
+): Promise<DeactivateDeviceResult> => {
+  return customFetch<DeactivateDeviceResult>(getDeactivateDeviceUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(deactivateDeviceBody),
+  });
+};
+
+export const getDeactivateDeviceMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deactivateDevice>>,
+    TError,
+    { data: BodyType<DeactivateDeviceBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deactivateDevice>>,
+  TError,
+  { data: BodyType<DeactivateDeviceBody> },
+  TContext
+> => {
+  const mutationKey = ["deactivateDevice"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deactivateDevice>>,
+    { data: BodyType<DeactivateDeviceBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return deactivateDevice(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeactivateDeviceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deactivateDevice>>
+>;
+export type DeactivateDeviceMutationBody = BodyType<DeactivateDeviceBody>;
+export type DeactivateDeviceMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Free up an activation slot by deactivating one of the caller's licenses
+ */
+export const useDeactivateDevice = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deactivateDevice>>,
+    TError,
+    { data: BodyType<DeactivateDeviceBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deactivateDevice>>,
+  TError,
+  { data: BodyType<DeactivateDeviceBody> },
+  TContext
+> => {
+  return useMutation(getDeactivateDeviceMutationOptions(options));
+};
+
+/**
+ * @summary Mint a batch of product keys (admin only)
+ */
+export const getAdminGenerateProductKeysUrl = () => {
+  return `/api/admin/product-keys/generate`;
+};
+
+export const adminGenerateProductKeys = async (
+  adminGenerateKeysBody: AdminGenerateKeysBody,
+  options?: RequestInit,
+): Promise<AdminGenerateKeysResult> => {
+  return customFetch<AdminGenerateKeysResult>(
+    getAdminGenerateProductKeysUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(adminGenerateKeysBody),
+    },
+  );
+};
+
+export const getAdminGenerateProductKeysMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminGenerateProductKeys>>,
+    TError,
+    { data: BodyType<AdminGenerateKeysBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminGenerateProductKeys>>,
+  TError,
+  { data: BodyType<AdminGenerateKeysBody> },
+  TContext
+> => {
+  const mutationKey = ["adminGenerateProductKeys"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminGenerateProductKeys>>,
+    { data: BodyType<AdminGenerateKeysBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return adminGenerateProductKeys(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminGenerateProductKeysMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminGenerateProductKeys>>
+>;
+export type AdminGenerateProductKeysMutationBody =
+  BodyType<AdminGenerateKeysBody>;
+export type AdminGenerateProductKeysMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Mint a batch of product keys (admin only)
+ */
+export const useAdminGenerateProductKeys = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminGenerateProductKeys>>,
+    TError,
+    { data: BodyType<AdminGenerateKeysBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof adminGenerateProductKeys>>,
+  TError,
+  { data: BodyType<AdminGenerateKeysBody> },
+  TContext
+> => {
+  return useMutation(getAdminGenerateProductKeysMutationOptions(options));
+};
+
+/**
+ * @summary List minted product keys (admin only)
+ */
+export const getAdminListProductKeysUrl = () => {
+  return `/api/admin/product-keys`;
+};
+
+export const adminListProductKeys = async (
+  options?: RequestInit,
+): Promise<AdminListKeysResult> => {
+  return customFetch<AdminListKeysResult>(getAdminListProductKeysUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getAdminListProductKeysQueryKey = () => {
+  return [`/api/admin/product-keys`] as const;
+};
+
+export const getAdminListProductKeysQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminListProductKeys>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof adminListProductKeys>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminListProductKeysQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof adminListProductKeys>>
+  > = ({ signal }) => adminListProductKeys({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminListProductKeys>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type AdminListProductKeysQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminListProductKeys>>
+>;
+export type AdminListProductKeysQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary List minted product keys (admin only)
+ */
+
+export function useAdminListProductKeys<
+  TData = Awaited<ReturnType<typeof adminListProductKeys>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof adminListProductKeys>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getAdminListProductKeysQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Mark a product key as revoked so it can no longer be activated (admin only)
+ */
+export const getAdminRevokeProductKeyUrl = () => {
+  return `/api/admin/product-keys/revoke`;
+};
+
+export const adminRevokeProductKey = async (
+  adminRevokeKeyBody: AdminRevokeKeyBody,
+  options?: RequestInit,
+): Promise<AdminRevokeKeyResult> => {
+  return customFetch<AdminRevokeKeyResult>(getAdminRevokeProductKeyUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(adminRevokeKeyBody),
+  });
+};
+
+export const getAdminRevokeProductKeyMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminRevokeProductKey>>,
+    TError,
+    { data: BodyType<AdminRevokeKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminRevokeProductKey>>,
+  TError,
+  { data: BodyType<AdminRevokeKeyBody> },
+  TContext
+> => {
+  const mutationKey = ["adminRevokeProductKey"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminRevokeProductKey>>,
+    { data: BodyType<AdminRevokeKeyBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return adminRevokeProductKey(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminRevokeProductKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminRevokeProductKey>>
+>;
+export type AdminRevokeProductKeyMutationBody = BodyType<AdminRevokeKeyBody>;
+export type AdminRevokeProductKeyMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Mark a product key as revoked so it can no longer be activated (admin only)
+ */
+export const useAdminRevokeProductKey = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminRevokeProductKey>>,
+    TError,
+    { data: BodyType<AdminRevokeKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof adminRevokeProductKey>>,
+  TError,
+  { data: BodyType<AdminRevokeKeyBody> },
+  TContext
+> => {
+  return useMutation(getAdminRevokeProductKeyMutationOptions(options));
+};
+
+/**
+ * @summary Increase the duration_days on a not-yet-redeemed product key (admin only)
+ */
+export const getAdminExtendProductKeyUrl = () => {
+  return `/api/admin/product-keys/extend`;
+};
+
+export const adminExtendProductKey = async (
+  adminExtendKeyBody: AdminExtendKeyBody,
+  options?: RequestInit,
+): Promise<AdminExtendKeyResult> => {
+  return customFetch<AdminExtendKeyResult>(getAdminExtendProductKeyUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(adminExtendKeyBody),
+  });
+};
+
+export const getAdminExtendProductKeyMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminExtendProductKey>>,
+    TError,
+    { data: BodyType<AdminExtendKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminExtendProductKey>>,
+  TError,
+  { data: BodyType<AdminExtendKeyBody> },
+  TContext
+> => {
+  const mutationKey = ["adminExtendProductKey"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminExtendProductKey>>,
+    { data: BodyType<AdminExtendKeyBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return adminExtendProductKey(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminExtendProductKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminExtendProductKey>>
+>;
+export type AdminExtendProductKeyMutationBody = BodyType<AdminExtendKeyBody>;
+export type AdminExtendProductKeyMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Increase the duration_days on a not-yet-redeemed product key (admin only)
+ */
+export const useAdminExtendProductKey = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminExtendProductKey>>,
+    TError,
+    { data: BodyType<AdminExtendKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof adminExtendProductKey>>,
+  TError,
+  { data: BodyType<AdminExtendKeyBody> },
+  TContext
+> => {
+  return useMutation(getAdminExtendProductKeyMutationOptions(options));
 };
 
 /**

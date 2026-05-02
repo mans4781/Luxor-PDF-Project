@@ -209,6 +209,185 @@ export interface TodayUsage {
 }
 
 /**
+ * Subscription tier a product key unlocks.
+ */
+export type ProductKeyPlan =
+  (typeof ProductKeyPlan)[keyof typeof ProductKeyPlan];
+
+export const ProductKeyPlan = {
+  monthly: "monthly",
+  quarterly: "quarterly",
+  yearly: "yearly",
+  lifetime: "lifetime",
+} as const;
+
+export interface ActivateLicenseBody {
+  /** The raw `LUXOR-XXXX-XXXX-XXXX-XXXX` key shown to the customer. */
+  productKey: string;
+  /** Opaque client-generated UUID identifying this install. */
+  deviceId: string;
+  /** @nullable */
+  deviceName?: string | null;
+  /** @nullable */
+  os?: string | null;
+}
+
+export interface ActivateLicenseResult {
+  licenseId: number;
+  planName: ProductKeyPlan;
+  subscriptionStartDate: string;
+  subscriptionEndDate: string;
+  /** Activations still available on this product key after this redemption. */
+  slotsRemaining: number;
+}
+
+export interface VerifyProductKeyBody {
+  productKey: string;
+}
+
+/**
+ * @nullable
+ */
+export type VerifyProductKeyResultReason =
+  | (typeof VerifyProductKeyResultReason)[keyof typeof VerifyProductKeyResultReason]
+  | null;
+
+export const VerifyProductKeyResultReason = {
+  malformed: "malformed",
+  not_found: "not_found",
+  revoked: "revoked",
+  expired: "expired",
+  max_activations_reached: "max_activations_reached",
+} as const;
+
+/**
+ * Read-only check before showing the activation confirmation dialog.
+Always returns 200 — `valid: false` + a `reason` describes failures
+(malformed, not_found, revoked, expired, max_activations_reached).
+
+ */
+export interface VerifyProductKeyResult {
+  valid: boolean;
+  planName?: ProductKeyPlan | null;
+  /** @nullable */
+  durationDays?: number | null;
+  /** @nullable */
+  slotsAvailable?: number | null;
+  /** @nullable */
+  reason?: VerifyProductKeyResultReason;
+}
+
+/**
+ * Redeem a fresh product key against one of the caller's existing
+licenses, extending its `subscription_end_date` by the new key's
+`duration_days`. Consumes one activation slot on the new key. Used
+by the Stripe payment-success webhook in Task #9 (which mints a
+per-renewal key under the hood) and by the in-app renewal flow.
+
+ */
+export interface RenewLicenseBody {
+  licenseId: number;
+  productKey: string;
+}
+
+export interface RenewLicenseResult {
+  licenseId: number;
+  subscriptionEndDate: string;
+}
+
+export interface DeactivateDeviceBody {
+  licenseId: number;
+}
+
+export interface DeactivateDeviceResult {
+  licenseId: number;
+  status: string;
+  slotsRemaining: number;
+}
+
+export interface AdminGenerateKeysBody {
+  planName: ProductKeyPlan;
+  /**
+   * @minimum 1
+   * @maximum 1000
+   */
+  count: number;
+  /** @minimum 1 */
+  maxActivations?: number;
+  /**
+   * Optional cut-off after which this key can no longer be redeemed.
+   * @nullable
+   */
+  expiresAt?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+/**
+ * A single freshly-minted key. The `rawKey` field is returned ONCE in
+the generate response and never again — only its hash is stored.
+
+ */
+export interface AdminMintedKey {
+  id: number;
+  rawKey: string;
+  keyPrefix: string;
+  planName: ProductKeyPlan;
+  durationDays: number;
+  maxActivations: number;
+  /** @nullable */
+  expiresAt?: string | null;
+}
+
+export interface AdminGenerateKeysResult {
+  keys: AdminMintedKey[];
+}
+
+/**
+ * Listing row — never includes the raw key or its hash.
+ */
+export interface AdminProductKeySummary {
+  id: number;
+  keyPrefix: string;
+  planName: ProductKeyPlan;
+  durationDays: number;
+  maxActivations: number;
+  currentActivations: number;
+  status: string;
+  /** @nullable */
+  expiresAt?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  /** @nullable */
+  revokedAt?: string | null;
+}
+
+export interface AdminListKeysResult {
+  keys: AdminProductKeySummary[];
+}
+
+export interface AdminRevokeKeyBody {
+  id: number;
+}
+
+export interface AdminRevokeKeyResult {
+  id: number;
+  status: string;
+}
+
+export interface AdminExtendKeyBody {
+  id: number;
+  /** @minimum 1 */
+  additionalDays: number;
+}
+
+export interface AdminExtendKeyResult {
+  id: number;
+  durationDays: number;
+}
+
+/**
  * What happens once the PDF expires.
 - `corrupt`: the file is replaced with garbage bytes so PDF readers cannot open it.
 - `revoke`: the file is deleted and the download endpoint returns 410 Gone.

@@ -191,6 +191,9 @@ importers:
       '@workspace/db':
         specifier: workspace:*
         version: link:../../lib/db
+      '@workspace/license-keys':
+        specifier: workspace:*
+        version: link:../../lib/license-keys
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
@@ -1307,6 +1310,12 @@ importers:
         specifier: ^0.31.9
         version: 0.31.9
 
+  lib/license-keys:
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.3.5
+
   lib/luxor-auth-ui:
     dependencies:
       '@clerk/react':
@@ -1327,6 +1336,13 @@ importers:
         version: 19.2.3(@types/react@19.2.14)
 
   scripts:
+    dependencies:
+      '@workspace/db':
+        specifier: workspace:*
+        version: link:../lib/db
+      '@workspace/license-keys':
+        specifier: workspace:*
+        version: link:../lib/license-keys
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

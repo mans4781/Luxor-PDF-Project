@@ -6,6 +6,19 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./activateLicenseBody";
+export * from "./activateLicenseResult";
+export * from "./adminExtendKeyBody";
+export * from "./adminExtendKeyResult";
+export * from "./adminGenerateKeysBody";
+export * from "./adminGenerateKeysResult";
+export * from "./adminListKeysResult";
+export * from "./adminMintedKey";
+export * from "./adminProductKeySummary";
+export * from "./adminRevokeKeyBody";
+export * from "./adminRevokeKeyResult";
+export * from "./deactivateDeviceBody";
+export * from "./deactivateDeviceResult";
 export * from "./deletePdfParams";
 export * from "./downloadPdfParams";
 export * from "./errorResponse";
@@ -20,6 +33,9 @@ export * from "./pdfRecordExpiryAction";
 export * from "./pdfStats";
 export * from "./pdfUploadResult";
 export * from "./pdfUploadResultExpiryAction";
+export * from "./productKeyPlan";
+export * from "./renewLicenseBody";
+export * from "./renewLicenseResult";
 export * from "./requestRevokeOtpBody";
 export * from "./revokeOtpRequestResult";
 export * from "./todayUsage";
@@ -29,4 +45,7 @@ export * from "./usageCheckBody";
 export * from "./usageCheckResult";
 export * from "./usageRecordBody";
 export * from "./usageRecordResult";
+export * from "./verifyProductKeyBody";
+export * from "./verifyProductKeyResult";
+export * from "./verifyProductKeyResultReason";
 export * from "./verifyRevokeOtpBody";

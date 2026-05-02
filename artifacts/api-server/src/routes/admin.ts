@@ -1,13 +1,28 @@
-import { Router } from "express";
-import { db, pdfsTable, siteStats } from "@workspace/db";
+import { Router, type Request, type Response } from "express";
+import { db, pdfsTable, productKeysTable, siteStats } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import {
+  AdminGenerateProductKeysBody,
+  AdminRevokeProductKeyBody,
+  AdminExtendProductKeyBody,
+} from "@workspace/api-zod";
+import {
+  generateProductKey,
+  hashProductKey,
+  PLAN_DURATION_DAYS,
+} from "@workspace/license-keys";
+import {
+  adminListProductKeys,
+  adminRevokeProductKey,
+  adminExtendProductKey,
+} from "../lib/license";
 
 const router = Router();
 
 const ADMIN_TOKEN = process.env["ADMIN_TOKEN"];
 const ADMIN_PASSPHRASE = process.env["ADMIN_PASSPHRASE"];
 
-function checkAuth(req: any, res: any): boolean {
+function checkAuth(req: Request, res: Response): boolean {
   if (!ADMIN_TOKEN) {
     res.status(503).json({ error: "Admin access not configured" });
     return false;
@@ -133,5 +148,168 @@ router.get("/admin/stats", async (req, res): Promise<void> => {
     res.status(500).json({ error: "Failed to load admin stats" });
   }
 });
+
+// ─── Product-key admin endpoints ──────────────────────────────────────────────
+
+router.post(
+  "/admin/product-keys/generate",
+  async (req: Request, res: Response): Promise<void> => {
+    if (!checkAuth(req, res)) return;
+
+    const parsed = AdminGenerateProductKeysBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid request body" });
+      return;
+    }
+    const {
+      planName,
+      count,
+      maxActivations,
+      expiresAt,
+      notes,
+    } = parsed.data;
+
+    const durationDays = PLAN_DURATION_DAYS[planName];
+    const slots = maxActivations ?? 1;
+
+    try {
+      const minted: Array<{
+        id: number;
+        rawKey: string;
+        keyPrefix: string;
+        planName: typeof planName;
+        durationDays: number;
+        maxActivations: number;
+        expiresAt: string | null;
+      }> = [];
+
+      for (let i = 0; i < count; i++) {
+        const rawKey = generateProductKey();
+        const { hash, prefix } = hashProductKey(rawKey);
+        const [row] = await db
+          .insert(productKeysTable)
+          .values({
+            keyHash: hash,
+            keyPrefix: prefix,
+            planName,
+            durationDays,
+            maxActivations: slots,
+            status: "active",
+            expiresAt: expiresAt ?? null,
+            notes: notes ?? null,
+            createdBy: "admin",
+          })
+          .returning({
+            id: productKeysTable.id,
+            keyPrefix: productKeysTable.keyPrefix,
+          });
+        if (!row) throw new Error("Insert returned no row");
+        minted.push({
+          id: row.id,
+          rawKey,
+          keyPrefix: row.keyPrefix,
+          planName,
+          durationDays,
+          maxActivations: slots,
+          expiresAt: expiresAt ? expiresAt.toISOString() : null,
+        });
+      }
+
+      req.log.info(
+        { planName, count, maxActivations: slots },
+        "Admin minted product keys",
+      );
+      res.json({ keys: minted });
+    } catch (err) {
+      req.log.error({ err, planName }, "admin/product-keys/generate failed");
+      res.status(500).json({ error: "Failed to generate keys" });
+    }
+  },
+);
+
+router.get(
+  "/admin/product-keys",
+  async (req: Request, res: Response): Promise<void> => {
+    if (!checkAuth(req, res)) return;
+
+    try {
+      const rows = await adminListProductKeys();
+      res.json({
+        keys: rows.map((r) => ({
+          id: r.id,
+          keyPrefix: r.keyPrefix,
+          planName: r.planName,
+          durationDays: r.durationDays,
+          maxActivations: r.maxActivations,
+          currentActivations: r.currentActivations,
+          status: r.status,
+          expiresAt: r.expiresAt ? r.expiresAt.toISOString() : null,
+          notes: r.notes,
+          createdAt: r.createdAt.toISOString(),
+          revokedAt: r.revokedAt ? r.revokedAt.toISOString() : null,
+        })),
+      });
+    } catch (err) {
+      req.log.error({ err }, "admin/product-keys list failed");
+      res.status(500).json({ error: "Failed to list product keys" });
+    }
+  },
+);
+
+router.post(
+  "/admin/product-keys/revoke",
+  async (req: Request, res: Response): Promise<void> => {
+    if (!checkAuth(req, res)) return;
+
+    const parsed = AdminRevokeProductKeyBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid request body" });
+      return;
+    }
+    try {
+      const row = await adminRevokeProductKey(parsed.data.id);
+      if (!row) {
+        res.status(404).json({ error: "Product key not found" });
+        return;
+      }
+      req.log.info({ id: row.id }, "Admin revoked product key");
+      res.json(row);
+    } catch (err) {
+      req.log.error({ err }, "admin/product-keys/revoke failed");
+      res.status(500).json({ error: "Failed to revoke product key" });
+    }
+  },
+);
+
+router.post(
+  "/admin/product-keys/extend",
+  async (req: Request, res: Response): Promise<void> => {
+    if (!checkAuth(req, res)) return;
+
+    const parsed = AdminExtendProductKeyBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid request body" });
+      return;
+    }
+    try {
+      const row = await adminExtendProductKey(
+        parsed.data.id,
+        parsed.data.additionalDays,
+      );
+      if (!row) {
+        res.status(404).json({ error: "Product key not found" });
+        return;
+      }
+      req.log.info(
+        { id: row.id, additionalDays: parsed.data.additionalDays },
+        "Admin extended product key duration",
+      );
+      res.json(row);
+    } catch (err) {
+      req.log.error({ err }, "admin/product-keys/extend failed");
+      res.status(500).json({ error: "Failed to extend product key" });
+    }
+  },
+);
 
 export default router;
