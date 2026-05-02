@@ -1127,12 +1127,12 @@ function AddTab() {
         {loading ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Adding...
+            Inserting...
           </>
         ) : (
           <>
             <FilePlus className="w-4 h-4 mr-2" />
-            Add Pages & Download
+            Insert Pages & Download
           </>
         )}
       </Button>
@@ -1270,7 +1270,7 @@ export function PdfToolContent() {
                     <FilePlus className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-emerald-900">Add Pages</h2>
+                    <h2 className="font-semibold text-emerald-900">Insert Pages</h2>
                     <p className="text-xs text-emerald-600">Insert pages from another PDF — or blank pages — at the start, end, or after any page.</p>
                   </div>
                 </div>
