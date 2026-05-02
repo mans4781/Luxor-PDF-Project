@@ -111,19 +111,23 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      {/* Hero / page title */}
-      <div className="mb-6 flex items-end justify-between flex-wrap gap-4">
+      {/* Hero / page title — echoes landing page hero */}
+      <div className="mb-7 flex items-end justify-between flex-wrap gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1 mb-3">
-            <Sparkles className="w-3 h-3" strokeWidth={2.5} />
+          <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#1e3a8a] bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1 mb-3">
+            <Sparkles className="w-3 h-3 text-[#DC2626]" strokeWidth={2.5} />
             Luxor PDF · Workspace
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Your secure PDF toolkit
+          <h1 className="text-[34px] leading-tight font-extrabold tracking-tight text-slate-900">
+            Your{" "}
+            <span className="bg-gradient-to-r from-[#1e3a8a] to-[#DC2626] bg-clip-text text-transparent">
+              secure
+            </span>{" "}
+            PDF toolkit.
           </h1>
-          <p className="text-sm text-slate-500 mt-1.5 max-w-xl">
-            Edit, convert and secure documents — everything runs locally for
-            complete privacy.
+          <p className="text-[15px] text-slate-500 mt-2 max-w-xl leading-relaxed">
+            Edit, convert and secure documents — everything runs locally in
+            your browser for complete privacy.
           </p>
         </div>
       </div>
