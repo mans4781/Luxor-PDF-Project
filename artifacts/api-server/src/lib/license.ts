@@ -995,52 +995,72 @@ export async function renewLicense(
     return { ok: false, error: { kind: upfrontReason } };
   }
 
-  // Atomic slot claim on the renewal key.
-  const claimed = await db
-    .update(productKeysTable)
-    .set({
-      currentActivations: sql`${productKeysTable.currentActivations} + 1`,
-      updatedAt: now,
-    })
-    .where(
-      and(
-        eq(productKeysTable.id, key.id),
-        eq(productKeysTable.status, "active"),
-        sql`${productKeysTable.currentActivations} < ${productKeysTable.maxActivations}`,
-      ),
-    )
-    .returning();
-  if (claimed.length === 0) {
-    return { ok: false, error: { kind: "max_activations_reached" } };
-  }
-
   const baseEnd =
     licenseRow.subscriptionEndDate.getTime() > now.getTime()
       ? licenseRow.subscriptionEndDate
       : now;
   const newEnd = new Date(baseEnd.getTime() + key.durationDays * MS_PER_DAY);
 
-  await db
-    .update(licensesTable)
-    .set({
-      planName: key.planName,
-      subscriptionEndDate: newEnd,
-      status: "active",
-      updatedAt: now,
-    })
-    .where(eq(licensesTable.id, licenseId));
+  // Atomic renewal: slot claim on renewal key → license window extension →
+  // user_licenses cache update → audit event, all in one DB transaction.
+  // If anything fails the slot claim is rolled back so counters cannot
+  // diverge from the licenses table on partial failure.
+  type TxResult =
+    | { kind: "ok" }
+    | { kind: "max_activations_reached" };
 
-  await db
-    .update(userLicensesTable)
-    .set({ isPaid: true, planName: key.planName, updatedAt: now })
-    .where(eq(userLicensesTable.userId, userId));
+  const txResult: TxResult = await db.transaction(async (tx) => {
+    const claimed = await tx
+      .update(productKeysTable)
+      .set({
+        currentActivations: sql`${productKeysTable.currentActivations} + 1`,
+        updatedAt: now,
+      })
+      .where(
+        and(
+          eq(productKeysTable.id, key.id),
+          eq(productKeysTable.status, "active"),
+          sql`${productKeysTable.currentActivations} < ${productKeysTable.maxActivations}`,
+        ),
+      )
+      .returning();
+    if (claimed.length === 0) {
+      return { kind: "max_activations_reached" };
+    }
 
-  await logEvent(userId, "license_renewed", "License extended via product key", {
-    licenseId,
-    renewalKeyId: key.id,
-    additionalDays: key.durationDays,
-    newEnd: newEnd.toISOString(),
+    await tx
+      .update(licensesTable)
+      .set({
+        planName: key.planName,
+        subscriptionEndDate: newEnd,
+        status: "active",
+        updatedAt: now,
+      })
+      .where(eq(licensesTable.id, licenseId));
+
+    await tx
+      .update(userLicensesTable)
+      .set({ isPaid: true, planName: key.planName, updatedAt: now })
+      .where(eq(userLicensesTable.userId, userId));
+
+    await tx.insert(licenseEventsTable).values({
+      userId,
+      eventType: "license_renewed",
+      eventMessage: "License extended via product key",
+      metadata: {
+        licenseId,
+        renewalKeyId: key.id,
+        additionalDays: key.durationDays,
+        newEnd: newEnd.toISOString(),
+      },
+    });
+
+    return { kind: "ok" };
   });
+
+  if (txResult.kind === "max_activations_reached") {
+    return { ok: false, error: { kind: "max_activations_reached" } };
+  }
 
   return {
     ok: true,
