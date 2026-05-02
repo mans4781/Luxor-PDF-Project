@@ -27,6 +27,7 @@ import { PdfToolContent } from "./pdf-tool";
 import { ConvertToolContent } from "./convert-tool";
 import { SecurePdfContent } from "./secure-pdf";
 import { CompressPdfContent } from "./compress-pdf";
+import { UsagePanel } from "@/license/UsageBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -699,6 +700,9 @@ export default function Dashboard() {
 
   return (
     <Layout>
+      <div className="mb-4">
+        <UsagePanel />
+      </div>
       {/* Two-column workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-[36.7%_minmax(0,1fr)] xl:grid-cols-[27.5%_minmax(0,1fr)] gap-4">
         {/* ── Left: tool list ── */}

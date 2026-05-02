@@ -1,0 +1,153 @@
+import { useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useCheckUsage,
+  useRecordUsage,
+  getGetLicenseStatusQueryKey,
+  type PdfActionType,
+  type LicenseLockReason,
+} from "@workspace/api-client-react";
+import { useToast } from "@/hooks/use-toast";
+import { useLicense } from "./LicenseProvider";
+
+function reasonMessage(reason: LicenseLockReason): {
+  title: string;
+  description: string;
+} {
+  switch (reason) {
+    case "not_logged_in":
+      return {
+        title: "Sign in required",
+        description: "Please sign in to use Luxor PDF tools.",
+      };
+    case "trial_expired":
+      return {
+        title: "Trial ended",
+        description:
+          "Your 14-day free trial has ended. Activate a product key or pick a plan to keep going.",
+      };
+    case "subscription_expired":
+      return {
+        title: "Subscription expired",
+        description:
+          "Your subscription has expired. Renew or activate a new key to keep using Luxor PDF.",
+      };
+    case "daily_limit_reached":
+      return {
+        title: "Daily limit reached",
+        description:
+          "You've used all 5 free actions for today. Upgrade for unlimited usage or come back tomorrow.",
+      };
+    case "account_suspended":
+      return {
+        title: "Account suspended",
+        description: "Please contact support to restore access.",
+      };
+    default:
+      return { title: "Action blocked", description: "Please try again." };
+  }
+}
+
+export type ActionFn<T> = () => Promise<T> | T;
+
+export interface GuardedRunOptions {
+  /** Optional: skip recording on success (rare). */
+  skipRecord?: boolean;
+}
+
+/**
+ * Hook that returns a function which gates a PDF action behind the licensing
+ * check / record cycle:
+ *   1. POST /api/usage/check  → server says yes/no
+ *   2. run the action
+ *   3. POST /api/usage/record → atomically increments today's count
+ *   4. invalidate /api/license/status so the dashboard refreshes
+ *
+ * Returns the action's resolved value, or `undefined` when the action was
+ * blocked (a toast is shown automatically).
+ */
+export function useGuardedAction() {
+  const { toast } = useToast();
+  const qc = useQueryClient();
+  const { signedIn, offline } = useLicense();
+  const checkMut = useCheckUsage();
+  const recordMut = useRecordUsage();
+
+  const run = useCallback(
+    async <T,>(
+      actionType: PdfActionType,
+      fn: ActionFn<T>,
+      opts: GuardedRunOptions = {},
+    ): Promise<T | undefined> => {
+      if (!signedIn) {
+        toast({
+          title: "Sign in required",
+          description: "Please sign in to use Luxor PDF tools.",
+          variant: "destructive",
+        });
+        return undefined;
+      }
+      if (offline) {
+        toast({
+          title: "License check failed",
+          description:
+            "Cannot verify your license right now. Please check your connection and try again.",
+          variant: "destructive",
+        });
+        return undefined;
+      }
+
+      // 1. Server-side pre-check
+      let check;
+      try {
+        check = await checkMut.mutateAsync({ data: { actionType } });
+      } catch {
+        toast({
+          title: "License check failed",
+          description:
+            "Cannot verify your license right now. Please check your connection and try again.",
+          variant: "destructive",
+        });
+        return undefined;
+      }
+      if (!check.allowed) {
+        const msg = reasonMessage(check.lockReason);
+        toast({ ...msg, variant: "destructive" });
+        // Refresh status so any expiry / lock UI appears immediately.
+        void qc.invalidateQueries({ queryKey: getGetLicenseStatusQueryKey() });
+        return undefined;
+      }
+
+      // 2. Run the action
+      let result: T;
+      try {
+        result = await fn();
+      } catch (err) {
+        // Don't record usage on action failure.
+        throw err;
+      }
+
+      // 3. Record usage (best-effort; do not block UI on failure)
+      if (!opts.skipRecord) {
+        try {
+          await recordMut.mutateAsync({ data: { actionType } });
+        } catch {
+          // Surface the error softly: the action already happened.
+          toast({
+            title: "Usage not recorded",
+            description:
+              "Your action completed, but we couldn't update your daily count.",
+            variant: "destructive",
+          });
+        }
+        // 4. Refresh status so the usage badge updates.
+        void qc.invalidateQueries({ queryKey: getGetLicenseStatusQueryKey() });
+      }
+
+      return result;
+    },
+    [signedIn, offline, checkMut, recordMut, qc, toast],
+  );
+
+  return run;
+}

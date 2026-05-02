@@ -15,6 +15,9 @@ import SecurePdf from "@/pages/secure-pdf";
 import PdfViewer from "@/pages/viewer";
 import SignInPage from "@/pages/sign-in";
 import SignUpPage from "@/pages/sign-up";
+import ActivateKeyPage from "@/pages/activate-key";
+import { LicenseProvider } from "@/license/LicenseProvider";
+import { LockOverlay } from "@/license/LockOverlay";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +73,7 @@ function Router() {
       <Route path="/v/:id" component={PdfViewer} />
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />
+      <Route path="/activate-key" component={ActivateKeyPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -89,10 +93,13 @@ function ClerkProviderWithRoutes() {
     >
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
-        <TooltipProvider>
-          <Router />
-          <Toaster />
-        </TooltipProvider>
+        <LicenseProvider>
+          <TooltipProvider>
+            <Router />
+            <LockOverlay />
+            <Toaster />
+          </TooltipProvider>
+        </LicenseProvider>
       </QueryClientProvider>
     </LuxorClerkProvider>
   );

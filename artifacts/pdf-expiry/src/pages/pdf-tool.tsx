@@ -11,6 +11,7 @@ import { saveFile } from "@/lib/save-file";
 import { scheduleAutoRefresh } from "@/lib/auto-refresh";
 import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Wrench, Trash2, FilePlus } from "lucide-react";
 import { AccentProvider, useAccentBtn, useAccentInnerBanner, useAccentDrop } from "@/lib/accent";
+import { useGuardedAction } from "@/license/useGuardedAction";
 
 type DropColorScheme = "violet" | "indigo" | "purple" | "rose" | "emerald";
 
@@ -150,6 +151,7 @@ async function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
 
 function MergeTab() {
   const accentBtn = useAccentBtn("from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700");
+  const guard = useGuardedAction();
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -223,7 +225,7 @@ function MergeTab() {
 
       <Button
         data-testid="button-merge"
-        onClick={mergePdfs}
+        onClick={() => { void guard("merge", mergePdfs); }}
         disabled={files.length < 2 || loading}
         className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
       >
@@ -247,6 +249,7 @@ function MergeTab() {
 
 function SplitTab() {
   const accentBtn = useAccentBtn("from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700");
+  const guard = useGuardedAction();
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -349,7 +352,7 @@ function SplitTab() {
 
       <Button
         data-testid="button-split"
-        onClick={splitPdf}
+        onClick={() => { void guard("split", splitPdf); }}
         disabled={!file || loading}
         className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
       >
@@ -373,6 +376,7 @@ function SplitTab() {
 
 function ExtractTab() {
   const accentBtn = useAccentBtn("from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700");
+  const guard = useGuardedAction();
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
@@ -562,7 +566,7 @@ function ExtractTab() {
 
       <Button
         data-testid="button-extract"
-        onClick={extractPages}
+        onClick={() => { void guard("extract_pages", extractPages); }}
         disabled={!file || selectedPages.size === 0 || loading}
         className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
       >
@@ -586,6 +590,7 @@ function ExtractTab() {
 
 function DeleteTab() {
   const accentBtn = useAccentBtn("from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700");
+  const guard = useGuardedAction();
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
@@ -781,7 +786,7 @@ function DeleteTab() {
 
       <Button
         data-testid="button-delete-pages"
-        onClick={deletePages}
+        onClick={() => { void guard("delete_pages", deletePages); }}
         disabled={!file || selectedPages.size === 0 || loading}
         className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
       >
@@ -815,6 +820,7 @@ const PAGE_SIZES: Record<BlankSize, [number, number]> = {
 
 function AddTab() {
   const accentBtn = useAccentBtn("from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700");
+  const guard = useGuardedAction();
   const [hostFile, setHostFile] = useState<File | null>(null);
   const [hostPageCount, setHostPageCount] = useState<number | null>(null);
 
@@ -1128,7 +1134,7 @@ function AddTab() {
 
       <Button
         data-testid="button-add-pages"
-        onClick={addPages}
+        onClick={() => { void guard("insert_pages", addPages); }}
         disabled={
           !hostFile ||
           loading ||

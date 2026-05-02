@@ -28,6 +28,7 @@ import { encryptPdfAes256 } from "@/lib/qpdf-encrypt";
 import { saveToLocalHistory, loadLocalHistory } from "./history";
 import type { LocalPdfEntry } from "@/components/pdf-list";
 import { formatBytes } from "@/lib/utils";
+import { useGuardedAction } from "@/license/useGuardedAction";
 import { format, addDays } from "date-fns";
 
 // ─── Drop zone (matches PDF Tool style) ───────────────────────────────────────
@@ -256,6 +257,7 @@ function SuccessCard({ label, downloadId, shareToken, fileName, onReset, accentB
 function ExpiryTab() {
   const accentBtn = useAccentBtn("from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700");
   const ab = useAccentInnerBanner();
+  const guard = useGuardedAction();
   const [file, setFile] = useState<File | null>(null);
   const [expiryDate, setExpiryDate] = useState(format(addDays(new Date(), 1), "yyyy-MM-dd'T'HH:mm"));
   const [uploadedId, setUploadedId] = useState<number | null>(null);
@@ -324,7 +326,7 @@ function ExpiryTab() {
 
           <Button
             className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
-            disabled={!file || uploadMutation.isPending} onClick={handleUpload}
+            disabled={!file || uploadMutation.isPending} onClick={() => { void guard("set_expiry", handleUpload); }}
           >
             {uploadMutation.isPending
               ? <><span className="animate-spin mr-2">⏳</span>Securing…</>
@@ -341,6 +343,7 @@ function ExpiryTab() {
 function PasswordTab() {
   const accentBtn = useAccentBtn("from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700");
   const ab = useAccentInnerBanner();
+  const guard = useGuardedAction();
   const [file, setFile] = useState<File | null>(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -469,7 +472,7 @@ function PasswordTab() {
         password={password}
         isProcessing={isProcessing}
         onCancel={() => setConfirmOpen(false)}
-        onConfirm={handleUpload}
+        onConfirm={() => { void guard("password_protect", handleUpload); }}
       />
     </div>
   );
@@ -615,6 +618,7 @@ function PasswordSavedDialog({
 function PrintControlTab() {
   const accentBtn = useAccentBtn("from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600");
   const ab = useAccentInnerBanner();
+  const guard = useGuardedAction();
   const [file, setFile] = useState<File | null>(null);
   const [restrictPrint, setRestrictPrint] = useState(false);
   const [restrictCopy, setRestrictCopy] = useState(false);
@@ -718,7 +722,7 @@ function PrintControlTab() {
 
           <Button
             className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
-            disabled={!file || isProcessing || uploadMutation.isPending} onClick={handleUpload}
+            disabled={!file || isProcessing || uploadMutation.isPending} onClick={() => { void guard(restrictPrint ? "print_restriction" : "copy_restriction", handleUpload); }}
           >
             {isProcessing
               ? <><span className="animate-spin mr-2">⏳</span>Applying Restrictions…</>
@@ -737,6 +741,7 @@ function PrintControlTab() {
 function RevokeExpiryTab() {
   const accentBtn = useAccentBtn("from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700");
   const ab = useAccentInnerBanner();
+  const guard = useGuardedAction();
   const [history, setHistory] = useState<LocalPdfEntry[]>([]);
   const [pdfId, setPdfId] = useState("");
   const [shareToken, setShareToken] = useState("");
@@ -952,7 +957,7 @@ function RevokeExpiryTab() {
         <Button
           className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
           disabled={!enteredCode || enteredCode.length < 6 || verifyMutation.isPending || isExpired}
-          onClick={handleVerifyOtp}
+          onClick={() => { void guard("revoke_expiry", handleVerifyOtp); }}
           data-testid="button-verify-otp"
         >
           {verifyMutation.isPending
