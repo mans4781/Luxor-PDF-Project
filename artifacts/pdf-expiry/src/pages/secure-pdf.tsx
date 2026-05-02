@@ -201,7 +201,7 @@ function ExpiryTab() {
   const accentBtn = useAccentBtn("from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700");
   const ab = useAccentInnerBanner();
   const [file, setFile] = useState<File | null>(null);
-  const [expiryDate, setExpiryDate] = useState(format(addDays(new Date(), 1), "yyyy-MM-dd"));
+  const [expiryDate, setExpiryDate] = useState(format(addDays(new Date(), 1), "yyyy-MM-dd'T'HH:mm"));
   const [uploadedId, setUploadedId] = useState<number | null>(null);
   const [uploadedShareToken, setUploadedShareToken] = useState("");
   const [uploadedName, setUploadedName] = useState("");
@@ -211,13 +211,13 @@ function ExpiryTab() {
 
   const reset = () => {
     setFile(null); setUploadedId(null); setUploadedShareToken(""); setUploadedName("");
-    setExpiryDate(format(addDays(new Date(), 1), "yyyy-MM-dd"));
+    setExpiryDate(format(addDays(new Date(), 1), "yyyy-MM-dd'T'HH:mm"));
   };
 
   const handleUpload = () => {
     if (!file) return;
     const name = file.name;
-    uploadMutation.mutate({ data: { file, expiryDate } }, {
+    uploadMutation.mutate({ data: { file, expiryDate: new Date(expiryDate).toISOString() } }, {
       onSuccess: (data) => {
         setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null);
         saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
@@ -241,7 +241,7 @@ function ExpiryTab() {
 
       {uploadedId !== null ? (
         <SuccessCard
-          label={`Expires on ${format(new Date(expiryDate + "T00:00:00"), "MMMM d, yyyy")}`}
+          label={`Expires on ${format(new Date(expiryDate), "MMMM d, yyyy 'at' h:mm a")}`}
           downloadId={uploadedId} shareToken={uploadedShareToken} fileName={uploadedName} onReset={reset}
           accentBtn="border-rose-200 text-[#C81934] hover:bg-rose-50"
         />
@@ -256,13 +256,13 @@ function ExpiryTab() {
 
           <div className="space-y-1.5">
             <Label htmlFor="expiryDate" className="text-rose-700 font-semibold text-sm flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5" /> Expiry Date
+              <Calendar className="w-3.5 h-3.5" /> Expiry Date &amp; Time
             </Label>
-            <Input id="expiryDate" type="date" value={expiryDate}
-              min={format(new Date(), "yyyy-MM-dd")}
+            <Input id="expiryDate" type="datetime-local" value={expiryDate}
+              min={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
               onChange={(e) => setExpiryDate(e.target.value)}
               className="border-rose-200 focus:border-rose-400 focus:ring-rose-400/20" />
-            <p className="text-xs text-rose-400">Recipients will be unable to open or download the file after this date.</p>
+            <p className="text-xs text-rose-400">Recipients will be unable to open or download the file after this exact moment.</p>
           </div>
 
           <Button
@@ -538,7 +538,7 @@ function RevokeExpiryTab() {
   const [otpCode, setOtpCode] = useState("");
   const [otpExpiresAt, setOtpExpiresAt] = useState<string | null>(null);
   const [enteredCode, setEnteredCode] = useState("");
-  const [newExpiryDate, setNewExpiryDate] = useState(format(addDays(new Date(), 7), "yyyy-MM-dd"));
+  const [newExpiryDate, setNewExpiryDate] = useState(format(addDays(new Date(), 7), "yyyy-MM-dd'T'HH:mm"));
 
   // Step-3 state (after verify)
   const [restoredId, setRestoredId] = useState<number | null>(null);
@@ -570,7 +570,7 @@ function RevokeExpiryTab() {
   const reset = () => {
     setPdfId(""); setShareToken(""); setSelectedFromHistory(null);
     setOtpId(null); setOtpCode(""); setOtpExpiresAt(null); setEnteredCode("");
-    setNewExpiryDate(format(addDays(new Date(), 7), "yyyy-MM-dd"));
+    setNewExpiryDate(format(addDays(new Date(), 7), "yyyy-MM-dd'T'HH:mm"));
     setRestoredId(null); setRestoredToken(""); setRestoredName("");
   };
 
@@ -615,7 +615,7 @@ function RevokeExpiryTab() {
       return;
     }
     verifyMutation.mutate(
-      { id, data: { shareToken, otpId, code: enteredCode, newExpiryDate } },
+      { id, data: { shareToken, otpId, code: enteredCode, newExpiryDate: new Date(newExpiryDate).toISOString() } },
       {
         onSuccess: (data) => {
           setRestoredId(data.id);
@@ -662,11 +662,11 @@ function RevokeExpiryTab() {
           </div>
           <div>
             <h2 className={`font-semibold ${ab?.titleClass ?? "text-emerald-900"}`}>Expiry revoked</h2>
-            <p className={`text-xs ${ab?.descClass ?? "text-emerald-600"}`}>The recipient can access this PDF until {format(new Date(newExpiryDate + "T00:00:00"), "MMMM d, yyyy")}.</p>
+            <p className={`text-xs ${ab?.descClass ?? "text-emerald-600"}`}>The recipient can access this PDF until {format(new Date(newExpiryDate), "MMMM d, yyyy 'at' h:mm a")}.</p>
           </div>
         </div>
         <SuccessCard
-          label={`New expiry: ${format(new Date(newExpiryDate + "T00:00:00"), "MMMM d, yyyy")}`}
+          label={`New expiry: ${format(new Date(newExpiryDate), "MMMM d, yyyy 'at' h:mm a")}`}
           downloadId={restoredId}
           shareToken={restoredToken}
           fileName={restoredName || `pdf-${restoredId}.pdf`}
@@ -728,15 +728,15 @@ function RevokeExpiryTab() {
 
         <div className="space-y-1.5">
           <Label htmlFor="newExpiry" className="text-emerald-700 font-semibold text-sm flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5" /> New Expiry Date
+            <Calendar className="w-3.5 h-3.5" /> New Expiry Date &amp; Time
           </Label>
           <Input
-            id="newExpiry" type="date" value={newExpiryDate}
-            min={format(addDays(new Date(), 1), "yyyy-MM-dd")}
+            id="newExpiry" type="datetime-local" value={newExpiryDate}
+            min={format(addDays(new Date(), 1), "yyyy-MM-dd'T'HH:mm")}
             onChange={(e) => setNewExpiryDate(e.target.value)}
             className="border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400/20"
           />
-          <p className="text-xs text-emerald-500">Recipient regains access until this date.</p>
+          <p className="text-xs text-emerald-500">Recipient regains access until this exact moment.</p>
         </div>
 
         <Button
