@@ -56,8 +56,8 @@ export const clerkAppearance = {
       "border border-slate-300 focus:border-[#1e3a8a] focus:ring-2 focus:ring-[#1e3a8a]/20 rounded-lg",
     formFieldRow: "gap-2",
     main: "gap-4",
-    logoBox: "flex justify-center mb-3",
-    logoImage: "h-14 w-14 rounded-2xl shadow-sm border border-[#DC2626]/40",
+    logoBox: "hidden",
+    logoImage: "hidden",
   },
 };
 

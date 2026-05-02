@@ -160,7 +160,37 @@ export function AuthShell({ children, variant }: AuthShellProps) {
 
       {/* ── Right: Clerk form ───────────────────────────────────────────── */}
       <main className="flex-1 flex items-center justify-center px-4 py-10 lg:py-14">
-        <div className="w-full max-w-md">{children}</div>
+        <div className="w-full max-w-md">
+          {/* Brand row above the Clerk card */}
+          <Link
+            href={basePath || "/"}
+            className="group flex items-center justify-center gap-3 mb-6"
+            aria-label="Luxor PDF Suite home"
+          >
+            <img
+              src={`${baseUrl}brand/luxor-icon.png`}
+              alt=""
+              aria-hidden="true"
+              width={48}
+              height={48}
+              draggable={false}
+              className="h-12 w-12 rounded-2xl border border-[#DC2626]/40 bg-white shadow-sm transition-transform group-hover:scale-105 select-none"
+            />
+            <div className="flex flex-col leading-none">
+              <span className="text-[20px] font-extrabold tracking-tight">
+                <span className="text-[#1e3a8a]">Luxor</span>{" "}
+                <span className="text-[#DC2626]">PDF</span>{" "}
+                <span className="bg-gradient-to-r from-amber-500 to-amber-700 bg-clip-text text-transparent">
+                  Suite
+                </span>
+              </span>
+              <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Private PDF Suite
+              </span>
+            </div>
+          </Link>
+          {children}
+        </div>
       </main>
     </div>
   );
