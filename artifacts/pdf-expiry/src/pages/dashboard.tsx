@@ -21,6 +21,7 @@ import {
   Calendar,
   ShieldAlert,
   Minimize2,
+  Lightbulb,
 } from "lucide-react";
 import { PdfToolContent } from "./pdf-tool";
 import { ConvertToolContent } from "./convert-tool";
@@ -640,9 +641,23 @@ export default function Dashboard() {
 
           {/* Footer note in sidebar */}
           <div className="mt-2 px-4 py-3 rounded-xl bg-slate-100/70 border border-slate-200">
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              <span className="font-semibold text-slate-700">Tip:</span> Click an
-              active tool again to collapse it back to this overview.
+            <p className="text-[11px] text-slate-500 leading-relaxed flex items-start gap-2">
+              <span
+                aria-hidden="true"
+                className="relative inline-flex shrink-0 mt-[1px]"
+              >
+                <span className="absolute inset-0 rounded-full bg-amber-400/40 blur-[6px] animate-pulse" />
+                <Lightbulb
+                  className="relative w-3.5 h-3.5 text-amber-500 drop-shadow-[0_0_4px_rgba(251,191,36,0.85)]"
+                  strokeWidth={2.25}
+                  fill="currentColor"
+                  fillOpacity={0.25}
+                />
+              </span>
+              <span>
+                <span className="font-semibold text-slate-700">Tip:</span> Click
+                an active tool again to collapse it back to this overview.
+              </span>
             </p>
           </div>
         </aside>
