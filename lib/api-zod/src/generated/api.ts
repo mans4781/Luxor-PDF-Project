@@ -210,7 +210,7 @@ export const GetLicenseStatusResponse = zod
       "suspended",
     ]),
     canUsePdfTools: zod.boolean(),
-    reason: zod
+    lockReason: zod
       .enum([
         "none",
         "not_logged_in",
@@ -227,7 +227,7 @@ export const GetLicenseStatusResponse = zod
   .describe("Single source of truth for whether the caller can use PDF tools.");
 
 /**
- * Non-mutating gate. Returns `{ allowed, reason }` based on trial
+ * Non-mutating gate. Returns `{ allowed, lockReason }` based on trial
 validity and today's usage count. The frontend should call this
 before starting an action; after a successful action it should call
 `recordUsage` (which re-checks server-side).
@@ -261,7 +261,7 @@ export const CheckUsageBody = zod.object({
 
 export const CheckUsageResponse = zod.object({
   allowed: zod.boolean(),
-  reason: zod
+  lockReason: zod
     .enum([
       "none",
       "not_logged_in",
@@ -321,9 +321,9 @@ export const RecordUsageResponse = zod.object({
   recorded: zod
     .boolean()
     .describe(
-      "True if the increment was applied; false if blocked (in which case `reason` will explain).",
+      "True if the increment was applied; false if blocked (in which case `lockReason` will explain).",
     ),
-  reason: zod
+  lockReason: zod
     .enum([
       "none",
       "not_logged_in",

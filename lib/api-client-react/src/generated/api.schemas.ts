@@ -165,7 +165,7 @@ export interface LicenseStatus {
   subscriptionEndDate: string | null;
   licenseStatus: LicenseStatusValue;
   canUsePdfTools: boolean;
-  reason: LicenseLockReason;
+  lockReason: LicenseLockReason;
   /** Current server time at the moment this status was computed. */
   serverTime: string;
 }
@@ -176,7 +176,7 @@ export interface UsageCheckBody {
 
 export interface UsageCheckResult {
   allowed: boolean;
-  reason: LicenseLockReason;
+  lockReason: LicenseLockReason;
   todayUsage: number;
   dailyLimit: number;
 }
@@ -191,9 +191,9 @@ export interface UsageRecordBody {
 }
 
 export interface UsageRecordResult {
-  /** True if the increment was applied; false if blocked (in which case `reason` will explain). */
+  /** True if the increment was applied; false if blocked (in which case `lockReason` will explain). */
   recorded: boolean;
-  reason: LicenseLockReason;
+  lockReason: LicenseLockReason;
   todayUsage: number;
   dailyLimit: number;
 }

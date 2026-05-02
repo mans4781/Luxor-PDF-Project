@@ -841,7 +841,7 @@ export function useGetLicenseStatus<
 }
 
 /**
- * Non-mutating gate. Returns `{ allowed, reason }` based on trial
+ * Non-mutating gate. Returns `{ allowed, lockReason }` based on trial
 validity and today's usage count. The frontend should call this
 before starting an action; after a successful action it should call
 `recordUsage` (which re-checks server-side).

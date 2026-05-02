@@ -7,7 +7,6 @@ import {
   recordUsage,
   todayUtcDate,
   TRIAL_DAILY_LIMIT,
-  PAID_DAILY_LIMIT,
 } from "../lib/license";
 
 const router: IRouter = Router();
@@ -35,7 +34,7 @@ router.post("/usage/check", async (req: Request, res: Response): Promise<void> =
     const status = await getLicenseStatus(userId);
     res.json({
       allowed: status.canUsePdfTools,
-      reason: status.reason,
+      lockReason: status.lockReason,
       todayUsage: status.todayUsage,
       dailyLimit: status.dailyLimit,
     });
@@ -107,9 +106,6 @@ router.get("/usage/today", async (req: Request, res: Response): Promise<void> =>
       totalCount: 0,
       dailyLimit: TRIAL_DAILY_LIMIT,
     });
-    // PAID_DAILY_LIMIT is exported so it can be reused by Task #7's
-    // subscription wiring without re-deriving the value.
-    void PAID_DAILY_LIMIT;
   }
 });
 

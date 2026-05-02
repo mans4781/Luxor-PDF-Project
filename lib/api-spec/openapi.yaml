@@ -351,7 +351,7 @@ paths:
           description: |
             Current license + trial + usage status. This endpoint always
             returns 200 — when the caller is not signed in it returns an
-            "anonymous" payload (`loggedIn: false`, `reason:
+            "anonymous" payload (`loggedIn: false`, `lockReason:
             not_logged_in`, `canUsePdfTools: false`) so the marketing/landing
             pages can render without dealing with an error response.
           content:
@@ -365,7 +365,7 @@ paths:
       tags: [usage]
       summary: Check whether the caller is allowed to perform a PDF action
       description: |
-        Non-mutating gate. Returns `{ allowed, reason }` based on trial
+        Non-mutating gate. Returns `{ allowed, lockReason }` based on trial
         validity and today's usage count. The frontend should call this
         before starting an action; after a successful action it should call
         `recordUsage` (which re-checks server-side).
@@ -663,7 +663,7 @@ components:
           $ref: "#/components/schemas/LicenseStatusValue"
         canUsePdfTools:
           type: boolean
-        reason:
+        lockReason:
           $ref: "#/components/schemas/LicenseLockReason"
         serverTime:
           type: string
@@ -687,7 +687,7 @@ components:
         - subscriptionEndDate
         - licenseStatus
         - canUsePdfTools
-        - reason
+        - lockReason
         - serverTime
 
     UsageCheckBody:
@@ -703,7 +703,7 @@ components:
       properties:
         allowed:
           type: boolean
-        reason:
+        lockReason:
           $ref: "#/components/schemas/LicenseLockReason"
         todayUsage:
           type: integer
@@ -711,7 +711,7 @@ components:
           type: integer
       required:
         - allowed
-        - reason
+        - lockReason
         - todayUsage
         - dailyLimit
 
@@ -733,8 +733,8 @@ components:
       properties:
         recorded:
           type: boolean
-          description: True if the increment was applied; false if blocked (in which case `reason` will explain).
-        reason:
+          description: True if the increment was applied; false if blocked (in which case `lockReason` will explain).
+        lockReason:
           $ref: "#/components/schemas/LicenseLockReason"
         todayUsage:
           type: integer
@@ -742,7 +742,7 @@ components:
           type: integer
       required:
         - recorded
-        - reason
+        - lockReason
         - todayUsage
         - dailyLimit
 

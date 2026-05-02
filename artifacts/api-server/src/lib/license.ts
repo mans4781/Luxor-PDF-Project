@@ -56,7 +56,7 @@ export interface LicenseStatusResult {
   subscriptionEndDate: string | null;
   licenseStatus: LicenseStatusValue;
   canUsePdfTools: boolean;
-  reason: LicenseLockReason;
+  lockReason: LicenseLockReason;
   serverTime: string;
 }
 
@@ -259,7 +259,7 @@ export function buildAnonymousStatus(now: Date = new Date()): LicenseStatusResul
     subscriptionEndDate: null,
     licenseStatus: "anonymous",
     canUsePdfTools: false,
-    reason: "not_logged_in",
+    lockReason: "not_logged_in",
     serverTime: now.toISOString(),
   };
 }
@@ -307,27 +307,27 @@ export async function getLicenseStatus(
   const suspended = license.accountStatus === "suspended";
 
   let licenseStatus: LicenseStatusValue;
-  let reason: LicenseLockReason;
+  let lockReason: LicenseLockReason;
   let canUsePdfTools: boolean;
   const dailyLimit = license.isPaid ? PAID_DAILY_LIMIT : TRIAL_DAILY_LIMIT;
   const overLimit = todayUsage >= dailyLimit;
 
   if (suspended) {
     licenseStatus = "suspended";
-    reason = "account_suspended";
+    lockReason = "account_suspended";
     canUsePdfTools = false;
   } else if (license.isPaid) {
     // Paid path is stubbed at this stage; keep the structure ready for Task #7.
     licenseStatus = "active";
-    reason = overLimit ? "daily_limit_reached" : "none";
+    lockReason = overLimit ? "daily_limit_reached" : "none";
     canUsePdfTools = !overLimit;
   } else if (trialActive) {
     licenseStatus = "trial";
-    reason = overLimit ? "daily_limit_reached" : "none";
+    lockReason = overLimit ? "daily_limit_reached" : "none";
     canUsePdfTools = !overLimit;
   } else {
     licenseStatus = "trial_expired";
-    reason = "trial_expired";
+    lockReason = "trial_expired";
     canUsePdfTools = false;
     // Best-effort, deduplicated audit log of the trial lapsing.
     void maybeLogTrialExpired(userId);
@@ -351,7 +351,7 @@ export async function getLicenseStatus(
     subscriptionEndDate: null,
     licenseStatus,
     canUsePdfTools,
-    reason,
+    lockReason,
     serverTime: now.toISOString(),
   };
 }
@@ -360,7 +360,7 @@ export async function getLicenseStatus(
 
 export interface RecordUsageOutcome {
   recorded: boolean;
-  reason: LicenseLockReason;
+  lockReason: LicenseLockReason;
   todayUsage: number;
   dailyLimit: number;
 }
@@ -380,13 +380,13 @@ export async function recordUsage(
 
   // Hard blocks that don't depend on today's count — refuse without touching the row.
   if (
-    status.reason === "trial_expired" ||
-    status.reason === "subscription_expired" ||
-    status.reason === "account_suspended"
+    status.lockReason === "trial_expired" ||
+    status.lockReason === "subscription_expired" ||
+    status.lockReason === "account_suspended"
   ) {
     return {
       recorded: false,
-      reason: status.reason,
+      lockReason: status.lockReason,
       todayUsage: status.todayUsage,
       dailyLimit: status.dailyLimit,
     };
@@ -456,7 +456,7 @@ export async function recordUsage(
 
     return {
       recorded: false,
-      reason: "daily_limit_reached",
+      lockReason: "daily_limit_reached",
       todayUsage: row.totalCount - fileCount,
       dailyLimit: status.dailyLimit,
     };
@@ -464,7 +464,7 @@ export async function recordUsage(
 
   return {
     recorded: true,
-    reason: "none",
+    lockReason: "none",
     todayUsage: row.totalCount,
     dailyLimit: status.dailyLimit,
   };

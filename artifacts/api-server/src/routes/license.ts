@@ -17,7 +17,7 @@ router.get("/license/status", async (req: Request, res: Response): Promise<void>
     // payload so the client locks tools rather than silently allowing them.
     res.status(500).json({
       ...buildAnonymousStatus(),
-      reason: "not_logged_in",
+      lockReason: "not_logged_in",
     });
   }
 });

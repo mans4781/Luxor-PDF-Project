@@ -9,7 +9,7 @@ import type { LicenseLockReason } from "./licenseLockReason";
 
 export interface UsageCheckResult {
   allowed: boolean;
-  reason: LicenseLockReason;
+  lockReason: LicenseLockReason;
   todayUsage: number;
   dailyLimit: number;
 }
