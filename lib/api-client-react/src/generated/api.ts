@@ -22,12 +22,18 @@ import type {
   ErrorResponse,
   GetPdfParams,
   HealthStatus,
+  LicenseStatus,
   PdfRecord,
   PdfStats,
   PdfUploadResult,
   RequestRevokeOtpBody,
   RevokeOtpRequestResult,
+  TodayUsage,
   UploadPdfBody,
+  UsageCheckBody,
+  UsageCheckResult,
+  UsageRecordBody,
+  UsageRecordResult,
   VerifyRevokeOtpBody,
 } from "./api.schemas";
 
@@ -742,6 +748,349 @@ export function useGetPdfStats<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetPdfStatsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Returns the single source of truth used by the desktop and web apps to
+decide whether to allow PDF actions. Auto-provisions a license profile
+on first call after sign-in. All trial / subscription windows are
+computed against server time (UTC).
+
+At this stage paid-subscription fields (`isPaid`, `subscriptionActive`,
+`subscriptionDaysRemaining`, `subscriptionExpired`, `planName`) are
+always false / null — they will be wired up in the product-keys task.
+
+ * @summary Get the caller's license, trial, and usage status
+ */
+export const getGetLicenseStatusUrl = () => {
+  return `/api/license/status`;
+};
+
+export const getLicenseStatus = async (
+  options?: RequestInit,
+): Promise<LicenseStatus> => {
+  return customFetch<LicenseStatus>(getGetLicenseStatusUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetLicenseStatusQueryKey = () => {
+  return [`/api/license/status`] as const;
+};
+
+export const getGetLicenseStatusQueryOptions = <
+  TData = Awaited<ReturnType<typeof getLicenseStatus>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getLicenseStatus>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetLicenseStatusQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getLicenseStatus>>
+  > = ({ signal }) => getLicenseStatus({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getLicenseStatus>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetLicenseStatusQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getLicenseStatus>>
+>;
+export type GetLicenseStatusQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get the caller's license, trial, and usage status
+ */
+
+export function useGetLicenseStatus<
+  TData = Awaited<ReturnType<typeof getLicenseStatus>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getLicenseStatus>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetLicenseStatusQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Non-mutating gate. Returns `{ allowed, reason }` based on trial
+validity and today's usage count. The frontend should call this
+before starting an action; after a successful action it should call
+`recordUsage` (which re-checks server-side).
+
+ * @summary Check whether the caller is allowed to perform a PDF action
+ */
+export const getCheckUsageUrl = () => {
+  return `/api/usage/check`;
+};
+
+export const checkUsage = async (
+  usageCheckBody: UsageCheckBody,
+  options?: RequestInit,
+): Promise<UsageCheckResult> => {
+  return customFetch<UsageCheckResult>(getCheckUsageUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(usageCheckBody),
+  });
+};
+
+export const getCheckUsageMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof checkUsage>>,
+    TError,
+    { data: BodyType<UsageCheckBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof checkUsage>>,
+  TError,
+  { data: BodyType<UsageCheckBody> },
+  TContext
+> => {
+  const mutationKey = ["checkUsage"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof checkUsage>>,
+    { data: BodyType<UsageCheckBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return checkUsage(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CheckUsageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof checkUsage>>
+>;
+export type CheckUsageMutationBody = BodyType<UsageCheckBody>;
+export type CheckUsageMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Check whether the caller is allowed to perform a PDF action
+ */
+export const useCheckUsage = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof checkUsage>>,
+    TError,
+    { data: BodyType<UsageCheckBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof checkUsage>>,
+  TError,
+  { data: BodyType<UsageCheckBody> },
+  TContext
+> => {
+  return useMutation(getCheckUsageMutationOptions(options));
+};
+
+/**
+ * Atomically increments today's usage row by 1 (and the matching
+category counter). Re-checks the cap server-side and returns 403 if
+the action would exceed the daily limit — clients must not bypass
+this by calling `recordUsage` without a prior `checkUsage`.
+
+ * @summary Record one successful PDF action against today's quota
+ */
+export const getRecordUsageUrl = () => {
+  return `/api/usage/record`;
+};
+
+export const recordUsage = async (
+  usageRecordBody: UsageRecordBody,
+  options?: RequestInit,
+): Promise<UsageRecordResult> => {
+  return customFetch<UsageRecordResult>(getRecordUsageUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(usageRecordBody),
+  });
+};
+
+export const getRecordUsageMutationOptions = <
+  TError = ErrorType<ErrorResponse | UsageRecordResult>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof recordUsage>>,
+    TError,
+    { data: BodyType<UsageRecordBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof recordUsage>>,
+  TError,
+  { data: BodyType<UsageRecordBody> },
+  TContext
+> => {
+  const mutationKey = ["recordUsage"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof recordUsage>>,
+    { data: BodyType<UsageRecordBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return recordUsage(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RecordUsageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof recordUsage>>
+>;
+export type RecordUsageMutationBody = BodyType<UsageRecordBody>;
+export type RecordUsageMutationError = ErrorType<
+  ErrorResponse | UsageRecordResult
+>;
+
+/**
+ * @summary Record one successful PDF action against today's quota
+ */
+export const useRecordUsage = <
+  TError = ErrorType<ErrorResponse | UsageRecordResult>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof recordUsage>>,
+    TError,
+    { data: BodyType<UsageRecordBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof recordUsage>>,
+  TError,
+  { data: BodyType<UsageRecordBody> },
+  TContext
+> => {
+  return useMutation(getRecordUsageMutationOptions(options));
+};
+
+/**
+ * @summary Get today's usage breakdown for the caller
+ */
+export const getGetUsageTodayUrl = () => {
+  return `/api/usage/today`;
+};
+
+export const getUsageToday = async (
+  options?: RequestInit,
+): Promise<TodayUsage> => {
+  return customFetch<TodayUsage>(getGetUsageTodayUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetUsageTodayQueryKey = () => {
+  return [`/api/usage/today`] as const;
+};
+
+export const getGetUsageTodayQueryOptions = <
+  TData = Awaited<ReturnType<typeof getUsageToday>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getUsageToday>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetUsageTodayQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsageToday>>> = ({
+    signal,
+  }) => getUsageToday({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getUsageToday>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetUsageTodayQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getUsageToday>>
+>;
+export type GetUsageTodayQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get today's usage breakdown for the caller
+ */
+
+export function useGetUsageToday<
+  TData = Awaited<ReturnType<typeof getUsageToday>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getUsageToday>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetUsageTodayQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

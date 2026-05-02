@@ -75,6 +75,140 @@ export interface ErrorResponse {
 }
 
 /**
+ * Identifier for a billable PDF action. Used by `checkUsage` and
+`recordUsage`. Mapped server-side to one of three categories:
+`edit`, `convert`, or `secure`.
+
+ */
+export type PdfActionType = (typeof PdfActionType)[keyof typeof PdfActionType];
+
+export const PdfActionType = {
+  merge: "merge",
+  split: "split",
+  extract_pages: "extract_pages",
+  delete_pages: "delete_pages",
+  insert_pages: "insert_pages",
+  pdf_to_image: "pdf_to_image",
+  pdf_to_word: "pdf_to_word",
+  pdf_to_excel: "pdf_to_excel",
+  image_to_pdf: "image_to_pdf",
+  word_to_pdf: "word_to_pdf",
+  excel_to_pdf: "excel_to_pdf",
+  password_protect: "password_protect",
+  set_expiry: "set_expiry",
+  revoke_expiry: "revoke_expiry",
+  copy_restriction: "copy_restriction",
+  print_restriction: "print_restriction",
+} as const;
+
+/**
+ * Why PDF tools are currently blocked, or `none` if allowed.
+ */
+export type LicenseLockReason =
+  (typeof LicenseLockReason)[keyof typeof LicenseLockReason];
+
+export const LicenseLockReason = {
+  none: "none",
+  not_logged_in: "not_logged_in",
+  trial_expired: "trial_expired",
+  subscription_expired: "subscription_expired",
+  daily_limit_reached: "daily_limit_reached",
+  account_suspended: "account_suspended",
+} as const;
+
+export type LicenseStatusValue =
+  (typeof LicenseStatusValue)[keyof typeof LicenseStatusValue];
+
+export const LicenseStatusValue = {
+  anonymous: "anonymous",
+  trial: "trial",
+  trial_expired: "trial_expired",
+  active: "active",
+  expired: "expired",
+  suspended: "suspended",
+} as const;
+
+/**
+ * Single source of truth for whether the caller can use PDF tools.
+ */
+export interface LicenseStatus {
+  loggedIn: boolean;
+  trialActive: boolean;
+  /** Whole days remaining (rounded down). 0 once the trial has lapsed. */
+  trialDaysRemaining: number;
+  trialExpired: boolean;
+  /**
+   * ISO 8601 server time when the trial started; null if not signed in.
+   * @nullable
+   */
+  trialStartDate: string | null;
+  /** @nullable */
+  trialEndDate: string | null;
+  /** Total PDF actions the caller has performed today (server UTC date). */
+  todayUsage: number;
+  /** Maximum PDF actions allowed today. 5 during trial; effectively unlimited (a large number) for paid users. */
+  dailyLimit: number;
+  /** True when the caller has an active paid subscription. Always false at this stage. */
+  isPaid: boolean;
+  /**
+   * Plan name when paid (e.g. "monthly", "yearly"); null otherwise.
+   * @nullable
+   */
+  planName: string | null;
+  subscriptionActive: boolean;
+  /** @nullable */
+  subscriptionDaysRemaining: number | null;
+  subscriptionExpired: boolean;
+  /** @nullable */
+  subscriptionStartDate: string | null;
+  /** @nullable */
+  subscriptionEndDate: string | null;
+  licenseStatus: LicenseStatusValue;
+  canUsePdfTools: boolean;
+  lockReason: LicenseLockReason;
+  /** Current server time at the moment this status was computed. */
+  serverTime: string;
+}
+
+export interface UsageCheckBody {
+  actionType: PdfActionType;
+}
+
+export interface UsageCheckResult {
+  allowed: boolean;
+  lockReason: LicenseLockReason;
+  todayUsage: number;
+  dailyLimit: number;
+}
+
+export interface UsageRecordBody {
+  actionType: PdfActionType;
+  /**
+   * How many files this action processed. Each file counts as one against the daily quota. Defaults to 1.
+   * @minimum 1
+   */
+  fileCount?: number;
+}
+
+export interface UsageRecordResult {
+  /** True if the increment was applied; false if blocked (in which case `lockReason` will explain). */
+  recorded: boolean;
+  lockReason: LicenseLockReason;
+  todayUsage: number;
+  dailyLimit: number;
+}
+
+export interface TodayUsage {
+  /** Server UTC date in YYYY-MM-DD format. */
+  usageDate: string;
+  editCount: number;
+  convertCount: number;
+  secureCount: number;
+  totalCount: number;
+  dailyLimit: number;
+}
+
+/**
  * What happens once the PDF expires.
 - `corrupt`: the file is replaced with garbage bytes so PDF readers cannot open it.
 - `revoke`: the file is deleted and the download endpoint returns 410 Gone.

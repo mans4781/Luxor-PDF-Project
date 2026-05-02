@@ -145,3 +145,206 @@ export const GetPdfStatsResponse = zod.object({
   expired: zod.number(),
   totalSize: zod.number(),
 });
+
+/**
+ * Returns the single source of truth used by the desktop and web apps to
+decide whether to allow PDF actions. Auto-provisions a license profile
+on first call after sign-in. All trial / subscription windows are
+computed against server time (UTC).
+
+At this stage paid-subscription fields (`isPaid`, `subscriptionActive`,
+`subscriptionDaysRemaining`, `subscriptionExpired`, `planName`) are
+always false / null — they will be wired up in the product-keys task.
+
+ * @summary Get the caller's license, trial, and usage status
+ */
+export const GetLicenseStatusResponse = zod
+  .object({
+    loggedIn: zod.boolean(),
+    trialActive: zod.boolean(),
+    trialDaysRemaining: zod
+      .number()
+      .describe(
+        "Whole days remaining (rounded down). 0 once the trial has lapsed.",
+      ),
+    trialExpired: zod.boolean(),
+    trialStartDate: zod.coerce
+      .date()
+      .nullable()
+      .describe(
+        "ISO 8601 server time when the trial started; null if not signed in.",
+      ),
+    trialEndDate: zod.coerce.date().nullable(),
+    todayUsage: zod
+      .number()
+      .describe(
+        "Total PDF actions the caller has performed today (server UTC date).",
+      ),
+    dailyLimit: zod
+      .number()
+      .describe(
+        "Maximum PDF actions allowed today. 5 during trial; effectively unlimited (a large number) for paid users.",
+      ),
+    isPaid: zod
+      .boolean()
+      .describe(
+        "True when the caller has an active paid subscription. Always false at this stage.",
+      ),
+    planName: zod
+      .string()
+      .nullable()
+      .describe(
+        'Plan name when paid (e.g. \"monthly\", \"yearly\"); null otherwise.',
+      ),
+    subscriptionActive: zod.boolean(),
+    subscriptionDaysRemaining: zod.number().nullable(),
+    subscriptionExpired: zod.boolean(),
+    subscriptionStartDate: zod.coerce.date().nullable(),
+    subscriptionEndDate: zod.coerce.date().nullable(),
+    licenseStatus: zod.enum([
+      "anonymous",
+      "trial",
+      "trial_expired",
+      "active",
+      "expired",
+      "suspended",
+    ]),
+    canUsePdfTools: zod.boolean(),
+    lockReason: zod
+      .enum([
+        "none",
+        "not_logged_in",
+        "trial_expired",
+        "subscription_expired",
+        "daily_limit_reached",
+        "account_suspended",
+      ])
+      .describe("Why PDF tools are currently blocked, or `none` if allowed."),
+    serverTime: zod.coerce
+      .date()
+      .describe("Current server time at the moment this status was computed."),
+  })
+  .describe("Single source of truth for whether the caller can use PDF tools.");
+
+/**
+ * Non-mutating gate. Returns `{ allowed, reason }` based on trial
+validity and today's usage count. The frontend should call this
+before starting an action; after a successful action it should call
+`recordUsage` (which re-checks server-side).
+
+ * @summary Check whether the caller is allowed to perform a PDF action
+ */
+export const CheckUsageBody = zod.object({
+  actionType: zod
+    .enum([
+      "merge",
+      "split",
+      "extract_pages",
+      "delete_pages",
+      "insert_pages",
+      "pdf_to_image",
+      "pdf_to_word",
+      "pdf_to_excel",
+      "image_to_pdf",
+      "word_to_pdf",
+      "excel_to_pdf",
+      "password_protect",
+      "set_expiry",
+      "revoke_expiry",
+      "copy_restriction",
+      "print_restriction",
+    ])
+    .describe(
+      "Identifier for a billable PDF action. Used by `checkUsage` and\n`recordUsage`. Mapped server-side to one of three categories:\n`edit`, `convert`, or `secure`.\n",
+    ),
+});
+
+export const CheckUsageResponse = zod.object({
+  allowed: zod.boolean(),
+  lockReason: zod
+    .enum([
+      "none",
+      "not_logged_in",
+      "trial_expired",
+      "subscription_expired",
+      "daily_limit_reached",
+      "account_suspended",
+    ])
+    .describe("Why PDF tools are currently blocked, or `none` if allowed."),
+  todayUsage: zod.number(),
+  dailyLimit: zod.number(),
+});
+
+/**
+ * Atomically increments today's usage row by 1 (and the matching
+category counter). Re-checks the cap server-side and returns 403 if
+the action would exceed the daily limit — clients must not bypass
+this by calling `recordUsage` without a prior `checkUsage`.
+
+ * @summary Record one successful PDF action against today's quota
+ */
+export const recordUsageBodyFileCountDefault = 1;
+
+export const RecordUsageBody = zod.object({
+  actionType: zod
+    .enum([
+      "merge",
+      "split",
+      "extract_pages",
+      "delete_pages",
+      "insert_pages",
+      "pdf_to_image",
+      "pdf_to_word",
+      "pdf_to_excel",
+      "image_to_pdf",
+      "word_to_pdf",
+      "excel_to_pdf",
+      "password_protect",
+      "set_expiry",
+      "revoke_expiry",
+      "copy_restriction",
+      "print_restriction",
+    ])
+    .describe(
+      "Identifier for a billable PDF action. Used by `checkUsage` and\n`recordUsage`. Mapped server-side to one of three categories:\n`edit`, `convert`, or `secure`.\n",
+    ),
+  fileCount: zod
+    .number()
+    .min(1)
+    .default(recordUsageBodyFileCountDefault)
+    .describe(
+      "How many files this action processed. Each file counts as one against the daily quota. Defaults to 1.",
+    ),
+});
+
+export const RecordUsageResponse = zod.object({
+  recorded: zod
+    .boolean()
+    .describe(
+      "True if the increment was applied; false if blocked (in which case `lockReason` will explain).",
+    ),
+  lockReason: zod
+    .enum([
+      "none",
+      "not_logged_in",
+      "trial_expired",
+      "subscription_expired",
+      "daily_limit_reached",
+      "account_suspended",
+    ])
+    .describe("Why PDF tools are currently blocked, or `none` if allowed."),
+  todayUsage: zod.number(),
+  dailyLimit: zod.number(),
+});
+
+/**
+ * @summary Get today's usage breakdown for the caller
+ */
+export const GetUsageTodayResponse = zod.object({
+  usageDate: zod.string().describe("Server UTC date in YYYY-MM-DD format."),
+  editCount: zod.number(),
+  convertCount: zod.number(),
+  secureCount: zod.number(),
+  totalCount: zod.number(),
+  dailyLimit: zod.number(),
+});

@@ -20,3 +20,6 @@
 export * from "./pdfs";
 export * from "./pdf-otps";
 export * from "./visitors";
+export * from "./user-licenses";
+export * from "./daily-usage";
+export * from "./license-events";
