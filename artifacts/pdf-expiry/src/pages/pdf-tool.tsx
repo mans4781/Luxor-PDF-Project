@@ -1153,7 +1153,7 @@ export function PdfToolContent() {
               <Wrench className="w-7 h-7 text-white" strokeWidth={1.75} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">PDF Tool</h1>
+              <h1 className="text-2xl font-bold">Edit Your PDF</h1>
               <p className="text-violet-200 text-sm mt-0.5">Merge, split, extract, delete &amp; insert pages — all processed in your browser</p>
             </div>
           </div>

@@ -29,7 +29,7 @@ type ToolItem = {
 const TOOLS: ToolItem[] = [
   {
     key: "pdf-tool",
-    label: "PDF Tool",
+    label: "Edit Your PDF",
     description: "Merge, split & extract pages",
     icon: Wrench,
     accent: "#312E81",
