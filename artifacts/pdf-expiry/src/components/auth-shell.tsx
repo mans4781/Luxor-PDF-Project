@@ -1,12 +1,5 @@
 import { ReactNode } from "react";
-import { Link } from "wouter";
-import {
-  ShieldCheck,
-  Lock,
-  Globe2,
-  Sparkles,
-  ArrowLeft,
-} from "lucide-react";
+import { ShieldCheck, Lock, Globe2, Sparkles } from "lucide-react";
 
 const baseUrl = import.meta.env.BASE_URL;
 const basePath = baseUrl.replace(/\/$/, "");
@@ -61,13 +54,9 @@ export function AuthShell({ children, variant }: AuthShellProps) {
           }}
         />
 
-        {/* Top: logo + back link */}
-        <div className="relative flex items-center justify-between">
-          <Link
-            href={basePath || "/"}
-            className="group flex items-center gap-3"
-            aria-label="Luxor PDF Secure home"
-          >
+        {/* Top: brand lockup */}
+        <div className="relative flex items-center">
+          <div className="flex items-center gap-3">
             <img
               src={`${baseUrl}brand/luxor-icon.png`}
               alt=""
@@ -75,7 +64,7 @@ export function AuthShell({ children, variant }: AuthShellProps) {
               width={56}
               height={56}
               draggable={false}
-              className="h-14 w-14 rounded-2xl border border-white/30 bg-white shadow-lg transition-transform group-hover:scale-105 select-none"
+              className="h-14 w-14 rounded-2xl border border-white/30 bg-white shadow-lg select-none"
             />
             <div className="flex flex-col leading-none">
               <span className="text-[20px] font-extrabold tracking-tight">
@@ -89,15 +78,7 @@ export function AuthShell({ children, variant }: AuthShellProps) {
                 Private PDF Suite
               </span>
             </div>
-          </Link>
-
-          <Link
-            href={basePath || "/"}
-            className="hidden lg:inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-200 hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Back to app
-          </Link>
+          </div>
         </div>
 
         {/* Middle: pitch */}
@@ -162,11 +143,7 @@ export function AuthShell({ children, variant }: AuthShellProps) {
       <main className="flex-1 flex items-center justify-center px-4 py-10 lg:py-14">
         <div className="w-full max-w-md">
           {/* Brand row above the Clerk card */}
-          <Link
-            href={basePath || "/"}
-            className="group flex items-center justify-center gap-3 mb-6"
-            aria-label="Luxor PDF Suite home"
-          >
+          <div className="flex items-center justify-center gap-3 mb-6">
             <img
               src={`${baseUrl}brand/luxor-icon.png`}
               alt=""
@@ -174,7 +151,7 @@ export function AuthShell({ children, variant }: AuthShellProps) {
               width={48}
               height={48}
               draggable={false}
-              className="h-12 w-12 rounded-2xl border border-[#DC2626]/40 bg-white shadow-sm transition-transform group-hover:scale-105 select-none"
+              className="h-12 w-12 rounded-2xl border border-[#DC2626]/40 bg-white shadow-sm select-none"
             />
             <div className="flex flex-col leading-none">
               <span className="text-[20px] font-extrabold tracking-tight">
@@ -185,7 +162,7 @@ export function AuthShell({ children, variant }: AuthShellProps) {
                 Secure PDF Suite
               </span>
             </div>
-          </Link>
+          </div>
           {children}
         </div>
       </main>
