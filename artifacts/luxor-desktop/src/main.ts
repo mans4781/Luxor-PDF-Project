@@ -2,6 +2,8 @@ import { app, BrowserWindow, shell, session } from "electron";
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import * as crypto from "node:crypto";
+import { autoUpdater } from "electron-updater";
+import log from "electron-log";
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 //
@@ -117,6 +119,51 @@ if (process.platform === "win32") {
   app.setAppUserModelId("com.luxor.pdfsecure");
 }
 
+// ─── Auto-update ──────────────────────────────────────────────────────────────
+//
+// Uses electron-updater against the publish feed configured in package.json
+// (GitHub Releases by default). Runs only in packaged builds; in development
+// `app.isPackaged` is false and electron-updater would fail to find the
+// dev-app-update.yml.
+
+function setupAutoUpdater(): void {
+  if (!app.isPackaged) {
+    log.info("[updater] skipped — running unpackaged");
+    return;
+  }
+
+  autoUpdater.logger = log;
+  log.transports.file.level = "info";
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on("checking-for-update", () => {
+    log.info("[updater] checking for update");
+  });
+  autoUpdater.on("update-available", (info) => {
+    log.info("[updater] update available", info?.version);
+  });
+  autoUpdater.on("update-not-available", () => {
+    log.info("[updater] no update available");
+  });
+  autoUpdater.on("download-progress", (p) => {
+    log.info(
+      `[updater] download progress ${Math.round(p.percent)}% ` +
+        `(${p.transferred}/${p.total} bytes)`,
+    );
+  });
+  autoUpdater.on("update-downloaded", (info) => {
+    log.info("[updater] update downloaded", info?.version);
+  });
+  autoUpdater.on("error", (err) => {
+    log.error("[updater] error", err);
+  });
+
+  autoUpdater.checkForUpdatesAndNotify().catch((err) => {
+    log.error("[updater] checkForUpdatesAndNotify failed", err);
+  });
+}
+
 void app.whenReady().then(async () => {
   // Warm the device id so the preload bridge is instant on first read.
   await getDeviceId();
@@ -139,6 +186,10 @@ void app.whenReady().then(async () => {
   }
 
   createWindow();
+
+  // Kick off update check shortly after the window is up so the initial
+  // load isn't competing with network for the update manifest.
+  setTimeout(() => setupAutoUpdater(), 3000);
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
