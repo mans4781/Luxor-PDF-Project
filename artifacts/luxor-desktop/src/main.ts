@@ -1,7 +1,15 @@
-import { app, BrowserWindow, shell, session } from "electron";
+import {
+  app,
+  BrowserWindow,
+  shell,
+  session,
+  protocol,
+  net,
+} from "electron";
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import * as crypto from "node:crypto";
+import { pathToFileURL } from "node:url";
 import { autoUpdater } from "electron-updater";
 import log from "electron-log";
 
@@ -11,7 +19,9 @@ import log from "electron-log";
 // runtime to env vars):
 //
 //   LUXOR_LOAD_MODE = "remote"  (default) — load REMOTE_URL
-//   LUXOR_LOAD_MODE = "bundled"           — load file://web-bundle/index.html
+//   LUXOR_LOAD_MODE = "bundled"           — load app://luxor/  (custom proto
+//     serving web-bundle/ from disk with SPA index.html fallback so wouter
+//     path routing resolves correctly — file:// + path routing does not).
 //
 // REMOTE_URL is the deployed pdf-expiry app. For local dev against the
 // Replit preview, point it at http://localhost:80/pdf-expiry/.
@@ -23,9 +33,69 @@ const LOAD_MODE: "remote" | "bundled" =
   "remote";
 const REMOTE_URL =
   process.env["LUXOR_REMOTE_URL"] ?? "https://luxorpdf.com/pdf-expiry/";
-const BUNDLED_INDEX =
-  process.env["LUXOR_BUNDLED_INDEX"] ??
-  path.join(process.resourcesPath, "web-bundle", "index.html");
+const BUNDLED_ROOT =
+  process.env["LUXOR_BUNDLED_ROOT"] ??
+  path.join(process.resourcesPath, "web-bundle");
+const BUNDLED_URL = "app://luxor/";
+
+// Register the custom scheme as a privileged, secure, standard scheme BEFORE
+// app `ready`. This makes `app://` behave like https for the renderer:
+// secure context, fetch enabled, standard URL parsing (so wouter path
+// routes like "/dashboard" resolve cleanly under one origin).
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: "app",
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      stream: true,
+    },
+  },
+]);
+
+const ASSET_EXT_RE = /\.[a-z0-9]+$/i;
+
+/**
+ * Serve the bundled SPA from disk under the `app://luxor/` origin.
+ * - Asset paths (anything with a file extension) → return the file as-is.
+ * - Everything else (SPA route paths) → fall back to index.html so the
+ *   client-side router gets to handle them.
+ * - Refuses to escape `BUNDLED_ROOT` (path traversal guard).
+ */
+function registerBundledProtocol(): void {
+  protocol.handle("app", async (request) => {
+    try {
+      const url = new URL(request.url);
+      // Strip leading slash from the URL pathname.
+      const rel = decodeURIComponent(url.pathname).replace(/^\/+/, "");
+      const isAsset = ASSET_EXT_RE.test(rel);
+      const targetRel = isAsset && rel.length > 0 ? rel : "index.html";
+
+      const resolved = path.normalize(path.join(BUNDLED_ROOT, targetRel));
+      // Path-traversal guard: resolved must stay inside BUNDLED_ROOT.
+      const rootWithSep = BUNDLED_ROOT.endsWith(path.sep)
+        ? BUNDLED_ROOT
+        : BUNDLED_ROOT + path.sep;
+      if (!resolved.startsWith(rootWithSep) && resolved !== BUNDLED_ROOT) {
+        return new Response("Forbidden", { status: 403 });
+      }
+
+      // If a non-existent asset was requested, also fall back to index.html
+      // so deep-link refreshes work even if the asset name lookup misses.
+      const stat = await fs.stat(resolved).catch(() => null);
+      const finalPath =
+        stat && stat.isFile()
+          ? resolved
+          : path.join(BUNDLED_ROOT, "index.html");
+
+      return net.fetch(pathToFileURL(finalPath).toString());
+    } catch (err) {
+      log.error("[bundled-proto] failed to serve", request.url, err);
+      return new Response("Internal error", { status: 500 });
+    }
+  });
+}
 
 // Keep a reference so the window isn't GC'd.
 let mainWindow: BrowserWindow | null = null;
@@ -94,17 +164,18 @@ function createWindow(): void {
 
   // Block in-app navigation away from the loaded origin (defense in depth).
   mainWindow.webContents.on("will-navigate", (event, navUrl) => {
-    if (LOAD_MODE === "remote") {
-      const allowed = new URL(REMOTE_URL).origin;
-      if (new URL(navUrl).origin !== allowed) {
-        event.preventDefault();
-        void shell.openExternal(navUrl);
-      }
+    const allowedOrigin =
+      LOAD_MODE === "remote"
+        ? new URL(REMOTE_URL).origin
+        : new URL(BUNDLED_URL).origin;
+    if (new URL(navUrl).origin !== allowedOrigin) {
+      event.preventDefault();
+      void shell.openExternal(navUrl);
     }
   });
 
   if (LOAD_MODE === "bundled") {
-    void mainWindow.loadFile(BUNDLED_INDEX);
+    void mainWindow.loadURL(BUNDLED_URL);
   } else {
     void mainWindow.loadURL(REMOTE_URL);
   }
@@ -170,9 +241,13 @@ void app.whenReady().then(async () => {
   // Warm the device id so the preload bridge is instant on first read.
   await getDeviceId();
 
-  // Tighten Content-Security-Policy for the bundled load mode. Remote mode
-  // keeps the deployed site's own CSP.
+  // Bundled mode: register the custom scheme handler that serves
+  // web-bundle/ from disk with SPA index.html fallback.
   if (LOAD_MODE === "bundled") {
+    registerBundledProtocol();
+
+    // Tighten Content-Security-Policy for the bundled load mode. Remote
+    // mode keeps the deployed site's own CSP.
     session.defaultSession.webRequest.onHeadersReceived((details, cb) => {
       cb({
         responseHeaders: {

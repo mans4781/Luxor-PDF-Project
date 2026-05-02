@@ -8,7 +8,23 @@ NSIS installer (`Luxor PDF Secure Setup x.y.z.exe`).
 | `LUXOR_LOAD_MODE` | Loads                                           |
 | ----------------- | ----------------------------------------------- |
 | `remote` (default) | `LUXOR_REMOTE_URL` (default `https://luxorpdf.com/pdf-expiry/`) |
-| `bundled`         | `web-bundle/index.html` (built `pdf-expiry`)    |
+| `bundled`         | `app://luxor/` — built `pdf-expiry` from `web-bundle/`, served by a custom Electron protocol with SPA `index.html` fallback so wouter path routing works offline. |
+
+> Why a custom `app://` scheme instead of `file://`? Wouter (and most SPA
+> routers) match against `window.location.pathname`. Under `file://` that
+> path is a filesystem path ending in `index.html` — routes never match.
+> The `app://` handler in `src/main.ts` serves real assets directly and
+> falls back to `index.html` for any non-asset path, which is the standard
+> SPA fallback behavior.
+
+## Artifacts registry
+
+This package is intentionally **not** registered in `.replit-artifact/` —
+the Replit artifact system has no `desktop`/`electron` kind (only `web`,
+`api`, `expo`, `slides`, `video`, `design`, `data-visualization`). The
+package lives in `artifacts/` purely so it shares the monorepo's pnpm
+workspace, TypeScript config, and CI. It is not previewed in the
+workspace; it ships as a Windows installer instead.
 
 ## Scripts
 
@@ -34,7 +50,8 @@ LUXOR_LOAD_MODE=bundled pnpm --filter @workspace/luxor-desktop run dist:win
 ```
 
 `web-bundle/` is ignored by git and copied into the installer via
-`extraResources`.
+`extraResources`. At runtime the bundle is served from a custom
+`app://luxor/` origin (see `src/main.ts`) so SPA path routing works.
 
 ## Code signing (Windows)
 
