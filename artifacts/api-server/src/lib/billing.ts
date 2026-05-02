@@ -1,0 +1,252 @@
+import { and, eq, sql } from "drizzle-orm";
+import {
+  db,
+  productKeysTable,
+  licensesTable,
+  devicesTable,
+  userLicensesTable,
+  licenseEventsTable,
+} from "@workspace/db";
+import {
+  generateProductKey,
+  hashProductKey,
+  PLAN_DURATION_DAYS,
+  type ProductPlan,
+} from "@workspace/license-keys";
+import { logger } from "./logger";
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+export type BillingProviderId = "stripe" | "razorpay" | "paypal";
+
+export interface BillingProviderInfo {
+  id: BillingProviderId;
+  displayName: string;
+  available: boolean;
+  comingSoon: boolean;
+}
+
+export const PROVIDER_REGISTRY: Record<BillingProviderId, () => BillingProviderInfo> = {
+  stripe: () => ({
+    id: "stripe",
+    displayName: "Stripe",
+    available: !!process.env["STRIPE_SECRET_KEY"],
+    comingSoon: false,
+  }),
+  razorpay: () => ({
+    id: "razorpay",
+    displayName: "Razorpay",
+    available: false,
+    comingSoon: true,
+  }),
+  paypal: () => ({
+    id: "paypal",
+    displayName: "PayPal",
+    available: false,
+    comingSoon: true,
+  }),
+};
+
+export function listProviders(): BillingProviderInfo[] {
+  return (Object.keys(PROVIDER_REGISTRY) as BillingProviderId[]).map((id) =>
+    PROVIDER_REGISTRY[id](),
+  );
+}
+
+const STRIPE_PRICE_ENV: Record<ProductPlan, string> = {
+  monthly: "STRIPE_PRICE_MONTHLY",
+  quarterly: "STRIPE_PRICE_QUARTERLY",
+  yearly: "STRIPE_PRICE_YEARLY",
+  lifetime: "STRIPE_PRICE_LIFETIME",
+};
+
+export function stripePriceIdFor(plan: ProductPlan): string | null {
+  const envName = STRIPE_PRICE_ENV[plan];
+  return process.env[envName] ?? null;
+}
+
+/** Idempotency table for webhook events. Created at startup. */
+export async function runBillingMigrations(): Promise<void> {
+  try {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS billing_events (
+        provider TEXT NOT NULL,
+        event_id TEXT NOT NULL,
+        event_type TEXT NOT NULL,
+        user_id TEXT,
+        processed_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (provider, event_id)
+      )
+    `);
+  } catch (err) {
+    logger.error({ err }, "Billing migration failed");
+    throw err;
+  }
+}
+
+/**
+ * Records a webhook event as processed. Returns true on first observation,
+ * false on duplicate (idempotent replay).
+ */
+export async function claimBillingEvent(
+  provider: BillingProviderId,
+  eventId: string,
+  eventType: string,
+  userId: string | null,
+): Promise<boolean> {
+  const inserted = await db.execute(sql`
+    INSERT INTO billing_events (provider, event_id, event_type, user_id)
+    VALUES (${provider}, ${eventId}, ${eventType}, ${userId})
+    ON CONFLICT (provider, event_id) DO NOTHING
+    RETURNING event_id
+  `);
+  return (inserted.rows?.length ?? 0) > 0;
+}
+
+export interface PaidRenewalOutcome {
+  productKeyId: number;
+  rawProductKey: string;
+  licenseId: number | null;
+  subscriptionEndDate: Date;
+  isFirstActivation: boolean;
+}
+
+/**
+ * Mints a fresh product key for `userId` and either:
+ *   - extends the user's most-recent license (renewal), or
+ *   - records the key without binding to a device (first activation —
+ *     the desktop app activates it on next launch using the user's
+ *     deviceId).
+ *
+ * Atomic: the product key insert, license update, and audit row all share
+ * one DB transaction.
+ */
+export async function applyPaidPlan(
+  userId: string,
+  plan: ProductPlan,
+  source: { provider: BillingProviderId; eventId: string },
+  now: Date = new Date(),
+): Promise<PaidRenewalOutcome> {
+  const rawKey = generateProductKey();
+  const { hash, prefix } = hashProductKey(rawKey);
+  const durationDays = PLAN_DURATION_DAYS[plan];
+
+  return db.transaction(async (tx) => {
+    // 1. Mint the product key (single-use, server-attributed).
+    const [keyRow] = await tx
+      .insert(productKeysTable)
+      .values({
+        keyHash: hash,
+        keyPrefix: prefix,
+        planName: plan,
+        durationDays,
+        maxActivations: 1,
+        currentActivations: 0,
+        status: "active",
+        notes: `auto-minted via ${source.provider} (${source.eventId})`,
+        createdBy: `billing:${source.provider}`,
+      })
+      .returning();
+    if (!keyRow) throw new Error("Failed to mint product key");
+
+    // 2. Find the most-recent license for this user (any status).
+    const [latest] = await tx
+      .select()
+      .from(licensesTable)
+      .where(eq(licensesTable.userId, userId))
+      .orderBy(sql`${licensesTable.subscriptionEndDate} DESC`)
+      .limit(1);
+
+    let licenseId: number | null = null;
+    let isFirstActivation = false;
+    let newEnd: Date;
+
+    if (latest) {
+      // Renewal — extend from current end if still active, else from now.
+      const baseEnd =
+        latest.subscriptionEndDate.getTime() > now.getTime()
+          ? latest.subscriptionEndDate
+          : now;
+      newEnd = new Date(baseEnd.getTime() + durationDays * MS_PER_DAY);
+
+      await tx
+        .update(productKeysTable)
+        .set({
+          currentActivations: 1,
+          updatedAt: now,
+        })
+        .where(eq(productKeysTable.id, keyRow.id));
+
+      await tx
+        .update(licensesTable)
+        .set({
+          planName: plan,
+          subscriptionEndDate: newEnd,
+          status: "active",
+          updatedAt: now,
+        })
+        .where(eq(licensesTable.id, latest.id));
+
+      await tx
+        .update(userLicensesTable)
+        .set({ isPaid: true, planName: plan, updatedAt: now })
+        .where(eq(userLicensesTable.userId, userId));
+
+      licenseId = latest.id;
+    } else {
+      // First-time activation — leave the key unredeemed; the desktop app
+      // will activate it (binding to a device) on next launch via
+      // /api/license/activate. We still flip user_licenses.isPaid so the
+      // dashboard reflects payment immediately, and surface the key in the
+      // event log so admin / support can resend it if needed.
+      newEnd = new Date(now.getTime() + durationDays * MS_PER_DAY);
+      isFirstActivation = true;
+
+      // Ensure user_licenses row exists (trial may not be provisioned yet
+      // if the user paid before opening the app).
+      await tx
+        .insert(userLicensesTable)
+        .values({
+          userId,
+          trialStartDate: now,
+          trialEndDate: now,
+          isPaid: true,
+          planName: plan,
+          accountStatus: "active",
+        })
+        .onConflictDoUpdate({
+          target: userLicensesTable.userId,
+          set: { isPaid: true, planName: plan, updatedAt: now },
+        });
+    }
+
+    await tx.insert(licenseEventsTable).values({
+      userId,
+      eventType: latest ? "license_renewed" : "license_activated",
+      eventMessage: `Paid via ${source.provider}`,
+      metadata: {
+        provider: source.provider,
+        eventId: source.eventId,
+        plan,
+        productKeyId: keyRow.id,
+        productKeyPrefix: keyRow.keyPrefix,
+        licenseId,
+        newEnd: newEnd.toISOString(),
+        isFirstActivation,
+      },
+    });
+
+    return {
+      productKeyId: keyRow.id,
+      rawProductKey: rawKey,
+      licenseId,
+      subscriptionEndDate: newEnd,
+      isFirstActivation,
+    };
+  });
+}
+
+// Suppress unused-import warning when devicesTable isn't referenced directly
+// (kept for future deviceId binding hooks).
+void devicesTable;
+void and;

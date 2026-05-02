@@ -23,7 +23,8 @@
     "http-proxy-middleware": "^3.0.5",
     "multer": "^2.1.1",
     "pino": "^9",
-    "pino-http": "^10"
+    "pino-http": "^10",
+    "stripe": "^17.7.0"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",

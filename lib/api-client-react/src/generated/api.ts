@@ -26,6 +26,9 @@ import type {
   AdminListKeysResult,
   AdminRevokeKeyBody,
   AdminRevokeKeyResult,
+  BillingProviders,
+  CreateCheckoutSessionBody,
+  CreateCheckoutSessionResult,
   DeactivateDeviceBody,
   DeactivateDeviceResult,
   DeletePdfParams,
@@ -1218,10 +1221,15 @@ export const useVerifyProductKey = <
 };
 
 /**
- * Adds `additionalDays` to `subscription_end_date`. The caller must
-own the license. Writes a `license_renewed` audit event. Will be
-called by the Stripe webhook in Task #9 once the customer's
-recurring charge succeeds.
+ * Redeems a fresh `productKey` against an existing license owned by
+the caller, extending `subscription_end_date` by the new key's
+`duration_days`. If the license is still active the new duration
+is added on top of the current end date so the customer never
+loses time they've paid for; if it has lapsed the renewal starts
+from "now". Consumes one activation slot on the new key. Writes
+a `license_renewed` audit event. Called by the Stripe payment-
+success webhook in Task #9 (which mints a per-renewal key under
+the hood) and by the in-app renewal flow.
 
  * @summary Extend the subscription window of one of the caller's licenses
  */
@@ -1733,6 +1741,182 @@ export const useAdminExtendProductKey = <
   TContext
 > => {
   return useMutation(getAdminExtendProductKeyMutationOptions(options));
+};
+
+/**
+ * Returns the per-provider availability so the pricing UI can render
+Stripe as a real Buy button and Razorpay/PayPal as "coming soon".
+A provider is "available" when its server-side credentials are
+present.
+
+ * @summary List configured payment providers
+ */
+export const getListBillingProvidersUrl = () => {
+  return `/api/billing/providers`;
+};
+
+export const listBillingProviders = async (
+  options?: RequestInit,
+): Promise<BillingProviders> => {
+  return customFetch<BillingProviders>(getListBillingProvidersUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListBillingProvidersQueryKey = () => {
+  return [`/api/billing/providers`] as const;
+};
+
+export const getListBillingProvidersQueryOptions = <
+  TData = Awaited<ReturnType<typeof listBillingProviders>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listBillingProviders>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListBillingProvidersQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listBillingProviders>>
+  > = ({ signal }) => listBillingProviders({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listBillingProviders>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListBillingProvidersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listBillingProviders>>
+>;
+export type ListBillingProvidersQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List configured payment providers
+ */
+
+export function useListBillingProviders<
+  TData = Awaited<ReturnType<typeof listBillingProviders>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listBillingProviders>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListBillingProvidersQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Returns a `url` the client should redirect to. The session is bound
+to the signed-in Clerk user (via `client_reference_id` and
+`metadata.clerkUserId`). On success Stripe redirects back to
+`successUrl`; the webhook then mints a product key and renews /
+activates the user's license.
+
+ * @summary Create a Stripe Checkout session for the chosen plan
+ */
+export const getCreateCheckoutSessionUrl = () => {
+  return `/api/billing/checkout-session`;
+};
+
+export const createCheckoutSession = async (
+  createCheckoutSessionBody: CreateCheckoutSessionBody,
+  options?: RequestInit,
+): Promise<CreateCheckoutSessionResult> => {
+  return customFetch<CreateCheckoutSessionResult>(
+    getCreateCheckoutSessionUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(createCheckoutSessionBody),
+    },
+  );
+};
+
+export const getCreateCheckoutSessionMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCheckoutSession>>,
+    TError,
+    { data: BodyType<CreateCheckoutSessionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createCheckoutSession>>,
+  TError,
+  { data: BodyType<CreateCheckoutSessionBody> },
+  TContext
+> => {
+  const mutationKey = ["createCheckoutSession"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createCheckoutSession>>,
+    { data: BodyType<CreateCheckoutSessionBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createCheckoutSession(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateCheckoutSessionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createCheckoutSession>>
+>;
+export type CreateCheckoutSessionMutationBody =
+  BodyType<CreateCheckoutSessionBody>;
+export type CreateCheckoutSessionMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Create a Stripe Checkout session for the chosen plan
+ */
+export const useCreateCheckoutSession = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCheckoutSession>>,
+    TError,
+    { data: BodyType<CreateCheckoutSessionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createCheckoutSession>>,
+  TError,
+  { data: BodyType<CreateCheckoutSessionBody> },
+  TContext
+> => {
+  return useMutation(getCreateCheckoutSessionMutationOptions(options));
 };
 
 /**

@@ -27,6 +27,15 @@ PDF Expiry Tool — a web application for uploading PDFs, setting an exact expir
 - **luxor-pdf** (react-vite) — Luxor PDF Reader
 - **mockup-sandbox** (design) — Canvas component preview server
 
+## Billing (Stripe)
+
+- Provider registry lives in `artifacts/api-server/src/lib/billing.ts`. Stripe is "available" iff `STRIPE_SECRET_KEY` is set; Razorpay/PayPal are stubs (`comingSoon: true`) for the providers endpoint.
+- Endpoints: `GET /api/billing/providers`, `POST /api/billing/checkout-session` (Clerk-authed), and `POST /api/billing/webhook` (raw body, mounted on the Express app BEFORE `express.json()` so Stripe signature verification works).
+- Per-plan price IDs read from `STRIPE_PRICE_MONTHLY|QUARTERLY|YEARLY|LIFETIME`. Lifetime is `mode: "payment"`, others `mode: "subscription"`.
+- Webhook idempotency: `billing_events (provider, event_id)` PK created at startup by `runBillingMigrations()`. `claimBillingEvent()` does INSERT…ON CONFLICT DO NOTHING; duplicates short-circuit before `applyPaidPlan()`.
+- `applyPaidPlan()` mints a fresh product key (1-use, attributed to `billing:stripe`), then either extends the user's most-recent license (renewal — base = `max(now, current end)`) or sets `user_licenses.isPaid=true` for first-time activation (the desktop app activates the key on next launch). All in one DB transaction with a `license_renewed`/`license_activated` audit row.
+- Frontend wiring: lexsecure-landing pricing page Pro CTA deep-links to `/pdf-expiry/checkout?plan=monthly|yearly`. The pdf-expiry `/checkout` page (Clerk-gated, redirects to sign-in if needed) POSTs to `/api/billing/checkout-session` and `window.location.replace()`s to the returned Stripe URL. LockOverlay's "Renew subscription" button uses the same route, defaulting to the user's previous plan.
+
 ## Luxor PDF Landing — brand & layout
 
 - Palette (Scheme 1): Indigo `#312E81`, Royal Blue `#2563EB`, Coral `#FB7185`, plus Luxor red `#DC2626` used sparingly as the security/active accent (matches the LUXOR shield logo).

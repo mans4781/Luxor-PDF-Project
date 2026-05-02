@@ -9,6 +9,7 @@ import {
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
 import router from "./routes";
+import { billingWebhookRouter } from "./routes/billing";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -37,6 +38,12 @@ app.use(
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
 app.use(cors({ credentials: true, origin: true }));
+
+// Stripe webhook MUST receive raw bytes for signature verification, so
+// mount it BEFORE the JSON body parser. The router itself attaches
+// express.raw() to its handler.
+app.use("/api/billing/webhook", billingWebhookRouter);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

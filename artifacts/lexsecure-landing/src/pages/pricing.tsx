@@ -12,11 +12,18 @@ type Plan = {
   yearlyPrice: number;
   cta: string;
   ctaHref: string;
+  /** When set, the Buy button initiates Stripe checkout for this plan. */
+  checkoutPlan?: { monthly: string; yearly: string };
   highlight?: boolean;
   badge?: string;
   features: string[];
   limits: string;
 };
+
+// pdf-expiry app owns Clerk auth + the checkout-session POST. Buy buttons
+// just deep-link to /pdf-expiry/checkout?plan=... — that page signs the
+// user in (if needed) then redirects to Stripe.
+const CHECKOUT_BASE = "/pdf-expiry/checkout";
 
 const PLANS: Plan[] = [
   {
@@ -45,6 +52,7 @@ const PLANS: Plan[] = [
     yearlyPrice: 7,
     cta: "Start 14-day trial",
     ctaHref: "/web-app",
+    checkoutPlan: { monthly: "monthly", yearly: "yearly" },
     highlight: true,
     badge: "Most popular",
     limits: "3 devices · Commercial use",
@@ -212,16 +220,31 @@ export default function PricingPage() {
                     )}
                   </div>
 
-                  <Link href={plan.ctaHref}>
-                    <button className={`w-full py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 mb-7 ${
-                      plan.highlight
-                        ? "bg-white text-[#312E81] hover:bg-neutral-100"
-                        : "bg-[#312E81] text-white hover:bg-[#3730A3]"
-                    }`}>
+                  {plan.checkoutPlan ? (
+                    <a
+                      href={`${CHECKOUT_BASE}?plan=${yearly ? plan.checkoutPlan.yearly : plan.checkoutPlan.monthly}`}
+                      className={`w-full py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 mb-7 ${
+                        plan.highlight
+                          ? "bg-white text-[#312E81] hover:bg-neutral-100"
+                          : "bg-[#312E81] text-white hover:bg-[#3730A3]"
+                      }`}
+                      data-testid={`pricing-buy-${plan.id}`}
+                    >
                       {plan.cta}
                       <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </Link>
+                    </a>
+                  ) : (
+                    <Link href={plan.ctaHref}>
+                      <button className={`w-full py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 mb-7 ${
+                        plan.highlight
+                          ? "bg-white text-[#312E81] hover:bg-neutral-100"
+                          : "bg-[#312E81] text-white hover:bg-[#3730A3]"
+                      }`}>
+                        {plan.cta}
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </Link>
+                  )}
 
                   <p className={`text-[11px] uppercase tracking-wider font-semibold mb-4 ${plan.highlight ? "text-neutral-400" : "text-slate-500"}`}>
                     {plan.limits}

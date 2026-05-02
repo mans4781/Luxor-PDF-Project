@@ -407,10 +407,15 @@ export const VerifyProductKeyResponse = zod
   );
 
 /**
- * Adds `additionalDays` to `subscription_end_date`. The caller must
-own the license. Writes a `license_renewed` audit event. Will be
-called by the Stripe webhook in Task #9 once the customer's
-recurring charge succeeds.
+ * Redeems a fresh `productKey` against an existing license owned by
+the caller, extending `subscription_end_date` by the new key's
+`duration_days`. If the license is still active the new duration
+is added on top of the current end date so the customer never
+loses time they've paid for; if it has lapsed the renewal starts
+from "now". Consumes one activation slot on the new key. Writes
+a `license_renewed` audit event. Called by the Stripe payment-
+success webhook in Task #9 (which mints a per-renewal key under
+the hood) and by the in-app renewal flow.
 
  * @summary Extend the subscription window of one of the caller's licenses
  */
@@ -559,6 +564,53 @@ export const AdminExtendProductKeyBody = zod.object({
 export const AdminExtendProductKeyResponse = zod.object({
   id: zod.number(),
   durationDays: zod.number(),
+});
+
+/**
+ * Returns the per-provider availability so the pricing UI can render
+Stripe as a real Buy button and Razorpay/PayPal as "coming soon".
+A provider is "available" when its server-side credentials are
+present.
+
+ * @summary List configured payment providers
+ */
+export const ListBillingProvidersResponse = zod.object({
+  providers: zod.array(
+    zod.object({
+      id: zod.enum(["stripe", "razorpay", "paypal"]),
+      displayName: zod.string(),
+      available: zod.boolean(),
+      comingSoon: zod.boolean(),
+    }),
+  ),
+});
+
+/**
+ * Returns a `url` the client should redirect to. The session is bound
+to the signed-in Clerk user (via `client_reference_id` and
+`metadata.clerkUserId`). On success Stripe redirects back to
+`successUrl`; the webhook then mints a product key and renews /
+activates the user's license.
+
+ * @summary Create a Stripe Checkout session for the chosen plan
+ */
+export const CreateCheckoutSessionBody = zod.object({
+  plan: zod
+    .enum(["monthly", "quarterly", "yearly", "lifetime"])
+    .describe("Subscription tier a product key unlocks."),
+  provider: zod.enum(["stripe", "razorpay", "paypal"]).optional(),
+  successUrl: zod
+    .string()
+    .describe("Absolute URL Stripe redirects to on success."),
+  cancelUrl: zod
+    .string()
+    .describe("Absolute URL Stripe redirects to on cancel."),
+});
+
+export const CreateCheckoutSessionResponse = zod.object({
+  provider: zod.enum(["stripe", "razorpay", "paypal"]),
+  sessionId: zod.string().optional(),
+  url: zod.string(),
 });
 
 /**

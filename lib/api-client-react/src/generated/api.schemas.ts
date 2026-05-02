@@ -382,6 +382,41 @@ export interface AdminExtendKeyBody {
   additionalDays: number;
 }
 
+export type BillingProvider =
+  (typeof BillingProvider)[keyof typeof BillingProvider];
+
+export const BillingProvider = {
+  stripe: "stripe",
+  razorpay: "razorpay",
+  paypal: "paypal",
+} as const;
+
+export interface BillingProviderInfo {
+  id: BillingProvider;
+  displayName: string;
+  available: boolean;
+  comingSoon: boolean;
+}
+
+export interface BillingProviders {
+  providers: BillingProviderInfo[];
+}
+
+export interface CreateCheckoutSessionBody {
+  plan: ProductKeyPlan;
+  provider?: BillingProvider;
+  /** Absolute URL Stripe redirects to on success. */
+  successUrl: string;
+  /** Absolute URL Stripe redirects to on cancel. */
+  cancelUrl: string;
+}
+
+export interface CreateCheckoutSessionResult {
+  provider: BillingProvider;
+  sessionId?: string;
+  url: string;
+}
+
 export interface AdminExtendKeyResult {
   id: number;
   durationDays: number;

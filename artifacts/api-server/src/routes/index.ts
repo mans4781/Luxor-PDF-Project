@@ -5,6 +5,7 @@ import visitorsRouter from "./visitors";
 import adminRouter from "./admin";
 import licenseRouter from "./license";
 import usageRouter from "./usage";
+import billingRouter from "./billing";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(visitorsRouter);
 router.use(adminRouter);
 router.use(licenseRouter);
 router.use(usageRouter);
+router.use(billingRouter);
 
 export default router;

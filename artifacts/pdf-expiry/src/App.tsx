@@ -16,6 +16,7 @@ import PdfViewer from "@/pages/viewer";
 import SignInPage from "@/pages/sign-in";
 import SignUpPage from "@/pages/sign-up";
 import ActivateKeyPage from "@/pages/activate-key";
+import CheckoutPage from "@/pages/checkout";
 import { LicenseProvider } from "@/license/LicenseProvider";
 import { LockOverlay } from "@/license/LockOverlay";
 
@@ -74,6 +75,7 @@ function Router() {
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />
       <Route path="/activate-key" component={ActivateKeyPage} />
+      <Route path="/checkout" component={CheckoutPage} />
       <Route component={NotFound} />
     </Switch>
   );

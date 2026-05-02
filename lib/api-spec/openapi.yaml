@@ -17,6 +17,8 @@ tags:
     description: Daily usage tracking and limits
   - name: admin
     description: Admin-only operations (X-Admin-Token header required)
+  - name: billing
+    description: Stripe checkout + payment-provider registry
 paths:
   /healthz:
     get:
@@ -713,6 +715,67 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /billing/providers:
+    get:
+      operationId: listBillingProviders
+      tags: [billing]
+      summary: List configured payment providers
+      description: |
+        Returns the per-provider availability so the pricing UI can render
+        Stripe as a real Buy button and Razorpay/PayPal as "coming soon".
+        A provider is "available" when its server-side credentials are
+        present.
+      responses:
+        "200":
+          description: Provider availability
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingProviders"
+
+  /billing/checkout-session:
+    post:
+      operationId: createCheckoutSession
+      tags: [billing]
+      summary: Create a Stripe Checkout session for the chosen plan
+      description: |
+        Returns a `url` the client should redirect to. The session is bound
+        to the signed-in Clerk user (via `client_reference_id` and
+        `metadata.clerkUserId`). On success Stripe redirects back to
+        `successUrl`; the webhook then mints a product key and renews /
+        activates the user's license.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCheckoutSessionBody"
+      responses:
+        "200":
+          description: Checkout session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateCheckoutSessionResult"
+        "400":
+          description: Invalid plan or unsupported provider
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Caller is not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Stripe not configured on this server
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /usage/today:
     get:
       operationId: getUsageToday
@@ -1337,6 +1400,68 @@ components:
       required:
         - id
         - additionalDays
+
+    BillingProvider:
+      type: string
+      enum: [stripe, razorpay, paypal]
+
+    BillingProviderInfo:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/BillingProvider"
+        displayName:
+          type: string
+        available:
+          type: boolean
+        comingSoon:
+          type: boolean
+      required:
+        - id
+        - displayName
+        - available
+        - comingSoon
+
+    BillingProviders:
+      type: object
+      properties:
+        providers:
+          type: array
+          items:
+            $ref: "#/components/schemas/BillingProviderInfo"
+      required:
+        - providers
+
+    CreateCheckoutSessionBody:
+      type: object
+      properties:
+        plan:
+          $ref: "#/components/schemas/ProductKeyPlan"
+        provider:
+          $ref: "#/components/schemas/BillingProvider"
+        successUrl:
+          type: string
+          description: Absolute URL Stripe redirects to on success.
+        cancelUrl:
+          type: string
+          description: Absolute URL Stripe redirects to on cancel.
+      required:
+        - plan
+        - successUrl
+        - cancelUrl
+
+    CreateCheckoutSessionResult:
+      type: object
+      properties:
+        provider:
+          $ref: "#/components/schemas/BillingProvider"
+        sessionId:
+          type: string
+        url:
+          type: string
+      required:
+        - provider
+        - url
 
     AdminExtendKeyResult:
       type: object

@@ -15,6 +15,14 @@ import { useLicense } from "./LicenseProvider";
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const PRICING_URL = `/pricing`; // lexsecure-landing route, served at the suite root.
 
+function planFromStatusName(name: string | null | undefined): string {
+  const n = (name ?? "").toLowerCase();
+  if (n === "monthly" || n === "quarterly" || n === "yearly" || n === "lifetime") {
+    return n;
+  }
+  return "monthly";
+}
+
 export function LockOverlay() {
   const { status, signedIn, refetch } = useLicense();
   const clerk = useClerk();
@@ -84,14 +92,25 @@ export function LockOverlay() {
         <div className="mt-5 space-y-2">
           {!isSuspended && (
             <>
-              <a
-                href={PRICING_URL}
-                className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-md px-4 py-2.5 shadow-md transition-all"
-                data-testid="lock-action-pricing"
-              >
-                <Sparkles className="w-4 h-4" />
-                {isSub ? "Renew subscription" : "View plans"}
-              </a>
+              {isSub ? (
+                <a
+                  href={`${basePath}/checkout?plan=${planFromStatusName(status.planName)}`}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-md px-4 py-2.5 shadow-md transition-all"
+                  data-testid="lock-action-renew"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Renew subscription
+                </a>
+              ) : (
+                <a
+                  href={PRICING_URL}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-md px-4 py-2.5 shadow-md transition-all"
+                  data-testid="lock-action-pricing"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  View plans
+                </a>
+              )}
               <Link
                 href="/activate-key"
                 className="w-full inline-flex items-center justify-center gap-2 border border-indigo-200 bg-white hover:bg-indigo-50 text-indigo-700 font-semibold rounded-md px-4 py-2.5 transition-all"
