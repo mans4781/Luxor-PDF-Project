@@ -1480,12 +1480,20 @@ const TABS_GRID_BY_COUNT: Record<number, string> = {
   6: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6",
 };
 
+const ACCENT_GRADIENTS: Record<string, string> = {
+  blue: "from-[#1754F4] via-[#154EE2] to-[#1447D0]",
+  green: "from-[#32AD71] via-[#2EA068] to-[#2A9460]",
+  default: "from-emerald-500 via-teal-500 to-orange-400",
+};
+
 export function ConvertToolContent({
   defaultTab,
   tabs = ALL_TABS,
+  accent = "default",
 }: {
   defaultTab?: string;
   tabs?: ConvertTabKey[];
+  accent?: "blue" | "green" | "default";
 }) {
   const visibleTabs = tabs.length > 0 ? tabs : ALL_TABS;
   const isVisible = (k: string): k is ConvertTabKey =>
@@ -1498,14 +1506,14 @@ export function ConvertToolContent({
     <div className="max-w-2xl mx-auto space-y-6">
 
         {/* ── Vibrant header banner ── */}
-        <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-orange-400 rounded-2xl p-6 text-white shadow-lg">
+        <div className={`bg-gradient-to-br ${ACCENT_GRADIENTS[accent] ?? ACCENT_GRADIENTS.default} rounded-2xl p-6 text-white shadow-lg`}>
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm">
               <ArrowLeftRight className="w-7 h-7 text-white" strokeWidth={1.75} />
             </div>
             <div>
               <h1 className="text-2xl font-bold">Convert</h1>
-              <p className="text-emerald-100 text-sm mt-0.5">Transform between PDF and other formats — nothing uploaded</p>
+              <p className="text-white/85 text-sm mt-0.5">Transform between PDF and other formats — nothing uploaded</p>
             </div>
           </div>
           <div className="flex gap-2 mt-5 flex-wrap">

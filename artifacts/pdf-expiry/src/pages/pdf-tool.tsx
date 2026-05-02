@@ -1147,14 +1147,14 @@ export function PdfToolContent() {
     <div className="max-w-2xl mx-auto space-y-6">
 
         {/* ── Vibrant header banner ── */}
-        <div className="bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-[#7254F6] via-[#6549E0] to-[#5E43D4] rounded-2xl p-6 text-white shadow-lg">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm">
               <Wrench className="w-7 h-7 text-white" strokeWidth={1.75} />
             </div>
             <div>
               <h1 className="text-2xl font-bold">Edit Your PDF</h1>
-              <p className="text-violet-200 text-sm mt-0.5">Merge, split, extract, delete &amp; insert pages — all processed in your browser</p>
+              <p className="text-white/85 text-sm mt-0.5">Merge, split, extract, delete &amp; insert pages — all processed in your browser</p>
             </div>
           </div>
           <div className="flex gap-2 mt-5 flex-wrap">

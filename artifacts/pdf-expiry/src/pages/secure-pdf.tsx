@@ -836,14 +836,14 @@ export function SecurePdfContent() {
     <div className="max-w-2xl mx-auto space-y-6">
 
       {/* Header banner */}
-      <div className="bg-gradient-to-br from-rose-600 via-red-600 to-rose-700 rounded-2xl p-6 text-white shadow-lg">
+      <div className="bg-gradient-to-br from-[#E61E3C] via-[#D71B37] to-[#C81934] rounded-2xl p-6 text-white shadow-lg">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm">
             <ShieldCheck className="w-7 h-7 text-white" strokeWidth={1.75} />
           </div>
           <div>
             <h1 className="text-2xl font-bold">Secure Your PDF</h1>
-            <p className="text-rose-200 text-sm mt-0.5">Choose one type of protection and apply it to your PDF</p>
+            <p className="text-white/85 text-sm mt-0.5">Choose one type of protection and apply it to your PDF</p>
           </div>
         </div>
         <div className="flex gap-2 mt-5 flex-wrap">

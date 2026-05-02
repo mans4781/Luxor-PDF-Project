@@ -319,14 +319,14 @@ export function CompressPdfContent() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="bg-gradient-to-br from-teal-600 via-cyan-600 to-sky-700 rounded-2xl p-6 text-white shadow-lg">
+      <div className="bg-gradient-to-br from-[#F37311] via-[#E26A0F] to-[#D4640C] rounded-2xl p-6 text-white shadow-lg">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm">
             <Minimize2 className="w-7 h-7 text-white" strokeWidth={1.75} />
           </div>
           <div>
             <h1 className="text-2xl font-bold">Compress your PDF</h1>
-            <p className="text-teal-100 text-sm mt-0.5">
+            <p className="text-white/85 text-sm mt-0.5">
               Shrink a PDF to a target file size — entirely in your browser.
             </p>
           </div>
