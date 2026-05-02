@@ -1,6 +1,49 @@
-import { ReactNode } from "react";
-import { ShieldCheck } from "lucide-react";
+import { ReactNode, useEffect, useState } from "react";
+import { Moon, ShieldCheck, Sun } from "lucide-react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
+
+const THEME_STORAGE_KEY = "luxor-pdf-theme";
+
+function getInitialTheme(): "light" | "dark" {
+  if (typeof window === "undefined") return "light";
+  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (stored === "light" || stored === "dark") return stored;
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function DarkModeToggle() {
+  const [theme, setTheme] = useState<"light" | "dark">(getInitialTheme);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
+
+  const isDark = theme === "dark";
+  return (
+    <button
+      type="button"
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      data-testid="button-dark-mode-toggle"
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+    >
+      {isDark ? (
+        <Sun className="h-4 w-4" strokeWidth={2.25} />
+      ) : (
+        <Moon className="h-4 w-4" strokeWidth={2.25} />
+      )}
+    </button>
+  );
+}
 
 export function Layout({ children }: { children: ReactNode }) {
   const baseUrl = import.meta.env.BASE_URL;
@@ -39,6 +82,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <ShieldCheck className="w-3.5 h-3.5" strokeWidth={2.25} />
               <span>Processed in your browser · Private by design</span>
             </div>
+            <DarkModeToggle />
             <AuthMenu
               signInUrl={`${basePath}/sign-in`}
               signUpUrl={`${basePath}/sign-up`}
