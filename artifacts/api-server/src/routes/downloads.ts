@@ -1,0 +1,101 @@
+import { Router, type IRouter, type Request, type Response } from "express";
+import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
+
+/**
+ * Public installer download endpoint.
+ *
+ * Drop the latest Windows installer into the App Storage public search
+ * path under `installers/luxor-pdf-secure-latest.exe` (via the Object
+ * Storage tool pane in Replit). This route streams it back with a
+ * disposition that triggers a download, so the marketing site can simply
+ * link to `/api/downloads/luxor-pdf-secure-latest.exe`.
+ */
+const router: IRouter = Router();
+
+const INSTALLER_PATH = "installers/luxor-pdf-secure-latest.exe";
+const INSTALLER_FILENAME = "Luxor-PDF-Secure-Setup.exe";
+
+router.get(
+  "/downloads/luxor-pdf-secure-latest.exe",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const svc = new ObjectStorageService();
+      const file = await svc.searchPublicObject(INSTALLER_PATH);
+      if (!file) {
+        req.log.warn(
+          { path: INSTALLER_PATH },
+          "Installer not found in public object storage",
+        );
+        res.status(404).json({
+          error: "Installer not yet available",
+          hint: `Upload the .exe to App Storage at ${INSTALLER_PATH}`,
+        });
+        return;
+      }
+
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${INSTALLER_FILENAME}"`,
+      );
+      // Force a fresh check on each download so updates ship immediately.
+      res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
+
+      const response = await svc.downloadObject(file, 300);
+      // downloadObject returns a Response; pipe its body to express.
+      if (!response.body) {
+        res.status(500).json({ error: "Empty installer response" });
+        return;
+      }
+      res.status(response.status);
+      response.headers.forEach((value, key) => {
+        // Don't override our forced Content-Disposition.
+        if (key.toLowerCase() === "content-disposition") return;
+        res.setHeader(key, value);
+      });
+      // Stream the body to the client.
+      const reader = response.body.getReader();
+      const pump = async (): Promise<void> => {
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          res.write(Buffer.from(value));
+        }
+        res.end();
+      };
+      await pump();
+    } catch (err) {
+      if (err instanceof ObjectNotFoundError) {
+        res.status(404).json({ error: "Installer not yet available" });
+        return;
+      }
+      req.log.error({ err }, "Installer download failed");
+      res.status(500).json({ error: "Failed to serve installer" });
+    }
+  },
+);
+
+/** GET /downloads/installer-info — lightweight check for the download page. */
+router.get(
+  "/downloads/installer-info",
+  async (_req: Request, res: Response): Promise<void> => {
+    try {
+      const svc = new ObjectStorageService();
+      const file = await svc.searchPublicObject(INSTALLER_PATH);
+      if (!file) {
+        res.json({ available: false });
+        return;
+      }
+      const [meta] = await file.getMetadata();
+      res.json({
+        available: true,
+        sizeBytes: meta.size ? Number(meta.size) : undefined,
+        updatedAt: meta.updated ?? null,
+        downloadUrl: "/api/downloads/luxor-pdf-secure-latest.exe",
+      });
+    } catch {
+      res.json({ available: false });
+    }
+  },
+);
+
+export default router;

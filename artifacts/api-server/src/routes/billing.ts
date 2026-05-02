@@ -5,7 +5,7 @@ import {
   type Response,
   raw,
 } from "express";
-import { getAuth } from "@clerk/express";
+import { getAuth, clerkClient } from "@clerk/express";
 import Stripe from "stripe";
 import {
   CreateCheckoutSessionBody,
@@ -18,6 +18,16 @@ import {
   stripePriceIdFor,
   type BillingProviderId,
 } from "../lib/billing";
+import { sendLicenseEmail } from "../lib/email";
+
+function buildInstallerDownloadUrl(req: Request): string {
+  const host = req.get("host");
+  const proto =
+    (req.get("x-forwarded-proto") ?? "").split(",")[0]?.trim() ||
+    (req.secure ? "https" : "http");
+  const base = host ? `${proto}://${host}` : "";
+  return `${base}/api/downloads/luxor-pdf-secure-latest.exe`;
+}
 
 const router: IRouter = Router();
 
@@ -204,6 +214,70 @@ billingWebhookRouter.post(
           },
           "Stripe payment applied",
         );
+
+        // ─── Email the license key to the customer ─────────────────────────
+        // Best-effort: never let an email failure break the webhook.
+        try {
+          const customerEmail =
+            session.customer_details?.email ??
+            (session.customer_email as string | null) ??
+            null;
+          const customerName = session.customer_details?.name ?? null;
+
+          let recipient: string | null = customerEmail;
+          let recipientName: string | null = customerName;
+
+          if (!recipient) {
+            // Fall back to the Clerk user's primary email.
+            try {
+              const user = await clerkClient.users.getUser(userId);
+              const primaryId = user.primaryEmailAddressId;
+              const primary =
+                user.emailAddresses.find((e) => e.id === primaryId) ??
+                user.emailAddresses[0];
+              recipient = primary?.emailAddress ?? null;
+              if (!recipientName) {
+                const first = user.firstName ?? "";
+                const last = user.lastName ?? "";
+                const composed = `${first} ${last}`.trim();
+                recipientName = composed || null;
+              }
+            } catch (clerkErr) {
+              req.log.warn(
+                { err: clerkErr, userId },
+                "Could not look up Clerk user email",
+              );
+            }
+          }
+
+          if (recipient) {
+            const downloadUrl = buildInstallerDownloadUrl(req);
+            const sent = await sendLicenseEmail({
+              to: recipient,
+              customerName: recipientName,
+              productKey: outcome.rawProductKey,
+              plan,
+              subscriptionEndDate: outcome.subscriptionEndDate.toISOString(),
+              downloadUrl,
+            });
+            if (!sent) {
+              req.log.warn(
+                { userId, plan, recipient },
+                "License email send returned false",
+              );
+            }
+          } else {
+            req.log.warn(
+              { userId, plan },
+              "No email available — skipping license email send",
+            );
+          }
+        } catch (emailErr) {
+          req.log.error(
+            { err: emailErr, userId, plan },
+            "License email pipeline failed",
+          );
+        }
       } else {
         req.log.debug(
           { eventType: event.type, eventId: event.id },
