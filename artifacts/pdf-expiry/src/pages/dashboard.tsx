@@ -65,8 +65,8 @@ const TOOLS: ToolItem[] = [
     description: "PDF to images or text",
     icon: FileOutput,
     accent: "#2563EB",
-    iconBg: "bg-blue-200 group-hover:bg-blue-300",
-    iconText: "text-blue-700",
+    iconBg: "bg-[#1754F4] group-hover:bg-[#1447D0]",
+    iconText: "text-white",
     activeRing: "ring-blue-500/40 border-blue-500",
   },
   {
