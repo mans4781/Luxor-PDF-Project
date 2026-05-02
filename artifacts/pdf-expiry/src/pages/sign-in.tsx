@@ -1,16 +1,17 @@
 import { SignIn } from "@clerk/react";
+import { AuthShell } from "@/components/auth-shell";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 export default function SignInPage() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-slate-50 px-4 py-10">
+    <AuthShell variant="sign-in">
       <SignIn
         routing="path"
         path={`${basePath}/sign-in`}
         signUpUrl={`${basePath}/sign-up`}
         fallbackRedirectUrl={basePath || "/"}
       />
-    </div>
+    </AuthShell>
   );
 }
