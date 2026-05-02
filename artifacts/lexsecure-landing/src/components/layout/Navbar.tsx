@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ChevronDown, BookOpen, FileSignature, Lock, Home, Layers, Sparkles, Tag, Info, Mail } from "lucide-react";
+import { ChevronDown, BookOpen, FileSignature, Lock, Home, Layers, Sparkles, Tag, Info, Mail, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -163,6 +163,10 @@ export function Navbar() {
             </AnimatePresence>
           </div>
 
+          <Link href="/online-tools" className={`group ${linkCls}`} data-testid="nav-online-tools">
+            <Wrench className={linkIconCls} strokeWidth={2.2} />
+            Online Tools
+          </Link>
           <Link href="/features" className={`group ${linkCls}`}>
             <Sparkles className={linkIconCls} strokeWidth={2.2} />
             Features

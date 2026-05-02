@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ComponentType } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
-import { useClerk } from "@clerk/react";
+import { useClerk, useUser } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { LuxorClerkProvider } from "@workspace/luxor-auth-ui";
 import { Toaster } from "@/components/ui/toaster";
@@ -62,14 +62,43 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
+/**
+ * Wraps a tool route so that anonymous visitors are bounced to /sign-in
+ * with a `redirect_url` back to the tool. Requirement: "Without login,
+ * user can't access online tools."
+ */
+function RequireAuth<P extends object>(
+  Inner: ComponentType<P>,
+): ComponentType<P> {
+  return function Guarded(props: P) {
+    const { isLoaded, isSignedIn } = useUser();
+    const [location, setLocation] = useLocation();
+
+    useEffect(() => {
+      if (isLoaded && !isSignedIn) {
+        const target = `${basePath}${location}`;
+        setLocation(`/sign-in?redirect_url=${encodeURIComponent(target)}`);
+      }
+    }, [isLoaded, isSignedIn, location, setLocation]);
+
+    if (!isLoaded || !isSignedIn) return null;
+    return <Inner {...props} />;
+  };
+}
+
+const PdfToolGuarded = RequireAuth(PdfTool);
+const ConvertToolGuarded = RequireAuth(ConvertTool);
+const SecurePdfGuarded = RequireAuth(SecurePdf);
+const HistoryGuarded = RequireAuth(History);
+
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
-      <Route path="/history" component={History} />
-      <Route path="/pdf-tool" component={PdfTool} />
-      <Route path="/convert" component={ConvertTool} />
-      <Route path="/secure-pdf" component={SecurePdf} />
+      <Route path="/history" component={HistoryGuarded} />
+      <Route path="/pdf-tool" component={PdfToolGuarded} />
+      <Route path="/convert" component={ConvertToolGuarded} />
+      <Route path="/secure-pdf" component={SecurePdfGuarded} />
       <Route path="/v/:id" component={PdfViewer} />
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />
