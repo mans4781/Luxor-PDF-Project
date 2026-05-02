@@ -21,6 +21,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { scheduleAutoRefresh } from "@/lib/auto-refresh";
+import { encryptPdfAes256 } from "@/lib/qpdf-encrypt";
 import { saveToLocalHistory, loadLocalHistory } from "./history";
 import type { LocalPdfEntry } from "@/components/pdf-list";
 import { formatBytes } from "@/lib/utils";
@@ -308,16 +309,11 @@ function PasswordTab() {
 
     let encryptedFile: File;
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
-      // Force PDF 1.7 so the security handler uses AES-128 (AESV2),
-      // which all modern readers enforce. Without this the default
-      // falls back to RC4-40 which Chrome and others silently bypass.
-      (pdfDoc.context.header as unknown as { major: string; minor: string }).major = '1';
-      (pdfDoc.context.header as unknown as { major: string; minor: string }).minor = '7';
-      pdfDoc.encrypt({ userPassword: password, ownerPassword: password });
-      const encryptedBytes = await pdfDoc.save();
-      encryptedFile = new File([encryptedBytes], file.name, { type: "application/pdf" });
+      const inputBytes = new Uint8Array(await file.arrayBuffer());
+      // Real AES-256 (PDF 2.0 / R6 security handler) via qpdf-wasm.
+      // Runs entirely in the browser — the file never leaves the device.
+      const encryptedBytes = await encryptPdfAes256(inputBytes, password);
+      encryptedFile = new File([new Uint8Array(encryptedBytes)], file.name, { type: "application/pdf" });
     } catch {
       toast({ title: "Encryption failed", description: "Could not encrypt this PDF. It may already be password-protected.", variant: "destructive" });
       return;
@@ -418,30 +414,18 @@ function PrintControlTab() {
 
     let restrictedFile: File;
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
-      // Force PDF 1.7 so the security handler uses AES-128 (AESV2)
-      // which all modern readers enforce for permission restrictions.
-      (pdfDoc.context.header as unknown as { major: string; minor: string }).major = '1';
-      (pdfDoc.context.header as unknown as { major: string; minor: string }).minor = '7';
-      // Empty userPassword = no open password required; random ownerPassword
-      // ensures permissions cannot be overridden by the viewer.
-      const ownerPassword = Math.random().toString(36).slice(2) + Date.now().toString(36);
-      pdfDoc.encrypt({
-        userPassword: "",
-        ownerPassword,
-        permissions: {
-          printing: restrictPrint ? false : "highResolution",
-          copying: !restrictCopy,
-          modifying: false,
-          annotating: false,
-          fillingForms: false,
-          contentAccessibility: true,
-          documentAssembly: false,
-        },
+      const inputBytes = new Uint8Array(await file.arrayBuffer());
+      // AES-256 (PDF 2.0 / R6) via qpdf-wasm. Empty user password lets the
+      // file open freely; the random owner password locks the permissions.
+      const restrictedBytes = await encryptPdfAes256(inputBytes, "", undefined, {
+        allowPrinting: !restrictPrint,
+        allowCopying: !restrictCopy,
+        // Matches prior pdf-lib behaviour: lock down modifications, annotations,
+        // form filling and page assembly so the toggled permissions can't be
+        // worked around inside a viewer.
+        allowModifications: false,
       });
-      const bytes = await pdfDoc.save();
-      restrictedFile = new File([bytes], file.name, { type: "application/pdf" });
+      restrictedFile = new File([new Uint8Array(restrictedBytes)], file.name, { type: "application/pdf" });
     } catch {
       toast({ title: "Restriction failed", description: "Could not apply print restrictions to this PDF.", variant: "destructive" });
       setIsProcessing(false);
