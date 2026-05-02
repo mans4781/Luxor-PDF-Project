@@ -21,6 +21,7 @@ import {
   ShieldAlert,
   Minimize2,
   Lightbulb,
+  Sparkles,
 } from "lucide-react";
 import { PdfToolContent } from "./pdf-tool";
 import { ConvertToolContent } from "./convert-tool";
@@ -551,18 +552,116 @@ function UserGuideContent() {
 
 function WelcomePanel() {
   return (
-    <div className="h-full flex items-center justify-center bg-white border border-slate-200 rounded-2xl p-12">
-      <div className="text-center max-w-md">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-rose-50 border border-slate-200 flex items-center justify-center mx-auto mb-5">
-          <ShieldCheck className="w-8 h-8 text-[#DC2626]" strokeWidth={1.75} />
+    <div className="relative h-full min-h-[560px] flex items-center justify-center bg-white border border-slate-200 rounded-2xl p-12 overflow-hidden">
+      {/* ── Background: dot grid pattern ── */}
+      <svg
+        className="absolute inset-0 w-full h-full text-slate-300/40 pointer-events-none"
+        aria-hidden="true"
+      >
+        <defs>
+          <pattern
+            id="welcome-dots"
+            x="0"
+            y="0"
+            width="22"
+            height="22"
+            patternUnits="userSpaceOnUse"
+          >
+            <circle cx="1.5" cy="1.5" r="1.5" fill="currentColor" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#welcome-dots)" />
+      </svg>
+
+      {/* ── Background: soft brand-colored gradient orbs ── */}
+      <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-indigo-300/30 blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-rose-300/30 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-amber-300/30 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-emerald-300/30 blur-3xl pointer-events-none" />
+
+      {/* ── Background: floating decorative document cards ── */}
+      <div className="absolute top-10 left-8 w-20 h-24 rounded-lg bg-white border border-slate-200 shadow-sm rotate-[-12deg] opacity-70 pointer-events-none">
+        <div className="h-1.5 w-10 bg-violet-200 rounded-full mt-3 ml-3" />
+        <div className="h-1 w-12 bg-slate-200 rounded-full mt-2 ml-3" />
+        <div className="h-1 w-8 bg-slate-200 rounded-full mt-1.5 ml-3" />
+        <div className="h-1 w-11 bg-slate-200 rounded-full mt-1.5 ml-3" />
+      </div>
+      <div className="absolute top-16 right-10 w-20 h-24 rounded-lg bg-white border border-slate-200 shadow-sm rotate-[14deg] opacity-70 pointer-events-none">
+        <div className="h-1.5 w-10 bg-rose-200 rounded-full mt-3 ml-3" />
+        <div className="h-1 w-12 bg-slate-200 rounded-full mt-2 ml-3" />
+        <div className="h-1 w-9 bg-slate-200 rounded-full mt-1.5 ml-3" />
+        <div className="h-1 w-7 bg-slate-200 rounded-full mt-1.5 ml-3" />
+      </div>
+      <div className="absolute bottom-12 left-12 w-20 h-24 rounded-lg bg-white border border-slate-200 shadow-sm rotate-[10deg] opacity-70 pointer-events-none">
+        <div className="h-1.5 w-10 bg-amber-200 rounded-full mt-3 ml-3" />
+        <div className="h-1 w-12 bg-slate-200 rounded-full mt-2 ml-3" />
+        <div className="h-1 w-10 bg-slate-200 rounded-full mt-1.5 ml-3" />
+        <div className="h-1 w-7 bg-slate-200 rounded-full mt-1.5 ml-3" />
+      </div>
+      <div className="absolute bottom-16 right-12 w-20 h-24 rounded-lg bg-white border border-slate-200 shadow-sm rotate-[-9deg] opacity-70 pointer-events-none">
+        <div className="h-1.5 w-10 bg-emerald-200 rounded-full mt-3 ml-3" />
+        <div className="h-1 w-12 bg-slate-200 rounded-full mt-2 ml-3" />
+        <div className="h-1 w-8 bg-slate-200 rounded-full mt-1.5 ml-3" />
+        <div className="h-1 w-11 bg-slate-200 rounded-full mt-1.5 ml-3" />
+      </div>
+
+      {/* ── Foreground content ── */}
+      <div className="relative text-center max-w-md">
+        {/* Hero composition: stacked document + shield badge */}
+        <div className="relative w-32 h-32 mx-auto mb-6">
+          {/* Back document (offset) */}
+          <div className="absolute top-2 left-1 w-20 h-24 rounded-xl bg-gradient-to-br from-rose-50 to-rose-100 border border-rose-200 rotate-[-8deg] shadow-sm" />
+          {/* Middle document */}
+          <div className="absolute top-1 left-5 w-20 h-24 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rotate-[4deg] shadow-sm" />
+          {/* Front document with content lines */}
+          <div className="absolute top-3 left-3 w-20 h-24 rounded-xl bg-white border border-slate-200 shadow-md flex flex-col gap-1.5 p-3">
+            <FileText className="w-4 h-4 text-indigo-500" strokeWidth={2} />
+            <div className="h-1 w-12 bg-slate-200 rounded-full" />
+            <div className="h-1 w-10 bg-slate-200 rounded-full" />
+            <div className="h-1 w-11 bg-slate-200 rounded-full" />
+            <div className="h-1 w-8 bg-slate-200 rounded-full" />
+          </div>
+          {/* Shield badge */}
+          <div className="absolute -bottom-1 -right-1 w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#DC2626] flex items-center justify-center shadow-lg ring-4 ring-white">
+            <ShieldCheck
+              className="w-6 h-6 text-white"
+              strokeWidth={2}
+            />
+          </div>
+          {/* Lock micro-badge */}
+          <div className="absolute -top-1 -left-1 w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-md">
+            <Lock className="w-3.5 h-3.5 text-slate-700" strokeWidth={2.25} />
+          </div>
         </div>
-        <h2 className="text-lg font-bold text-slate-900">
+
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-semibold text-amber-800 mb-3">
+          <Sparkles className="w-3 h-3" />
+          Private PDF Suite
+        </div>
+
+        <h2 className="text-xl font-bold text-slate-900">
           Choose a tool to get started
         </h2>
         <p className="text-sm text-slate-500 mt-2 leading-relaxed">
           Every action is processed locally in your browser. Your files never
           leave your device.
         </p>
+
+        {/* Brand-color chip row hinting at the tools */}
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-1.5">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-violet-50 border border-violet-200 text-[11px] font-medium text-violet-800">
+            <Wrench className="w-3 h-3" /> Edit
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-50 border border-blue-200 text-[11px] font-medium text-blue-800">
+            <FileOutput className="w-3 h-3" /> Convert
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-rose-50 border border-rose-200 text-[11px] font-medium text-rose-800">
+            <ShieldCheck className="w-3 h-3" /> Secure
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-orange-50 border border-orange-200 text-[11px] font-medium text-orange-800">
+            <Minimize2 className="w-3 h-3" /> Compress
+          </span>
+        </div>
       </div>
     </div>
   );
