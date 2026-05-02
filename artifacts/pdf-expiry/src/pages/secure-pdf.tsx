@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { PDFDocument } from "@cantoo/pdf-lib";
 import { Layout } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,11 +9,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ShieldCheck, Calendar, Lock, Printer,
   Upload, X, Eye, EyeOff, Copy, ShieldOff, Download, CheckCircle2, RotateCcw,
+  KeyRound, Send, Sparkles, FileText, Timer,
 } from "lucide-react";
-import { useUploadPdf, getGetPdfStatsQueryKey } from "@workspace/api-client-react";
+import {
+  useUploadPdf,
+  useRequestRevokeOtp,
+  useVerifyRevokeOtp,
+  getGetPdfStatsQueryKey,
+} from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { saveToLocalHistory } from "./history";
+import { saveToLocalHistory, loadLocalHistory } from "./history";
+import type { LocalPdfEntry } from "@/components/pdf-list";
 import { formatBytes } from "@/lib/utils";
 import { format, addDays } from "date-fns";
 
@@ -507,6 +514,321 @@ function PrintControlTab() {
   );
 }
 
+// ─── Revoke Expiry Tab ─────────────────────────────────────────────────────────
+
+function RevokeExpiryTab() {
+  const [history, setHistory] = useState<LocalPdfEntry[]>([]);
+  const [pdfId, setPdfId] = useState("");
+  const [shareToken, setShareToken] = useState("");
+  const [selectedFromHistory, setSelectedFromHistory] = useState<number | null>(null);
+
+  // Step-2 state (after OTP requested)
+  const [otpId, setOtpId] = useState<number | null>(null);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpExpiresAt, setOtpExpiresAt] = useState<string | null>(null);
+  const [enteredCode, setEnteredCode] = useState("");
+  const [newExpiryDate, setNewExpiryDate] = useState(format(addDays(new Date(), 7), "yyyy-MM-dd"));
+
+  // Step-3 state (after verify)
+  const [restoredId, setRestoredId] = useState<number | null>(null);
+  const [restoredToken, setRestoredToken] = useState("");
+  const [restoredName, setRestoredName] = useState("");
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const requestMutation = useRequestRevokeOtp();
+  const verifyMutation = useVerifyRevokeOtp();
+
+  // Live countdown for the OTP TTL
+  const [secondsLeft, setSecondsLeft] = useState<number>(0);
+  useEffect(() => {
+    if (!otpExpiresAt) return;
+    const tick = () => {
+      const diff = Math.max(0, Math.floor((new Date(otpExpiresAt).getTime() - Date.now()) / 1000));
+      setSecondsLeft(diff);
+    };
+    tick();
+    const handle = setInterval(tick, 1000);
+    return () => clearInterval(handle);
+  }, [otpExpiresAt]);
+
+  useEffect(() => {
+    setHistory(loadLocalHistory());
+  }, []);
+
+  const reset = () => {
+    setPdfId(""); setShareToken(""); setSelectedFromHistory(null);
+    setOtpId(null); setOtpCode(""); setOtpExpiresAt(null); setEnteredCode("");
+    setNewExpiryDate(format(addDays(new Date(), 7), "yyyy-MM-dd"));
+    setRestoredId(null); setRestoredToken(""); setRestoredName("");
+  };
+
+  const pickFromHistory = (entry: LocalPdfEntry) => {
+    setPdfId(String(entry.id));
+    setShareToken(entry.shareToken);
+    setSelectedFromHistory(entry.id);
+    setRestoredName(entry.originalName);
+  };
+
+  const handleRequestOtp = () => {
+    const id = parseInt(pdfId, 10);
+    if (isNaN(id) || !shareToken) {
+      toast({
+        title: "Missing details",
+        description: "Pick a document from history or enter the PDF ID and share token.",
+        variant: "destructive",
+      });
+      return;
+    }
+    requestMutation.mutate(
+      { id, data: { shareToken } },
+      {
+        onSuccess: (data) => {
+          setOtpId(data.otpId);
+          setOtpCode(data.code);
+          setOtpExpiresAt(data.expiresAt);
+          toast({ title: "OTP generated", description: "Share the 6-digit code with the recipient." });
+        },
+        onError: (err: unknown) => {
+          const msg = err instanceof Error ? err.message : "Could not generate OTP.";
+          toast({ title: "Request failed", description: msg, variant: "destructive" });
+        },
+      },
+    );
+  };
+
+  const handleVerifyOtp = () => {
+    const id = parseInt(pdfId, 10);
+    if (otpId === null || !enteredCode || !newExpiryDate) {
+      toast({ title: "Fill all fields", description: "Enter the OTP and a new expiry date.", variant: "destructive" });
+      return;
+    }
+    verifyMutation.mutate(
+      { id, data: { shareToken, otpId, code: enteredCode, newExpiryDate } },
+      {
+        onSuccess: (data) => {
+          setRestoredId(data.id);
+          setRestoredToken(shareToken);
+          setRestoredName(restoredName || data.originalName);
+          // Update local history with the new expiry
+          saveToLocalHistory({
+            id: data.id, shareToken,
+            originalName: data.originalName, fileSize: data.fileSize,
+            expiryDate: data.expiryDate,
+            createdAt: data.createdAt, updatedAt: data.updatedAt,
+          });
+          queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
+          toast({ title: "Access restored", description: "The PDF is available again." });
+        },
+        onError: (err: unknown) => {
+          const msg = err instanceof Error ? err.message : "Verification failed.";
+          toast({ title: "Could not revoke expiry", description: msg, variant: "destructive" });
+        },
+      },
+    );
+  };
+
+  const copyOtp = async () => {
+    try {
+      await navigator.clipboard.writeText(otpCode);
+      toast({ title: "Copied", description: "OTP copied to clipboard." });
+    } catch {
+      toast({ title: "Copy failed", description: "Please copy the code manually.", variant: "destructive" });
+    }
+  };
+
+  const formattedTimer = `${Math.floor(secondsLeft / 60)
+    .toString()
+    .padStart(1, "0")}:${(secondsLeft % 60).toString().padStart(2, "0")}`;
+
+  // ─── Final success screen ─────────────────────────────────
+  if (restoredId !== null) {
+    return (
+      <div className="space-y-4">
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl px-4 py-3 flex items-center gap-3">
+          <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+            <Sparkles className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-emerald-900">Expiry revoked</h2>
+            <p className="text-xs text-emerald-600">The recipient can access this PDF until {format(new Date(newExpiryDate + "T00:00:00"), "MMMM d, yyyy")}.</p>
+          </div>
+        </div>
+        <SuccessCard
+          label={`New expiry: ${format(new Date(newExpiryDate + "T00:00:00"), "MMMM d, yyyy")}`}
+          downloadId={restoredId}
+          shareToken={restoredToken}
+          fileName={restoredName || `pdf-${restoredId}.pdf`}
+          onReset={reset}
+          accentBtn="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+        />
+      </div>
+    );
+  }
+
+  // ─── Step 2: enter OTP ─────────────────────────────────────
+  if (otpId !== null) {
+    const isExpired = secondsLeft === 0;
+    return (
+      <div className="space-y-4">
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl px-4 py-3 flex items-center gap-3">
+          <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+            <KeyRound className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-emerald-900">Share this code with the recipient</h2>
+            <p className="text-xs text-emerald-600">In production this is emailed to your team. For this demo it is shown here.</p>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-emerald-50 via-white to-teal-50 border border-emerald-200 rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <Label className="text-emerald-700 font-semibold text-xs uppercase tracking-wide">One-Time Code</Label>
+            <span className={`inline-flex items-center gap-1 text-xs font-medium ${isExpired ? "text-red-600" : "text-emerald-600"}`}>
+              <Timer className="w-3 h-3" /> {isExpired ? "Expired" : `Expires in ${formattedTimer}`}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <p className="font-mono text-3xl font-bold tracking-[0.4em] text-emerald-700 select-all">{otpCode}</p>
+            <Button
+              type="button" variant="outline" size="sm"
+              onClick={copyOtp}
+              className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 shrink-0"
+            >
+              <Copy className="w-3.5 h-3.5 mr-1.5" /> Copy
+            </Button>
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="enterOtp" className="text-emerald-700 font-semibold text-sm flex items-center gap-1.5">
+            <KeyRound className="w-3.5 h-3.5" /> Enter OTP
+          </Label>
+          <Input
+            id="enterOtp"
+            value={enteredCode}
+            inputMode="numeric"
+            maxLength={6}
+            placeholder="6-digit code"
+            onChange={(e) => setEnteredCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            className="border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400/20 font-mono tracking-widest text-center text-lg"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="newExpiry" className="text-emerald-700 font-semibold text-sm flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5" /> New Expiry Date
+          </Label>
+          <Input
+            id="newExpiry" type="date" value={newExpiryDate}
+            min={format(addDays(new Date(), 1), "yyyy-MM-dd")}
+            onChange={(e) => setNewExpiryDate(e.target.value)}
+            className="border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400/20"
+          />
+          <p className="text-xs text-emerald-500">Recipient regains access until this date.</p>
+        </div>
+
+        <Button
+          className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-md font-semibold"
+          disabled={!enteredCode || enteredCode.length < 6 || verifyMutation.isPending || isExpired}
+          onClick={handleVerifyOtp}
+          data-testid="button-verify-otp"
+        >
+          {verifyMutation.isPending
+            ? <><span className="animate-spin mr-2">⏳</span>Restoring access…</>
+            : <><ShieldCheck className="w-4 h-4 mr-2" />Verify &amp; Restore Access</>}
+        </Button>
+
+        <Button variant="outline" className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50" onClick={reset}>
+          <RotateCcw className="w-4 h-4 mr-2" /> Start Over
+        </Button>
+      </div>
+    );
+  }
+
+  // ─── Step 1: identify the PDF ─────────────────────────────
+  return (
+    <div className="space-y-4">
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
+        <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+          <Sparkles className="w-4 h-4 text-white" />
+        </div>
+        <div>
+          <h2 className="font-semibold text-emerald-900">Revoke Expiry</h2>
+          <p className="text-xs text-emerald-600">Generate a one-time code to reopen access to an expired or active PDF.</p>
+        </div>
+      </div>
+
+      {history.length > 0 && (
+        <div className="space-y-1.5">
+          <Label className="text-emerald-700 font-semibold text-sm flex items-center gap-1.5">
+            <FileText className="w-3.5 h-3.5" /> Pick from your documents
+          </Label>
+          <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1">
+            {history.map((entry) => {
+              const isSelected = selectedFromHistory === entry.id;
+              return (
+                <button
+                  type="button"
+                  key={entry.id}
+                  onClick={() => pickFromHistory(entry)}
+                  className={`w-full text-left flex items-center justify-between gap-3 px-3 py-2 rounded-xl border transition-all ${
+                    isSelected
+                      ? "border-emerald-400 bg-emerald-50 shadow-sm"
+                      : "border-slate-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/40"
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-slate-800 truncate">{entry.originalName}</p>
+                    <p className="text-xs text-slate-500">
+                      {formatBytes(entry.fileSize)} · expires {format(new Date(entry.expiryDate + "T00:00:00"), "MMM d, yyyy")}
+                      {entry.isExpired && <span className="ml-1.5 text-red-600 font-medium">· Expired</span>}
+                    </p>
+                  </div>
+                  {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label htmlFor="pdfId" className="text-emerald-700 font-semibold text-sm">PDF ID</Label>
+          <Input
+            id="pdfId" type="number" value={pdfId} placeholder="e.g. 42"
+            onChange={(e) => { setPdfId(e.target.value); setSelectedFromHistory(null); }}
+            className="border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400/20"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="shareToken" className="text-emerald-700 font-semibold text-sm">Share Token</Label>
+          <Input
+            id="shareToken" value={shareToken} placeholder="Token from upload"
+            onChange={(e) => { setShareToken(e.target.value); setSelectedFromHistory(null); }}
+            className="border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400/20 font-mono text-xs"
+          />
+        </div>
+      </div>
+      <p className="text-xs text-emerald-500/90">
+        Both values are returned when you upload a PDF and stored in your local history.
+      </p>
+
+      <Button
+        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-md font-semibold"
+        disabled={!pdfId || !shareToken || requestMutation.isPending}
+        onClick={handleRequestOtp}
+        data-testid="button-request-otp"
+      >
+        {requestMutation.isPending
+          ? <><span className="animate-spin mr-2">⏳</span>Generating…</>
+          : <><Send className="w-4 h-4 mr-2" />Generate OTP</>}
+      </Button>
+    </div>
+  );
+}
+
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export function SecurePdfContent() {
@@ -528,6 +850,7 @@ export function SecurePdfContent() {
           <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Calendar className="w-3 h-3" />Expiry Date</span>
           <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Lock className="w-3 h-3" />Password</span>
           <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Printer className="w-3 h-3" />Print Control</span>
+          <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><KeyRound className="w-3 h-3" />Revoke Expiry</span>
         </div>
       </div>
 
@@ -535,7 +858,7 @@ export function SecurePdfContent() {
       <Card className="border-rose-100 shadow-sm">
         <CardContent className="pt-6">
           <Tabs defaultValue="expiry">
-            <TabsList className="grid w-full grid-cols-3 mb-6 bg-rose-50 border border-rose-100 p-1 rounded-xl h-auto">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1 mb-6 bg-rose-50 border border-rose-100 p-1 rounded-xl h-auto">
               <TabsTrigger
                 value="expiry"
                 data-testid="tab-expiry"
@@ -560,6 +883,14 @@ export function SecurePdfContent() {
                 <Printer className="w-4 h-4" />
                 Print Control
               </TabsTrigger>
+              <TabsTrigger
+                value="revoke-expiry"
+                data-testid="tab-revoke-expiry"
+                className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+              >
+                <KeyRound className="w-4 h-4" />
+                Revoke Expiry
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="expiry">
@@ -572,6 +903,10 @@ export function SecurePdfContent() {
 
             <TabsContent value="print-control">
               <PrintControlTab />
+            </TabsContent>
+
+            <TabsContent value="revoke-expiry">
+              <RevokeExpiryTab />
             </TabsContent>
           </Tabs>
         </CardContent>

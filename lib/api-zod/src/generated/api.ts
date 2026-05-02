@@ -77,6 +77,48 @@ export const DownloadPdfQueryParams = zod.object({
 });
 
 /**
+ * Generates a 6-digit OTP that the company can share out-of-band with
+the recipient. Valid for 10 minutes. Returns the code in the response
+because there is no email service configured — in production this
+would be delivered to the company's contact email.
+
+ * @summary Request a one-time code to revoke an expired PDF's expiry
+ */
+export const RequestRevokeOtpParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const RequestRevokeOtpBody = zod.object({
+  shareToken: zod.string().describe("Share token returned at upload time"),
+});
+
+/**
+ * @summary Verify the OTP and extend the PDF's expiry date
+ */
+export const VerifyRevokeOtpParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const VerifyRevokeOtpBody = zod.object({
+  shareToken: zod.string(),
+  otpId: zod.number(),
+  code: zod.string().describe("The 6-digit OTP shared by the company"),
+  newExpiryDate: zod.coerce
+    .date()
+    .describe("New expiry date (YYYY-MM-DD) to apply to the PDF"),
+});
+
+export const VerifyRevokeOtpResponse = zod.object({
+  id: zod.number(),
+  originalName: zod.string(),
+  fileSize: zod.number(),
+  expiryDate: zod.coerce.date(),
+  isExpired: zod.boolean(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
  * @summary Get statistics about uploaded PDFs
  */
 export const GetPdfStatsResponse = zod.object({

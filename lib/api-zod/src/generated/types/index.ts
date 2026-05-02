@@ -14,4 +14,7 @@ export * from "./healthStatus";
 export * from "./pdfRecord";
 export * from "./pdfStats";
 export * from "./pdfUploadResult";
+export * from "./requestRevokeOtpBody";
+export * from "./revokeOtpRequestResult";
 export * from "./uploadPdfBody";
+export * from "./verifyRevokeOtpBody";

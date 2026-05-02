@@ -38,6 +38,18 @@ export interface PdfStats {
   totalSize: number;
 }
 
+export interface RevokeOtpRequestResult {
+  /** Identifier for this OTP attempt – pass back to the verify endpoint */
+  otpId: number;
+  /** The 6-digit OTP. Returned in the response only because no email
+service is configured — in production this would be sent to the
+company's contact email so they can pass it to the recipient.
+ */
+  code: string;
+  /** Timestamp after which the OTP can no longer be used */
+  expiresAt: string;
+}
+
 export interface ErrorResponse {
   error: string;
 }
@@ -67,4 +79,18 @@ export type DownloadPdfParams = {
    * The share token returned at upload time
    */
   shareToken: string;
+};
+
+export type RequestRevokeOtpBody = {
+  /** Share token returned at upload time */
+  shareToken: string;
+};
+
+export type VerifyRevokeOtpBody = {
+  shareToken: string;
+  otpId: number;
+  /** The 6-digit OTP shared by the company */
+  code: string;
+  /** New expiry date (YYYY-MM-DD) to apply to the PDF */
+  newExpiryDate: string;
 };

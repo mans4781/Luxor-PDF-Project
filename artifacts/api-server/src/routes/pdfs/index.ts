@@ -1,11 +1,26 @@
 import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
-import { eq, sql } from "drizzle-orm";
-import { db, pdfsTable } from "@workspace/db";
+import { eq, sql, and, isNull } from "drizzle-orm";
+import { db, pdfsTable, pdfOtpsTable } from "@workspace/db";
 import fs from "fs";
 import path from "path";
 import multer from "multer";
-import { randomUUID } from "crypto";
+import { randomUUID, createHash, randomInt } from "crypto";
 import { logger } from "../../lib/logger";
+
+// ─── OTP config ────────────────────────────────────────────────────────────────
+
+const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const OTP_MAX_ATTEMPTS = 5;
+const OTP_PEPPER = process.env.SESSION_SECRET ?? "luxor-otp-pepper";
+
+function hashOtpCode(code: string): string {
+  return createHash("sha256").update(`${OTP_PEPPER}:${code}`).digest("hex");
+}
+
+function generateOtpCode(): string {
+  // Cryptographically random 6-digit code, zero-padded
+  return randomInt(0, 1_000_000).toString().padStart(6, "0");
+}
 
 const router: IRouter = Router();
 
@@ -59,6 +74,22 @@ export async function runPdfMigrations(): Promise<void> {
     if ((rowCount ?? 0) > 0) {
       logger.info({ backfilled: rowCount }, "PDF migration: backfilled share_token for existing rows");
     }
+
+    // Create the pdf_otps table for the Revoke Expiry feature
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS pdf_otps (
+        id SERIAL PRIMARY KEY,
+        pdf_id INTEGER NOT NULL REFERENCES pdfs(id) ON DELETE CASCADE,
+        code_hash TEXT NOT NULL,
+        expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+        used_at TIMESTAMP WITH TIME ZONE,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+      )
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS pdf_otps_pdf_id_idx ON pdf_otps(pdf_id)
+    `);
   } catch (err) {
     logger.error({ err }, "PDF migration failed");
     throw err;
@@ -313,6 +344,167 @@ router.get("/pdfs/:id/download", async (req, res): Promise<void> => {
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `attachment; filename="${securedFilename(record.originalName)}"`);
   res.sendFile(record.storedPath);
+});
+
+// ─── Revoke Expiry (OTP) ──────────────────────────────────────────────────────
+
+router.post("/pdfs/:id/revoke/request", async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid ID" });
+    return;
+  }
+
+  const { shareToken } = (req.body ?? {}) as { shareToken?: string };
+
+  const [record] = await db.select().from(pdfsTable).where(eq(pdfsTable.id, id));
+
+  if (!record) {
+    res.status(404).json({ error: "PDF not found" });
+    return;
+  }
+
+  if (!requireShareToken(shareToken, record, res)) return;
+
+  // If the file has already been purged from disk we cannot revoke
+  if (!fs.existsSync(record.storedPath)) {
+    res.status(409).json({
+      error: "This PDF has already been permanently deleted and cannot be revoked.",
+    });
+    return;
+  }
+
+  // Invalidate any prior unused OTPs for this PDF so only the latest is valid
+  await db
+    .update(pdfOtpsTable)
+    .set({ usedAt: new Date() })
+    .where(and(eq(pdfOtpsTable.pdfId, id), isNull(pdfOtpsTable.usedAt)));
+
+  const code = generateOtpCode();
+  const expiresAt = new Date(Date.now() + OTP_TTL_MS);
+
+  const [otp] = await db
+    .insert(pdfOtpsTable)
+    .values({
+      pdfId: id,
+      codeHash: hashOtpCode(code),
+      expiresAt,
+    })
+    .returning();
+
+  req.log.info({ id: record.id, otpId: otp.id }, "Revoke OTP generated");
+
+  res.status(201).json({
+    otpId: otp.id,
+    code, // demo only — would be emailed in production
+    expiresAt: otp.expiresAt.toISOString(),
+  });
+});
+
+router.post("/pdfs/:id/revoke/verify", async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid ID" });
+    return;
+  }
+
+  const { shareToken, otpId, code, newExpiryDate } = (req.body ?? {}) as {
+    shareToken?: string;
+    otpId?: number;
+    code?: string;
+    newExpiryDate?: string;
+  };
+
+  if (typeof otpId !== "number" || !code || !newExpiryDate) {
+    res.status(400).json({ error: "otpId, code, and newExpiryDate are required" });
+    return;
+  }
+
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(newExpiryDate)) {
+    res.status(400).json({ error: "newExpiryDate must be in YYYY-MM-DD format" });
+    return;
+  }
+
+  // The new expiry must be in the future
+  const newExpiry = new Date(newExpiryDate + "T23:59:59.999Z");
+  if (newExpiry <= new Date()) {
+    res.status(400).json({ error: "newExpiryDate must be in the future" });
+    return;
+  }
+
+  const [record] = await db.select().from(pdfsTable).where(eq(pdfsTable.id, id));
+
+  if (!record) {
+    res.status(404).json({ error: "PDF not found" });
+    return;
+  }
+
+  if (!requireShareToken(shareToken, record, res)) return;
+
+  if (!fs.existsSync(record.storedPath)) {
+    res.status(409).json({
+      error: "This PDF has already been permanently deleted and cannot be revoked.",
+    });
+    return;
+  }
+
+  const [otp] = await db
+    .select()
+    .from(pdfOtpsTable)
+    .where(and(eq(pdfOtpsTable.id, otpId), eq(pdfOtpsTable.pdfId, id)));
+
+  if (!otp) {
+    res.status(404).json({ error: "OTP not found. Please request a new code." });
+    return;
+  }
+
+  if (otp.usedAt) {
+    res.status(400).json({ error: "This OTP has already been used. Please request a new code." });
+    return;
+  }
+
+  if (otp.expiresAt.getTime() < Date.now()) {
+    res.status(400).json({ error: "This OTP has expired. Please request a new code." });
+    return;
+  }
+
+  if (otp.attempts >= OTP_MAX_ATTEMPTS) {
+    res.status(403).json({ error: "Too many failed attempts. Please request a new code." });
+    return;
+  }
+
+  const submittedHash = hashOtpCode(String(code));
+  if (submittedHash !== otp.codeHash) {
+    await db
+      .update(pdfOtpsTable)
+      .set({ attempts: otp.attempts + 1 })
+      .where(eq(pdfOtpsTable.id, otp.id));
+    res.status(400).json({
+      error: `Incorrect code. ${OTP_MAX_ATTEMPTS - otp.attempts - 1} attempt(s) remaining.`,
+    });
+    return;
+  }
+
+  // Success – mark OTP used and extend the PDF expiry
+  await db
+    .update(pdfOtpsTable)
+    .set({ usedAt: new Date() })
+    .where(eq(pdfOtpsTable.id, otp.id));
+
+  const [updated] = await db
+    .update(pdfsTable)
+    .set({ expiryDate: newExpiryDate })
+    .where(eq(pdfsTable.id, id))
+    .returning();
+
+  req.log.info({ id: record.id, otpId: otp.id, newExpiryDate }, "Revoke OTP verified – expiry extended");
+
+  res.json(formatPdfRecord(updated));
 });
 
 router.delete("/pdfs/:id", async (req, res): Promise<void> => {

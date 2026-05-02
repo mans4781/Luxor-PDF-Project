@@ -25,7 +25,10 @@ import type {
   PdfRecord,
   PdfStats,
   PdfUploadResult,
+  RequestRevokeOtpBody,
+  RevokeOtpRequestResult,
   UploadPdfBody,
+  VerifyRevokeOtpBody,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -493,6 +496,185 @@ export function useDownloadPdf<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * Generates a 6-digit OTP that the company can share out-of-band with
+the recipient. Valid for 10 minutes. Returns the code in the response
+because there is no email service configured — in production this
+would be delivered to the company's contact email.
+
+ * @summary Request a one-time code to revoke an expired PDF's expiry
+ */
+export const getRequestRevokeOtpUrl = (id: number) => {
+  return `/api/pdfs/${id}/revoke/request`;
+};
+
+export const requestRevokeOtp = async (
+  id: number,
+  requestRevokeOtpBody: RequestRevokeOtpBody,
+  options?: RequestInit,
+): Promise<RevokeOtpRequestResult> => {
+  return customFetch<RevokeOtpRequestResult>(getRequestRevokeOtpUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(requestRevokeOtpBody),
+  });
+};
+
+export const getRequestRevokeOtpMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof requestRevokeOtp>>,
+    TError,
+    { id: number; data: BodyType<RequestRevokeOtpBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof requestRevokeOtp>>,
+  TError,
+  { id: number; data: BodyType<RequestRevokeOtpBody> },
+  TContext
+> => {
+  const mutationKey = ["requestRevokeOtp"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof requestRevokeOtp>>,
+    { id: number; data: BodyType<RequestRevokeOtpBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return requestRevokeOtp(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RequestRevokeOtpMutationResult = NonNullable<
+  Awaited<ReturnType<typeof requestRevokeOtp>>
+>;
+export type RequestRevokeOtpMutationBody = BodyType<RequestRevokeOtpBody>;
+export type RequestRevokeOtpMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Request a one-time code to revoke an expired PDF's expiry
+ */
+export const useRequestRevokeOtp = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof requestRevokeOtp>>,
+    TError,
+    { id: number; data: BodyType<RequestRevokeOtpBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof requestRevokeOtp>>,
+  TError,
+  { id: number; data: BodyType<RequestRevokeOtpBody> },
+  TContext
+> => {
+  return useMutation(getRequestRevokeOtpMutationOptions(options));
+};
+
+/**
+ * @summary Verify the OTP and extend the PDF's expiry date
+ */
+export const getVerifyRevokeOtpUrl = (id: number) => {
+  return `/api/pdfs/${id}/revoke/verify`;
+};
+
+export const verifyRevokeOtp = async (
+  id: number,
+  verifyRevokeOtpBody: VerifyRevokeOtpBody,
+  options?: RequestInit,
+): Promise<PdfRecord> => {
+  return customFetch<PdfRecord>(getVerifyRevokeOtpUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(verifyRevokeOtpBody),
+  });
+};
+
+export const getVerifyRevokeOtpMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof verifyRevokeOtp>>,
+    TError,
+    { id: number; data: BodyType<VerifyRevokeOtpBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof verifyRevokeOtp>>,
+  TError,
+  { id: number; data: BodyType<VerifyRevokeOtpBody> },
+  TContext
+> => {
+  const mutationKey = ["verifyRevokeOtp"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof verifyRevokeOtp>>,
+    { id: number; data: BodyType<VerifyRevokeOtpBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return verifyRevokeOtp(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type VerifyRevokeOtpMutationResult = NonNullable<
+  Awaited<ReturnType<typeof verifyRevokeOtp>>
+>;
+export type VerifyRevokeOtpMutationBody = BodyType<VerifyRevokeOtpBody>;
+export type VerifyRevokeOtpMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Verify the OTP and extend the PDF's expiry date
+ */
+export const useVerifyRevokeOtp = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof verifyRevokeOtp>>,
+    TError,
+    { id: number; data: BodyType<VerifyRevokeOtpBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof verifyRevokeOtp>>,
+  TError,
+  { id: number; data: BodyType<VerifyRevokeOtpBody> },
+  TContext
+> => {
+  return useMutation(getVerifyRevokeOtpMutationOptions(options));
+};
 
 /**
  * @summary Get statistics about uploaded PDFs

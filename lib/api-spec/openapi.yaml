@@ -186,6 +186,126 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /pdfs/{id}/revoke/request:
+    post:
+      operationId: requestRevokeOtp
+      tags: [pdfs]
+      summary: Request a one-time code to revoke an expired PDF's expiry
+      description: |
+        Generates a 6-digit OTP that the company can share out-of-band with
+        the recipient. Valid for 10 minutes. Returns the code in the response
+        because there is no email service configured — in production this
+        would be delivered to the company's contact email.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shareToken:
+                  type: string
+                  description: Share token returned at upload time
+              required:
+                - shareToken
+      responses:
+        "201":
+          description: OTP generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevokeOtpRequestResult"
+        "403":
+          description: Forbidden – invalid or missing share token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: PDF not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: PDF file no longer recoverable (already purged from disk)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /pdfs/{id}/revoke/verify:
+    post:
+      operationId: verifyRevokeOtp
+      tags: [pdfs]
+      summary: Verify the OTP and extend the PDF's expiry date
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shareToken:
+                  type: string
+                otpId:
+                  type: integer
+                code:
+                  type: string
+                  description: The 6-digit OTP shared by the company
+                newExpiryDate:
+                  type: string
+                  format: date
+                  description: New expiry date (YYYY-MM-DD) to apply to the PDF
+              required:
+                - shareToken
+                - otpId
+                - code
+                - newExpiryDate
+      responses:
+        "200":
+          description: Expiry revoked – PDF is accessible again
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PdfRecord"
+        "400":
+          description: Invalid OTP, expired OTP, or invalid date
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden – invalid share token or too many attempts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: PDF or OTP not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: PDF file no longer recoverable (already purged from disk)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /pdfs/stats:
     get:
       operationId: getPdfStats
@@ -287,6 +407,27 @@ components:
         - active
         - expired
         - totalSize
+
+    RevokeOtpRequestResult:
+      type: object
+      properties:
+        otpId:
+          type: integer
+          description: Identifier for this OTP attempt – pass back to the verify endpoint
+        code:
+          type: string
+          description: |
+            The 6-digit OTP. Returned in the response only because no email
+            service is configured — in production this would be sent to the
+            company's contact email so they can pass it to the recipient.
+        expiresAt:
+          type: string
+          format: date-time
+          description: Timestamp after which the OTP can no longer be used
+      required:
+        - otpId
+        - code
+        - expiresAt
 
     ErrorResponse:
       type: object

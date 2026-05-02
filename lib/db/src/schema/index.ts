@@ -18,4 +18,5 @@
 //   export type Post = typeof postsTable.$inferSelect;
 
 export * from "./pdfs";
+export * from "./pdf-otps";
 export * from "./visitors";
