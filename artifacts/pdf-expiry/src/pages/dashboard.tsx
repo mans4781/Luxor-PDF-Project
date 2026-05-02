@@ -20,10 +20,12 @@ import {
   Download,
   Calendar,
   ShieldAlert,
+  Minimize2,
 } from "lucide-react";
 import { PdfToolContent } from "./pdf-tool";
 import { ConvertToolContent } from "./convert-tool";
 import { SecurePdfContent } from "./secure-pdf";
+import { CompressPdfContent } from "./compress-pdf";
 import { Card, CardContent } from "@/components/ui/card";
 
 type ToolKey =
@@ -31,6 +33,7 @@ type ToolKey =
   | "convert-from"
   | "convert-to"
   | "secure-pdf"
+  | "compress-pdf"
   | "user-guide";
 
 type ToolItem = {
@@ -86,6 +89,16 @@ const TOOLS: ToolItem[] = [
     iconText: "text-rose-700",
     activeRing: "ring-rose-500/40 border-rose-500",
     badge: "Signature",
+  },
+  {
+    key: "compress-pdf",
+    label: "Compress your PDF",
+    description: "Shrink to 15, 10, 5 or 1 MB",
+    icon: Minimize2,
+    accent: "#0F766E",
+    iconBg: "bg-teal-50 group-hover:bg-teal-100",
+    iconText: "text-teal-700",
+    activeRing: "ring-teal-500/40 border-teal-500",
   },
   {
     key: "user-guide",
@@ -537,6 +550,7 @@ function RightPanel({ active }: { active: ToolKey | null }) {
         />
       )}
       {active === "secure-pdf" && <SecurePdfContent />}
+      {active === "compress-pdf" && <CompressPdfContent />}
       {active === "user-guide" && <UserGuideContent />}
     </div>
   );
