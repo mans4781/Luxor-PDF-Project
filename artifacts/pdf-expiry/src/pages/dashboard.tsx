@@ -55,8 +55,8 @@ const TOOLS: ToolItem[] = [
     description: "Merge, split & extract pages",
     icon: Wrench,
     accent: "#312E81",
-    iconBg: "bg-indigo-200 group-hover:bg-indigo-300",
-    iconText: "text-indigo-700",
+    iconBg: "bg-[#7254F6] group-hover:bg-[#5E43D4]",
+    iconText: "text-white",
     activeRing: "ring-indigo-500/40 border-indigo-500",
   },
   {
