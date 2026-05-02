@@ -552,7 +552,7 @@ export default function Dashboard() {
         <div>
           <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#1e3a8a] bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1 mb-3">
             <Sparkles className="w-3 h-3 text-[#DC2626]" strokeWidth={2.5} />
-            Luxor PDF · Workspace
+            Luxor PDF Secure · Workspace
           </div>
           <h1 className="text-[34px] leading-tight font-extrabold tracking-tight text-slate-900">
             Your{" "}
