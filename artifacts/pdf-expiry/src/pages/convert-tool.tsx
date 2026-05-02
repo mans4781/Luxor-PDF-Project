@@ -1,4 +1,11 @@
-import { useState, useRef, useCallback, useContext, createContext } from "react";
+import { useState, useRef, useCallback } from "react";
+import {
+  AccentContext,
+  type AccentMode,
+  useAccentBtn,
+  useAccentInnerBanner,
+  useAccentDrop,
+} from "@/lib/accent";
 import { useSearch } from "wouter";
 import { Layout } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -48,40 +55,7 @@ function readAsDataURL(file: File): Promise<string> {
 
 // saveFile is imported from @/lib/save-file — opens a native Save As dialog
 
-type ConvertColorScheme = "emerald" | "orange" | "amber" | "green" | "sky" | "lime" | "blue";
-
-type AccentMode = "blue" | "green" | "default";
-const AccentContext = createContext<AccentMode>("default");
-
-const ACCENT_BTN_CLASS: Record<Exclude<AccentMode, "default">, string> = {
-  blue: "from-[#1754F4] to-[#1447D0] hover:from-[#154EE2] hover:to-[#103EB8]",
-  green: "from-[#32AD71] to-[#2A9460] hover:from-[#2EA068] hover:to-[#258052]",
-};
-
-const ACCENT_INNER_BANNER: Record<Exclude<AccentMode, "default">, {
-  wrap: string; iconWrap: string; titleClass: string; descClass: string; trigger: string;
-}> = {
-  blue: {
-    wrap: "bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100",
-    iconWrap: "bg-gradient-to-br from-[#1754F4] to-[#1447D0]",
-    titleClass: "text-[#1447D0]",
-    descClass: "text-[#1754F4]",
-    trigger: "data-[state=active]:bg-[#1754F4]",
-  },
-  green: {
-    wrap: "bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-100",
-    iconWrap: "bg-gradient-to-br from-[#32AD71] to-[#2A9460]",
-    titleClass: "text-[#2A9460]",
-    descClass: "text-[#32AD71]",
-    trigger: "data-[state=active]:bg-[#32AD71]",
-  },
-};
-
-function useAccentBtn(fallback: string): string {
-  const accent = useContext(AccentContext);
-  if (accent === "default") return fallback;
-  return ACCENT_BTN_CLASS[accent];
-}
+type ConvertColorScheme = "emerald" | "orange" | "amber" | "green" | "sky" | "lime";
 
 const convertDropColors: Record<ConvertColorScheme, {
   drag: string; idle: string; icon: string; iconBg: string; label: string; hint: string;
@@ -122,12 +96,6 @@ const convertDropColors: Record<ConvertColorScheme, {
     icon: "text-white", iconBg: "bg-gradient-to-br from-lime-600 to-green-700",
     label: "text-lime-700", hint: "text-lime-500",
   },
-  blue: {
-    drag: "border-[#1754F4] bg-blue-50 scale-[1.01]",
-    idle: "border-blue-200 hover:border-[#1754F4] hover:bg-blue-50/60 bg-gradient-to-br from-blue-50/50 to-indigo-50/30",
-    icon: "text-white", iconBg: "bg-gradient-to-br from-[#1754F4] to-[#1447D0]",
-    label: "text-[#1447D0]", hint: "text-[#1754F4]",
-  },
 };
 
 function DropZone({
@@ -147,10 +115,10 @@ function DropZone({
 }) {
   const [dragging, setDragging] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
-  const accent = useContext(AccentContext);
-  const effectiveScheme: ConvertColorScheme =
-    accent === "blue" ? "blue" : accent === "green" ? "green" : colorScheme;
-  const c = convertDropColors[effectiveScheme];
+  const accentDrop = useAccentDrop();
+  const c = accentDrop
+    ? { ...accentDrop, icon: "text-white" }
+    : convertDropColors[colorScheme];
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -1541,7 +1509,7 @@ export function ConvertToolContent({
 }: {
   defaultTab?: string;
   tabs?: ConvertTabKey[];
-  accent?: "blue" | "green" | "default";
+  accent?: AccentMode;
 }) {
   const visibleTabs = tabs.length > 0 ? tabs : ALL_TABS;
   const isVisible = (k: string): k is ConvertTabKey =>
@@ -1552,6 +1520,31 @@ export function ConvertToolContent({
 
   return (
     <AccentContext.Provider value={accent}>
+      <ConvertToolContentInner
+        defaultTab={initialTab}
+        visibleTabs={visibleTabs}
+        gridClass={gridClass}
+        accent={accent}
+      />
+    </AccentContext.Provider>
+  );
+}
+
+function ConvertToolContentInner({
+  defaultTab,
+  visibleTabs,
+  gridClass,
+  accent,
+}: {
+  defaultTab: string;
+  visibleTabs: ConvertTabKey[];
+  gridClass: string;
+  accent: AccentMode;
+}) {
+  const ACCENT_INNER_BANNER_LOCAL = useAccentInnerBanner();
+  const initialTab = defaultTab;
+  return (
+    <>
     <div className="max-w-2xl mx-auto space-y-6">
 
         {/* ── Vibrant header banner ── */}
@@ -1586,7 +1579,7 @@ export function ConvertToolContent({
                 {visibleTabs.map((k) => {
                   const spec = TAB_SPECS[k];
                   const TIcon = spec.triggerIcon;
-                  const triggerBg = accent !== "default" ? ACCENT_INNER_BANNER[accent].trigger : spec.triggerActiveBg;
+                  const triggerBg = ACCENT_INNER_BANNER_LOCAL ? ACCENT_INNER_BANNER_LOCAL.trigger : spec.triggerActiveBg;
                   return (
                     <TabsTrigger
                       key={k}
@@ -1605,7 +1598,7 @@ export function ConvertToolContent({
                 const spec = TAB_SPECS[k];
                 const BIcon = spec.bannerIcon;
                 const Body = spec.Component;
-                const ab = accent !== "default" ? ACCENT_INNER_BANNER[accent] : null;
+                const ab = ACCENT_INNER_BANNER_LOCAL;
                 return (
                   <TabsContent key={k} value={spec.key}>
                     <div className={`${ab?.wrap ?? spec.bannerWrap} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
@@ -1625,7 +1618,7 @@ export function ConvertToolContent({
           </CardContent>
         </Card>
       </div>
-    </AccentContext.Provider>
+    </>
   );
 }
 

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { formatBytes } from "@/lib/utils";
 import { saveFile } from "@/lib/save-file";
+import { AccentProvider, useAccentBtn, useAccentDrop } from "@/lib/accent";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -55,25 +56,25 @@ const TARGETS: CompressionTarget[] = [
     label: "15 MB",
     bytes: 15 * MB,
     minOriginalBytes: 15 * MB,
-    accent: "from-teal-500 to-cyan-600",
+    accent: "from-[#F37311] to-[#D4640C]",
   },
   {
     label: "10 MB",
     bytes: 10 * MB,
     minOriginalBytes: 10 * MB,
-    accent: "from-cyan-500 to-sky-600",
+    accent: "from-[#F37311] to-[#D4640C]",
   },
   {
     label: "5 MB",
     bytes: 5 * MB,
     minOriginalBytes: 5 * MB,
-    accent: "from-sky-500 to-blue-600",
+    accent: "from-[#F37311] to-[#D4640C]",
   },
   {
     label: "1 MB",
     bytes: 1 * MB,
     minOriginalBytes: 1 * MB,
-    accent: "from-blue-500 to-indigo-600",
+    accent: "from-[#F37311] to-[#D4640C]",
   },
 ];
 
@@ -84,6 +85,7 @@ function FileDropZone({
 }) {
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const accentDrop = useAccentDrop();
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -109,17 +111,17 @@ function FileDropZone({
       onDrop={handleDrop}
       className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all select-none ${
         dragging
-          ? "border-teal-400 bg-teal-50 scale-[1.01]"
-          : "border-teal-200 hover:border-teal-400 hover:bg-teal-50/60 bg-gradient-to-br from-teal-50/50 to-cyan-50/30"
+          ? (accentDrop?.drag ?? "border-teal-400 bg-teal-50 scale-[1.01]")
+          : (accentDrop?.idle ?? "border-teal-200 hover:border-teal-400 hover:bg-teal-50/60 bg-gradient-to-br from-teal-50/50 to-cyan-50/30")
       }`}
     >
-      <div className="w-14 h-14 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-md mx-auto mb-3 opacity-85">
+      <div className={`w-14 h-14 ${accentDrop?.iconBg ?? "bg-gradient-to-br from-teal-500 to-cyan-600"} rounded-2xl flex items-center justify-center shadow-md mx-auto mb-3 opacity-85`}>
         <Upload className="w-7 h-7 text-white" />
       </div>
-      <p className="text-sm font-semibold text-teal-700">
+      <p className={`text-sm font-semibold ${accentDrop?.label ?? "text-teal-700"}`}>
         Click or drag a PDF here
       </p>
-      <p className="text-xs mt-1 text-teal-400">
+      <p className={`text-xs mt-1 ${accentDrop?.hint ?? "text-teal-400"}`}>
         Pick a target size below — we'll shrink the file to fit.
       </p>
       <input
@@ -260,6 +262,15 @@ type CompressResult = {
 };
 
 export function CompressPdfContent() {
+  return (
+    <AccentProvider value="orange">
+      <CompressPdfContentInner />
+    </AccentProvider>
+  );
+}
+
+function CompressPdfContentInner() {
+  const downloadAccent = useAccentBtn("from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState("");
@@ -448,7 +459,7 @@ export function CompressPdfContent() {
           <Button
             data-testid="button-download-compressed"
             onClick={downloadResult}
-            className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white border-0 shadow-md font-semibold"
+            className={`w-full bg-gradient-to-r ${downloadAccent} text-white border-0 shadow-md font-semibold`}
           >
             <Download className="w-4 h-4 mr-2" />
             Download compressed PDF

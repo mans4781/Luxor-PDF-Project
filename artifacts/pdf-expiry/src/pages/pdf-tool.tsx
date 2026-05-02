@@ -9,6 +9,7 @@ import { PDFDocument } from "pdf-lib";
 import { formatBytes } from "@/lib/utils";
 import { saveFile } from "@/lib/save-file";
 import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Wrench, Trash2, FilePlus } from "lucide-react";
+import { AccentProvider, useAccentBtn, useAccentInnerBanner, useAccentDrop } from "@/lib/accent";
 
 type DropColorScheme = "violet" | "indigo" | "purple" | "rose" | "emerald";
 
@@ -64,7 +65,8 @@ function FileDropZone({
 }) {
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const c = dropColors[colorScheme];
+  const accentDrop = useAccentDrop();
+  const c = accentDrop ? { ...accentDrop, icon: "text-white" } : dropColors[colorScheme];
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -146,6 +148,7 @@ async function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
 // ─── Merge ────────────────────────────────────────────────────────────────────
 
 function MergeTab() {
+  const accentBtn = useAccentBtn("from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700");
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -220,7 +223,7 @@ function MergeTab() {
         data-testid="button-merge"
         onClick={mergePdfs}
         disabled={files.length < 2 || loading}
-        className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0 shadow-md font-semibold"
+        className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
       >
         {loading ? (
           <>
@@ -241,6 +244,7 @@ function MergeTab() {
 // ─── Split ────────────────────────────────────────────────────────────────────
 
 function SplitTab() {
+  const accentBtn = useAccentBtn("from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700");
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -344,7 +348,7 @@ function SplitTab() {
         data-testid="button-split"
         onClick={splitPdf}
         disabled={!file || loading}
-        className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white border-0 shadow-md font-semibold"
+        className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
       >
         {loading ? (
           <>
@@ -365,6 +369,7 @@ function SplitTab() {
 // ─── Extract ──────────────────────────────────────────────────────────────────
 
 function ExtractTab() {
+  const accentBtn = useAccentBtn("from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700");
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
@@ -555,7 +560,7 @@ function ExtractTab() {
         data-testid="button-extract"
         onClick={extractPages}
         disabled={!file || selectedPages.size === 0 || loading}
-        className="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white border-0 shadow-md font-semibold"
+        className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
       >
         {loading ? (
           <>
@@ -576,6 +581,7 @@ function ExtractTab() {
 // ─── Delete Pages ─────────────────────────────────────────────────────────────
 
 function DeleteTab() {
+  const accentBtn = useAccentBtn("from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700");
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
@@ -772,7 +778,7 @@ function DeleteTab() {
         data-testid="button-delete-pages"
         onClick={deletePages}
         disabled={!file || selectedPages.size === 0 || loading}
-        className="w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white border-0 shadow-md font-semibold"
+        className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
       >
         {loading ? (
           <>
@@ -803,6 +809,7 @@ const PAGE_SIZES: Record<BlankSize, [number, number]> = {
 };
 
 function AddTab() {
+  const accentBtn = useAccentBtn("from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700");
   const [hostFile, setHostFile] = useState<File | null>(null);
   const [hostPageCount, setHostPageCount] = useState<number | null>(null);
 
@@ -1122,7 +1129,7 @@ function AddTab() {
           (source === "pdf" && !sourceFile) ||
           (source === "blank" && blankCount < 1)
         }
-        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-md font-semibold"
+        className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
       >
         {loading ? (
           <>
@@ -1143,6 +1150,15 @@ function AddTab() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function PdfToolContent() {
+  return (
+    <AccentProvider value="purple">
+      <PdfToolContentInner />
+    </AccentProvider>
+  );
+}
+
+function PdfToolContentInner() {
+  const ab = useAccentInnerBanner();
   return (
     <div className="max-w-2xl mx-auto space-y-6">
 
@@ -1169,11 +1185,11 @@ export function PdfToolContent() {
         <Card className="border-violet-100 shadow-sm">
           <CardContent className="pt-6">
             <Tabs defaultValue="merge">
-              <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 gap-1 mb-6 bg-violet-50 border border-violet-100 p-1 rounded-xl h-auto">
+              <TabsList className={`grid w-full grid-cols-3 sm:grid-cols-5 gap-1 mb-6 ${ab?.tabsListBg ?? "bg-violet-50 border border-violet-100"} p-1 rounded-xl h-auto`}>
                 <TabsTrigger
                   value="merge"
                   data-testid="tab-merge"
-                  className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-violet-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                  className={`flex items-center gap-1.5 rounded-lg ${ab?.trigger ?? "data-[state=active]:bg-violet-600"} data-[state=active]:text-white data-[state=active]:shadow-sm transition-all`}
                 >
                   <Merge className="w-4 h-4" />
                   Merge
@@ -1181,7 +1197,7 @@ export function PdfToolContent() {
                 <TabsTrigger
                   value="split"
                   data-testid="tab-split"
-                  className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                  className={`flex items-center gap-1.5 rounded-lg ${ab?.trigger ?? "data-[state=active]:bg-indigo-600"} data-[state=active]:text-white data-[state=active]:shadow-sm transition-all`}
                 >
                   <Scissors className="w-4 h-4" />
                   Split
@@ -1189,7 +1205,7 @@ export function PdfToolContent() {
                 <TabsTrigger
                   value="extract"
                   data-testid="tab-extract"
-                  className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                  className={`flex items-center gap-1.5 rounded-lg ${ab?.trigger ?? "data-[state=active]:bg-purple-600"} data-[state=active]:text-white data-[state=active]:shadow-sm transition-all`}
                 >
                   <FileOutput className="w-4 h-4" />
                   Extract
@@ -1197,7 +1213,7 @@ export function PdfToolContent() {
                 <TabsTrigger
                   value="delete"
                   data-testid="tab-delete"
-                  className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-rose-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                  className={`flex items-center gap-1.5 rounded-lg ${ab?.trigger ?? "data-[state=active]:bg-rose-600"} data-[state=active]:text-white data-[state=active]:shadow-sm transition-all`}
                 >
                   <Trash2 className="w-4 h-4" />
                   Delete
@@ -1205,7 +1221,7 @@ export function PdfToolContent() {
                 <TabsTrigger
                   value="add"
                   data-testid="tab-add"
-                  className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                  className={`flex items-center gap-1.5 rounded-lg ${ab?.trigger ?? "data-[state=active]:bg-emerald-600"} data-[state=active]:text-white data-[state=active]:shadow-sm transition-all`}
                 >
                   <FilePlus className="w-4 h-4" />
                   Insert
@@ -1213,65 +1229,65 @@ export function PdfToolContent() {
               </TabsList>
 
               <TabsContent value="merge">
-                <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-                  <div className="w-9 h-9 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                <div className={`${ab?.wrap ?? "bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-100"} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
+                  <div className={`w-9 h-9 ${ab?.iconWrap ?? "bg-gradient-to-br from-violet-500 to-indigo-600"} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
                     <Merge className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-violet-900">Merge PDFs</h2>
-                    <p className="text-xs text-violet-600">Combine multiple PDFs into one document in the listed order.</p>
+                    <h2 className={`font-semibold ${ab?.titleClass ?? "text-violet-900"}`}>Merge PDFs</h2>
+                    <p className={`text-xs ${ab?.descClass ?? "text-violet-600"}`}>Combine multiple PDFs into one document in the listed order.</p>
                   </div>
                 </div>
                 <MergeTab />
               </TabsContent>
 
               <TabsContent value="split">
-                <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-                  <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                <div className={`${ab?.wrap ?? "bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100"} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
+                  <div className={`w-9 h-9 ${ab?.iconWrap ?? "bg-gradient-to-br from-indigo-500 to-blue-600"} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
                     <Scissors className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-indigo-900">Split PDF</h2>
-                    <p className="text-xs text-indigo-600">Divide a PDF by page ranges — each range downloads as its own file.</p>
+                    <h2 className={`font-semibold ${ab?.titleClass ?? "text-indigo-900"}`}>Split PDF</h2>
+                    <p className={`text-xs ${ab?.descClass ?? "text-indigo-600"}`}>Divide a PDF by page ranges — each range downloads as its own file.</p>
                   </div>
                 </div>
                 <SplitTab />
               </TabsContent>
 
               <TabsContent value="extract">
-                <div className="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-                  <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-violet-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                <div className={`${ab?.wrap ?? "bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-100"} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
+                  <div className={`w-9 h-9 ${ab?.iconWrap ?? "bg-gradient-to-br from-purple-500 to-violet-600"} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
                     <FileOutput className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-purple-900">Extract Pages</h2>
-                    <p className="text-xs text-purple-600">Pick specific pages from a PDF and save them as a new document.</p>
+                    <h2 className={`font-semibold ${ab?.titleClass ?? "text-purple-900"}`}>Extract Pages</h2>
+                    <p className={`text-xs ${ab?.descClass ?? "text-purple-600"}`}>Pick specific pages from a PDF and save them as a new document.</p>
                   </div>
                 </div>
                 <ExtractTab />
               </TabsContent>
 
               <TabsContent value="delete">
-                <div className="bg-gradient-to-r from-rose-50 to-red-50 border border-rose-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-                  <div className="w-9 h-9 bg-gradient-to-br from-rose-500 to-red-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                <div className={`${ab?.wrap ?? "bg-gradient-to-r from-rose-50 to-red-50 border border-rose-100"} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
+                  <div className={`w-9 h-9 ${ab?.iconWrap ?? "bg-gradient-to-br from-rose-500 to-red-600"} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
                     <Trash2 className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-rose-900">Delete Pages</h2>
-                    <p className="text-xs text-rose-600">Remove any pages from anywhere in the PDF — the rest are kept in order.</p>
+                    <h2 className={`font-semibold ${ab?.titleClass ?? "text-rose-900"}`}>Delete Pages</h2>
+                    <p className={`text-xs ${ab?.descClass ?? "text-rose-600"}`}>Remove any pages from anywhere in the PDF — the rest are kept in order.</p>
                   </div>
                 </div>
                 <DeleteTab />
               </TabsContent>
 
               <TabsContent value="add">
-                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-                  <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                <div className={`${ab?.wrap ?? "bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100"} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
+                  <div className={`w-9 h-9 ${ab?.iconWrap ?? "bg-gradient-to-br from-emerald-500 to-teal-600"} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
                     <FilePlus className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-emerald-900">Insert Pages</h2>
-                    <p className="text-xs text-emerald-600">Insert pages from another PDF — or blank pages — at the start, end, or after any page.</p>
+                    <h2 className={`font-semibold ${ab?.titleClass ?? "text-emerald-900"}`}>Insert Pages</h2>
+                    <p className={`text-xs ${ab?.descClass ?? "text-emerald-600"}`}>Insert pages from another PDF — or blank pages — at the start, end, or after any page.</p>
                   </div>
                 </div>
                 <AddTab />

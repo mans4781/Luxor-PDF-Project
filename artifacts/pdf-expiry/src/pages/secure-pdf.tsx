@@ -11,6 +11,7 @@ import {
   Upload, X, Eye, EyeOff, Copy, ShieldOff, Download, CheckCircle2, RotateCcw,
   KeyRound, Send, Sparkles, FileText, Timer,
 } from "lucide-react";
+import { AccentProvider, useAccentBtn, useAccentInnerBanner, useAccentDrop } from "@/lib/accent";
 import {
   useUploadPdf,
   useRequestRevokeOtp,
@@ -61,7 +62,8 @@ function FileDropZone({
 }) {
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const c = dropColors[colorScheme];
+  const accentDrop = useAccentDrop();
+  const c = accentDrop ?? dropColors[colorScheme];
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -113,6 +115,7 @@ function SuccessCard({ label, downloadId, shareToken, fileName, onReset, accentB
   label: string; downloadId: number; shareToken: string; fileName: string;
   onReset: () => void; accentBtn: string;
 }) {
+  const downloadAccent = useAccentBtn("from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700");
   const { toast } = useToast();
   const [downloading, setDownloading] = useState(false);
   const [expired, setExpired] = useState(false);
@@ -176,7 +179,7 @@ function SuccessCard({ label, downloadId, shareToken, fileName, onReset, accentB
       )}
       {!expired && (
         <Button
-          className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-md font-semibold"
+          className={`w-full bg-gradient-to-r ${downloadAccent} text-white border-0 shadow-md font-semibold`}
           onClick={handleDownload}
           disabled={downloading}
         >
@@ -195,6 +198,8 @@ function SuccessCard({ label, downloadId, shareToken, fileName, onReset, accentB
 // ─── Expiry Tab ────────────────────────────────────────────────────────────────
 
 function ExpiryTab() {
+  const accentBtn = useAccentBtn("from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700");
+  const ab = useAccentInnerBanner();
   const [file, setFile] = useState<File | null>(null);
   const [expiryDate, setExpiryDate] = useState(format(addDays(new Date(), 1), "yyyy-MM-dd"));
   const [uploadedId, setUploadedId] = useState<number | null>(null);
@@ -224,13 +229,13 @@ function ExpiryTab() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-gradient-to-r from-rose-50 to-red-50 border border-rose-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-        <div className="w-9 h-9 bg-gradient-to-br from-rose-500 to-red-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+      <div className={`${ab?.wrap ?? "bg-gradient-to-r from-rose-50 to-red-50 border border-rose-100"} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
+        <div className={`w-9 h-9 ${ab?.iconWrap ?? "bg-gradient-to-br from-rose-500 to-red-600"} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
           <Calendar className="w-4 h-4 text-white" />
         </div>
         <div>
-          <h2 className="font-semibold text-rose-900">Set Expiry Date</h2>
-          <p className="text-xs text-rose-600">The PDF auto-locks after this date — no views or downloads.</p>
+          <h2 className={`font-semibold ${ab?.titleClass ?? "text-rose-900"}`}>Set Expiry Date</h2>
+          <p className={`text-xs ${ab?.descClass ?? "text-rose-600"}`}>The PDF auto-locks after this date — no views or downloads.</p>
         </div>
       </div>
 
@@ -238,7 +243,7 @@ function ExpiryTab() {
         <SuccessCard
           label={`Expires on ${format(new Date(expiryDate + "T00:00:00"), "MMMM d, yyyy")}`}
           downloadId={uploadedId} shareToken={uploadedShareToken} fileName={uploadedName} onReset={reset}
-          accentBtn="border-rose-200 text-rose-600 hover:bg-rose-50"
+          accentBtn="border-rose-200 text-[#C81934] hover:bg-rose-50"
         />
       ) : (
         <>
@@ -261,7 +266,7 @@ function ExpiryTab() {
           </div>
 
           <Button
-            className="w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white border-0 shadow-md font-semibold"
+            className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
             disabled={!file || uploadMutation.isPending} onClick={handleUpload}
           >
             {uploadMutation.isPending
@@ -277,6 +282,8 @@ function ExpiryTab() {
 // ─── Password Tab ──────────────────────────────────────────────────────────────
 
 function PasswordTab() {
+  const accentBtn = useAccentBtn("from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700");
+  const ab = useAccentInnerBanner();
   const [file, setFile] = useState<File | null>(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -326,13 +333,13 @@ function PasswordTab() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-gradient-to-r from-indigo-50 to-violet-50 border border-indigo-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-        <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+      <div className={`${ab?.wrap ?? "bg-gradient-to-r from-indigo-50 to-violet-50 border border-indigo-100"} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
+        <div className={`w-9 h-9 ${ab?.iconWrap ?? "bg-gradient-to-br from-indigo-500 to-violet-600"} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
           <Lock className="w-4 h-4 text-white" />
         </div>
         <div>
-          <h2 className="font-semibold text-indigo-900">Set Password</h2>
-          <p className="text-xs text-indigo-600">Recipients must enter this password to open the document.</p>
+          <h2 className={`font-semibold ${ab?.titleClass ?? "text-indigo-900"}`}>Set Password</h2>
+          <p className={`text-xs ${ab?.descClass ?? "text-indigo-600"}`}>Recipients must enter this password to open the document.</p>
         </div>
       </div>
 
@@ -340,7 +347,7 @@ function PasswordTab() {
         <SuccessCard
           label="Password protection applied"
           downloadId={uploadedId} shareToken={uploadedShareToken} fileName={uploadedName} onReset={reset}
-          accentBtn="border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+          accentBtn="border-rose-200 text-[#C81934] hover:bg-rose-50"
         />
       ) : (
         <>
@@ -370,7 +377,7 @@ function PasswordTab() {
           </div>
 
           <Button
-            className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white border-0 shadow-md font-semibold"
+            className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
             disabled={!file || uploadMutation.isPending} onClick={handleUpload}
           >
             {uploadMutation.isPending
@@ -386,6 +393,8 @@ function PasswordTab() {
 // ─── Print Control Tab ─────────────────────────────────────────────────────────
 
 function PrintControlTab() {
+  const accentBtn = useAccentBtn("from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600");
+  const ab = useAccentInnerBanner();
   const [file, setFile] = useState<File | null>(null);
   const [restrictPrint, setRestrictPrint] = useState(false);
   const [restrictCopy, setRestrictCopy] = useState(false);
@@ -462,13 +471,13 @@ function PrintControlTab() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-        <div className="w-9 h-9 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+      <div className={`${ab?.wrap ?? "bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100"} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
+        <div className={`w-9 h-9 ${ab?.iconWrap ?? "bg-gradient-to-br from-amber-500 to-orange-500"} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
           <Printer className="w-4 h-4 text-white" />
         </div>
         <div>
-          <h2 className="font-semibold text-amber-900">Print Control</h2>
-          <p className="text-xs text-amber-600">Restrict or allow printing and text copying for this document.</p>
+          <h2 className={`font-semibold ${ab?.titleClass ?? "text-amber-900"}`}>Print Control</h2>
+          <p className={`text-xs ${ab?.descClass ?? "text-amber-600"}`}>Restrict or allow printing and text copying for this document.</p>
         </div>
       </div>
 
@@ -476,7 +485,7 @@ function PrintControlTab() {
         <SuccessCard
           label={`Printing ${restrictPrint ? "restricted" : "allowed"} · Copying ${restrictCopy ? "restricted" : "allowed"}`}
           downloadId={uploadedId} shareToken={uploadedShareToken} fileName={uploadedName} onReset={reset}
-          accentBtn="border-amber-200 text-amber-600 hover:bg-amber-50"
+          accentBtn="border-rose-200 text-[#C81934] hover:bg-rose-50"
         />
       ) : (
         <>
@@ -499,7 +508,7 @@ function PrintControlTab() {
           </div>
 
           <Button
-            className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-md font-semibold"
+            className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
             disabled={!file || isProcessing || uploadMutation.isPending} onClick={handleUpload}
           >
             {isProcessing
@@ -517,6 +526,8 @@ function PrintControlTab() {
 // ─── Revoke Expiry Tab ─────────────────────────────────────────────────────────
 
 function RevokeExpiryTab() {
+  const accentBtn = useAccentBtn("from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700");
+  const ab = useAccentInnerBanner();
   const [history, setHistory] = useState<LocalPdfEntry[]>([]);
   const [pdfId, setPdfId] = useState("");
   const [shareToken, setShareToken] = useState("");
@@ -645,13 +656,13 @@ function RevokeExpiryTab() {
   if (restoredId !== null) {
     return (
       <div className="space-y-4">
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl px-4 py-3 flex items-center gap-3">
-          <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+        <div className={`${ab?.wrap ?? "bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100"} rounded-xl px-4 py-3 flex items-center gap-3`}>
+          <div className={`w-9 h-9 ${ab?.iconWrap ?? "bg-gradient-to-br from-emerald-500 to-teal-600"} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h2 className="font-semibold text-emerald-900">Expiry revoked</h2>
-            <p className="text-xs text-emerald-600">The recipient can access this PDF until {format(new Date(newExpiryDate + "T00:00:00"), "MMMM d, yyyy")}.</p>
+            <h2 className={`font-semibold ${ab?.titleClass ?? "text-emerald-900"}`}>Expiry revoked</h2>
+            <p className={`text-xs ${ab?.descClass ?? "text-emerald-600"}`}>The recipient can access this PDF until {format(new Date(newExpiryDate + "T00:00:00"), "MMMM d, yyyy")}.</p>
           </div>
         </div>
         <SuccessCard
@@ -660,7 +671,7 @@ function RevokeExpiryTab() {
           shareToken={restoredToken}
           fileName={restoredName || `pdf-${restoredId}.pdf`}
           onReset={reset}
-          accentBtn="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+          accentBtn="border-rose-200 text-[#C81934] hover:bg-rose-50"
         />
       </div>
     );
@@ -671,13 +682,13 @@ function RevokeExpiryTab() {
     const isExpired = secondsLeft === 0;
     return (
       <div className="space-y-4">
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl px-4 py-3 flex items-center gap-3">
-          <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+        <div className={`${ab?.wrap ?? "bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100"} rounded-xl px-4 py-3 flex items-center gap-3`}>
+          <div className={`w-9 h-9 ${ab?.iconWrap ?? "bg-gradient-to-br from-emerald-500 to-teal-600"} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
             <KeyRound className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h2 className="font-semibold text-emerald-900">Share this code with the recipient</h2>
-            <p className="text-xs text-emerald-600">In production this is emailed to your team. For this demo it is shown here.</p>
+            <h2 className={`font-semibold ${ab?.titleClass ?? "text-emerald-900"}`}>Share this code with the recipient</h2>
+            <p className={`text-xs ${ab?.descClass ?? "text-emerald-600"}`}>In production this is emailed to your team. For this demo it is shown here.</p>
           </div>
         </div>
 
@@ -729,7 +740,7 @@ function RevokeExpiryTab() {
         </div>
 
         <Button
-          className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-md font-semibold"
+          className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
           disabled={!enteredCode || enteredCode.length < 6 || verifyMutation.isPending || isExpired}
           onClick={handleVerifyOtp}
           data-testid="button-verify-otp"
@@ -749,13 +760,13 @@ function RevokeExpiryTab() {
   // ─── Step 1: identify the PDF ─────────────────────────────
   return (
     <div className="space-y-4">
-      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-        <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+      <div className={`${ab?.wrap ?? "bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100"} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
+        <div className={`w-9 h-9 ${ab?.iconWrap ?? "bg-gradient-to-br from-emerald-500 to-teal-600"} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
           <Sparkles className="w-4 h-4 text-white" />
         </div>
         <div>
-          <h2 className="font-semibold text-emerald-900">Revoke Expiry</h2>
-          <p className="text-xs text-emerald-600">Generate a one-time code to reopen access to an expired or active PDF.</p>
+          <h2 className={`font-semibold ${ab?.titleClass ?? "text-emerald-900"}`}>Revoke Expiry</h2>
+          <p className={`text-xs ${ab?.descClass ?? "text-emerald-600"}`}>Generate a one-time code to reopen access to an expired or active PDF.</p>
         </div>
       </div>
 
@@ -816,7 +827,7 @@ function RevokeExpiryTab() {
       </p>
 
       <Button
-        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-md font-semibold"
+        className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
         disabled={!pdfId || !shareToken || requestMutation.isPending}
         onClick={handleRequestOtp}
         data-testid="button-request-otp"
@@ -832,6 +843,15 @@ function RevokeExpiryTab() {
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export function SecurePdfContent() {
+  return (
+    <AccentProvider value="red">
+      <SecurePdfContentInner />
+    </AccentProvider>
+  );
+}
+
+function SecurePdfContentInner() {
+  const ab = useAccentInnerBanner();
   return (
     <div className="max-w-2xl mx-auto space-y-6">
 
@@ -858,11 +878,11 @@ export function SecurePdfContent() {
       <Card className="border-rose-100 shadow-sm">
         <CardContent className="pt-6">
           <Tabs defaultValue="expiry">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1 mb-6 bg-rose-50 border border-rose-100 p-1 rounded-xl h-auto">
+            <TabsList className={`grid w-full grid-cols-2 sm:grid-cols-4 gap-1 mb-6 ${ab?.tabsListBg ?? "bg-rose-50 border border-rose-100"} p-1 rounded-xl h-auto`}>
               <TabsTrigger
                 value="expiry"
                 data-testid="tab-expiry"
-                className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-rose-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                className={`flex items-center gap-1.5 rounded-lg ${ab?.trigger ?? "data-[state=active]:bg-rose-600"} data-[state=active]:text-white data-[state=active]:shadow-sm transition-all`}
               >
                 <Calendar className="w-4 h-4" />
                 Expiry Date
@@ -870,7 +890,7 @@ export function SecurePdfContent() {
               <TabsTrigger
                 value="password"
                 data-testid="tab-password"
-                className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                className={`flex items-center gap-1.5 rounded-lg ${ab?.trigger ?? "data-[state=active]:bg-indigo-600"} data-[state=active]:text-white data-[state=active]:shadow-sm transition-all`}
               >
                 <Lock className="w-4 h-4" />
                 Password
@@ -878,7 +898,7 @@ export function SecurePdfContent() {
               <TabsTrigger
                 value="print-control"
                 data-testid="tab-print-control"
-                className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                className={`flex items-center gap-1.5 rounded-lg ${ab?.trigger ?? "data-[state=active]:bg-amber-500"} data-[state=active]:text-white data-[state=active]:shadow-sm transition-all`}
               >
                 <Printer className="w-4 h-4" />
                 Print Control
@@ -886,7 +906,7 @@ export function SecurePdfContent() {
               <TabsTrigger
                 value="revoke-expiry"
                 data-testid="tab-revoke-expiry"
-                className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                className={`flex items-center gap-1.5 rounded-lg ${ab?.trigger ?? "data-[state=active]:bg-emerald-600"} data-[state=active]:text-white data-[state=active]:shadow-sm transition-all`}
               >
                 <KeyRound className="w-4 h-4" />
                 Revoke Expiry
