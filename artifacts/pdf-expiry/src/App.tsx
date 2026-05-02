@@ -12,6 +12,7 @@ import History from "@/pages/history";
 import PdfTool from "@/pages/pdf-tool";
 import ConvertTool from "@/pages/convert-tool";
 import SecurePdf from "@/pages/secure-pdf";
+import PdfViewer from "@/pages/viewer";
 import SignInPage from "@/pages/sign-in";
 import SignUpPage from "@/pages/sign-up";
 
@@ -66,6 +67,7 @@ function Router() {
       <Route path="/pdf-tool" component={PdfTool} />
       <Route path="/convert" component={ConvertTool} />
       <Route path="/secure-pdf" component={SecurePdf} />
+      <Route path="/v/:id" component={PdfViewer} />
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />
       <Route component={NotFound} />

@@ -121,6 +121,27 @@ function SuccessCard({ label, downloadId, shareToken, fileName, onReset, accentB
   const { toast } = useToast();
   const [downloading, setDownloading] = useState(false);
   const [expired, setExpired] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const shareUrl = `${window.location.origin}${import.meta.env.BASE_URL}v/${downloadId}?token=${encodeURIComponent(shareToken)}`;
+
+  const handleCopyShareLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      toast({
+        title: "Share link copied",
+        description: "Anyone with this link can view the PDF until it expires.",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({
+        title: "Copy failed",
+        description: "Could not copy the link to your clipboard.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -180,15 +201,45 @@ function SuccessCard({ label, downloadId, shareToken, fileName, onReset, accentB
         </div>
       )}
       {!expired && (
-        <Button
-          className={`w-full bg-gradient-to-r ${downloadAccent} text-white border-0 shadow-md font-semibold`}
-          onClick={handleDownload}
-          disabled={downloading}
-        >
-          {downloading
-            ? <><span className="animate-spin mr-2">⏳</span>Downloading…</>
-            : <><Download className="w-4 h-4 mr-2" />Download Secured PDF</>}
-        </Button>
+        <>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3" /> Shareable link (expiry-enforced)
+            </Label>
+            <div className="flex gap-1.5">
+              <Input
+                readOnly
+                value={shareUrl}
+                onFocus={(e) => e.currentTarget.select()}
+                className="text-xs font-mono bg-slate-50 border-slate-200 truncate"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                className="shrink-0 border-slate-200 hover:bg-slate-50"
+                onClick={handleCopyShareLink}
+                title="Copy share link"
+              >
+                {copied
+                  ? <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  : <Copy className="w-4 h-4 text-slate-600" />}
+              </Button>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-snug">
+              Recipients open this link in a viewer that locks itself the
+              instant the PDF expires — even if the tab was already open.
+            </p>
+          </div>
+          <Button
+            className={`w-full bg-gradient-to-r ${downloadAccent} text-white border-0 shadow-md font-semibold`}
+            onClick={handleDownload}
+            disabled={downloading}
+          >
+            {downloading
+              ? <><span className="animate-spin mr-2">⏳</span>Downloading…</>
+              : <><Download className="w-4 h-4 mr-2" />Download Secured PDF</>}
+          </Button>
+        </>
       )}
       <Button variant="outline" className={`w-full ${accentBtn}`} onClick={onReset}>
         <RotateCcw className="w-4 h-4 mr-2" />Secure Another PDF
