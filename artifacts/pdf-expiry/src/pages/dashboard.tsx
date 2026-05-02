@@ -563,7 +563,7 @@ export default function Dashboard() {
       {/* Two-column workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* ── Left: tool list ── */}
-        <aside className="lg:col-span-5 xl:col-span-4 flex flex-col gap-2.5">
+        <aside className="lg:col-span-4 xl:col-span-3 flex flex-col gap-2.5">
           <div className="mb-1">
             <h2 className="text-[18px] font-extrabold tracking-tight text-slate-900">
               Your{" "}
@@ -584,7 +584,7 @@ export default function Dashboard() {
               <button
                 key={item.key}
                 onClick={() => setActive(isActive ? null : item.key)}
-                className={`group text-left bg-white rounded-xl border transition-all duration-200 px-4 py-4 ${
+                className={`group text-left bg-white rounded-xl border transition-all duration-200 px-3 py-3 ${
                   isActive
                     ? `border-2 ring-4 shadow-md ${item.activeRing}`
                     : "border-slate-200 hover:border-slate-300 hover:shadow-sm"
@@ -593,12 +593,12 @@ export default function Dashboard() {
                   .toLowerCase()
                   .replace(/\s+/g, "-")}`}
               >
-                <div className="flex items-center gap-3.5">
+                <div className="flex items-center gap-3">
                   <div
-                    className={`w-11 h-11 rounded-lg flex items-center justify-center shrink-0 transition-colors ${item.iconBg}`}
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors ${item.iconBg}`}
                   >
                     <Icon
-                      className={`w-5 h-5 ${item.iconText}`}
+                      className={`w-[18px] h-[18px] ${item.iconText}`}
                       strokeWidth={2}
                     />
                   </div>
@@ -653,7 +653,7 @@ export default function Dashboard() {
         </aside>
 
         {/* ── Right: active tool ── */}
-        <section className="lg:col-span-7 xl:col-span-8 min-h-[560px]">
+        <section className="lg:col-span-8 xl:col-span-9 min-h-[560px]">
           <RightPanel active={active} />
         </section>
       </div>
