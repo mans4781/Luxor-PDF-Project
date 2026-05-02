@@ -1,9 +1,6 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { getAuth } from "@clerk/express";
-import {
-  CheckUsageBody,
-  RecordUsageBody,
-} from "@workspace/api-zod";
+import { CheckUsageBody, RecordUsageBody } from "@workspace/api-zod";
 import {
   getLicenseStatus,
   getTodayUsage,
@@ -36,10 +33,9 @@ router.post("/usage/check", async (req: Request, res: Response): Promise<void> =
 
   try {
     const status = await getLicenseStatus(userId);
-    const allowed = status.canUsePdfTools;
     res.json({
-      allowed,
-      lockReason: status.lockReason,
+      allowed: status.canUsePdfTools,
+      reason: status.reason,
       todayUsage: status.todayUsage,
       dailyLimit: status.dailyLimit,
     });
@@ -111,7 +107,7 @@ router.get("/usage/today", async (req: Request, res: Response): Promise<void> =>
       totalCount: 0,
       dailyLimit: TRIAL_DAILY_LIMIT,
     });
-    // PAID_DAILY_LIMIT is exported so it can be reused by Task #2's
+    // PAID_DAILY_LIMIT is exported so it can be reused by Task #7's
     // subscription wiring without re-deriving the value.
     void PAID_DAILY_LIMIT;
   }

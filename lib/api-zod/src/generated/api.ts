@@ -210,7 +210,7 @@ export const GetLicenseStatusResponse = zod
       "suspended",
     ]),
     canUsePdfTools: zod.boolean(),
-    lockReason: zod
+    reason: zod
       .enum([
         "none",
         "not_logged_in",
@@ -261,7 +261,7 @@ export const CheckUsageBody = zod.object({
 
 export const CheckUsageResponse = zod.object({
   allowed: zod.boolean(),
-  lockReason: zod
+  reason: zod
     .enum([
       "none",
       "not_logged_in",
@@ -321,9 +321,9 @@ export const RecordUsageResponse = zod.object({
   recorded: zod
     .boolean()
     .describe(
-      "True if the increment was applied; false if blocked (in which case `lockReason` will explain).",
+      "True if the increment was applied; false if blocked (in which case `reason` will explain).",
     ),
-  lockReason: zod
+  reason: zod
     .enum([
       "none",
       "not_logged_in",

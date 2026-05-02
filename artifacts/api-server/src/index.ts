@@ -1,6 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { runPdfMigrations } from "./routes/pdfs";
+import { runLicenseMigrations } from "./lib/license";
 
 const rawPort = process.env["PORT"];
 
@@ -17,8 +18,9 @@ if (Number.isNaN(port) || port <= 0) {
 }
 
 // Run idempotent schema migrations before accepting traffic.
-// Ensures share_token is present and backfilled on every deployment.
-runPdfMigrations()
+// Ensures share_token is present and backfilled on every deployment, and
+// that the license / usage / events tables exist for the auth-gated routes.
+Promise.all([runPdfMigrations(), runLicenseMigrations()])
   .then(() => {
     app.listen(port, (err) => {
       if (err) {

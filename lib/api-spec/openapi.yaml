@@ -351,7 +351,7 @@ paths:
           description: |
             Current license + trial + usage status. This endpoint always
             returns 200 — when the caller is not signed in it returns an
-            "anonymous" payload (`loggedIn: false`, `lockReason:
+            "anonymous" payload (`loggedIn: false`, `reason:
             not_logged_in`, `canUsePdfTools: false`) so the marketing/landing
             pages can render without dealing with an error response.
           content:
@@ -663,7 +663,7 @@ components:
           $ref: "#/components/schemas/LicenseStatusValue"
         canUsePdfTools:
           type: boolean
-        lockReason:
+        reason:
           $ref: "#/components/schemas/LicenseLockReason"
         serverTime:
           type: string
@@ -687,7 +687,7 @@ components:
         - subscriptionEndDate
         - licenseStatus
         - canUsePdfTools
-        - lockReason
+        - reason
         - serverTime
 
     UsageCheckBody:
@@ -703,7 +703,7 @@ components:
       properties:
         allowed:
           type: boolean
-        lockReason:
+        reason:
           $ref: "#/components/schemas/LicenseLockReason"
         todayUsage:
           type: integer
@@ -711,7 +711,7 @@ components:
           type: integer
       required:
         - allowed
-        - lockReason
+        - reason
         - todayUsage
         - dailyLimit
 
@@ -733,8 +733,8 @@ components:
       properties:
         recorded:
           type: boolean
-          description: True if the increment was applied; false if blocked (in which case `lockReason` will explain).
-        lockReason:
+          description: True if the increment was applied; false if blocked (in which case `reason` will explain).
+        reason:
           $ref: "#/components/schemas/LicenseLockReason"
         todayUsage:
           type: integer
@@ -742,7 +742,7 @@ components:
           type: integer
       required:
         - recorded
-        - lockReason
+        - reason
         - todayUsage
         - dailyLimit
 

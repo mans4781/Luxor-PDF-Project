@@ -56,11 +56,73 @@ export interface LicenseStatusResult {
   subscriptionEndDate: string | null;
   licenseStatus: LicenseStatusValue;
   canUsePdfTools: boolean;
-  lockReason: LicenseLockReason;
+  reason: LicenseLockReason;
   serverTime: string;
 }
 
 export type UsageCategory = "edit" | "convert" | "secure";
+
+// ─── Idempotent startup migration ─────────────────────────────────────────────
+
+/**
+ * Creates the three license-related tables if they don't already exist.
+ * Mirrors the runPdfMigrations() pattern so deployments don't need a manual
+ * `drizzle-kit push` step before the API can serve license traffic.
+ */
+export async function runLicenseMigrations(): Promise<void> {
+  try {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS user_licenses (
+        user_id TEXT PRIMARY KEY,
+        trial_start_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        trial_end_date TIMESTAMP WITH TIME ZONE NOT NULL,
+        is_paid BOOLEAN NOT NULL DEFAULT FALSE,
+        plan_name TEXT,
+        account_status TEXT NOT NULL DEFAULT 'active',
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS daily_usage (
+        user_id TEXT NOT NULL,
+        usage_date DATE NOT NULL,
+        edit_count INTEGER NOT NULL DEFAULT 0,
+        convert_count INTEGER NOT NULL DEFAULT 0,
+        secure_count INTEGER NOT NULL DEFAULT 0,
+        total_count INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (user_id, usage_date)
+      )
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS daily_usage_user_id_idx ON daily_usage(user_id)
+    `);
+
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS license_events (
+        id SERIAL PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        event_type TEXT NOT NULL,
+        event_message TEXT,
+        metadata JSONB,
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+      )
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS license_events_user_id_idx ON license_events(user_id)
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS license_events_user_event_idx
+        ON license_events(user_id, event_type)
+    `);
+  } catch (err) {
+    logger.error({ err }, "License migration failed");
+    throw err;
+  }
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -197,9 +259,33 @@ export function buildAnonymousStatus(now: Date = new Date()): LicenseStatusResul
     subscriptionEndDate: null,
     licenseStatus: "anonymous",
     canUsePdfTools: false,
-    lockReason: "not_logged_in",
+    reason: "not_logged_in",
     serverTime: now.toISOString(),
   };
+}
+
+/**
+ * Logs a `trial_expired` event the first time we observe that this user's
+ * trial has lapsed. Subsequent observations do not re-log, so the events
+ * table stays clean even under repeated status polling.
+ */
+async function maybeLogTrialExpired(userId: string): Promise<void> {
+  try {
+    const [existing] = await db
+      .select({ id: licenseEventsTable.id })
+      .from(licenseEventsTable)
+      .where(
+        and(
+          eq(licenseEventsTable.userId, userId),
+          eq(licenseEventsTable.eventType, "trial_expired"),
+        ),
+      )
+      .limit(1);
+    if (existing) return;
+    await logEvent(userId, "trial_expired", "Trial period lapsed");
+  } catch (err) {
+    logger.warn({ err, userId }, "Failed to dedup trial_expired event");
+  }
 }
 
 export async function getLicenseStatus(
@@ -216,33 +302,35 @@ export async function getLicenseStatus(
   const trialActive = trialEnd.getTime() > now.getTime();
   const trialDays = daysRemaining(trialEnd, now);
 
-  // At this stage paid-subscription is always inactive (Task #2 wires it up).
+  // At this stage paid-subscription is always inactive (Task #7 wires it up).
   // We still respect `accountStatus` in case it ever gets flipped to suspended.
   const suspended = license.accountStatus === "suspended";
 
   let licenseStatus: LicenseStatusValue;
-  let lockReason: LicenseLockReason;
+  let reason: LicenseLockReason;
   let canUsePdfTools: boolean;
   const dailyLimit = license.isPaid ? PAID_DAILY_LIMIT : TRIAL_DAILY_LIMIT;
   const overLimit = todayUsage >= dailyLimit;
 
   if (suspended) {
     licenseStatus = "suspended";
-    lockReason = "account_suspended";
+    reason = "account_suspended";
     canUsePdfTools = false;
   } else if (license.isPaid) {
-    // Paid path is stubbed at this stage; keep the structure ready for Task #2.
+    // Paid path is stubbed at this stage; keep the structure ready for Task #7.
     licenseStatus = "active";
-    lockReason = overLimit ? "daily_limit_reached" : "none";
+    reason = overLimit ? "daily_limit_reached" : "none";
     canUsePdfTools = !overLimit;
   } else if (trialActive) {
     licenseStatus = "trial";
-    lockReason = overLimit ? "daily_limit_reached" : "none";
+    reason = overLimit ? "daily_limit_reached" : "none";
     canUsePdfTools = !overLimit;
   } else {
     licenseStatus = "trial_expired";
-    lockReason = "trial_expired";
+    reason = "trial_expired";
     canUsePdfTools = false;
+    // Best-effort, deduplicated audit log of the trial lapsing.
+    void maybeLogTrialExpired(userId);
   }
 
   return {
@@ -263,7 +351,7 @@ export async function getLicenseStatus(
     subscriptionEndDate: null,
     licenseStatus,
     canUsePdfTools,
-    lockReason,
+    reason,
     serverTime: now.toISOString(),
   };
 }
@@ -272,7 +360,7 @@ export async function getLicenseStatus(
 
 export interface RecordUsageOutcome {
   recorded: boolean;
-  lockReason: LicenseLockReason;
+  reason: LicenseLockReason;
   todayUsage: number;
   dailyLimit: number;
 }
@@ -291,26 +379,14 @@ export async function recordUsage(
   const status = await getLicenseStatus(userId, now);
 
   // Hard blocks that don't depend on today's count — refuse without touching the row.
-  if (status.lockReason === "trial_expired") {
+  if (
+    status.reason === "trial_expired" ||
+    status.reason === "subscription_expired" ||
+    status.reason === "account_suspended"
+  ) {
     return {
       recorded: false,
-      lockReason: "trial_expired",
-      todayUsage: status.todayUsage,
-      dailyLimit: status.dailyLimit,
-    };
-  }
-  if (status.lockReason === "subscription_expired") {
-    return {
-      recorded: false,
-      lockReason: "subscription_expired",
-      todayUsage: status.todayUsage,
-      dailyLimit: status.dailyLimit,
-    };
-  }
-  if (status.lockReason === "account_suspended") {
-    return {
-      recorded: false,
-      lockReason: "account_suspended",
+      reason: status.reason,
       todayUsage: status.todayUsage,
       dailyLimit: status.dailyLimit,
     };
@@ -380,7 +456,7 @@ export async function recordUsage(
 
     return {
       recorded: false,
-      lockReason: "daily_limit_reached",
+      reason: "daily_limit_reached",
       todayUsage: row.totalCount - fileCount,
       dailyLimit: status.dailyLimit,
     };
@@ -388,7 +464,7 @@ export async function recordUsage(
 
   return {
     recorded: true,
-    lockReason: "none",
+    reason: "none",
     todayUsage: row.totalCount,
     dailyLimit: status.dailyLimit,
   };

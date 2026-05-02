@@ -45,7 +45,7 @@ export interface LicenseStatus {
   subscriptionEndDate: Date | null;
   licenseStatus: LicenseStatusValue;
   canUsePdfTools: boolean;
-  lockReason: LicenseLockReason;
+  reason: LicenseLockReason;
   /** Current server time at the moment this status was computed. */
   serverTime: Date;
 }

@@ -8,9 +8,9 @@
 import type { LicenseLockReason } from "./licenseLockReason";
 
 export interface UsageRecordResult {
-  /** True if the increment was applied; false if blocked (in which case `lockReason` will explain). */
+  /** True if the increment was applied; false if blocked (in which case `reason` will explain). */
   recorded: boolean;
-  lockReason: LicenseLockReason;
+  reason: LicenseLockReason;
   todayUsage: number;
   dailyLimit: number;
 }
