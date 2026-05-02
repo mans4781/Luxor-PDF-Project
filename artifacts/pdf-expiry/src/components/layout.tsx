@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import { ShieldCheck } from "lucide-react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { UsageBadge, DailyLimitBanner } from "@/license/UsageBadge";
 import { basePath } from "@/lib/base-path";
@@ -37,10 +36,6 @@ export function Layout({ children }: { children: ReactNode }) {
 
           <div className="flex items-center gap-3">
             <UsageBadge />
-            <div className="hidden lg:flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1.5">
-              <ShieldCheck className="w-3.5 h-3.5" strokeWidth={2.25} />
-              <span>Processed in your browser · Private by design</span>
-            </div>
             <AuthMenu
               signInUrl={`${basePath}/sign-in`}
               signUpUrl={`${basePath}/sign-up`}
