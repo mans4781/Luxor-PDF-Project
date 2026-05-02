@@ -272,18 +272,19 @@ function ExpiryTab() {
     setExpiryDate(format(addDays(new Date(), 1), "yyyy-MM-dd'T'HH:mm"));
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) return;
     const name = file.name;
-    uploadMutation.mutate({ data: { file, expiryDate: new Date(expiryDate).toISOString() } }, {
-      onSuccess: (data) => {
-        setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null);
-        saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
-        queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
-        scheduleAutoRefresh();
-      },
-      onError: () => toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" }),
-    });
+    try {
+      const data = await uploadMutation.mutateAsync({ data: { file, expiryDate: new Date(expiryDate).toISOString() } });
+      setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null);
+      saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
+      queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
+      scheduleAutoRefresh();
+    } catch (err) {
+      toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" });
+      throw err;
+    }
   };
 
   return (
@@ -392,17 +393,19 @@ function PasswordTab() {
       return;
     }
 
-    uploadMutation.mutate({ data: { file: encryptedFile, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd") } }, {
-      onSuccess: (data) => {
-        setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null); setPassword("");
-        saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
-        queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
-        scheduleAutoRefresh();
-        setConfirmOpen(false);
-      },
-      onError: () => toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" }),
-      onSettled: () => setIsProcessing(false),
-    });
+    try {
+      const data = await uploadMutation.mutateAsync({ data: { file: encryptedFile, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd") } });
+      setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null); setPassword("");
+      saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
+      queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
+      scheduleAutoRefresh();
+      setConfirmOpen(false);
+    } catch (err) {
+      toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" });
+      throw err;
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -657,16 +660,18 @@ function PrintControlTab() {
       return;
     }
 
-    uploadMutation.mutate({ data: { file: restrictedFile, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd") } }, {
-      onSuccess: (data) => {
-        setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null);
-        saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
-        queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
-        scheduleAutoRefresh();
-      },
-      onError: () => toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" }),
-      onSettled: () => setIsProcessing(false),
-    });
+    try {
+      const data = await uploadMutation.mutateAsync({ data: { file: restrictedFile, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd") } });
+      setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null);
+      saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
+      queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
+      scheduleAutoRefresh();
+    } catch (err) {
+      toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" });
+      throw err;
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const Toggle = ({ label, icon: Icon, value, onChange }: { label: string; icon: React.ElementType; value: boolean; onChange: () => void }) => (
@@ -822,36 +827,31 @@ function RevokeExpiryTab() {
     );
   };
 
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     const id = parseInt(pdfId, 10);
     if (otpId === null || !enteredCode || !newExpiryDate) {
       toast({ title: "Fill all fields", description: "Enter the OTP and a new expiry date.", variant: "destructive" });
       return;
     }
-    verifyMutation.mutate(
-      { id, data: { shareToken, otpId, code: enteredCode, newExpiryDate: new Date(newExpiryDate).toISOString() } },
-      {
-        onSuccess: (data) => {
-          setRestoredId(data.id);
-          setRestoredToken(shareToken);
-          setRestoredName(restoredName || data.originalName);
-          // Update local history with the new expiry
-          saveToLocalHistory({
-            id: data.id, shareToken,
-            originalName: data.originalName, fileSize: data.fileSize,
-            expiryDate: data.expiryDate,
-            createdAt: data.createdAt, updatedAt: data.updatedAt,
-          });
-          queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
-          toast({ title: "Access restored", description: "The PDF is available again." });
-          scheduleAutoRefresh();
-        },
-        onError: (err: unknown) => {
-          const msg = err instanceof Error ? err.message : "Verification failed.";
-          toast({ title: "Could not revoke expiry", description: msg, variant: "destructive" });
-        },
-      },
-    );
+    try {
+      const data = await verifyMutation.mutateAsync({ id, data: { shareToken, otpId, code: enteredCode, newExpiryDate: new Date(newExpiryDate).toISOString() } });
+      setRestoredId(data.id);
+      setRestoredToken(shareToken);
+      setRestoredName(restoredName || data.originalName);
+      saveToLocalHistory({
+        id: data.id, shareToken,
+        originalName: data.originalName, fileSize: data.fileSize,
+        expiryDate: data.expiryDate,
+        createdAt: data.createdAt, updatedAt: data.updatedAt,
+      });
+      queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
+      toast({ title: "Access restored", description: "The PDF is available again." });
+      scheduleAutoRefresh();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Verification failed.";
+      toast({ title: "Could not revoke expiry", description: msg, variant: "destructive" });
+      throw err;
+    }
   };
 
   const copyOtp = async () => {
