@@ -7,9 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import {
   ShieldCheck, Calendar, Lock, Printer,
   Upload, X, Eye, EyeOff, Copy, ShieldOff, Download, CheckCircle2, RotateCcw,
-  KeyRound, Send, Sparkles, FileText, Timer,
+  KeyRound, Send, Sparkles, FileText, Timer, AlertTriangle,
 } from "lucide-react";
 import { AccentProvider, useAccentBtn, useAccentInnerBanner, useAccentDrop } from "@/lib/accent";
 import {
@@ -341,6 +344,8 @@ function PasswordTab() {
   const [file, setFile] = useState<File | null>(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [uploadedId, setUploadedId] = useState<number | null>(null);
   const [uploadedShareToken, setUploadedShareToken] = useState("");
   const [uploadedName, setUploadedName] = useState("");
@@ -350,12 +355,25 @@ function PasswordTab() {
 
   const reset = () => { setFile(null); setPassword(""); setShowPassword(false); setUploadedId(null); setUploadedShareToken(""); setUploadedName(""); };
 
+  const handleSecureClick = () => {
+    if (!file) return;
+    if (!password) {
+      toast({ title: "Password required", description: "Please enter a password to protect this PDF.", variant: "destructive" });
+      return;
+    }
+    setConfirmOpen(true);
+  };
+
   const handleUpload = async () => {
     if (!file) return;
     if (!password) {
       toast({ title: "Password required", description: "Please enter a password to protect this PDF.", variant: "destructive" });
       return;
     }
+    // Guard against double-invocation from rapid double-clicks on the dialog's
+    // Continue button (state updates from setIsProcessing are async).
+    if (isProcessing || uploadMutation.isPending) return;
+    setIsProcessing(true);
     const name = file.name;
 
     let encryptedFile: File;
@@ -367,6 +385,7 @@ function PasswordTab() {
       encryptedFile = new File([new Uint8Array(encryptedBytes)], file.name, { type: "application/pdf" });
     } catch {
       toast({ title: "Encryption failed", description: "Could not encrypt this PDF. It may already be password-protected.", variant: "destructive" });
+      setIsProcessing(false);
       return;
     }
 
@@ -376,8 +395,10 @@ function PasswordTab() {
         saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
         queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
         scheduleAutoRefresh();
+        setConfirmOpen(false);
       },
       onError: () => toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" }),
+      onSettled: () => setIsProcessing(false),
     });
   };
 
@@ -428,15 +449,158 @@ function PasswordTab() {
 
           <Button
             className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
-            disabled={!file || uploadMutation.isPending} onClick={handleUpload}
+            disabled={!file || uploadMutation.isPending || isProcessing} onClick={handleSecureClick}
           >
-            {uploadMutation.isPending
+            {uploadMutation.isPending || isProcessing
               ? <><span className="animate-spin mr-2">⏳</span>Securing…</>
               : <><Lock className="w-4 h-4 mr-2" />Set Password &amp; Download</>}
           </Button>
         </>
       )}
+
+      <PasswordSavedDialog
+        open={confirmOpen}
+        password={password}
+        isProcessing={isProcessing}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={handleUpload}
+      />
     </div>
+  );
+}
+
+// ─── Password Saved Dialog ─────────────────────────────────────────────────────
+
+function PasswordSavedDialog({
+  open, password, isProcessing, onCancel, onConfirm,
+}: {
+  open: boolean;
+  password: string;
+  isProcessing: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const COUNTDOWN_SECONDS = 10;
+  const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS);
+  const [showPassword, setShowPassword] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  // Restart the timer every time the dialog opens.
+  useEffect(() => {
+    if (!open) return;
+    setSecondsLeft(COUNTDOWN_SECONDS);
+    setShowPassword(false);
+    setCopied(false);
+    const handle = setInterval(() => {
+      setSecondsLeft((s) => (s > 0 ? s - 1 : 0));
+    }, 1000);
+    return () => clearInterval(handle);
+  }, [open]);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(password);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast({
+        title: "Copy failed",
+        description: "Could not copy the password to your clipboard.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const ready = secondsLeft === 0;
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (isProcessing) return;
+        if (!next) onCancel();
+      }}
+    >
+      <DialogContent className="sm:max-w-[440px]">
+        <DialogHeader>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center mx-auto mb-2 shadow-md">
+            <AlertTriangle className="w-6 h-6 text-white" />
+          </div>
+          <DialogTitle className="text-center text-slate-900">
+            Save your password
+          </DialogTitle>
+          <DialogDescription className="text-center text-slate-500">
+            Write this password down or store it somewhere safe. LexSecure
+            cannot recover it — if you lose it, the PDF stays locked forever.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-1.5 py-1">
+          <Label className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
+            <KeyRound className="w-3 h-3" /> Your password
+          </Label>
+          <div className="flex gap-1.5">
+            <Input
+              readOnly
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onFocus={(e) => e.currentTarget.select()}
+              className="font-mono text-sm bg-slate-50 border-slate-200"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="shrink-0 border-slate-200 hover:bg-slate-50"
+              onClick={() => setShowPassword((v) => !v)}
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword
+                ? <EyeOff className="w-4 h-4 text-slate-600" />
+                : <Eye className="w-4 h-4 text-slate-600" />}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="shrink-0 border-slate-200 hover:bg-slate-50"
+              onClick={handleCopy}
+              title="Copy password"
+            >
+              {copied
+                ? <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                : <Copy className="w-4 h-4 text-slate-600" />}
+            </Button>
+          </div>
+        </div>
+
+        <DialogFooter className="gap-2 sm:gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isProcessing}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={onConfirm}
+            disabled={!ready || isProcessing}
+            className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white border-0 shadow-md font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isProcessing ? (
+              <><span className="animate-spin mr-2">⏳</span>Securing…</>
+            ) : ready ? (
+              <><CheckCircle2 className="w-4 h-4 mr-2" />I've saved it — Continue</>
+            ) : (
+              <><Timer className="w-4 h-4 mr-2" />I've saved it ({secondsLeft}s)</>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
