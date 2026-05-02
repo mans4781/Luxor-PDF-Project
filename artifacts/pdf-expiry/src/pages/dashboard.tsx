@@ -7,10 +7,32 @@ import {
   ShieldCheck,
   ArrowRight,
   Sparkles,
+  HelpCircle,
+  Scissors,
+  Trash2,
+  FilePlus,
+  CalendarClock,
+  Ban,
+  FileX2,
+  Lock,
 } from "lucide-react";
 import { PdfToolContent } from "./pdf-tool";
 import { ConvertToolContent } from "./convert-tool";
 import { SecurePdfContent } from "./secure-pdf";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 type ToolKey = "pdf-tool" | "convert-from" | "convert-to" | "secure-pdf";
 
@@ -69,6 +91,286 @@ const TOOLS: ToolItem[] = [
     badge: "Signature",
   },
 ];
+
+// ─── How-to-use help dialog ───────────────────────────────────────────────────
+
+function HelpDialog() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button
+          type="button"
+          data-testid="button-help"
+          aria-label="How to use this app"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-700 hover:shadow-sm transition-all text-sm font-medium shrink-0"
+        >
+          <HelpCircle className="w-4 h-4" strokeWidth={2} />
+          <span>How to use</span>
+        </button>
+      </DialogTrigger>
+      <DialogContent
+        className="max-w-2xl max-h-[85vh] overflow-y-auto"
+        data-testid="dialog-help"
+      >
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            <HelpCircle className="w-5 h-5 text-indigo-600" strokeWidth={2} />
+            How to use Luxor PDF
+          </DialogTitle>
+          <DialogDescription>
+            Quick guides for the things people ask about most. Every action
+            runs locally in your browser — your files never leave your device.
+          </DialogDescription>
+        </DialogHeader>
+
+        <Accordion
+          type="single"
+          collapsible
+          defaultValue="edit"
+          className="mt-2"
+        >
+          {/* ── 1. Edit Your PDF — Extract / Delete / Insert ───────────── */}
+          <AccordionItem value="edit" data-testid="help-section-edit">
+            <AccordionTrigger className="text-left hover:no-underline">
+              <span className="flex items-center gap-3">
+                <span className="w-9 h-9 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
+                  <Wrench className="w-4 h-4 text-indigo-700" />
+                </span>
+                <span>
+                  <span className="block font-semibold text-slate-900">
+                    Extract, delete &amp; insert pages
+                  </span>
+                  <span className="block text-xs text-slate-500 font-normal">
+                    Inside the &ldquo;Edit Your PDF&rdquo; tool
+                  </span>
+                </span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="text-sm text-slate-700 leading-relaxed pl-12">
+              <p className="mb-3">
+                Open <strong>Edit Your PDF</strong> from the left sidebar, then
+                drop or pick the PDF you want to work on. You&rsquo;ll see five
+                tabs at the top: Merge, Split, Extract, Delete and Insert.
+              </p>
+
+              <div className="space-y-3 mt-4">
+                <div className="flex gap-3 items-start">
+                  <span className="w-7 h-7 rounded-md bg-purple-50 border border-purple-100 flex items-center justify-center shrink-0">
+                    <FileOutput className="w-3.5 h-3.5 text-purple-700" />
+                  </span>
+                  <div>
+                    <p className="font-semibold text-slate-900">
+                      Extract pages
+                    </p>
+                    <p className="text-slate-600 text-[13px]">
+                      Pick the <strong>Extract</strong> tab. Type which pages
+                      you want to keep — single numbers or ranges separated by
+                      commas, e.g. <code className="bg-slate-100 px-1.5 py-0.5 rounded text-[12px]">1-3, 5, 8-10</code>.
+                      Click <strong>Extract</strong> and a brand-new PDF
+                      containing only those pages is downloaded to your device.
+                      The original file is left untouched.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 items-start">
+                  <span className="w-7 h-7 rounded-md bg-rose-50 border border-rose-100 flex items-center justify-center shrink-0">
+                    <Trash2 className="w-3.5 h-3.5 text-rose-700" />
+                  </span>
+                  <div>
+                    <p className="font-semibold text-slate-900">
+                      Delete pages
+                    </p>
+                    <p className="text-slate-600 text-[13px]">
+                      Pick the <strong>Delete</strong> tab. Use the same
+                      page-range syntax (e.g. <code className="bg-slate-100 px-1.5 py-0.5 rounded text-[12px]">2, 4-6</code>)
+                      to say which pages should be <em>removed</em>. Click{" "}
+                      <strong>Delete</strong> and you&rsquo;ll get back a PDF
+                      with everything else still in order.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 items-start">
+                  <span className="w-7 h-7 rounded-md bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+                    <FilePlus className="w-3.5 h-3.5 text-emerald-700" />
+                  </span>
+                  <div>
+                    <p className="font-semibold text-slate-900">
+                      Insert pages from another PDF
+                    </p>
+                    <p className="text-slate-600 text-[13px]">
+                      Pick the <strong>Insert</strong> tab. Drop the second
+                      PDF you want to splice in, then choose <em>where</em>{" "}
+                      to insert it — at the very start, at the very end, or
+                      after a specific page number. Click <strong>Insert</strong>{" "}
+                      to download the merged result.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 items-start">
+                  <span className="w-7 h-7 rounded-md bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0">
+                    <Scissors className="w-3.5 h-3.5 text-violet-700" />
+                  </span>
+                  <div>
+                    <p className="font-semibold text-slate-900">
+                      Bonus: Merge &amp; Split
+                    </p>
+                    <p className="text-slate-600 text-[13px]">
+                      <strong>Merge</strong> stitches several PDFs into one.{" "}
+                      <strong>Split</strong> breaks one PDF into several files
+                      (one per page, or per range you specify).
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* ── 2. Set an Expiry Date ──────────────────────────────────── */}
+          <AccordionItem value="expiry" data-testid="help-section-expiry">
+            <AccordionTrigger className="text-left hover:no-underline">
+              <span className="flex items-center gap-3">
+                <span className="w-9 h-9 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0">
+                  <CalendarClock className="w-4 h-4 text-amber-700" />
+                </span>
+                <span>
+                  <span className="block font-semibold text-slate-900">
+                    Set an expiry date for a PDF
+                  </span>
+                  <span className="block text-xs text-slate-500 font-normal">
+                    Inside the &ldquo;Secure your PDF&rdquo; tool
+                  </span>
+                </span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="text-sm text-slate-700 leading-relaxed pl-12">
+              <ol className="list-decimal pl-4 space-y-2 marker:text-slate-400">
+                <li>
+                  Open <strong>Secure your PDF</strong> from the left sidebar.
+                </li>
+                <li>
+                  Drop or pick the PDF you want to share with an expiry.
+                </li>
+                <li>
+                  Make sure the <strong>Set an expiry date</strong> toggle is
+                  on, then use the <strong>date &amp; time picker</strong> to
+                  choose exactly when the file should stop working. The picker
+                  goes down to the minute — pick anything in the future.
+                </li>
+                <li>
+                  (Optional) Add a password and turn print/copy controls on or
+                  off in the same form.
+                </li>
+                <li>
+                  Click <strong>Upload &amp; secure</strong>. A small popup
+                  asks <strong>what should happen after the expiry</strong> —
+                  see the next section for what to pick.
+                </li>
+                <li>
+                  When the upload finishes, you get a shareable download
+                  link. Anyone visiting that link <em>before</em> the expiry
+                  gets the real PDF; <em>after</em> the expiry, they see your
+                  chosen post-expiry behaviour instead.
+                </li>
+              </ol>
+
+              <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="font-semibold text-amber-900 text-[13px] mb-2 flex items-center gap-2">
+                  <CalendarClock className="w-4 h-4" />
+                  What &ldquo;corrupt&rdquo; vs &ldquo;revoke&rdquo; means
+                </p>
+                <ul className="space-y-1.5 text-[13px] text-amber-900">
+                  <li className="flex gap-2">
+                    <FileX2 className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                    <span>
+                      <strong>Corrupt the file</strong> — after the deadline
+                      the link still &ldquo;downloads&rdquo;, but the bytes
+                      are scrambled so no PDF reader can open it. Good when
+                      you want plausible deniability.
+                    </span>
+                  </li>
+                  <li className="flex gap-2">
+                    <Ban className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                    <span>
+                      <strong>Revoke access</strong> — after the deadline the
+                      link returns a clear &ldquo;this file has been
+                      revoked&rdquo; notice instead of a download. Good when
+                      you want recipients to know the file is no longer
+                      available.
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* ── 3. Revoke a PDF ────────────────────────────────────────── */}
+          <AccordionItem value="revoke" data-testid="help-section-revoke">
+            <AccordionTrigger className="text-left hover:no-underline">
+              <span className="flex items-center gap-3">
+                <span className="w-9 h-9 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center shrink-0">
+                  <Ban className="w-4 h-4 text-rose-700" />
+                </span>
+                <span>
+                  <span className="block font-semibold text-slate-900">
+                    Revoke a PDF you&rsquo;ve shared
+                  </span>
+                  <span className="block text-xs text-slate-500 font-normal">
+                    Kill a link before its expiry date arrives
+                  </span>
+                </span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="text-sm text-slate-700 leading-relaxed pl-12">
+              <p className="mb-3">
+                Sometimes you change your mind and need a shared PDF to stop
+                working <em>right now</em>, even though its expiry date is
+                still in the future. That&rsquo;s what revoke is for.
+              </p>
+
+              <ol className="list-decimal pl-4 space-y-2 marker:text-slate-400">
+                <li>
+                  Open <strong>Secure your PDF</strong> and scroll down to the{" "}
+                  <strong>Your secured PDFs</strong> list (or open the{" "}
+                  <strong>History</strong> page from the top nav).
+                </li>
+                <li>
+                  Find the file you want to kill. Active files have a green{" "}
+                  <em>Active</em> badge.
+                </li>
+                <li>
+                  Click the red <strong>Revoke</strong> button on that row.
+                </li>
+                <li>
+                  A confirmation popup appears explaining that the link will
+                  stop working immediately and that this can&rsquo;t be
+                  undone. Click <strong>Revoke now</strong> to confirm.
+                </li>
+                <li>
+                  The badge flips to <em>Revoked</em>. Anyone who tries the
+                  shared link from this point on will see the revoked notice
+                  instead of the file — even if they had the link bookmarked.
+                </li>
+              </ol>
+
+              <div className="mt-4 bg-rose-50 border border-rose-200 rounded-lg p-3 flex gap-3">
+                <Lock className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />
+                <p className="text-[13px] text-rose-900">
+                  <strong>Heads up:</strong> revoke is permanent. The original
+                  PDF stays in your account so you can re-upload it with a
+                  fresh link if you change your mind, but the old link will
+                  never work again.
+                </p>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function WelcomePanel() {
   return (
@@ -136,6 +438,7 @@ export default function Dashboard() {
             your browser for complete privacy.
           </p>
         </div>
+        <HelpDialog />
       </div>
 
       {/* Two-column workspace */}
