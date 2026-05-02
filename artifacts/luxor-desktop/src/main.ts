@@ -16,9 +16,11 @@ import log from "electron-log";
 // REMOTE_URL is the deployed pdf-expiry app. For local dev against the
 // Replit preview, point it at http://localhost:80/pdf-expiry/.
 
+// Production default = "remote" (deployed pdf-expiry app). "bundled" is an
+// explicit opt-in via LUXOR_LOAD_MODE for offline / self-contained installs.
 const LOAD_MODE: "remote" | "bundled" =
   (process.env["LUXOR_LOAD_MODE"] as "remote" | "bundled" | undefined) ??
-  (app.isPackaged ? "bundled" : "remote");
+  "remote";
 const REMOTE_URL =
   process.env["LUXOR_REMOTE_URL"] ?? "https://luxorpdf.com/pdf-expiry/";
 const BUNDLED_INDEX =
@@ -200,16 +202,9 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-// Expose device id to the preload via IPC.
+// Expose device id to the preload via IPC. Keep the surface narrow: the
+// renderer only needs `getDeviceId()` per the desktop wrap spec.
 import { ipcMain } from "electron";
 ipcMain.handle("luxor:get-device-id", async () => {
   return getDeviceId();
-});
-ipcMain.handle("luxor:get-app-info", () => {
-  return {
-    productName: "Luxor PDF Secure",
-    version: app.getVersion(),
-    platform: process.platform,
-    loadMode: LOAD_MODE,
-  };
 });

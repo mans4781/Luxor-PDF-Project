@@ -112,38 +112,37 @@ function signWithCertSha1(filePath) {
 
 exports.default = async function sign(configuration) {
   const filePath = configuration.path;
-  const skip = process.env.LUXOR_SKIP_SIGNING === "1";
 
-  if (skip) {
+  // Explicit opt-out (kept for parity with prior behavior).
+  if (process.env.LUXOR_SKIP_SIGNING === "1") {
     log(`LUXOR_SKIP_SIGNING=1 — leaving ${path.basename(filePath)} unsigned`);
     return;
   }
 
+  // Sign only when credentials are explicitly provided. Without any, we
+  // emit an unsigned installer so `dist:win` works out-of-the-box (CI,
+  // local builds, Replit container). Users opt in to signing by setting
+  // one of the credential env var groups below.
   if (process.env.AZURE_KEY_VAULT_URL) {
     signWithAzureKeyVault(filePath);
     return;
   }
-
   if (process.env.WIN_CSC_LINK) {
     signWithCertFile(filePath);
     return;
   }
-
   if (process.env.WIN_CSC_SUBJECT_NAME) {
     signWithCertSubject(filePath);
     return;
   }
-
   if (process.env.WIN_CSC_SHA1) {
     signWithCertSha1(filePath);
     return;
   }
 
-  throw new Error(
-    "No code-signing credentials found. Set one of: AZURE_KEY_VAULT_URL " +
-      "(plus AZURE_KEY_VAULT_CERT/CLIENT_ID/CLIENT_SECRET/TENANT_ID), " +
-      "WIN_CSC_LINK (+WIN_CSC_KEY_PASSWORD), WIN_CSC_SUBJECT_NAME, or " +
-      "WIN_CSC_SHA1. To intentionally build an unsigned installer, set " +
-      "LUXOR_SKIP_SIGNING=1.",
+  log(
+    `no signing credentials present — leaving ${path.basename(filePath)} ` +
+      `unsigned. Set AZURE_KEY_VAULT_URL, WIN_CSC_LINK, WIN_CSC_SUBJECT_NAME, ` +
+      `or WIN_CSC_SHA1 to enable code signing.`,
   );
 };

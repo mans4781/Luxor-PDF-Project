@@ -95,7 +95,7 @@ will warn end users — never publish an unsigned build.
 On a signed Windows host:
 
 ```powershell
-signtool verify /pa /v "dist-installer\Luxor PDF Secure Setup 0.1.0.exe"
+signtool verify /pa /v "dist\Luxor PDF Secure Setup 0.1.0.exe"
 ```
 
 Then run the installer on a clean Windows VM and confirm SmartScreen

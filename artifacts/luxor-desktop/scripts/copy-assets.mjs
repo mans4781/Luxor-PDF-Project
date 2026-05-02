@@ -1,6 +1,6 @@
 // Copies the icon next to the compiled main.js so `path.join(__dirname,
 // "..", "build", "icon.ico")` resolves both in dev (`electron .`) and inside
-// the packaged asar (electron-builder bundles `dist/**/*` and `build/icon.ico`
+// the packaged asar (electron-builder bundles `out/**/*` and `build/icon.ico`
 // at the same archive root).
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
