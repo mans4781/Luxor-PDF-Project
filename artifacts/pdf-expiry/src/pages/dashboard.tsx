@@ -1,104 +1,106 @@
 import { useState } from "react";
 import { Layout } from "@/components/layout";
-import { Wrench, FileOutput, FileInput, ShieldCheck, ArrowRight } from "lucide-react";
+import {
+  Wrench,
+  FileOutput,
+  FileInput,
+  ShieldCheck,
+  ArrowRight,
+  Sparkles,
+} from "lucide-react";
 import { PdfToolContent } from "./pdf-tool";
 import { ConvertToolContent } from "./convert-tool";
 import { SecurePdfContent } from "./secure-pdf";
 
 type ToolKey = "pdf-tool" | "convert-from" | "convert-to" | "secure-pdf";
 
-const menuItems: {
+type ToolItem = {
   key: ToolKey;
   label: string;
   description: string;
   icon: React.ElementType;
+  accent: string;
   iconBg: string;
-  bg: string;
-  activeBg: string;
-  border: string;
-  activeBorder: string;
-  textColor: string;
-  descColor: string;
-  arrowColor: string;
-}[] = [
+  iconText: string;
+  activeRing: string;
+  badge?: string;
+};
+
+const TOOLS: ToolItem[] = [
   {
     key: "pdf-tool",
     label: "PDF Tool",
     description: "Merge, split & extract pages",
     icon: Wrench,
-    iconBg: "bg-gradient-to-br from-violet-500 to-indigo-600",
-    bg: "bg-gradient-to-br from-violet-50 to-indigo-50 hover:from-violet-100 hover:to-indigo-100",
-    activeBg: "bg-gradient-to-br from-violet-100 to-indigo-100",
-    border: "border-violet-200 hover:border-violet-400",
-    activeBorder: "border-violet-500",
-    textColor: "text-violet-700",
-    descColor: "text-violet-500",
-    arrowColor: "text-violet-400",
+    accent: "#312E81",
+    iconBg: "bg-indigo-50 group-hover:bg-indigo-100",
+    iconText: "text-indigo-700",
+    activeRing: "ring-indigo-500/40 border-indigo-500",
   },
   {
     key: "convert-from",
     label: "Convert from PDF",
     description: "PDF to images or text",
     icon: FileOutput,
-    iconBg: "bg-gradient-to-br from-orange-400 to-amber-500",
-    bg: "bg-gradient-to-br from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100",
-    activeBg: "bg-gradient-to-br from-orange-100 to-amber-100",
-    border: "border-orange-200 hover:border-orange-400",
-    activeBorder: "border-orange-500",
-    textColor: "text-orange-700",
-    descColor: "text-orange-500",
-    arrowColor: "text-orange-400",
+    accent: "#2563EB",
+    iconBg: "bg-blue-50 group-hover:bg-blue-100",
+    iconText: "text-blue-700",
+    activeRing: "ring-blue-500/40 border-blue-500",
   },
   {
     key: "convert-to",
     label: "Convert to PDF",
     description: "Images & files to PDF",
     icon: FileInput,
-    iconBg: "bg-gradient-to-br from-emerald-500 to-teal-600",
-    bg: "bg-gradient-to-br from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100",
-    activeBg: "bg-gradient-to-br from-emerald-100 to-teal-100",
-    border: "border-emerald-200 hover:border-emerald-400",
-    activeBorder: "border-emerald-500",
-    textColor: "text-emerald-700",
-    descColor: "text-emerald-500",
-    arrowColor: "text-emerald-400",
+    accent: "#059669",
+    iconBg: "bg-emerald-50 group-hover:bg-emerald-100",
+    iconText: "text-emerald-700",
+    activeRing: "ring-emerald-500/40 border-emerald-500",
   },
   {
     key: "secure-pdf",
-    label: "Secure Your PDF",
+    label: "Secure your PDF",
     description: "Expiry, password & print controls",
     icon: ShieldCheck,
-    iconBg: "bg-gradient-to-br from-rose-500 to-red-600",
-    bg: "bg-gradient-to-br from-rose-50 to-red-50 hover:from-rose-100 hover:to-red-100",
-    activeBg: "bg-gradient-to-br from-rose-100 to-red-100",
-    border: "border-rose-200 hover:border-rose-400",
-    activeBorder: "border-rose-500",
-    textColor: "text-rose-700",
-    descColor: "text-rose-500",
-    arrowColor: "text-rose-400",
+    accent: "#DC2626",
+    iconBg: "bg-rose-50 group-hover:bg-rose-100",
+    iconText: "text-rose-700",
+    activeRing: "ring-rose-500/40 border-rose-500",
+    badge: "Signature",
   },
 ];
 
-function RightPanel({ active }: { active: ToolKey | null }) {
-  if (!active) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center text-slate-400">
-          <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-            <ShieldCheck className="w-8 h-8 text-slate-300" />
-          </div>
-          <p className="text-sm font-medium text-slate-500">Select a tool to get started</p>
-          <p className="text-xs mt-1 text-slate-400">Choose from the tools on the left</p>
+function WelcomePanel() {
+  return (
+    <div className="h-full flex items-center justify-center bg-white border border-slate-200 rounded-2xl p-12">
+      <div className="text-center max-w-md">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-rose-50 border border-slate-200 flex items-center justify-center mx-auto mb-5">
+          <ShieldCheck className="w-8 h-8 text-[#DC2626]" strokeWidth={1.75} />
         </div>
+        <h2 className="text-lg font-bold text-slate-900">
+          Choose a tool to get started
+        </h2>
+        <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+          Every action is processed locally in your browser. Your files never
+          leave your device.
+        </p>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
+function RightPanel({ active }: { active: ToolKey | null }) {
+  if (!active) return <WelcomePanel />;
 
   return (
-    <div className="flex-1 overflow-y-auto pr-1">
+    <div className="bg-white border border-slate-200 rounded-2xl p-6 lg:p-8 overflow-y-auto">
       {active === "pdf-tool" && <PdfToolContent />}
-      {active === "convert-from" && <ConvertToolContent defaultTab="pdf-to-images" />}
-      {active === "convert-to" && <ConvertToolContent defaultTab="images-to-pdf" />}
+      {active === "convert-from" && (
+        <ConvertToolContent defaultTab="pdf-to-images" />
+      )}
+      {active === "convert-to" && (
+        <ConvertToolContent defaultTab="images-to-pdf" />
+      )}
       {active === "secure-pdf" && <SecurePdfContent />}
     </div>
   );
@@ -109,46 +111,92 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="flex gap-5 min-h-[calc(90vh-108px)]">
+      {/* Hero / page title */}
+      <div className="mb-6 flex items-end justify-between flex-wrap gap-4">
+        <div>
+          <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1 mb-3">
+            <Sparkles className="w-3 h-3" strokeWidth={2.5} />
+            Luxor PDF · Workspace
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+            Your secure PDF toolkit
+          </h1>
+          <p className="text-sm text-slate-500 mt-1.5 max-w-xl">
+            Edit, convert and secure documents — everything runs locally for
+            complete privacy.
+          </p>
+        </div>
+      </div>
 
-        {/* ── Left side: vertical tool cards ── */}
-        <div className="flex flex-col gap-3 w-80 shrink-0 self-stretch">
-          {menuItems.map((item) => {
+      {/* Two-column workspace */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* ── Left: tool list ── */}
+        <aside className="lg:col-span-4 xl:col-span-3 flex flex-col gap-2.5">
+          {TOOLS.map((item) => {
             const Icon = item.icon;
             const isActive = active === item.key;
             return (
               <button
                 key={item.key}
                 onClick={() => setActive(isActive ? null : item.key)}
-                className="flex-1 text-left no-underline focus:outline-none"
-                data-testid={`menu-card-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
+                className={`group text-left bg-white rounded-xl border transition-all duration-200 px-4 py-4 ${
+                  isActive
+                    ? `border-2 ring-4 shadow-md ${item.activeRing}`
+                    : "border-slate-200 hover:border-slate-300 hover:shadow-sm"
+                }`}
+                data-testid={`menu-card-${item.label
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")}`}
               >
-                <div
-                  className={`flex items-center gap-4 px-5 py-0 h-full rounded-xl border-2 transition-all duration-200 cursor-pointer select-none
-                    ${isActive ? `${item.activeBg} ${item.activeBorder} shadow-md` : `${item.bg} ${item.border}`}`}
-                >
+                <div className="flex items-center gap-3.5">
                   <div
-                    className={`rounded-xl flex items-center justify-center shadow-md shrink-0 ${item.iconBg}`}
-                    style={{ width: 52, height: 52 }}
+                    className={`w-11 h-11 rounded-lg flex items-center justify-center shrink-0 transition-colors ${item.iconBg}`}
                   >
-                    <Icon className="w-6 h-6 text-white" strokeWidth={1.75} />
+                    <Icon
+                      className={`w-5 h-5 ${item.iconText}`}
+                      strokeWidth={2}
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`font-bold text-base leading-tight ${item.textColor}`}>{item.label}</p>
-                    <p className={`text-sm mt-1 leading-tight ${item.descColor}`}>{item.description}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-[15px] text-slate-900 leading-tight whitespace-nowrap">
+                        {item.label}
+                      </p>
+                      {item.badge && (
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded leading-none">
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1 leading-snug">
+                      {item.description}
+                    </p>
                   </div>
                   <ArrowRight
-                    className={`w-5 h-5 shrink-0 transition-transform duration-200 ${item.arrowColor} ${isActive ? "rotate-90" : ""}`}
+                    className={`w-4 h-4 shrink-0 transition-all ${
+                      isActive
+                        ? "rotate-90 text-slate-700"
+                        : "text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5"
+                    }`}
                   />
                 </div>
               </button>
             );
           })}
-        </div>
 
-        {/* ── Right side: content panel ── */}
-        <RightPanel active={active} />
+          {/* Footer note in sidebar */}
+          <div className="mt-2 px-4 py-3 rounded-xl bg-slate-100/70 border border-slate-200">
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              <span className="font-semibold text-slate-700">Tip:</span> Click an
+              active tool again to collapse it back to this overview.
+            </p>
+          </div>
+        </aside>
 
+        {/* ── Right: active tool ── */}
+        <section className="lg:col-span-8 xl:col-span-9 min-h-[560px]">
+          <RightPanel active={active} />
+        </section>
       </div>
     </Layout>
   );
