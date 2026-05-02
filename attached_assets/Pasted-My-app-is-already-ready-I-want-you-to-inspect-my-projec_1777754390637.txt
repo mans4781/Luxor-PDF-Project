@@ -1,0 +1,532 @@
+My app is already ready. I want you to inspect my project and help me convert it into a professional Windows installer with logo icon, 14-day trial, product key/license system, subscription expiry, and renewal lock.
+
+Product name:
+Luxor PDF Secure
+
+Main goal:
+Convert my ready app into a sellable desktop software product where users can:
+1. Download and install the app.
+2. See my logo icon in the app, installer, desktop shortcut, and Start Menu.
+3. Create account or log in before use.
+4. Get a 14-day free trial.
+5. During trial, process only 5 PDFs per day.
+6. Enter a product key after purchase.
+7. Use the app only during an active subscription period.
+8. If trial or subscription expires, the app must lock and ask the user to renew.
+
+First inspect my project:
+- Check whether my app is Electron, Tauri, .NET, Python, React desktop, or another framework.
+- Do not break existing features.
+- Choose the correct installer method based on the project type.
+- If Electron, use electron-builder with NSIS.
+- If Tauri, use Tauri bundler.
+- If another framework, suggest and implement the best installer system.
+
+Installer requirements:
+Create a Windows .exe installer for “Luxor PDF Secure”.
+
+The installer should:
+- Use product name: Luxor PDF Secure
+- Use appId: com.luxor.pdfsecure if applicable
+- Create output inside /dist folder
+- Create desktop shortcut
+- Create Start Menu shortcut
+- Allow user to choose installation location
+- Use my logo icon everywhere
+- Show proper app name in installed programs
+- Show proper publisher/company name if possible
+- Include uninstaller
+
+Logo/icon requirements:
+- Use or create this path:
+  /build/icon.ico
+
+If my current logo is PNG, JPG, or SVG:
+- Convert it properly into a Windows .ico file.
+- Use 256x256 or higher quality.
+- Apply it to:
+  - App window icon
+  - Installer icon
+  - Uninstaller icon
+  - Desktop shortcut icon
+  - Start Menu icon
+  - Taskbar icon
+
+Electron installer setup:
+If this is an Electron app, update package.json with a professional electron-builder configuration:
+
+Required config:
+- productName: Luxor PDF Secure
+- appId: com.luxor.pdfsecure
+- directories.output: dist
+- directories.buildResources: build
+- win.target: nsis
+- win.icon: build/icon.ico
+- nsis.oneClick: false
+- nsis.allowToChangeInstallationDirectory: true
+- nsis.createDesktopShortcut: true
+- nsis.createStartMenuShortcut: true
+- nsis.shortcutName: Luxor PDF Secure
+- nsis.installerIcon: build/icon.ico
+- nsis.uninstallerIcon: build/icon.ico
+- nsis.installerHeaderIcon: build/icon.ico
+
+Add or fix scripts:
+- start
+- build
+- dist
+- dist:win
+
+Make sure the final command creates the installer successfully.
+
+Authentication requirement:
+User must create an account or log in before using PDF tools.
+
+Required auth screens:
+1. Signup
+2. Login
+3. Forgot password
+4. Logout
+5. Account status page
+
+After login:
+The app must check license/trial status from backend before allowing use.
+
+Trial requirement:
+Every new user gets a 14-day free trial.
+
+Trial rules:
+- Trial starts from account creation date.
+- Trial end date = trial start date + 14 days.
+- Use server time, not local computer time.
+- Store trial status in backend/database, not only in localStorage.
+- During trial, user can process only 5 PDFs per day total.
+- The 5 PDFs/day limit includes all PDF actions combined.
+
+PDF actions counted in daily limit:
+- Merge PDF
+- Split PDF
+- Extract pages
+- Delete pages
+- Insert pages
+- PDF to Image
+- PDF to Word
+- PDF to Excel
+- Image to PDF
+- Word to PDF
+- Excel to PDF
+- Password protection
+- Set expiry date
+- Revoke expiry
+- Copy restriction
+- Print restriction
+
+Example:
+If user converts 2 PDFs, merges 1 PDF, and secures 2 PDFs in one day, today’s usage becomes 5/5 and all PDF actions must lock until the next day.
+
+Dashboard should show:
+- Free Trial: 14 days remaining
+- Free Trial: 7 days remaining
+- Today’s Usage: 3 / 5 PDFs
+- Daily Limit Reached: 5 / 5 PDFs
+- Trial expired. Upgrade required.
+
+Trial lock logic:
+Before every PDF action:
+1. Check if user is logged in.
+2. Check if trial is active.
+3. Check if paid subscription is active.
+4. Check today’s usage count.
+5. If allowed, process PDF.
+6. After successful processing, record usage.
+7. If usage reaches 5/5, lock actions until next day.
+8. If trial expires, lock all PDF tools and show upgrade screen.
+
+Product key/license system:
+Create a secure product key system for paid users.
+
+Product key format:
+Use a professional format like:
+LUXOR-XXXX-XXXX-XXXX-XXXX
+
+Example:
+LUXOR-9F3K-M82P-Q7ZA-L4TX
+
+Product key requirements:
+- Product keys must be generated from backend/admin side.
+- Product keys must not be generated inside the desktop app.
+- Product keys must be stored securely in database.
+- Each product key should have:
+  - key_id
+  - product_key_hash
+  - plan_name
+  - subscription_duration_days
+  - max_activations
+  - current_activations
+  - status
+  - created_at
+  - expires_at if already activated
+  - activated_at
+  - activated_by_user_id
+  - device_id or machine_fingerprint
+  - last_verified_at
+
+Important:
+Do not store raw product keys in the database if possible.
+Store a hashed version of the key.
+When user enters product key, hash it and compare with backend.
+
+Product key activation flow:
+1. User buys subscription from website.
+2. Admin/backend generates product key.
+3. User receives product key by email or account dashboard.
+4. User opens Luxor PDF Secure.
+5. User logs in.
+6. User clicks “Activate Product Key”.
+7. User enters product key.
+8. App sends product key to backend.
+9. Backend verifies:
+   - key exists
+   - key is not expired
+   - key is not revoked
+   - key has available activation count
+   - key matches selected product
+10. Backend activates key for that user/device.
+11. Backend sets subscription_start_date and subscription_end_date.
+12. App unlocks paid features.
+
+Subscription plans:
+Create support for these plan durations:
+- Monthly: 30 days
+- Quarterly: 90 days
+- Yearly: 365 days
+- Lifetime if needed
+
+Plan examples:
+Basic Monthly:
+- 30 days
+- limited features or limited monthly usage
+
+Pro Yearly:
+- 365 days
+- full features
+
+Subscription expiry logic:
+After subscription period is over:
+- App must not allow PDF tools to work.
+- App should lock paid features.
+- App should show renewal screen.
+- User must renew subscription or enter a new valid product key.
+- Login, account, renewal, and support screens should still work.
+
+Subscription status messages:
+Show:
+- Subscription Active: 27 days remaining
+- Subscription Active: 6 months remaining
+- Subscription expires today
+- Subscription expired. Please renew to continue.
+- Product key invalid
+- Product key already used
+- Product key activation limit reached
+- Product key revoked
+- Cannot verify license. Please connect to internet.
+
+Renewal screen:
+When subscription expires, show a professional lock page:
+
+Title:
+Your Luxor PDF Secure subscription has expired.
+
+Message:
+Please renew your subscription to continue editing, converting, and securing PDFs.
+
+Buttons:
+- Renew Now
+- Enter New Product Key
+- View Plans
+- Contact Support
+- Login with another account
+
+License checking:
+Before every PDF action, call backend API:
+
+GET /api/license/status
+
+It should return:
+- loggedIn: true/false
+- trialActive: true/false
+- trialDaysRemaining
+- trialExpired: true/false
+- todayUsage
+- dailyLimit
+- isPaid: true/false
+- subscriptionActive: true/false
+- subscriptionDaysRemaining
+- subscriptionExpired: true/false
+- licenseStatus
+- canUsePdfTools: true/false
+- lockReason
+
+PDF action wrapper:
+Before each PDF operation, add a common function:
+
+canUsePdfTools(actionType)
+
+This function should:
+- check login
+- check trial
+- check subscription
+- check daily trial usage
+- block action if not allowed
+- show correct lock modal
+- allow action if valid
+
+After successful PDF processing:
+Call:
+POST /api/usage/record
+
+Record:
+- user_id
+- action_type
+- usage_date
+- file_count
+- total_count
+
+Backend/API requirements:
+Create or update backend APIs:
+
+Auth:
+POST /api/auth/signup
+POST /api/auth/login
+POST /api/auth/logout
+POST /api/auth/forgot-password
+
+License:
+GET /api/license/status
+POST /api/license/activate
+POST /api/license/renew
+POST /api/license/deactivate-device
+POST /api/license/verify-product-key
+
+Usage:
+POST /api/usage/check
+POST /api/usage/record
+GET /api/usage/today
+
+Admin/product key:
+POST /api/admin/product-keys/generate
+GET /api/admin/product-keys
+POST /api/admin/product-keys/revoke
+POST /api/admin/product-keys/extend
+
+Database schema:
+Create or suggest a complete database schema.
+
+users table:
+- id
+- email
+- password_hash or auth_provider_id
+- created_at
+- trial_start_date
+- trial_end_date
+- is_paid
+- plan_name
+- account_status
+
+licenses table:
+- id
+- user_id
+- product_key_id
+- plan_name
+- subscription_start_date
+- subscription_end_date
+- subscription_status
+- activated_at
+- expires_at
+- renewed_at
+- device_id
+- last_verified_at
+
+product_keys table:
+- id
+- product_key_hash
+- key_prefix
+- plan_name
+- subscription_duration_days
+- max_activations
+- current_activations
+- status
+- created_at
+- activated_at
+- expires_at
+- revoked_at
+- notes
+
+daily_usage table:
+- id
+- user_id
+- usage_date
+- edit_count
+- convert_count
+- secure_count
+- total_count
+- created_at
+- updated_at
+
+devices table:
+- id
+- user_id
+- device_id
+- device_name
+- os
+- first_activated_at
+- last_seen_at
+- status
+
+license_events table:
+- id
+- user_id
+- event_type
+- event_message
+- created_at
+
+Security requirements:
+- Use server time for trial and subscription calculations.
+- Never trust local system date.
+- Do not store product key validation only locally.
+- Do not store trial status only in localStorage.
+- Use backend/database as the source of truth.
+- Store auth token securely.
+- Store product keys hashed in database.
+- Add basic device binding using device_id or machine fingerprint.
+- Prevent simple reinstall bypass.
+- Prevent daily limit bypass by deleting local files.
+- Require online verification during trial and subscription checks.
+- Cache license only for short grace period if needed.
+
+Offline behavior:
+Use secure mode:
+- During free trial, require online verification.
+- For paid users, allow optional short offline grace period, such as 3 days, only if last license verification was valid.
+- After grace period, require internet verification again.
+- If subscription is expired, app must remain locked.
+
+Payment/renewal integration:
+Prepare the app for payment gateway integration.
+
+Add placeholders for:
+- Razorpay
+- Stripe
+- PayPal
+
+Renewal flow:
+1. User clicks Renew Now.
+2. User goes to pricing/payment page.
+3. After payment success, backend extends subscription_end_date.
+4. App refreshes license status.
+5. PDF tools unlock again.
+
+Admin panel requirement:
+Create a simple admin page or script to generate product keys.
+
+Admin should be able to:
+- Generate 1 product key
+- Generate multiple product keys
+- Choose plan duration: 30, 90, 365 days
+- Set max activations
+- Revoke product key
+- Extend subscription
+- View active users
+- View expired users
+- View activated devices
+
+Product key generator logic:
+Generate secure random keys using cryptographic random generation.
+
+Format:
+LUXOR-XXXX-XXXX-XXXX-XXXX
+
+Use uppercase letters and numbers.
+Avoid confusing characters like O, 0, I, 1 if possible.
+
+Example generator output:
+LUXOR-8K7D-MP4X-Q9ZA-T6RB
+
+App UI requirements:
+Create these screens:
+1. Login screen
+2. Signup screen
+3. Forgot password screen
+4. Dashboard
+5. Trial status card
+6. Daily usage card
+7. Activate product key screen
+8. License/account status screen
+9. Trial expired screen
+10. Subscription expired renewal screen
+11. Pricing/upgrade screen
+12. Admin product key generator screen or script
+
+Dashboard should show:
+- User email
+- Trial status
+- Subscription status
+- Today’s usage
+- Product key activation status
+- Days remaining
+- Upgrade/Renew button when needed
+
+UI style:
+Use a premium, futuristic, elegant look for Luxor PDF Secure.
+
+Colors:
+- Blue
+- White
+- Red accent
+- Soft shadows
+- Rounded cards
+- Professional layout
+- Clean typography
+
+Important messages:
+When trial expired:
+“Your 14-day free trial has ended. Upgrade now to continue using Luxor PDF Secure.”
+
+When subscription expired:
+“Your Luxor PDF Secure subscription has expired. Please renew to continue using PDF tools.”
+
+When product key invalid:
+“This product key is invalid. Please check the key and try again.”
+
+When key already used:
+“This product key has already been activated.”
+
+When activation limit reached:
+“This product key has reached its activation limit.”
+
+When daily trial limit reached:
+“You have reached your free trial daily limit of 5 PDFs. Please try again tomorrow or upgrade now.”
+
+Final deliverables:
+1. Working installer build setup.
+2. Logo icon applied everywhere.
+3. Installer output in /dist.
+4. Login/signup system.
+5. 14-day trial system.
+6. 5 PDFs/day trial limit.
+7. Product key activation system.
+8. Subscription expiry and renewal lock.
+9. Backend/database schema.
+10. Admin product key generator.
+11. License status API.
+12. PDF action lock wrapper.
+13. Upgrade and renewal screens.
+14. Clear instructions in README for:
+   - how to build installer
+   - how to generate product keys
+   - how to activate license
+   - how to renew subscription
+   - how to test trial expiry
+   - how to test daily limit
+
+Please implement this carefully in my existing app without removing or breaking existing PDF features.
