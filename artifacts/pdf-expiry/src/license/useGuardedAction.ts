@@ -69,7 +69,7 @@ export interface GuardedRunOptions {
 export function useGuardedAction() {
   const { toast } = useToast();
   const qc = useQueryClient();
-  const { signedIn, offline } = useLicense();
+  const { signedIn, offline, status, clientLockReason } = useLicense();
   const checkMut = useCheckUsage();
   const recordMut = useRecordUsage();
 
@@ -85,6 +85,38 @@ export function useGuardedAction() {
           description: "Please sign in to use Luxor PDF tools.",
           variant: "destructive",
         });
+        return undefined;
+      }
+      // Block actions when the client-side lock is active (offline-grace
+      // expired, clock tampered, or the cached subscription end date has
+      // passed). These come from `LicenseProvider`'s offline cache and
+      // exist precisely so the desktop app cannot bypass an expired sub
+      // by being offline.
+      if (clientLockReason === "offline_too_long") {
+        toast({
+          title: "Offline too long",
+          description:
+            "Reconnect to the internet to verify your subscription, then try again.",
+          variant: "destructive",
+        });
+        return undefined;
+      }
+      if (clientLockReason === "clock_tampered") {
+        toast({
+          title: "System clock check failed",
+          description:
+            "Your system clock appears to be in the past. Fix the date/time and try again.",
+          variant: "destructive",
+        });
+        return undefined;
+      }
+      const cachedReason = status?.lockReason;
+      if (
+        cachedReason === "subscription_expired" ||
+        cachedReason === "trial_expired" ||
+        cachedReason === "account_suspended"
+      ) {
+        toast({ ...reasonMessage(cachedReason), variant: "destructive" });
         return undefined;
       }
       if (offline) {
@@ -146,7 +178,16 @@ export function useGuardedAction() {
 
       return result;
     },
-    [signedIn, offline, checkMut, recordMut, qc, toast],
+    [
+      signedIn,
+      offline,
+      status,
+      clientLockReason,
+      checkMut,
+      recordMut,
+      qc,
+      toast,
+    ],
   );
 
   return run;

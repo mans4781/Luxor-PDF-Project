@@ -110,4 +110,17 @@ The server stores PDFs on disk under `/uploads/`. The `pdfs.expiry_action` colum
 - Renderer integration: `pdf-expiry/src/main.tsx` calls `initDeviceIdFromBridge()` on startup — when the bridge is present, the desktop UUID is mirrored into `localStorage["luxor.deviceId"]` so the existing sync `getOrCreateDeviceId()` returns the desktop-bound id. It then calls `setDeviceIdGetter(...)` from `@workspace/api-client-react`, which adds an `X-Device-Id` header to every API request (new helper alongside the existing `setAuthTokenGetter`).
 - Scripts: `pnpm --filter @workspace/luxor-desktop run start` (dev — opens the window pointing at the deployed URL), `run dist:win` (builds the `Luxor PDF Secure Setup x.y.z.exe` — requires Windows or Wine; **not** runnable from this Linux dev container), `run icon:regen` (rebuilds `build/icon.ico` from the source PNG).
 
+## Subscription enforcement (server + offline)
+
+- **Server-side (always primary)**: `getLicenseStatus()` in `artifacts/api-server/src/lib/license.ts` looks up the user's most-recent license with `subscriptionEndDate > now`. If none exists but a previous license has lapsed, returns `lockReason: "subscription_expired"` + `canUsePdfTools: false`. `recordUsage()` re-checks and refuses to increment usage for expired/suspended users, so a malicious client can't fake the gate.
+- **Frontend lock**: `LockOverlay` is mounted in `pdf-expiry/src/App.tsx` and renders a full-screen blocking modal whenever `lockReason` is `subscription_expired`, `trial_expired`, or `account_suspended`. Status auto-refetches every 5 min and on window focus, so an in-session expiry locks the UI within 5 min.
+- **Offline-grace enforcement** (`pdf-expiry/src/license/offline-cache.ts` + `LicenseProvider`): every successful `/api/license/status` response is cached in `localStorage["luxor.lastLicenseStatus"]` along with the highest `serverTime` ever observed. When the device is offline (`query.isError`):
+  - The cached status is used as the rendered status (so the UI keeps working briefly without internet).
+  - If the cached `subscriptionEndDate` has now passed by wall-clock time, `LockOverlay` immediately shows "Subscription expired" — the desktop user can no longer dodge a known expiry by unplugging the network.
+  - If the cache is older than 7 days (`OFFLINE_GRACE_MS`), `clientLockReason = "offline_too_long"` triggers a "Connect to verify your subscription" lock with no renew/activate buttons.
+  - If `Date.now()` is more than 2 h earlier than the highest server time we ever recorded, `clientLockReason = "clock_tampered"` triggers a "System clock check failed" lock — defends against rolling the system clock back to before expiry.
+  - A 1-min timer in `LicenseProvider` re-derives the effective state so a user sitting on the lock screen sees it appear the moment grace lapses.
+- `useGuardedAction` also short-circuits with the matching toast for any of these conditions before attempting `/api/usage/check`, so even one-off tool actions are blocked offline.
+- Cached status is wiped from `localStorage` on sign-out so the next user on a shared device doesn't inherit the previous user's grace clock.
+
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.

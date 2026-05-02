@@ -8,6 +8,8 @@ import {
   RefreshCw,
   LifeBuoy,
   RotateCcw,
+  WifiOff,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLicense } from "./LicenseProvider";
@@ -24,18 +26,30 @@ function planFromStatusName(name: string | null | undefined): string {
 }
 
 export function LockOverlay() {
-  const { status, signedIn, refetch } = useLicense();
+  const { status, signedIn, refetch, clientLockReason } = useLicense();
   const clerk = useClerk();
   const [location] = useLocation();
 
-  // Only block when actually expired or suspended — daily limit / not-logged-in
-  // are surfaced via toasts when the user attempts an action.
-  if (!signedIn || !status) return null;
-  const reason = status.lockReason;
+  if (!signedIn) return null;
+
+  // Client-side locks (offline grace expired, clock tampered) take
+  // precedence — they fire even when no live `status` is available so
+  // the desktop app cannot dodge an expired sub by going offline.
+  const isOfflineTooLong = clientLockReason === "offline_too_long";
+  const isClockTampered = clientLockReason === "clock_tampered";
+
+  // Server-driven blocking reasons.
+  const reason = status?.lockReason;
+  const isTrial = reason === "trial_expired";
+  const isSub = reason === "subscription_expired";
+  const isSuspended = reason === "account_suspended";
+
   const blocking =
-    reason === "trial_expired" ||
-    reason === "subscription_expired" ||
-    reason === "account_suspended";
+    isOfflineTooLong ||
+    isClockTampered ||
+    isTrial ||
+    isSub ||
+    isSuspended;
   if (!blocking) return null;
 
   // Don't block the activate-key page itself, or auth pages.
@@ -47,10 +61,6 @@ export function LockOverlay() {
     return null;
   }
 
-  const isTrial = reason === "trial_expired";
-  const isSub = reason === "subscription_expired";
-  const isSuspended = reason === "account_suspended";
-
   return (
     <div
       className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
@@ -60,14 +70,22 @@ export function LockOverlay() {
         <div className="flex justify-center mb-4">
           <div
             className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-md ${
-              isSuspended
+              isSuspended || isClockTampered
                 ? "bg-gradient-to-br from-rose-500 to-red-600"
-                : isSub
-                  ? "bg-gradient-to-br from-amber-500 to-orange-600"
-                  : "bg-gradient-to-br from-indigo-500 to-violet-600"
+                : isOfflineTooLong
+                  ? "bg-gradient-to-br from-slate-500 to-slate-700"
+                  : isSub
+                    ? "bg-gradient-to-br from-amber-500 to-orange-600"
+                    : "bg-gradient-to-br from-indigo-500 to-violet-600"
             }`}
           >
-            <AlertTriangle className="w-7 h-7 text-white" />
+            {isOfflineTooLong ? (
+              <WifiOff className="w-7 h-7 text-white" />
+            ) : isClockTampered ? (
+              <Clock className="w-7 h-7 text-white" />
+            ) : (
+              <AlertTriangle className="w-7 h-7 text-white" />
+            )}
           </div>
         </div>
 
@@ -75,26 +93,34 @@ export function LockOverlay() {
           className="text-center text-xl font-bold text-slate-900"
           data-testid="lock-title"
         >
-          {isSuspended
-            ? "Account suspended"
-            : isSub
-              ? "Subscription expired"
-              : "Your free trial has ended"}
+          {isClockTampered
+            ? "System clock check failed"
+            : isOfflineTooLong
+              ? "Connect to verify your subscription"
+              : isSuspended
+                ? "Account suspended"
+                : isSub
+                  ? "Subscription expired"
+                  : "Your free trial has ended"}
         </h2>
         <p className="text-center text-sm text-slate-600 mt-1.5">
-          {isSuspended
-            ? "Your account has been suspended. Please contact support to restore access."
-            : isSub
-              ? "Renew your subscription or activate a new product key to keep using Luxor PDF."
-              : "Pick a plan or activate a product key to keep using all Luxor PDF tools."}
+          {isClockTampered
+            ? "Your system clock appears to be set in the past. Please correct your date and time, then refresh."
+            : isOfflineTooLong
+              ? "Luxor PDF Secure couldn't reach the licensing server for over 7 days. Reconnect to the internet to continue using the app."
+              : isSuspended
+                ? "Your account has been suspended. Please contact support to restore access."
+                : isSub
+                  ? "Renew your subscription or activate a new product key to keep using Luxor PDF."
+                  : "Pick a plan or activate a product key to keep using all Luxor PDF tools."}
         </p>
 
         <div className="mt-5 space-y-2">
-          {!isSuspended && (
+          {!isSuspended && !isOfflineTooLong && !isClockTampered && (
             <>
               {isSub ? (
                 <a
-                  href={`${basePath}/checkout?plan=${planFromStatusName(status.planName)}`}
+                  href={`${basePath}/checkout?plan=${planFromStatusName(status?.planName)}`}
                   className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-md px-4 py-2.5 shadow-md transition-all"
                   data-testid="lock-action-renew"
                 >

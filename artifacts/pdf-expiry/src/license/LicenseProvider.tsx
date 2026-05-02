@@ -1,18 +1,40 @@
-import { createContext, useContext, useMemo, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useUser } from "@clerk/react";
 import {
   useGetLicenseStatus,
   getGetLicenseStatusQueryKey,
   type LicenseStatus,
 } from "@workspace/api-client-react";
+import {
+  deriveEffectiveState,
+  readCachedStatus,
+  writeCachedStatus,
+  type ClientLockReason,
+} from "./offline-cache";
 
 interface LicenseContextValue {
+  /** Effective status (live when available, cached snapshot when offline). */
   status: LicenseStatus | undefined;
   isLoading: boolean;
   isError: boolean;
   signedIn: boolean;
   /** True when we cannot reach the server / status is unknown. */
   offline: boolean;
+  /** True when the rendered `status` came from the offline cache. */
+  usingCache: boolean;
+  /**
+   * Client-only lock state for situations the server can't see: the user
+   * has been offline beyond the grace window, or rolled the system clock.
+   */
+  clientLockReason: ClientLockReason | null;
   refetch: () => void;
 }
 
@@ -32,18 +54,73 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
     },
   });
 
+  // Persist every successful fetch so we have something to fall back on
+  // when the device goes offline (Electron desktop app, flaky Wi-Fi, etc.).
+  useEffect(() => {
+    if (query.data) {
+      writeCachedStatus(query.data);
+    }
+  }, [query.data]);
+
+  // When signed out, clear the cached status so the next user doesn't
+  // inherit the previous user's grace-period clock.
+  useEffect(() => {
+    if (isLoaded && !isSignedIn && typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem("luxor.lastLicenseStatus");
+        window.localStorage.removeItem("luxor.lastServerTime");
+      } catch {
+        // ignore
+      }
+    }
+  }, [isLoaded, isSignedIn]);
+
+  // Re-evaluate the offline / grace-period state once a minute so a user
+  // sitting on the lock screen sees it appear the moment their cached
+  // subscription end date passes (or the grace window lapses).
+  const [tick, setTick] = useState(0);
+  const tickRef = useRef(tick);
+  tickRef.current = tick;
+  useEffect(() => {
+    const id = window.setInterval(() => setTick((t) => t + 1), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const offline = !!isSignedIn && query.isError;
+
+  const effective = useMemo(() => {
+    void tick; // re-derive each tick
+    return deriveEffectiveState({
+      liveStatus: query.data,
+      cached: readCachedStatus(),
+      offline,
+    });
+  }, [query.data, offline, tick]);
+
   const value = useMemo<LicenseContextValue>(
     () => ({
-      status: query.data,
-      isLoading: !isLoaded || query.isLoading,
+      status: effective.status,
+      isLoading: !isLoaded || (query.isLoading && !effective.status),
       isError: query.isError,
       signedIn: !!isSignedIn,
-      offline: !!isSignedIn && query.isError,
+      offline,
+      usingCache: effective.usingCache,
+      clientLockReason: effective.clientLockReason,
       refetch: () => {
         void query.refetch();
       },
     }),
-    [isLoaded, isSignedIn, query.data, query.isLoading, query.isError, query.refetch],
+    [
+      isLoaded,
+      isSignedIn,
+      query.isLoading,
+      query.isError,
+      query.refetch,
+      offline,
+      effective.status,
+      effective.usingCache,
+      effective.clientLockReason,
+    ],
   );
 
   return (
