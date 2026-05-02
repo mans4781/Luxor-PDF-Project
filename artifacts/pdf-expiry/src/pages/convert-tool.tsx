@@ -7,11 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
 import JSZip from "jszip";
+import * as XLSX from "xlsx";
 import { formatBytes } from "@/lib/utils";
 import { saveFile } from "@/lib/save-file";
 import {
   Upload, X, Download, Loader2, Image as ImageIcon,
   FileText, GripVertical, ArrowLeftRight, FileOutput, ChevronDown,
+  FileSpreadsheet,
 } from "lucide-react";
 import {
   Document, Paragraph, TextRun, Packer,
@@ -46,7 +48,7 @@ function readAsDataURL(file: File): Promise<string> {
 
 // saveFile is imported from @/lib/save-file — opens a native Save As dialog
 
-type ConvertColorScheme = "emerald" | "orange" | "amber";
+type ConvertColorScheme = "emerald" | "orange" | "amber" | "green";
 
 const convertDropColors: Record<ConvertColorScheme, {
   drag: string; idle: string; icon: string; iconBg: string; label: string; hint: string;
@@ -68,6 +70,12 @@ const convertDropColors: Record<ConvertColorScheme, {
     idle: "border-amber-200 hover:border-amber-400 hover:bg-amber-50/60 bg-gradient-to-br from-amber-50/50 to-yellow-50/30",
     icon: "text-white", iconBg: "bg-gradient-to-br from-amber-500 to-yellow-500",
     label: "text-amber-700", hint: "text-amber-400",
+  },
+  green: {
+    drag: "border-green-500 bg-green-50 scale-[1.01]",
+    idle: "border-green-200 hover:border-green-500 hover:bg-green-50/60 bg-gradient-to-br from-green-50/50 to-emerald-50/30",
+    icon: "text-white", iconBg: "bg-gradient-to-br from-green-600 to-emerald-700",
+    label: "text-green-700", hint: "text-green-500",
   },
 };
 
@@ -702,6 +710,262 @@ function PdfToWord() {
   );
 }
 
+// ─── PDF → Excel ──────────────────────────────────────────────────────────────
+
+function PdfToExcel() {
+  const [file, setFile] = useState<File | null>(null);
+  const [pageCount, setPageCount] = useState<number | null>(null);
+  const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleFile(files: File[]) {
+    const f = files[0];
+    if (!f) return;
+    setError(null);
+    setDone(false);
+    try {
+      const buf = await readAsArrayBuffer(f);
+      const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+      setFile(f);
+      setPageCount(pdf.numPages);
+    } catch {
+      setError("Could not read PDF. Make sure it is a valid, non-encrypted file.");
+    }
+  }
+
+  async function convert() {
+    if (!file) return;
+    setLoading(true);
+    setError(null);
+    setDone(false);
+    setProgress("");
+
+    interface RawItem {
+      str: string;
+      x: number;
+      y: number;
+      width: number;
+      fontSize: number;
+    }
+
+    try {
+      const buf = await readAsArrayBuffer(file);
+      const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+      const total = pdf.numPages;
+
+      const wb = XLSX.utils.book_new();
+      let anyData = false;
+
+      for (let pageNum = 1; pageNum <= total; pageNum++) {
+        setProgress(`Extracting page ${pageNum} of ${total}…`);
+
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 1 });
+        const pageH = viewport.height;
+        const content = await page.getTextContent();
+
+        // ── 1. Extract items with positions ────────────────────────────────
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const items: RawItem[] = (content.items as any[])
+          .filter((it) => "str" in it && typeof it.str === "string" && it.str.trim() !== "")
+          .map((it) => ({
+            str: (it.str as string).trim(),
+            x: it.transform[4] as number,
+            y: pageH - (it.transform[5] as number),
+            width: (it.width as number) || 0,
+            fontSize: Math.abs(it.transform[3] as number) || 10,
+          }));
+
+        let rows: string[][];
+
+        if (items.length === 0) {
+          rows = [[""]];
+        } else {
+          // ── 2. Group items into visual rows by Y proximity ────────────────
+          items.sort((a, b) => (Math.abs(a.y - b.y) < 1 ? a.x - b.x : a.y - b.y));
+
+          const lines: RawItem[][] = [];
+          let cur: RawItem[] = [];
+          let lastY = -Infinity;
+          let lastFs = 10;
+          for (const it of items) {
+            const threshold = Math.max(2, Math.max(it.fontSize, lastFs) * 0.5);
+            if (Math.abs(it.y - lastY) <= threshold) {
+              cur.push(it);
+            } else {
+              if (cur.length) lines.push(cur);
+              cur = [it];
+              lastY = it.y;
+            }
+            lastFs = it.fontSize;
+          }
+          if (cur.length) lines.push(cur);
+
+          // ── 3. Detect column boundaries from gaps across the whole page ──
+          // Collect all left-x positions of items, cluster by proximity.
+          const xs = items.map((i) => i.x).sort((a, b) => a - b);
+          const xClusters: number[] = [];
+          let clusterStart = xs[0];
+          let clusterPrev = xs[0];
+          const X_CLUSTER_GAP = 8; // pts — anything closer is the same column
+          for (let i = 1; i < xs.length; i++) {
+            if (xs[i] - clusterPrev > X_CLUSTER_GAP) {
+              xClusters.push(clusterStart);
+              clusterStart = xs[i];
+            }
+            clusterPrev = xs[i];
+          }
+          xClusters.push(clusterStart);
+
+          // Pick the column starts: keep clusters separated by at least 14 pts
+          // so we don't over-fragment continuous text into many columns.
+          const MIN_COL_WIDTH = 14;
+          const cols: number[] = [];
+          for (const c of xClusters) {
+            if (cols.length === 0 || c - cols[cols.length - 1] >= MIN_COL_WIDTH) {
+              cols.push(c);
+            }
+          }
+
+          // ── 4. For each visual row, drop items into the nearest column ───
+          rows = lines.map((line) => {
+            const sorted = [...line].sort((a, b) => a.x - b.x);
+            const cells: string[] = new Array(cols.length).fill("");
+            for (const it of sorted) {
+              // Find best column: largest col start that is <= item.x
+              let idx = 0;
+              for (let c = 0; c < cols.length; c++) {
+                if (cols[c] <= it.x + 1) idx = c;
+                else break;
+              }
+              cells[idx] = cells[idx] ? `${cells[idx]} ${it.str}` : it.str;
+            }
+            return cells;
+          });
+
+          // Trim trailing empty columns from each row & globally
+          let lastNonEmpty = 0;
+          for (const r of rows) {
+            for (let c = r.length - 1; c >= 0; c--) {
+              if (r[c] !== "") { lastNonEmpty = Math.max(lastNonEmpty, c); break; }
+            }
+          }
+          rows = rows.map((r) => r.slice(0, lastNonEmpty + 1));
+        }
+
+        if (rows.some((r) => r.some((c) => c !== ""))) anyData = true;
+
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+
+        // Auto-size columns based on content
+        const colCount = rows.reduce((m, r) => Math.max(m, r.length), 0);
+        const colWidths = new Array(colCount).fill(0).map((_, c) => {
+          let w = 8;
+          for (const r of rows) {
+            const cell = r[c] ?? "";
+            if (cell.length > w) w = Math.min(60, cell.length);
+          }
+          return { wch: Math.max(8, w + 2) };
+        });
+        ws["!cols"] = colWidths;
+
+        // Sheet name: max 31 chars, no special chars
+        const sheetName = `Page ${pageNum}`.slice(0, 31);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      }
+
+      if (!anyData) {
+        setError("No selectable text found. Scanned/image-only PDFs need OCR before they can be converted.");
+        setLoading(false);
+        setProgress("");
+        return;
+      }
+
+      setProgress("Building Excel file…");
+      const arrayBuf = XLSX.write(wb, { bookType: "xlsx", type: "array" }) as ArrayBuffer;
+      const blob = new Blob([arrayBuf], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const baseName = file.name.replace(/\.pdf$/i, "");
+      await saveFile(blob, `${baseName}.xlsx`);
+      setDone(true);
+      setProgress("");
+    } catch (e) {
+      console.error(e);
+      setError("Conversion failed. The PDF may not contain selectable text.");
+      setProgress("");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      {!file ? (
+        <DropZone
+          onFiles={handleFile}
+          accept=".pdf"
+          label="Click or drag a PDF here"
+          hint="Extracts tables and text into a multi-sheet Excel workbook (.xlsx)"
+          colorScheme="green"
+        />
+      ) : (
+        <div className="flex items-center justify-between bg-muted rounded-md px-3 py-2">
+          <div>
+            <p className="text-sm font-medium">{file.name}</p>
+            <p className="text-xs text-muted-foreground">
+              {formatBytes(file.size)} · {pageCount} page{pageCount !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <button
+            onClick={() => { setFile(null); setPageCount(null); setDone(false); setError(null); setProgress(""); }}
+            className="text-muted-foreground hover:text-destructive transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {progress && <p className="text-sm text-green-700 font-medium">{progress}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
+
+      {done && (
+        <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+          <FileSpreadsheet className="w-5 h-5 text-emerald-600 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-emerald-800">Excel workbook saved!</p>
+            <p className="text-xs text-emerald-600">One worksheet per PDF page — open it in Excel, Numbers or Google Sheets.</p>
+          </div>
+        </div>
+      )}
+
+      <Button
+        onClick={convert}
+        disabled={!file || loading}
+        className="w-full bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white border-0 shadow-md"
+        data-testid="button-pdf-to-excel"
+      >
+        {loading
+          ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{progress || "Converting…"}</>
+          : <><FileSpreadsheet className="w-4 h-4 mr-2" />Convert to Excel (.xlsx)</>}
+      </Button>
+
+      {done && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => { setFile(null); setPageCount(null); setDone(false); setError(null); }}
+          className="w-full text-muted-foreground"
+        >
+          Convert another PDF
+        </Button>
+      )}
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function ConvertToolContent({ defaultTab = "images-to-pdf" }: { defaultTab?: string }) {
@@ -723,13 +987,14 @@ export function ConvertToolContent({ defaultTab = "images-to-pdf" }: { defaultTa
             <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><ImageIcon className="w-3 h-3" />Images → PDF</span>
             <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FileText className="w-3 h-3" />PDF → Images</span>
             <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FileOutput className="w-3 h-3" />PDF → Word</span>
+            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FileSpreadsheet className="w-3 h-3" />PDF → Excel</span>
           </div>
         </div>
 
         <Card className="border-emerald-100 shadow-sm">
           <CardContent className="pt-6">
             <Tabs defaultValue={defaultTab}>
-              <TabsList className="grid w-full grid-cols-3 mb-6 bg-slate-50 border border-slate-200 p-1 rounded-xl h-auto">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-6 gap-1 bg-slate-50 border border-slate-200 p-1 rounded-xl h-auto">
                 <TabsTrigger
                   value="images-to-pdf"
                   data-testid="tab-images-to-pdf"
@@ -753,6 +1018,14 @@ export function ConvertToolContent({ defaultTab = "images-to-pdf" }: { defaultTa
                 >
                   <FileOutput className="w-3.5 h-3.5" />
                   PDF → Word
+                </TabsTrigger>
+                <TabsTrigger
+                  value="pdf-to-excel"
+                  data-testid="tab-pdf-to-excel"
+                  className="flex items-center gap-1.5 text-xs rounded-lg data-[state=active]:bg-green-700 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  PDF → Excel
                 </TabsTrigger>
               </TabsList>
 
@@ -793,6 +1066,19 @@ export function ConvertToolContent({ defaultTab = "images-to-pdf" }: { defaultTa
                   </div>
                 </div>
                 <PdfToWord />
+              </TabsContent>
+
+              <TabsContent value="pdf-to-excel">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
+                  <div className="w-9 h-9 bg-gradient-to-br from-green-600 to-emerald-700 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                    <FileSpreadsheet className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-green-900">PDF to Excel</h2>
+                    <p className="text-xs text-green-700">Pull tables and text out of every page into an Excel workbook (.xlsx), one worksheet per page.</p>
+                  </div>
+                </div>
+                <PdfToExcel />
               </TabsContent>
             </Tabs>
           </CardContent>
