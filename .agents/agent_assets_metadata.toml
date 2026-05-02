@@ -215,3 +215,39 @@ id = "gjNuq8iDvvYH5iohnqL79"
 uri = "file://artifacts/lexsecure-landing/public/brand/luxor-favicon.png"
 type = "image"
 title = "luxor-favicon.png — Browser tab favicon"
+
+[[outputs]]
+id = "PWWyUh_uc02-tySNilvmW"
+uri = "file://attached_assets/brand/luxor-reader-icon-1024.png"
+type = "image"
+title = "Luxor PDF Reader — 1024px PNG"
+
+[[outputs]]
+id = "OlPcXAtxMCb39NsFyTTaL"
+uri = "file://attached_assets/brand/luxor-reader-icon-512.png"
+type = "image"
+title = "Luxor PDF Reader — 512px PNG"
+
+[[outputs]]
+id = "W2bZYJqnUF_RBp_06sIhi"
+uri = "file://attached_assets/brand/luxor-reader-icon.svg"
+type = "image"
+title = "Luxor PDF Reader — SVG (source)"
+
+[[outputs]]
+id = "M7LWhQQvS5Mra6oa5ypmZ"
+uri = "file://attached_assets/brand/luxor-secure-icon-1024.png"
+type = "image"
+title = "Luxor PDF Secure — 1024px PNG"
+
+[[outputs]]
+id = "pHUQkphIUGGLEvwiSWgV3"
+uri = "file://attached_assets/brand/luxor-secure-icon-512.png"
+type = "image"
+title = "Luxor PDF Secure — 512px PNG"
+
+[[outputs]]
+id = "EmBlcc5VcOjFez_2z0Wp1"
+uri = "file://attached_assets/brand/luxor-secure-icon.svg"
+type = "image"
+title = "Luxor PDF Secure — SVG (source)"
