@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { LayoutDashboard } from "lucide-react";
+import { Undo2 } from "lucide-react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { UsageBadge, DailyLimitBanner } from "@/license/UsageBadge";
 import { basePath } from "@/lib/base-path";
@@ -38,12 +38,12 @@ export function Layout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-3">
             <a
               href="/online-tools"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#312E81] hover:text-[#1E1B4B] bg-[#312E81]/5 hover:bg-[#312E81]/10 border border-[#312E81]/15 rounded-lg px-3 py-1.5 transition-colors"
+              title="Back to Online Tools"
+              className="inline-flex items-center justify-center h-9 w-9 text-[#312E81] hover:text-[#1E1B4B] bg-[#312E81]/5 hover:bg-[#312E81]/10 border border-[#312E81]/15 rounded-full transition-colors"
               aria-label="Back to Online Tools"
               data-testid="header-online-tools-link"
             >
-              <LayoutDashboard className="w-4 h-4" strokeWidth={2.2} />
-              <span className="hidden sm:inline">Online Tools</span>
+              <Undo2 className="w-4 h-4" strokeWidth={2.4} />
             </a>
             <UsageBadge />
             <AuthMenu
