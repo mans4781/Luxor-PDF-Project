@@ -17,6 +17,15 @@ localPort = 22843
 [services.development]
 run = "pnpm --filter @workspace/luxor-pdf run dev"
 
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/luxor-pdf", "run", "build" ]
+publicDir = "artifacts/luxor-pdf/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
 [services.env]
 PORT = "22843"
 BASE_PATH = "/luxor-pdf/"
