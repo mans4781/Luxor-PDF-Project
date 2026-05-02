@@ -1,0 +1,64 @@
+{
+  "name": "@workspace/luxor-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Luxor PDF Secure — Windows desktop wrapper for the pdf-expiry web app.",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node ./scripts/copy-assets.mjs",
+    "start": "pnpm run build && electron .",
+    "dist": "pnpm run build && electron-builder",
+    "dist:win": "pnpm run build && electron-builder --win --x64",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "icon:regen": "node ./scripts/build-icon.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.9.0"
+  },
+  "build": {
+    "appId": "com.luxor.pdfsecure",
+    "productName": "Luxor PDF Secure",
+    "copyright": "Copyright © 2026 Luxor PDF",
+    "asar": true,
+    "directories": {
+      "buildResources": "build",
+      "output": "dist-installer"
+    },
+    "files": [
+      "dist/**/*",
+      "build/icon.ico",
+      "package.json",
+      "!**/*.map"
+    ],
+    "extraResources": [
+      {
+        "from": "web-bundle",
+        "to": "web-bundle",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "build/icon.ico",
+      "artifactName": "Luxor PDF Secure Setup ${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Luxor PDF Secure",
+      "menuCategory": "Luxor",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "uninstallDisplayName": "Luxor PDF Secure",
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

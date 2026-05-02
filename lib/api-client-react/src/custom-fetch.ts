@@ -7,6 +7,7 @@ export type ErrorType<T = unknown> = ApiError<T>;
 export type BodyType<T> = T;
 
 export type AuthTokenGetter = () => Promise<string | null> | string | null;
+export type DeviceIdGetter = () => Promise<string | null> | string | null;
 
 const NO_BODY_STATUS = new Set([204, 205, 304]);
 const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
@@ -17,6 +18,7 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _deviceIdGetter: DeviceIdGetter | null = null;
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -42,6 +44,18 @@ export function setBaseUrl(url: string | null): void {
  */
 export function setAuthTokenGetter(getter: AuthTokenGetter | null): void {
   _authTokenGetter = getter;
+}
+
+/**
+ * Register a getter that supplies a stable per-device identifier.  When the
+ * getter returns a non-null string, an `X-Device-Id` header is attached to
+ * every request — used by the licensing system to enforce per-device
+ * activations from the Electron desktop wrapper.
+ *
+ * Pass `null` to clear the getter.
+ */
+export function setDeviceIdGetter(getter: DeviceIdGetter | null): void {
+  _deviceIdGetter = getter;
 }
 
 function isRequest(input: RequestInfo | URL): input is Request {
@@ -355,6 +369,14 @@ export async function customFetch<T = unknown>(
     const token = await _authTokenGetter();
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
+    }
+  }
+
+  // Attach a stable device id when configured (Electron desktop wrapper).
+  if (_deviceIdGetter && !headers.has("x-device-id")) {
+    const id = await _deviceIdGetter();
+    if (id) {
+      headers.set("x-device-id", id);
     }
   }
 

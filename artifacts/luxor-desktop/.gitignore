@@ -1,0 +1,5 @@
+dist/
+dist-installer/
+web-bundle/
+node_modules/
+*.log

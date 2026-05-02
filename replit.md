@@ -26,6 +26,7 @@ PDF Expiry Tool — a web application for uploading PDFs, setting an exact expir
 - **esign-app** (react-vite) — LexSign eSign app
 - **luxor-pdf** (react-vite) — Luxor PDF Reader
 - **mockup-sandbox** (design) — Canvas component preview server
+- **luxor-desktop** (electron) — Windows desktop wrapper for `pdf-expiry`, packaged as the **Luxor PDF Secure** NSIS installer (no service, no Replit preview)
 
 ## Billing (Stripe)
 
@@ -98,5 +99,15 @@ The server stores PDFs on disk under `/uploads/`. The `pdfs.expiry_action` colum
 - Auth env vars (auto-set, never commit): `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`. In prod, `VITE_CLERK_PROXY_URL` is set automatically. All three artifacts read the same vars via `publishableKeyFromHost(...)` from `@clerk/react/internal`.
 - Home page (`/`) remains publicly accessible per skill guidance — no auth gate on landing.
 - Not yet wired: Stripe subscription billing, paywall gating on premium tabs, 11-day grace period logic.
+
+## Electron desktop wrapper (`artifacts/luxor-desktop`)
+
+- Thin Electron shell around the deployed (or bundled) `pdf-expiry` web app. Not registered as a Replit artifact — it has no HTTP service. Built only for Windows (NSIS installer); macOS/Linux are out of scope.
+- `package.json` carries the full `electron-builder` config: `appId="com.luxor.pdfsecure"`, `productName="Luxor PDF Secure"`, multi-resolution `build/icon.ico` (16/32/48/64/128/256 generated via ImageMagick from `lexsecure-landing/public/brand/luxor-icon.png`, checked in), NSIS with `oneClick=false`, `allowToChangeInstallationDirectory=true`, Desktop + Start-Menu shortcuts named "Luxor PDF Secure", installer/uninstaller/header icons all set, `deleteAppDataOnUninstall=false` so reinstalling keeps the device id (and license slot).
+- Two load modes selected via env at launch/build: `LUXOR_LOAD_MODE=remote` (default → `LUXOR_REMOTE_URL`, default `https://luxorpdf.com/pdf-expiry/`) or `LUXOR_LOAD_MODE=bundled` (→ `web-bundle/index.html` from a built `pdf-expiry`, copied via `extraResources`).
+- Hardened `BrowserWindow`: `contextIsolation=true`, `nodeIntegration=false`, `sandbox=true`. The preload (`src/preload.ts`) exposes only `window.luxor = { isDesktop: true, getDeviceId(), getAppInfo() }` via `contextBridge` + IPC. External links open in the system browser (`shell.openExternal`); cross-origin in-app navigation is blocked in remote mode.
+- Device id is a UUID v4 stored at `<userData>/device-id.txt` (created on first launch).
+- Renderer integration: `pdf-expiry/src/main.tsx` calls `initDeviceIdFromBridge()` on startup — when the bridge is present, the desktop UUID is mirrored into `localStorage["luxor.deviceId"]` so the existing sync `getOrCreateDeviceId()` returns the desktop-bound id. It then calls `setDeviceIdGetter(...)` from `@workspace/api-client-react`, which adds an `X-Device-Id` header to every API request (new helper alongside the existing `setAuthTokenGetter`).
+- Scripts: `pnpm --filter @workspace/luxor-desktop run start` (dev — opens the window pointing at the deployed URL), `run dist:win` (builds the `Luxor PDF Secure Setup x.y.z.exe` — requires Windows or Wine; **not** runnable from this Linux dev container), `run icon:regen` (rebuilds `build/icon.ico` from the source PNG).
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
