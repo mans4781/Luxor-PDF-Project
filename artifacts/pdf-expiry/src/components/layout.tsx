@@ -53,9 +53,13 @@ export function Layout({ children }: { children: ReactNode }) {
       </main>
 
       <footer className="border-t border-slate-200 bg-white">
-        <div className="container mx-auto px-6 py-4 text-xs text-slate-500 flex items-center justify-between">
-          <p>© {new Date().getFullYear()} Luxor PDF Secure. Part of the Luxor PDF Suite.</p>
-          <p className="font-mono text-[11px] text-slate-400">v1.0</p>
+        <div className="container mx-auto px-6 py-4 text-xs text-slate-500 relative flex items-center justify-center">
+          <p className="text-center">
+            © {new Date().getFullYear()} Luxor PDF Secure. Part of the Luxor PDF Suite.
+          </p>
+          <p className="font-mono text-[11px] text-slate-400 absolute right-6">
+            v1.0
+          </p>
         </div>
       </footer>
     </div>
