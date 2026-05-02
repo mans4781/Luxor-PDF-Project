@@ -573,33 +573,33 @@ function WelcomePanel() {
         <rect width="100%" height="100%" fill="url(#welcome-dots)" />
       </svg>
 
-      {/* ── Background: soft brand-colored gradient orbs ── */}
-      <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-indigo-300/30 blur-3xl pointer-events-none" />
-      <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-rose-300/30 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-amber-300/30 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-emerald-300/30 blur-3xl pointer-events-none" />
+      {/* ── Background: soft brand-colored gradient orbs (matches sidebar tools) ── */}
+      <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-[#7254F6]/25 blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-[#E61E3C]/25 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-[#2563EB]/25 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-[#F37311]/25 blur-3xl pointer-events-none" />
 
-      {/* ── Background: floating decorative document cards ── */}
+      {/* ── Background: floating decorative document cards (one per tool color) ── */}
       <div className="absolute top-10 left-8 w-20 h-24 rounded-lg bg-white border border-slate-200 shadow-sm rotate-[-12deg] opacity-70 pointer-events-none">
-        <div className="h-1.5 w-10 bg-violet-200 rounded-full mt-3 ml-3" />
+        <div className="h-1.5 w-10 rounded-full mt-3 ml-3 bg-[#7254F6]/60" />
         <div className="h-1 w-12 bg-slate-200 rounded-full mt-2 ml-3" />
         <div className="h-1 w-8 bg-slate-200 rounded-full mt-1.5 ml-3" />
         <div className="h-1 w-11 bg-slate-200 rounded-full mt-1.5 ml-3" />
       </div>
       <div className="absolute top-16 right-10 w-20 h-24 rounded-lg bg-white border border-slate-200 shadow-sm rotate-[14deg] opacity-70 pointer-events-none">
-        <div className="h-1.5 w-10 bg-rose-200 rounded-full mt-3 ml-3" />
+        <div className="h-1.5 w-10 rounded-full mt-3 ml-3 bg-[#E61E3C]/60" />
         <div className="h-1 w-12 bg-slate-200 rounded-full mt-2 ml-3" />
         <div className="h-1 w-9 bg-slate-200 rounded-full mt-1.5 ml-3" />
         <div className="h-1 w-7 bg-slate-200 rounded-full mt-1.5 ml-3" />
       </div>
       <div className="absolute bottom-12 left-12 w-20 h-24 rounded-lg bg-white border border-slate-200 shadow-sm rotate-[10deg] opacity-70 pointer-events-none">
-        <div className="h-1.5 w-10 bg-amber-200 rounded-full mt-3 ml-3" />
+        <div className="h-1.5 w-10 rounded-full mt-3 ml-3 bg-[#2563EB]/60" />
         <div className="h-1 w-12 bg-slate-200 rounded-full mt-2 ml-3" />
         <div className="h-1 w-10 bg-slate-200 rounded-full mt-1.5 ml-3" />
         <div className="h-1 w-7 bg-slate-200 rounded-full mt-1.5 ml-3" />
       </div>
       <div className="absolute bottom-16 right-12 w-20 h-24 rounded-lg bg-white border border-slate-200 shadow-sm rotate-[-9deg] opacity-70 pointer-events-none">
-        <div className="h-1.5 w-10 bg-emerald-200 rounded-full mt-3 ml-3" />
+        <div className="h-1.5 w-10 rounded-full mt-3 ml-3 bg-[#F37311]/60" />
         <div className="h-1 w-12 bg-slate-200 rounded-full mt-2 ml-3" />
         <div className="h-1 w-8 bg-slate-200 rounded-full mt-1.5 ml-3" />
         <div className="h-1 w-11 bg-slate-200 rounded-full mt-1.5 ml-3" />
@@ -609,20 +609,20 @@ function WelcomePanel() {
       <div className="relative text-center max-w-md">
         {/* Hero composition: stacked document + shield badge */}
         <div className="relative w-32 h-32 mx-auto mb-6">
-          {/* Back document (offset) */}
-          <div className="absolute top-2 left-1 w-20 h-24 rounded-xl bg-gradient-to-br from-rose-50 to-rose-100 border border-rose-200 rotate-[-8deg] shadow-sm" />
-          {/* Middle document */}
-          <div className="absolute top-1 left-5 w-20 h-24 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rotate-[4deg] shadow-sm" />
-          {/* Front document with content lines */}
+          {/* Back document (offset) — Secure red */}
+          <div className="absolute top-2 left-1 w-20 h-24 rounded-xl bg-gradient-to-br from-[#FFF1F3] to-[#FDD9DF] border border-[#E61E3C]/30 rotate-[-8deg] shadow-sm" />
+          {/* Middle document — User-Guide yellow */}
+          <div className="absolute top-1 left-5 w-20 h-24 rounded-xl bg-gradient-to-br from-[#FFF7DC] to-[#FCE7A2] border border-[#F4B711]/40 rotate-[4deg] shadow-sm" />
+          {/* Front document — Edit purple accent */}
           <div className="absolute top-3 left-3 w-20 h-24 rounded-xl bg-white border border-slate-200 shadow-md flex flex-col gap-1.5 p-3">
-            <FileText className="w-4 h-4 text-indigo-500" strokeWidth={2} />
+            <FileText className="w-4 h-4 text-[#7254F6]" strokeWidth={2} />
             <div className="h-1 w-12 bg-slate-200 rounded-full" />
             <div className="h-1 w-10 bg-slate-200 rounded-full" />
             <div className="h-1 w-11 bg-slate-200 rounded-full" />
             <div className="h-1 w-8 bg-slate-200 rounded-full" />
           </div>
-          {/* Shield badge */}
-          <div className="absolute -bottom-1 -right-1 w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1e3a8a] to-[#DC2626] flex items-center justify-center shadow-lg ring-4 ring-white">
+          {/* Shield badge — full brand gradient */}
+          <div className="absolute -bottom-1 -right-1 w-12 h-12 rounded-2xl bg-gradient-to-br from-[#7254F6] via-[#E61E3C] to-[#F37311] flex items-center justify-center shadow-lg ring-4 ring-white">
             <ShieldCheck
               className="w-6 h-6 text-white"
               strokeWidth={2}
@@ -634,7 +634,7 @@ function WelcomePanel() {
           </div>
         </div>
 
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-semibold text-amber-800 mb-3">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FFF7DC] border border-[#F4B711]/50 text-[11px] font-semibold text-[#8A6500] mb-3">
           <Sparkles className="w-3 h-3" />
           Private PDF Suite
         </div>
@@ -647,18 +647,18 @@ function WelcomePanel() {
           leave your device.
         </p>
 
-        {/* Brand-color chip row hinting at the tools */}
+        {/* Brand-color chip row hinting at the tools (exact tool palette) */}
         <div className="mt-5 flex flex-wrap items-center justify-center gap-1.5">
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-violet-50 border border-violet-200 text-[11px] font-medium text-violet-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#7254F6]/10 border border-[#7254F6]/30 text-[11px] font-medium text-[#5B40D6]">
             <Wrench className="w-3 h-3" /> Edit
           </span>
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-50 border border-blue-200 text-[11px] font-medium text-blue-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#2563EB]/10 border border-[#2563EB]/30 text-[11px] font-medium text-[#1D4ED8]">
             <FileOutput className="w-3 h-3" /> Convert
           </span>
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-rose-50 border border-rose-200 text-[11px] font-medium text-rose-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#E61E3C]/10 border border-[#E61E3C]/30 text-[11px] font-medium text-[#C81934]">
             <ShieldCheck className="w-3 h-3" /> Secure
           </span>
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-orange-50 border border-orange-200 text-[11px] font-medium text-orange-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#F37311]/10 border border-[#F37311]/30 text-[11px] font-medium text-[#D4640C]">
             <Minimize2 className="w-3 h-3" /> Compress
           </span>
         </div>
