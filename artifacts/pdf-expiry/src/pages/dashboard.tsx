@@ -561,9 +561,9 @@ export default function Dashboard() {
   return (
     <Layout>
       {/* Two-column workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* ── Left: tool list ── */}
-        <aside className="lg:col-span-4 xl:col-span-3 flex flex-col gap-2.5">
+        <aside className="lg:col-span-5 xl:col-span-4 flex flex-col gap-2.5">
           <div className="mb-1">
             <h2 className="text-[18px] font-extrabold tracking-tight text-slate-900">
               Your{" "}
@@ -653,7 +653,7 @@ export default function Dashboard() {
         </aside>
 
         {/* ── Right: active tool ── */}
-        <section className="lg:col-span-8 xl:col-span-9 min-h-[560px]">
+        <section className="lg:col-span-7 xl:col-span-8 min-h-[560px]">
           <RightPanel active={active} />
         </section>
       </div>
