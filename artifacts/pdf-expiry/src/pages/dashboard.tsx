@@ -96,10 +96,16 @@ function RightPanel({ active }: { active: ToolKey | null }) {
     <div className="bg-white border border-slate-200 rounded-2xl p-6 lg:p-8 overflow-y-auto">
       {active === "pdf-tool" && <PdfToolContent />}
       {active === "convert-from" && (
-        <ConvertToolContent defaultTab="pdf-to-images" />
+        <ConvertToolContent
+          defaultTab="pdf-to-images"
+          tabs={["pdf-to-images", "pdf-to-word", "pdf-to-excel"]}
+        />
       )}
       {active === "convert-to" && (
-        <ConvertToolContent defaultTab="images-to-pdf" />
+        <ConvertToolContent
+          defaultTab="images-to-pdf"
+          tabs={["images-to-pdf"]}
+        />
       )}
       {active === "secure-pdf" && <SecurePdfContent />}
     </div>

@@ -968,7 +968,120 @@ function PdfToExcel() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export function ConvertToolContent({ defaultTab = "images-to-pdf" }: { defaultTab?: string }) {
+export type ConvertTabKey = "images-to-pdf" | "pdf-to-images" | "pdf-to-word" | "pdf-to-excel";
+
+interface TabSpec {
+  key: ConvertTabKey;
+  testId: string;
+  triggerLabel: string;
+  triggerIcon: React.ComponentType<{ className?: string }>;
+  triggerActiveBg: string; // tailwind class used in data-[state=active]:bg-...
+  bannerWrap: string;
+  bannerIconWrap: string;
+  bannerIcon: React.ComponentType<{ className?: string }>;
+  bannerTitle: string;
+  bannerTitleClass: string;
+  bannerDesc: string;
+  bannerDescClass: string;
+  chipIcon: React.ComponentType<{ className?: string }>;
+  chipLabel: string;
+  Component: React.ComponentType;
+}
+
+const TAB_SPECS: Record<ConvertTabKey, TabSpec> = {
+  "images-to-pdf": {
+    key: "images-to-pdf",
+    testId: "tab-images-to-pdf",
+    triggerLabel: "Images → PDF",
+    triggerIcon: ImageIcon,
+    triggerActiveBg: "data-[state=active]:bg-emerald-600",
+    bannerWrap: "bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100",
+    bannerIconWrap: "bg-gradient-to-br from-emerald-500 to-teal-600",
+    bannerIcon: ImageIcon,
+    bannerTitle: "Images to PDF",
+    bannerTitleClass: "text-emerald-900",
+    bannerDesc: "Combine JPG, PNG, WEBP, GIF or BMP images into a single PDF document.",
+    bannerDescClass: "text-emerald-600",
+    chipIcon: ImageIcon,
+    chipLabel: "Images → PDF",
+    Component: ImagesToPdf,
+  },
+  "pdf-to-images": {
+    key: "pdf-to-images",
+    testId: "tab-pdf-to-images",
+    triggerLabel: "PDF → Images",
+    triggerIcon: FileText,
+    triggerActiveBg: "data-[state=active]:bg-orange-500",
+    bannerWrap: "bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100",
+    bannerIconWrap: "bg-gradient-to-br from-orange-500 to-amber-500",
+    bannerIcon: FileText,
+    bannerTitle: "PDF to Images",
+    bannerTitleClass: "text-orange-900",
+    bannerDesc: "Render every page as a high-quality PNG, downloaded as a ZIP file.",
+    bannerDescClass: "text-orange-600",
+    chipIcon: FileText,
+    chipLabel: "PDF → Images",
+    Component: PdfToImages,
+  },
+  "pdf-to-word": {
+    key: "pdf-to-word",
+    testId: "tab-pdf-to-word",
+    triggerLabel: "PDF → Word",
+    triggerIcon: FileOutput,
+    triggerActiveBg: "data-[state=active]:bg-amber-500",
+    bannerWrap: "bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-100",
+    bannerIconWrap: "bg-gradient-to-br from-amber-500 to-yellow-500",
+    bannerIcon: FileOutput,
+    bannerTitle: "PDF to Word",
+    bannerTitleClass: "text-amber-900",
+    bannerDesc: "Convert PDF text and layout into an editable Word document (.docx), downloaded to your device.",
+    bannerDescClass: "text-amber-600",
+    chipIcon: FileOutput,
+    chipLabel: "PDF → Word",
+    Component: PdfToWord,
+  },
+  "pdf-to-excel": {
+    key: "pdf-to-excel",
+    testId: "tab-pdf-to-excel",
+    triggerLabel: "PDF → Excel",
+    triggerIcon: FileSpreadsheet,
+    triggerActiveBg: "data-[state=active]:bg-green-700",
+    bannerWrap: "bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100",
+    bannerIconWrap: "bg-gradient-to-br from-green-600 to-emerald-700",
+    bannerIcon: FileSpreadsheet,
+    bannerTitle: "PDF to Excel",
+    bannerTitleClass: "text-green-900",
+    bannerDesc: "Pull tables and text out of every page into an Excel workbook (.xlsx), one worksheet per page.",
+    bannerDescClass: "text-green-700",
+    chipIcon: FileSpreadsheet,
+    chipLabel: "PDF → Excel",
+    Component: PdfToExcel,
+  },
+};
+
+const ALL_TABS: ConvertTabKey[] = ["images-to-pdf", "pdf-to-images", "pdf-to-word", "pdf-to-excel"];
+
+const TABS_GRID_BY_COUNT: Record<number, string> = {
+  1: "grid-cols-1",
+  2: "grid-cols-2",
+  3: "grid-cols-1 sm:grid-cols-3",
+  4: "grid-cols-2 sm:grid-cols-4",
+};
+
+export function ConvertToolContent({
+  defaultTab,
+  tabs = ALL_TABS,
+}: {
+  defaultTab?: string;
+  tabs?: ConvertTabKey[];
+}) {
+  const visibleTabs = tabs.length > 0 ? tabs : ALL_TABS;
+  const isVisible = (k: string): k is ConvertTabKey =>
+    (visibleTabs as string[]).includes(k);
+  const initialTab =
+    defaultTab && isVisible(defaultTab) ? defaultTab : visibleTabs[0];
+  const gridClass = TABS_GRID_BY_COUNT[visibleTabs.length] ?? "grid-cols-1";
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
 
@@ -984,102 +1097,59 @@ export function ConvertToolContent({ defaultTab = "images-to-pdf" }: { defaultTa
             </div>
           </div>
           <div className="flex gap-2 mt-5 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><ImageIcon className="w-3 h-3" />Images → PDF</span>
-            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FileText className="w-3 h-3" />PDF → Images</span>
-            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FileOutput className="w-3 h-3" />PDF → Word</span>
-            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FileSpreadsheet className="w-3 h-3" />PDF → Excel</span>
+            {visibleTabs.map((k) => {
+              const spec = TAB_SPECS[k];
+              const ChipIcon = spec.chipIcon;
+              return (
+                <span key={k} className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium">
+                  <ChipIcon className="w-3 h-3" />
+                  {spec.chipLabel}
+                </span>
+              );
+            })}
           </div>
         </div>
 
         <Card className="border-emerald-100 shadow-sm">
           <CardContent className="pt-6">
-            <Tabs defaultValue={defaultTab}>
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-6 gap-1 bg-slate-50 border border-slate-200 p-1 rounded-xl h-auto">
-                <TabsTrigger
-                  value="images-to-pdf"
-                  data-testid="tab-images-to-pdf"
-                  className="flex items-center gap-1.5 text-xs rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
-                >
-                  <ImageIcon className="w-3.5 h-3.5" />
-                  Images → PDF
-                </TabsTrigger>
-                <TabsTrigger
-                  value="pdf-to-images"
-                  data-testid="tab-pdf-to-images"
-                  className="flex items-center gap-1.5 text-xs rounded-lg data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  PDF → Images
-                </TabsTrigger>
-                <TabsTrigger
-                  value="pdf-to-word"
-                  data-testid="tab-pdf-to-word"
-                  className="flex items-center gap-1.5 text-xs rounded-lg data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
-                >
-                  <FileOutput className="w-3.5 h-3.5" />
-                  PDF → Word
-                </TabsTrigger>
-                <TabsTrigger
-                  value="pdf-to-excel"
-                  data-testid="tab-pdf-to-excel"
-                  className="flex items-center gap-1.5 text-xs rounded-lg data-[state=active]:bg-green-700 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
-                >
-                  <FileSpreadsheet className="w-3.5 h-3.5" />
-                  PDF → Excel
-                </TabsTrigger>
+            <Tabs defaultValue={initialTab}>
+              <TabsList className={`grid w-full ${gridClass} mb-6 gap-1 bg-slate-50 border border-slate-200 p-1 rounded-xl h-auto`}>
+                {visibleTabs.map((k) => {
+                  const spec = TAB_SPECS[k];
+                  const TIcon = spec.triggerIcon;
+                  return (
+                    <TabsTrigger
+                      key={k}
+                      value={spec.key}
+                      data-testid={spec.testId}
+                      className={`flex items-center gap-1.5 text-xs rounded-lg ${spec.triggerActiveBg} data-[state=active]:text-white data-[state=active]:shadow-sm transition-all`}
+                    >
+                      <TIcon className="w-3.5 h-3.5" />
+                      {spec.triggerLabel}
+                    </TabsTrigger>
+                  );
+                })}
               </TabsList>
 
-              <TabsContent value="images-to-pdf">
-                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-                  <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
-                    <ImageIcon className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="font-semibold text-emerald-900">Images to PDF</h2>
-                    <p className="text-xs text-emerald-600">Combine JPG, PNG, WEBP, GIF or BMP images into a single PDF document.</p>
-                  </div>
-                </div>
-                <ImagesToPdf />
-              </TabsContent>
-
-              <TabsContent value="pdf-to-images">
-                <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-                  <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center shadow-sm shrink-0">
-                    <FileText className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="font-semibold text-orange-900">PDF to Images</h2>
-                    <p className="text-xs text-orange-600">Render every page as a high-quality PNG, downloaded as a ZIP file.</p>
-                  </div>
-                </div>
-                <PdfToImages />
-              </TabsContent>
-
-              <TabsContent value="pdf-to-word">
-                <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-                  <div className="w-9 h-9 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-lg flex items-center justify-center shadow-sm shrink-0">
-                    <FileOutput className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="font-semibold text-amber-900">PDF to Word</h2>
-                    <p className="text-xs text-amber-600">Convert PDF text and layout into an editable Word document (.docx), downloaded to your device.</p>
-                  </div>
-                </div>
-                <PdfToWord />
-              </TabsContent>
-
-              <TabsContent value="pdf-to-excel">
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-                  <div className="w-9 h-9 bg-gradient-to-br from-green-600 to-emerald-700 rounded-lg flex items-center justify-center shadow-sm shrink-0">
-                    <FileSpreadsheet className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="font-semibold text-green-900">PDF to Excel</h2>
-                    <p className="text-xs text-green-700">Pull tables and text out of every page into an Excel workbook (.xlsx), one worksheet per page.</p>
-                  </div>
-                </div>
-                <PdfToExcel />
-              </TabsContent>
+              {visibleTabs.map((k) => {
+                const spec = TAB_SPECS[k];
+                const BIcon = spec.bannerIcon;
+                const Body = spec.Component;
+                return (
+                  <TabsContent key={k} value={spec.key}>
+                    <div className={`${spec.bannerWrap} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
+                      <div className={`w-9 h-9 ${spec.bannerIconWrap} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
+                        <BIcon className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <h2 className={`font-semibold ${spec.bannerTitleClass}`}>{spec.bannerTitle}</h2>
+                        <p className={`text-xs ${spec.bannerDescClass}`}>{spec.bannerDesc}</p>
+                      </div>
+                    </div>
+                    <Body />
+                  </TabsContent>
+                );
+              })}
             </Tabs>
           </CardContent>
         </Card>
@@ -1090,6 +1160,6 @@ export function ConvertToolContent({ defaultTab = "images-to-pdf" }: { defaultTa
 export default function ConvertToolPage() {
   const search = useSearch();
   const params = new URLSearchParams(search);
-  const defaultTab = params.get("tab") || "images-to-pdf";
+  const defaultTab = params.get("tab") || "pdf-to-images";
   return <Layout><ConvertToolContent defaultTab={defaultTab} /></Layout>;
 }

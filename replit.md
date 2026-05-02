@@ -55,7 +55,10 @@ PDF Expiry Tool — a web application for uploading PDFs, setting an exact expir
 - History page with filtering by status; shows expiry date+time and chosen action badge
 - Download button — returns actual PDF if active; after expiry behaves per chosen action
 - Delete PDF (removes from DB and disk)
-- Convert tool (`/convert`) — 4 tabs: Images → PDF, PDF → Images (zip of PNGs), PDF → Word (.docx via `docx`), **PDF → Excel (.xlsx via `xlsx`/SheetJS, one worksheet per page, columns auto-detected from text X positions)**. All conversion runs fully client-side in the browser.
+- Convert tools (run fully client-side in the browser). `ConvertToolContent` accepts a `tabs` prop and a `defaultTab` so each entry point shows only its relevant tabs:
+  - **Convert from PDF** sidebar item → 3 tabs: PDF → Images (zip of PNGs), PDF → Word (.docx via `docx`), PDF → Excel (.xlsx via `xlsx`/SheetJS, one worksheet per page, columns auto-detected from text X positions).
+  - **Convert to PDF** sidebar item → 1 tab: Images → PDF (JPG/PNG/WEBP/GIF/BMP combined into one PDF via `pdf-lib`).
+  - The standalone `/convert` route still shows all 4 tabs (defaults to PDF → Images).
 
 ## How Expiry Works
 
