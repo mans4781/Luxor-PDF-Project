@@ -75,8 +75,8 @@ const TOOLS: ToolItem[] = [
     description: "Images & files to PDF",
     icon: FileInput,
     accent: "#059669",
-    iconBg: "bg-emerald-200 group-hover:bg-emerald-300",
-    iconText: "text-emerald-700",
+    iconBg: "bg-[#32AD71] group-hover:bg-[#2A9460]",
+    iconText: "text-white",
     activeRing: "ring-emerald-500/40 border-emerald-500",
   },
   {
