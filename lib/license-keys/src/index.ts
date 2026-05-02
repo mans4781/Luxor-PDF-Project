@@ -1,4 +1,4 @@
-import { createHash, randomInt } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 /**
  * Public-facing key format: `LUXOR-XXXX-XXXX-XXXX-XXXX`.
@@ -33,26 +33,27 @@ export function isProductPlan(value: unknown): value is ProductPlan {
   );
 }
 
-function randomChar(): string {
-  // crypto.randomInt is uniformly distributed; safe modulo of a power-of-two
-  // alphabet length (32) avoids any bias.
-  return KEY_ALPHABET[randomInt(0, KEY_ALPHABET.length)] ?? "A";
-}
-
-function randomGroup(): string {
-  let out = "";
-  for (let i = 0; i < GROUP_LEN; i++) out += randomChar();
-  return out;
-}
-
 /**
  * Generate a fresh raw product key. The raw value is the only thing the
  * customer ever sees — the server never persists it; only the SHA-256 hash
  * and a short display prefix are stored.
+ *
+ * Entropy source is `crypto.randomBytes` (CSPRNG). Because the alphabet
+ * length is a power of two (32), masking each byte with `0x1f` yields a
+ * uniform index with zero modulo bias.
  */
 export function generateProductKey(): string {
+  const totalChars = NUM_GROUPS * GROUP_LEN;
+  const bytes = randomBytes(totalChars);
   const groups: string[] = [];
-  for (let i = 0; i < NUM_GROUPS; i++) groups.push(randomGroup());
+  for (let g = 0; g < NUM_GROUPS; g++) {
+    let group = "";
+    for (let i = 0; i < GROUP_LEN; i++) {
+      const idx = bytes[g * GROUP_LEN + i]! & 0x1f; // 32-char alphabet
+      group += KEY_ALPHABET[idx]!;
+    }
+    groups.push(group);
+  }
   return `${KEY_PREFIX}-${groups.join("-")}`;
 }
 

@@ -663,12 +663,30 @@ export interface VerifyProductKeyResult {
   reason: ProductKeyVerifyReason | null;
 }
 
-/** Read-only validation. Used by the activation dialog before commit. */
+/**
+ * Read-only validation. Used by the activation dialog before commit.
+ *
+ * Every failure path emits a `verify_failed` audit event tagged with the
+ * caller's userId so admins can investigate suspicious key-spraying.
+ */
 export async function verifyProductKey(
   rawKey: string,
+  userId: string,
   now: Date = new Date(),
 ): Promise<VerifyProductKeyResult> {
+  const { hash, prefix } = (() => {
+    try {
+      return hashProductKey(rawKey);
+    } catch {
+      return { hash: "", prefix: "" };
+    }
+  })();
+
   if (!isWellFormedProductKey(rawKey)) {
+    await logEvent(userId, "verify_failed", "Malformed product key", {
+      reason: "malformed",
+      keyPrefix: prefix || null,
+    });
     return {
       valid: false,
       planName: null,
@@ -677,13 +695,16 @@ export async function verifyProductKey(
       reason: "malformed",
     };
   }
-  const { hash } = hashProductKey(rawKey);
   const [key] = await db
     .select()
     .from(productKeysTable)
     .where(eq(productKeysTable.keyHash, hash))
     .limit(1);
   if (!key) {
+    await logEvent(userId, "verify_failed", "Product key not found", {
+      reason: "not_found",
+      keyPrefix: prefix,
+    });
     return {
       valid: false,
       planName: null,
@@ -694,6 +715,13 @@ export async function verifyProductKey(
   }
   const reason = checkKeyRedeemable(key, now);
   const slots = Math.max(0, key.maxActivations - key.currentActivations);
+  if (reason !== null) {
+    await logEvent(userId, "verify_failed", "Product key not redeemable", {
+      reason,
+      productKeyId: key.id,
+      keyPrefix: key.keyPrefix,
+    });
+  }
   return {
     valid: reason === null,
     planName: isProductPlan(key.planName) ? key.planName : null,
@@ -784,23 +812,110 @@ export async function activateLicense(
     return { ok: false, error: { kind: upfrontReason } };
   }
 
-  // Atomic slot claim.
-  const claimed = await db
-    .update(productKeysTable)
-    .set({
-      currentActivations: sql`${productKeysTable.currentActivations} + 1`,
-      updatedAt: now,
-    })
-    .where(
-      and(
-        eq(productKeysTable.id, key.id),
-        eq(productKeysTable.status, "active"),
-        sql`${productKeysTable.currentActivations} < ${productKeysTable.maxActivations}`,
-      ),
-    )
-    .returning();
+  const subscriptionStart = now;
+  const subscriptionEnd = new Date(
+    now.getTime() + key.durationDays * MS_PER_DAY,
+  );
 
-  if (claimed.length === 0) {
+  // Atomic activation: slot claim → device upsert → license insert →
+  // user_licenses cache update → audit event, all in one DB transaction.
+  // If anything fails we roll back, so the slot counter can never drift
+  // upward without a corresponding license row.
+  type TxResult =
+    | { kind: "ok"; licenseId: number; slotsRemaining: number }
+    | { kind: "max_activations_reached" };
+
+  const txResult: TxResult = await db.transaction(async (tx) => {
+    const claimed = await tx
+      .update(productKeysTable)
+      .set({
+        currentActivations: sql`${productKeysTable.currentActivations} + 1`,
+        updatedAt: now,
+      })
+      .where(
+        and(
+          eq(productKeysTable.id, key.id),
+          eq(productKeysTable.status, "active"),
+          sql`${productKeysTable.currentActivations} < ${productKeysTable.maxActivations}`,
+        ),
+      )
+      .returning();
+
+    if (claimed.length === 0) {
+      return { kind: "max_activations_reached" };
+    }
+
+    const claimedKey = claimed[0]!;
+
+    await tx
+      .insert(devicesTable)
+      .values({
+        deviceId: input.deviceId,
+        userId: input.userId,
+        deviceName: input.deviceName ?? null,
+        os: input.os ?? null,
+        firstActivatedAt: now,
+        lastSeenAt: now,
+      })
+      .onConflictDoUpdate({
+        target: devicesTable.deviceId,
+        set: {
+          userId: input.userId,
+          deviceName: input.deviceName ?? null,
+          os: input.os ?? null,
+          lastSeenAt: now,
+        },
+      });
+
+    const [licenseRow] = await tx
+      .insert(licensesTable)
+      .values({
+        userId: input.userId,
+        productKeyId: key.id,
+        deviceId: input.deviceId,
+        planName: key.planName,
+        subscriptionStartDate: subscriptionStart,
+        subscriptionEndDate: subscriptionEnd,
+        status: "active",
+      })
+      .returning();
+
+    if (!licenseRow) {
+      // Force rollback — slot counter is reverted automatically.
+      throw new Error("Failed to create license row after claiming slot");
+    }
+
+    await tx
+      .update(userLicensesTable)
+      .set({ isPaid: true, planName: key.planName, updatedAt: now })
+      .where(eq(userLicensesTable.userId, input.userId));
+
+    // Audit event lives inside the transaction so the activation and its
+    // audit row commit (or roll back) together.
+    await tx.insert(licenseEventsTable).values({
+      userId: input.userId,
+      eventType: "license_activated",
+      eventMessage: "Product key redeemed",
+      metadata: {
+        licenseId: licenseRow.id,
+        productKeyId: key.id,
+        deviceId: input.deviceId,
+        planName: key.planName,
+        subscriptionEnd: subscriptionEnd.toISOString(),
+      },
+    });
+
+    return {
+      kind: "ok",
+      licenseId: licenseRow.id,
+      slotsRemaining: Math.max(
+        0,
+        claimedKey.maxActivations - claimedKey.currentActivations,
+      ),
+    };
+  });
+
+  if (txResult.kind === "max_activations_reached") {
     await logEvent(
       input.userId,
       "license_activation_failed",
@@ -810,76 +925,14 @@ export async function activateLicense(
     return { ok: false, error: { kind: "max_activations_reached" } };
   }
 
-  const claimedKey = claimed[0]!;
-  const subscriptionStart = now;
-  const subscriptionEnd = new Date(
-    now.getTime() + key.durationDays * MS_PER_DAY,
-  );
-
-  // Upsert the device row.
-  await db
-    .insert(devicesTable)
-    .values({
-      deviceId: input.deviceId,
-      userId: input.userId,
-      deviceName: input.deviceName ?? null,
-      os: input.os ?? null,
-      firstActivatedAt: now,
-      lastSeenAt: now,
-    })
-    .onConflictDoUpdate({
-      target: devicesTable.deviceId,
-      set: {
-        userId: input.userId,
-        deviceName: input.deviceName ?? null,
-        os: input.os ?? null,
-        lastSeenAt: now,
-      },
-    });
-
-  const [licenseRow] = await db
-    .insert(licensesTable)
-    .values({
-      userId: input.userId,
-      productKeyId: key.id,
-      deviceId: input.deviceId,
-      planName: key.planName,
-      subscriptionStartDate: subscriptionStart,
-      subscriptionEndDate: subscriptionEnd,
-      status: "active",
-    })
-    .returning();
-
-  if (!licenseRow) {
-    // Defensive — would only happen if the insert silently failed.
-    throw new Error("Failed to create license row after claiming slot");
-  }
-
-  // Cache paid status on the user_licenses row for legacy consumers.
-  await db
-    .update(userLicensesTable)
-    .set({ isPaid: true, planName: key.planName, updatedAt: now })
-    .where(eq(userLicensesTable.userId, input.userId));
-
-  await logEvent(input.userId, "license_activated", "Product key redeemed", {
-    licenseId: licenseRow.id,
-    productKeyId: key.id,
-    deviceId: input.deviceId,
-    planName: key.planName,
-    subscriptionEnd: subscriptionEnd.toISOString(),
-  });
-
   return {
     ok: true,
     result: {
-      licenseId: licenseRow.id,
+      licenseId: txResult.licenseId,
       planName: key.planName,
       subscriptionStartDate: subscriptionStart,
       subscriptionEndDate: subscriptionEnd,
-      slotsRemaining: Math.max(
-        0,
-        claimedKey.maxActivations - claimedKey.currentActivations,
-      ),
+      slotsRemaining: txResult.slotsRemaining,
     },
   };
 }
@@ -1151,8 +1204,42 @@ export async function adminRevokeProductKey(
     .update(productKeysTable)
     .set({ status: "revoked", revokedAt: now, updatedAt: now })
     .where(eq(productKeysTable.id, id))
-    .returning({ id: productKeysTable.id, status: productKeysTable.status });
-  return row ?? null;
+    .returning({
+      id: productKeysTable.id,
+      status: productKeysTable.status,
+      keyPrefix: productKeysTable.keyPrefix,
+    });
+  if (!row) return null;
+
+  // Audit. Emit one `license_revoked` event per affected user-license, plus
+  // an admin-tagged summary row so the revocation is always auditable even
+  // when no license has ever been redeemed against the key yet.
+  try {
+    const affectedLicenses = await db
+      .select({
+        userId: licensesTable.userId,
+        licenseId: licensesTable.id,
+      })
+      .from(licensesTable)
+      .where(eq(licensesTable.productKeyId, id));
+
+    for (const lic of affectedLicenses) {
+      await logEvent(lic.userId, "license_revoked", "Product key revoked by admin", {
+        productKeyId: id,
+        keyPrefix: row.keyPrefix,
+        licenseId: lic.licenseId,
+      });
+    }
+    await logEvent("admin", "license_revoked", "Product key revoked by admin", {
+      productKeyId: id,
+      keyPrefix: row.keyPrefix,
+      affectedLicenses: affectedLicenses.length,
+    });
+  } catch (err) {
+    logger.warn({ err, productKeyId: id }, "Failed to write revoke audit events");
+  }
+
+  return { id: row.id, status: row.status };
 }
 
 export async function adminExtendProductKey(

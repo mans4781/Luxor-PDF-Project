@@ -507,10 +507,15 @@ paths:
       tags: [license]
       summary: Extend the subscription window of one of the caller's licenses
       description: |
-        Adds `additionalDays` to `subscription_end_date`. The caller must
-        own the license. Writes a `license_renewed` audit event. Will be
-        called by the Stripe webhook in Task #9 once the customer's
-        recurring charge succeeds.
+        Redeems a fresh `productKey` against an existing license owned by
+        the caller, extending `subscription_end_date` by the new key's
+        `duration_days`. If the license is still active the new duration
+        is added on top of the current end date so the customer never
+        loses time they've paid for; if it has lapsed the renewal starts
+        from "now". Consumes one activation slot on the new key. Writes
+        a `license_renewed` audit event. Called by the Stripe payment-
+        success webhook in Task #9 (which mints a per-renewal key under
+        the hood) and by the in-app renewal flow.
       requestBody:
         required: true
         content:

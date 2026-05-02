@@ -120,7 +120,7 @@ router.post(
     }
 
     try {
-      const result = await verifyProductKey(parsed.data.productKey);
+      const result = await verifyProductKey(parsed.data.productKey, userId);
       res.json(result);
     } catch (err) {
       req.log.error({ err, userId }, "license/verify-product-key failed");
