@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useContext, createContext } from "react";
 import { useSearch } from "wouter";
 import { Layout } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -48,7 +48,40 @@ function readAsDataURL(file: File): Promise<string> {
 
 // saveFile is imported from @/lib/save-file — opens a native Save As dialog
 
-type ConvertColorScheme = "emerald" | "orange" | "amber" | "green" | "sky" | "lime";
+type ConvertColorScheme = "emerald" | "orange" | "amber" | "green" | "sky" | "lime" | "blue";
+
+type AccentMode = "blue" | "green" | "default";
+const AccentContext = createContext<AccentMode>("default");
+
+const ACCENT_BTN_CLASS: Record<Exclude<AccentMode, "default">, string> = {
+  blue: "from-[#1754F4] to-[#1447D0] hover:from-[#154EE2] hover:to-[#103EB8]",
+  green: "from-[#32AD71] to-[#2A9460] hover:from-[#2EA068] hover:to-[#258052]",
+};
+
+const ACCENT_INNER_BANNER: Record<Exclude<AccentMode, "default">, {
+  wrap: string; iconWrap: string; titleClass: string; descClass: string; trigger: string;
+}> = {
+  blue: {
+    wrap: "bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100",
+    iconWrap: "bg-gradient-to-br from-[#1754F4] to-[#1447D0]",
+    titleClass: "text-[#1447D0]",
+    descClass: "text-[#1754F4]",
+    trigger: "data-[state=active]:bg-[#1754F4]",
+  },
+  green: {
+    wrap: "bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-100",
+    iconWrap: "bg-gradient-to-br from-[#32AD71] to-[#2A9460]",
+    titleClass: "text-[#2A9460]",
+    descClass: "text-[#32AD71]",
+    trigger: "data-[state=active]:bg-[#32AD71]",
+  },
+};
+
+function useAccentBtn(fallback: string): string {
+  const accent = useContext(AccentContext);
+  if (accent === "default") return fallback;
+  return ACCENT_BTN_CLASS[accent];
+}
 
 const convertDropColors: Record<ConvertColorScheme, {
   drag: string; idle: string; icon: string; iconBg: string; label: string; hint: string;
@@ -89,6 +122,12 @@ const convertDropColors: Record<ConvertColorScheme, {
     icon: "text-white", iconBg: "bg-gradient-to-br from-lime-600 to-green-700",
     label: "text-lime-700", hint: "text-lime-500",
   },
+  blue: {
+    drag: "border-[#1754F4] bg-blue-50 scale-[1.01]",
+    idle: "border-blue-200 hover:border-[#1754F4] hover:bg-blue-50/60 bg-gradient-to-br from-blue-50/50 to-indigo-50/30",
+    icon: "text-white", iconBg: "bg-gradient-to-br from-[#1754F4] to-[#1447D0]",
+    label: "text-[#1447D0]", hint: "text-[#1754F4]",
+  },
 };
 
 function DropZone({
@@ -108,7 +147,10 @@ function DropZone({
 }) {
   const [dragging, setDragging] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
-  const c = convertDropColors[colorScheme];
+  const accent = useContext(AccentContext);
+  const effectiveScheme: ConvertColorScheme =
+    accent === "blue" ? "blue" : accent === "green" ? "green" : colorScheme;
+  const c = convertDropColors[effectiveScheme];
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -171,6 +213,7 @@ function FileRow({ name, size, onRemove }: { name: string; size: number; onRemov
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp"];
 
 function ImagesToPdf() {
+  const accentBtn = useAccentBtn("from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700");
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -253,7 +296,7 @@ function ImagesToPdf() {
       <Button
         onClick={convert}
         disabled={!files.length || loading}
-        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-md"
+        className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md`}
         data-testid="button-images-to-pdf"
       >
         {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Converting...</> : <><Download className="w-4 h-4 mr-2" />Convert to PDF &amp; Download</>}
@@ -265,6 +308,7 @@ function ImagesToPdf() {
 // ─── Word → PDF ───────────────────────────────────────────────────────────────
 
 function WordToPdf() {
+  const accentBtn = useAccentBtn("from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800");
   const [file, setFile] = useState<File | null>(null);
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -415,7 +459,7 @@ function WordToPdf() {
       <Button
         onClick={convert}
         disabled={!file || loading}
-        className="w-full bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white border-0 shadow-md"
+        className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md`}
         data-testid="button-word-to-pdf"
       >
         {loading
@@ -440,6 +484,7 @@ function WordToPdf() {
 // ─── Excel → PDF ──────────────────────────────────────────────────────────────
 
 function ExcelToPdf() {
+  const accentBtn = useAccentBtn("from-lime-600 to-green-700 hover:from-lime-700 hover:to-green-800");
   const [file, setFile] = useState<File | null>(null);
   const [sheetCount, setSheetCount] = useState<number | null>(null);
   const [done, setDone] = useState(false);
@@ -591,7 +636,7 @@ function ExcelToPdf() {
       <Button
         onClick={convert}
         disabled={!file || loading}
-        className="w-full bg-gradient-to-r from-lime-600 to-green-700 hover:from-lime-700 hover:to-green-800 text-white border-0 shadow-md"
+        className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md`}
         data-testid="button-excel-to-pdf"
       >
         {loading
@@ -629,6 +674,7 @@ type ImageFormatValue = typeof IMAGE_FORMATS[number]["value"];
 // ─── PDF → Images ─────────────────────────────────────────────────────────────
 
 function PdfToImages() {
+  const accentBtn = useAccentBtn("from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600");
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [scale, setScale] = useState<number>(2);
@@ -808,7 +854,7 @@ function PdfToImages() {
               </button>
               <button
                 onClick={() => convert(selectedFormat)}
-                className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-sm font-semibold shadow-sm transition-all"
+                className={`flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r ${accentBtn} text-white text-sm font-semibold shadow-sm transition-all`}
               >
                 Convert &amp; Download
               </button>
@@ -820,7 +866,7 @@ function PdfToImages() {
       <Button
         onClick={() => setShowFormatDialog(true)}
         disabled={!file || loading}
-        className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white border-0 shadow-md"
+        className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md`}
         data-testid="button-pdf-to-images"
       >
         {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{progress || "Converting…"}</> : <><Download className="w-4 h-4 mr-2" />Convert to Images &amp; Download ZIP</>}
@@ -832,6 +878,7 @@ function PdfToImages() {
 // ─── PDF → Word ───────────────────────────────────────────────────────────────
 
 function PdfToWord() {
+  const accentBtn = useAccentBtn("from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600");
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [done, setDone] = useState(false);
@@ -1056,7 +1103,7 @@ function PdfToWord() {
       <Button
         onClick={convert}
         disabled={!file || loading}
-        className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white border-0 shadow-md"
+        className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md`}
         data-testid="button-pdf-to-word"
       >
         {loading
@@ -1076,6 +1123,7 @@ function PdfToWord() {
 // ─── PDF → Excel ──────────────────────────────────────────────────────────────
 
 function PdfToExcel() {
+  const accentBtn = useAccentBtn("from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800");
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [done, setDone] = useState(false);
@@ -1307,7 +1355,7 @@ function PdfToExcel() {
       <Button
         onClick={convert}
         disabled={!file || loading}
-        className="w-full bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white border-0 shadow-md"
+        className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md`}
         data-testid="button-pdf-to-excel"
       >
         {loading
@@ -1503,6 +1551,7 @@ export function ConvertToolContent({
   const gridClass = TABS_GRID_BY_COUNT[visibleTabs.length] ?? "grid-cols-1";
 
   return (
+    <AccentContext.Provider value={accent}>
     <div className="max-w-2xl mx-auto space-y-6">
 
         {/* ── Vibrant header banner ── */}
@@ -1537,12 +1586,13 @@ export function ConvertToolContent({
                 {visibleTabs.map((k) => {
                   const spec = TAB_SPECS[k];
                   const TIcon = spec.triggerIcon;
+                  const triggerBg = accent !== "default" ? ACCENT_INNER_BANNER[accent].trigger : spec.triggerActiveBg;
                   return (
                     <TabsTrigger
                       key={k}
                       value={spec.key}
                       data-testid={spec.testId}
-                      className={`flex items-center gap-1.5 text-xs rounded-lg ${spec.triggerActiveBg} data-[state=active]:text-white data-[state=active]:shadow-sm transition-all`}
+                      className={`flex items-center gap-1.5 text-xs rounded-lg ${triggerBg} data-[state=active]:text-white data-[state=active]:shadow-sm transition-all`}
                     >
                       <TIcon className="w-3.5 h-3.5" />
                       {spec.triggerLabel}
@@ -1555,15 +1605,16 @@ export function ConvertToolContent({
                 const spec = TAB_SPECS[k];
                 const BIcon = spec.bannerIcon;
                 const Body = spec.Component;
+                const ab = accent !== "default" ? ACCENT_INNER_BANNER[accent] : null;
                 return (
                   <TabsContent key={k} value={spec.key}>
-                    <div className={`${spec.bannerWrap} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
-                      <div className={`w-9 h-9 ${spec.bannerIconWrap} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
+                    <div className={`${ab?.wrap ?? spec.bannerWrap} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
+                      <div className={`w-9 h-9 ${ab?.iconWrap ?? spec.bannerIconWrap} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
                         <BIcon className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <h2 className={`font-semibold ${spec.bannerTitleClass}`}>{spec.bannerTitle}</h2>
-                        <p className={`text-xs ${spec.bannerDescClass}`}>{spec.bannerDesc}</p>
+                        <h2 className={`font-semibold ${ab?.titleClass ?? spec.bannerTitleClass}`}>{spec.bannerTitle}</h2>
+                        <p className={`text-xs ${ab?.descClass ?? spec.bannerDescClass}`}>{spec.bannerDesc}</p>
                       </div>
                     </div>
                     <Body />
@@ -1574,6 +1625,7 @@ export function ConvertToolContent({
           </CardContent>
         </Card>
       </div>
+    </AccentContext.Provider>
   );
 }
 
