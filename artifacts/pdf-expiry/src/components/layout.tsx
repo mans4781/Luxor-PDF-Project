@@ -2,10 +2,10 @@ import { ReactNode } from "react";
 import { ShieldCheck } from "lucide-react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { UsageBadge, DailyLimitBanner } from "@/license/UsageBadge";
+import { basePath } from "@/lib/base-path";
 
 export function Layout({ children }: { children: ReactNode }) {
   const baseUrl = import.meta.env.BASE_URL;
-  const basePath = baseUrl.replace(/\/$/, "");
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">

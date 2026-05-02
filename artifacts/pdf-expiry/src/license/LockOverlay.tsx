@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useLicense } from "./LicenseProvider";
 
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+import { basePath } from "@/lib/base-path";
 const PRICING_URL = `/pricing`; // lexsecure-landing route, served at the suite root.
 
 function planFromStatusName(name: string | null | undefined): string {

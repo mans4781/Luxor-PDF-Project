@@ -19,10 +19,9 @@ import ActivateKeyPage from "@/pages/activate-key";
 import CheckoutPage from "@/pages/checkout";
 import { LicenseProvider } from "@/license/LicenseProvider";
 import { LockOverlay } from "@/license/LockOverlay";
+import { basePath } from "@/lib/base-path";
 
 const queryClient = new QueryClient();
-
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const clerkPubKey = publishableKeyFromHost(
   typeof window !== "undefined" ? window.location.hostname : "",

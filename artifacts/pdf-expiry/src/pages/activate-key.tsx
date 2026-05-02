@@ -29,7 +29,7 @@ import {
   detectOs,
 } from "@/license/device-id";
 
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+import { basePath } from "@/lib/base-path";
 const PRICING_URL = `/pricing`;
 
 const KEY_REGEX = /^LUXOR(-[A-Z0-9]{4}){4}$/;

@@ -2,7 +2,6 @@ import { ReactNode } from "react";
 import { ShieldCheck, Lock, Globe2, Sparkles } from "lucide-react";
 
 const baseUrl = import.meta.env.BASE_URL;
-const basePath = baseUrl.replace(/\/$/, "");
 
 type AuthShellProps = {
   children: ReactNode;

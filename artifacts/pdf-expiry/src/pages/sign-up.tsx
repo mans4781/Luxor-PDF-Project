@@ -1,7 +1,7 @@
 import { SignUp } from "@clerk/react";
 import { AuthShell } from "@/components/auth-shell";
 
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+import { basePath } from "@/lib/base-path";
 
 export default function SignUpPage() {
   return (

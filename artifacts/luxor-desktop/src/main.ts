@@ -14,9 +14,9 @@ import * as crypto from "node:crypto";
 // REMOTE_URL is the deployed pdf-expiry app. For local dev against the
 // Replit preview, point it at http://localhost:80/pdf-expiry/.
 
-const LOAD_MODE =
+const LOAD_MODE: "remote" | "bundled" =
   (process.env["LUXOR_LOAD_MODE"] as "remote" | "bundled" | undefined) ??
-  "remote";
+  (app.isPackaged ? "bundled" : "remote");
 const REMOTE_URL =
   process.env["LUXOR_REMOTE_URL"] ?? "https://luxorpdf.com/pdf-expiry/";
 const BUNDLED_INDEX =

@@ -4,7 +4,7 @@ import { Loader2, AlertTriangle } from "lucide-react";
 import { useCreateCheckoutSession } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+import { basePath } from "@/lib/base-path";
 
 const VALID_PLANS = ["monthly", "quarterly", "yearly", "lifetime"] as const;
 type Plan = (typeof VALID_PLANS)[number];

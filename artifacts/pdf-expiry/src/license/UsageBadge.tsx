@@ -1,7 +1,7 @@
 import { Sparkles, Zap, Clock, ShieldCheck, AlertTriangle, Infinity as InfinityIcon } from "lucide-react";
 import { useLicense } from "./LicenseProvider";
 
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+import { basePath } from "@/lib/base-path";
 const PRICING_URL = `/pricing`;
 
 export function UsageBadge() {

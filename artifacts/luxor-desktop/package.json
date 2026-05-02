@@ -6,9 +6,10 @@
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc -p tsconfig.json && node ./scripts/copy-assets.mjs",
+    "build:web-bundle": "node ./scripts/build-web-bundle.mjs",
     "start": "pnpm run build && electron .",
-    "dist": "pnpm run build && electron-builder",
-    "dist:win": "pnpm run build && electron-builder --win --x64",
+    "dist": "pnpm run build && pnpm run build:web-bundle && electron-builder",
+    "dist:win": "pnpm run build && pnpm run build:web-bundle && electron-builder --win --x64",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "icon:regen": "node ./scripts/build-icon.mjs"
   },
