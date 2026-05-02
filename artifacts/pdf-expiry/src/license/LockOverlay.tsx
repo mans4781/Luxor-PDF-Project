@@ -90,7 +90,7 @@ export function LockOverlay() {
                 data-testid="lock-action-pricing"
               >
                 <Sparkles className="w-4 h-4" />
-                {isSub ? "Renew subscription" : "See plans & pricing"}
+                {isSub ? "Renew subscription" : "View plans"}
               </a>
               <Link
                 href="/activate-key"
@@ -100,6 +100,14 @@ export function LockOverlay() {
                 <KeyRound className="w-4 h-4" />
                 {isSub ? "Enter new key" : "I already have a key"}
               </Link>
+              <a
+                href="mailto:support@luxorpdf.com"
+                className="w-full inline-flex items-center justify-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-md px-4 py-2.5 transition-all"
+                data-testid="lock-action-support"
+              >
+                <LifeBuoy className="w-4 h-4" />
+                Contact support
+              </a>
             </>
           )}
 

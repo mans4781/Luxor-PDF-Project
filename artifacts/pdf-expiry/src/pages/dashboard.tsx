@@ -700,7 +700,7 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="mb-4">
+      <div className="mb-5">
         <UsagePanel />
       </div>
       {/* Two-column workspace */}

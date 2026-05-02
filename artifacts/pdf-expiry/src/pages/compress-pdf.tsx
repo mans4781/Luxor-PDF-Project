@@ -262,6 +262,18 @@ type CompressResult = {
   originalSize: number;
 };
 
+function AlwaysFreeBadge() {
+  return (
+    <div
+      className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold px-3 py-1.5"
+      data-testid="compress-always-free"
+    >
+      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+      Always free · doesn't count against your daily limit
+    </div>
+  );
+}
+
 export function CompressPdfContent() {
   return (
     <AccentProvider value="orange">
@@ -332,6 +344,7 @@ function CompressPdfContentInner() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      <AlwaysFreeBadge />
       <div className="bg-gradient-to-br from-[#F37311] via-[#E26A0F] to-[#D4640C] rounded-2xl p-6 text-white shadow-lg">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm">

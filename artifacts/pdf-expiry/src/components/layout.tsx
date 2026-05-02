@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { ShieldCheck } from "lucide-react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
-import { UsageBadge } from "@/license/UsageBadge";
+import { UsageBadge, DailyLimitBanner } from "@/license/UsageBadge";
 
 export function Layout({ children }: { children: ReactNode }) {
   const baseUrl = import.meta.env.BASE_URL;
@@ -51,6 +51,7 @@ export function Layout({ children }: { children: ReactNode }) {
       </header>
 
       <main className="flex-1 container mx-auto px-6 py-8">
+        <DailyLimitBanner />
         {children}
       </main>
 
