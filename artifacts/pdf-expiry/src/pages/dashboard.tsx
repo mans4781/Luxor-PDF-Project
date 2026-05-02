@@ -96,8 +96,8 @@ const TOOLS: ToolItem[] = [
     description: "Shrink to 15, 10, 5 or 1 MB",
     icon: Minimize2,
     accent: "#0F766E",
-    iconBg: "bg-teal-200 group-hover:bg-teal-300",
-    iconText: "text-teal-700",
+    iconBg: "bg-[#F37311] group-hover:bg-[#D4640C]",
+    iconText: "text-white",
     activeRing: "ring-teal-500/40 border-teal-500",
   },
   {
