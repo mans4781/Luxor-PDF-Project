@@ -20,6 +20,7 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { scheduleAutoRefresh } from "@/lib/auto-refresh";
 import { saveToLocalHistory, loadLocalHistory } from "./history";
 import type { LocalPdfEntry } from "@/components/pdf-list";
 import { formatBytes } from "@/lib/utils";
@@ -222,6 +223,7 @@ function ExpiryTab() {
         setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null);
         saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
         queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
+        scheduleAutoRefresh();
       },
       onError: () => toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" }),
     });
@@ -326,6 +328,7 @@ function PasswordTab() {
         setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null); setPassword("");
         saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
         queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
+        scheduleAutoRefresh();
       },
       onError: () => toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" }),
     });
@@ -450,6 +453,7 @@ function PrintControlTab() {
         setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null);
         saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
         queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
+        scheduleAutoRefresh();
       },
       onError: () => toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" }),
       onSettled: () => setIsProcessing(false),
@@ -630,6 +634,7 @@ function RevokeExpiryTab() {
           });
           queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
           toast({ title: "Access restored", description: "The PDF is available again." });
+          scheduleAutoRefresh();
         },
         onError: (err: unknown) => {
           const msg = err instanceof Error ? err.message : "Verification failed.";

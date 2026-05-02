@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDFDocument } from "pdf-lib";
 import { formatBytes } from "@/lib/utils";
 import { saveFile } from "@/lib/save-file";
+import { scheduleAutoRefresh } from "@/lib/auto-refresh";
 import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Wrench, Trash2, FilePlus } from "lucide-react";
 import { AccentProvider, useAccentBtn, useAccentInnerBanner, useAccentDrop } from "@/lib/accent";
 
@@ -183,6 +184,7 @@ function MergeTab() {
       }
       const bytes = await merged.save();
       await saveFile(new Blob([bytes], { type: "application/pdf" }), "merged.pdf");
+      scheduleAutoRefresh();
     } catch (e) {
       setError("Failed to merge PDFs. Make sure all files are valid, non-encrypted PDFs.");
     } finally {
@@ -286,6 +288,7 @@ function SplitTab() {
         await saveFile(blob, filename);
       }
       setProgress("");
+      scheduleAutoRefresh();
     } catch {
       setError("Failed to split PDF. Make sure it is a valid, non-encrypted file.");
       setProgress("");
@@ -450,6 +453,7 @@ function ExtractTab() {
         new Blob([bytes], { type: "application/pdf" }),
         `${baseName}_extracted.pdf`
       );
+      scheduleAutoRefresh();
     } catch {
       setError("Failed to extract pages. Make sure the file is a valid, non-encrypted PDF.");
     } finally {
@@ -667,6 +671,7 @@ function DeleteTab() {
         new Blob([bytes], { type: "application/pdf" }),
         `${baseName}_trimmed.pdf`
       );
+      scheduleAutoRefresh();
     } catch {
       setError("Failed to delete pages. Make sure the file is a valid, non-encrypted PDF.");
     } finally {
@@ -909,6 +914,7 @@ function AddTab() {
         new Blob([bytes], { type: "application/pdf" }),
         `${baseName}_with_added_pages.pdf`
       );
+      scheduleAutoRefresh();
     } catch {
       setError("Failed to add pages. Make sure both files are valid, non-encrypted PDFs.");
     } finally {

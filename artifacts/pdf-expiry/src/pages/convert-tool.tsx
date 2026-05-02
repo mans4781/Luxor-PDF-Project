@@ -17,6 +17,7 @@ import JSZip from "jszip";
 import * as XLSX from "xlsx";
 import { formatBytes } from "@/lib/utils";
 import { saveFile } from "@/lib/save-file";
+import { scheduleAutoRefresh } from "@/lib/auto-refresh";
 import {
   Upload, X, Download, Loader2, Image as ImageIcon,
   FileText, GripVertical, ArrowLeftRight, FileOutput, ChevronDown,
@@ -223,6 +224,7 @@ function ImagesToPdf() {
       }
       const bytes = await pdf.save();
       await saveFile(new Blob([bytes], { type: "application/pdf" }), "converted.pdf");
+      scheduleAutoRefresh();
     } catch {
       setError("Conversion failed. Make sure all images are valid and not corrupted.");
     } finally {
@@ -376,6 +378,7 @@ function WordToPdf() {
       await saveFile(blob, `${baseName}.pdf`);
       setDone(true);
       setProgress("");
+      scheduleAutoRefresh();
     } catch (e) {
       console.error(e);
       setError("Conversion failed. The Word document may be corrupted or use unsupported features.");
@@ -551,6 +554,7 @@ function ExcelToPdf() {
       await saveFile(blob, `${baseName}.pdf`);
       setDone(true);
       setProgress("");
+      scheduleAutoRefresh();
     } catch (e) {
       console.error(e);
       setError("Conversion failed. The spreadsheet may be password-protected or corrupted.");
@@ -715,6 +719,7 @@ function PdfToImages() {
       const zipBlob = await zip.generateAsync({ type: "blob" });
       await saveFile(zipBlob, `${baseName}_images.zip`);
       setProgress("");
+      scheduleAutoRefresh();
     } catch {
       setError("Conversion failed. Make sure the PDF is valid and non-encrypted.");
       setProgress("");
@@ -1030,6 +1035,7 @@ function PdfToWord() {
       saveFile(blob, `${baseName}.docx`);
       setDone(true);
       setProgress("");
+      scheduleAutoRefresh();
     } catch (e) {
       console.error(e);
       setError("Conversion failed. The PDF may not contain selectable text.");
@@ -1271,6 +1277,7 @@ function PdfToExcel() {
       await saveFile(blob, `${baseName}.xlsx`);
       setDone(true);
       setProgress("");
+      scheduleAutoRefresh();
     } catch (e) {
       console.error(e);
       setError("Conversion failed. The PDF may not contain selectable text.");

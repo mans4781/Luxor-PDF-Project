@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { formatBytes } from "@/lib/utils";
 import { saveFile } from "@/lib/save-file";
+import { scheduleAutoRefresh } from "@/lib/auto-refresh";
 import { AccentProvider, useAccentBtn, useAccentDrop } from "@/lib/accent";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -322,6 +323,7 @@ function CompressPdfContentInner() {
     const buffer = new Uint8Array(result.bytes).buffer;
     const blob = new Blob([buffer], { type: "application/pdf" });
     await saveFile(blob, `${baseName}-compressed.pdf`);
+    scheduleAutoRefresh();
   }
 
   const availableTargets = file
