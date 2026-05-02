@@ -573,7 +573,7 @@ export default function Dashboard() {
               </span>{" "}
               Toolkit
             </h2>
-            <p className="mt-1 text-[12px] text-slate-500 leading-relaxed">
+            <p className="mt-1 text-[13.2px] text-slate-500 leading-relaxed">
               Edit, convert and secure documents — everything runs locally in
               your browser for complete privacy.
             </p>
