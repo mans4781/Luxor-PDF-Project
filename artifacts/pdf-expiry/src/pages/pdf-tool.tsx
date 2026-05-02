@@ -1208,7 +1208,7 @@ export function PdfToolContent() {
                   className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
                 >
                   <FilePlus className="w-4 h-4" />
-                  Add
+                  Insert
                 </TabsTrigger>
               </TabsList>
 
