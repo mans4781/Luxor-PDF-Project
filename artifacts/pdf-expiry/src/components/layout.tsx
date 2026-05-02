@@ -49,7 +49,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
       <footer className="border-t border-slate-200 bg-white">
         <div className="container mx-auto px-6 py-4 text-xs text-slate-500 flex items-center justify-between">
-          <p>© {new Date().getFullYear()} Luxor PDF Secure. Part of the Luxor Suite.</p>
+          <p>© {new Date().getFullYear()} Luxor PDF Secure. Part of the Luxor PDF Suite.</p>
           <p className="font-mono text-[11px] text-slate-400">v1.0</p>
         </div>
       </footer>

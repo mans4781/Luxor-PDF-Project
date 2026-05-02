@@ -154,7 +154,7 @@ export function AuthShell({ children, variant }: AuthShellProps) {
         {/* Footer note */}
         <p className="relative mt-auto pt-10 text-[11px] text-indigo-300/70">
           © {new Date().getFullYear()} Luxor PDF Secure · Part of the Luxor
-          Suite
+          PDF Suite
         </p>
       </aside>
 
