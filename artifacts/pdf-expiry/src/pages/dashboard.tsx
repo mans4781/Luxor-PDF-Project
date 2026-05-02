@@ -106,8 +106,7 @@ const TOOLS: ToolItem[] = [
     description: "How to use this app",
     icon: HelpCircle,
     accent: "#B45309",
-    iconBg:
-      "bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 border border-amber-500 shadow-inner group-hover:from-amber-500 group-hover:to-amber-700",
+    iconBg: "bg-[#F4B711] group-hover:bg-[#D49E0E]",
     iconText: "text-amber-900",
     activeRing: "ring-amber-500/40 border-amber-500",
   },
