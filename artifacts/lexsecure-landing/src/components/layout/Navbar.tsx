@@ -17,17 +17,7 @@ const productItems = [
     badgeBg: "bg-[#312E81]/10 text-[#312E81]",
   },
   {
-    label: "LuxorSign",
-    href: "/products/esign",
-    icon: FileSignature,
-    desc: "Legally-binding eSignatures",
-    badge: "Add-on",
-    iconBg: "bg-[#2563EB]/8 border-[#2563EB]/15 group-hover:bg-[#2563EB]/15",
-    iconColor: "text-[#2563EB]",
-    badgeBg: "bg-[#2563EB]/10 text-[#2563EB]",
-  },
-  {
-    label: "PDF Expiry",
+    label: "Luxor PDF Secure",
     href: "/products/pdf-security",
     icon: Lock,
     desc: "Self-destructing documents",
@@ -35,6 +25,16 @@ const productItems = [
     iconBg: "bg-[#FB7185]/10 border-[#FB7185]/20 group-hover:bg-[#FB7185]/20",
     iconColor: "text-[#E11D48]",
     badgeBg: "bg-[#FB7185]/15 text-[#9F1239]",
+  },
+  {
+    label: "Luxor PDF eSign",
+    href: "/products/esign",
+    icon: FileSignature,
+    desc: "Legally-binding eSignatures",
+    badge: "Add-on",
+    iconBg: "bg-[#2563EB]/8 border-[#2563EB]/15 group-hover:bg-[#2563EB]/15",
+    iconColor: "text-[#2563EB]",
+    badgeBg: "bg-[#2563EB]/10 text-[#2563EB]",
   },
 ];
 
