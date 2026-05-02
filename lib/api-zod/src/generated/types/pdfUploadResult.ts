@@ -5,6 +5,7 @@
  * PDF Expiry Tool API
  * OpenAPI spec version: 0.1.0
  */
+import type { PdfUploadResultExpiryAction } from "./pdfUploadResultExpiryAction";
 
 export interface PdfUploadResult {
   id: number;
@@ -12,7 +13,9 @@ export interface PdfUploadResult {
   shareToken: string;
   originalName: string;
   fileSize: number;
-  expiryDate: Date;
+  /** ISO 8601 datetime after which the PDF expires */
+  expiryDate: string;
+  expiryAction: PdfUploadResultExpiryAction;
   isExpired: boolean;
   createdAt: Date;
   updatedAt: Date;

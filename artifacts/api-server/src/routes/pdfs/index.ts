@@ -45,9 +45,14 @@ if (!fs.existsSync(UPLOADS_DIR)) {
  */
 export async function runPdfMigrations(): Promise<void> {
   try {
-    // Ensure column exists (no-op if already present)
+    // Ensure share_token column exists (no-op if already present)
     await db.execute(
       sql`ALTER TABLE pdfs ADD COLUMN IF NOT EXISTS share_token TEXT`,
+    );
+
+    // Ensure expiry_action column exists with sensible default ('revoke' = legacy behavior)
+    await db.execute(
+      sql`ALTER TABLE pdfs ADD COLUMN IF NOT EXISTS expiry_action TEXT NOT NULL DEFAULT 'revoke'`,
     );
 
     // Backfill rows missing a token
@@ -161,10 +166,20 @@ async function checkStorageQuota(_req: Request, res: Response, next: NextFunctio
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+/**
+ * Parse an expiryDate string. Supports both new ISO 8601 datetime values
+ * (e.g. "2025-12-31T18:30:00.000Z") and legacy date-only values
+ * (e.g. "2025-12-31") for backwards compatibility.
+ */
+function parseExpiryDate(expiryDate: string): Date {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(expiryDate)) {
+    return new Date(expiryDate + "T23:59:59.999Z");
+  }
+  return new Date(expiryDate);
+}
+
 function isExpired(expiryDate: string): boolean {
-  const expiry = new Date(expiryDate + "T23:59:59.999Z");
-  const now = new Date();
-  return now > expiry;
+  return new Date() > parseExpiryDate(expiryDate);
 }
 
 function formatPdfRecord(record: typeof pdfsTable.$inferSelect, includeToken = false) {
@@ -174,6 +189,7 @@ function formatPdfRecord(record: typeof pdfsTable.$inferSelect, includeToken = f
     originalName: record.originalName,
     fileSize: record.fileSize,
     expiryDate: record.expiryDate,
+    expiryAction: record.expiryAction,
     isExpired: isExpired(record.expiryDate),
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
@@ -205,8 +221,7 @@ router.get("/pdfs/stats", async (_req, res): Promise<void> => {
 
   for (const r of records) {
     totalSize += r.fileSize;
-    const expiry = new Date(r.expiryDate);
-    if (expiry < now) {
+    if (isExpired(r.expiryDate)) {
       expired++;
     } else {
       active++;
@@ -237,7 +252,10 @@ router.post(
       return;
     }
 
-    const { expiryDate } = req.body as { expiryDate?: string };
+    const { expiryDate, expiryAction } = req.body as {
+      expiryDate?: string;
+      expiryAction?: string;
+    };
 
     if (!expiryDate) {
       fs.unlinkSync(req.file.path);
@@ -245,12 +263,15 @@ router.post(
       return;
     }
 
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(expiryDate)) {
+    // Accept ISO 8601 datetime (preferred) or legacy YYYY-MM-DD for backwards compatibility.
+    const parsedExpiry = new Date(expiryDate);
+    if (Number.isNaN(parsedExpiry.getTime())) {
       fs.unlinkSync(req.file.path);
-      res.status(400).json({ error: "expiryDate must be in YYYY-MM-DD format" });
+      res.status(400).json({ error: "expiryDate must be a valid ISO 8601 datetime" });
       return;
     }
+
+    const action = expiryAction === "corrupt" ? "corrupt" : "revoke";
 
     const shareToken = randomUUID();
 
@@ -262,6 +283,7 @@ router.post(
         storedPath: req.file.path,
         fileSize: req.file.size,
         expiryDate,
+        expiryAction: action,
       })
       .returning();
 
@@ -320,14 +342,44 @@ router.get("/pdfs/:id/download", async (req, res): Promise<void> => {
   if (!requireShareToken(shareToken, record, res)) return;
 
   if (isExpired(record.expiryDate)) {
-    if (fs.existsSync(record.storedPath)) {
+    if (record.expiryAction === "corrupt") {
+      // Once-only: replace the stored file with random garbage so the PDF
+      // becomes unreadable but the download endpoint still returns a "file".
       try {
-        fs.unlinkSync(record.storedPath);
-        req.log.info({ id: record.id }, "Expired PDF deleted from disk");
+        if (fs.existsSync(record.storedPath)) {
+          const stats = fs.statSync(record.storedPath);
+          // Cap garbage size at 64 KB to avoid wasting disk on huge originals.
+          const garbageSize = Math.min(stats.size, 64 * 1024);
+          const { randomBytes } = await import("crypto");
+          fs.writeFileSync(record.storedPath, randomBytes(garbageSize));
+          req.log.info({ id: record.id }, "Expired PDF replaced with garbage bytes (corrupt mode)");
+        }
       } catch (err) {
-        req.log.error({ id: record.id, err }, "Failed to delete expired PDF from disk");
+        req.log.error({ id: record.id, err }, "Failed to corrupt expired PDF on disk");
+      }
+
+      if (fs.existsSync(record.storedPath)) {
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="${securedFilename(record.originalName)}"`,
+        );
+        res.sendFile(record.storedPath);
+        return;
+      }
+      // Fallthrough to 410 if the file vanished (e.g. previously deleted)
+    } else {
+      // Default = revoke: delete the file and return 410 Gone.
+      if (fs.existsSync(record.storedPath)) {
+        try {
+          fs.unlinkSync(record.storedPath);
+          req.log.info({ id: record.id }, "Expired PDF deleted from disk (revoke mode)");
+        } catch (err) {
+          req.log.error({ id: record.id, err }, "Failed to delete expired PDF from disk");
+        }
       }
     }
+
     res.status(410).json({
       error: "This PDF has expired and is no longer available.",
       expiredAt: record.expiryDate,

@@ -9,15 +9,33 @@ export interface HealthStatus {
   status: string;
 }
 
+export type PdfRecordExpiryAction =
+  (typeof PdfRecordExpiryAction)[keyof typeof PdfRecordExpiryAction];
+
+export const PdfRecordExpiryAction = {
+  corrupt: "corrupt",
+  revoke: "revoke",
+} as const;
+
 export interface PdfRecord {
   id: number;
   originalName: string;
   fileSize: number;
+  /** ISO 8601 datetime (or legacy YYYY-MM-DD) after which the PDF expires */
   expiryDate: string;
+  expiryAction: PdfRecordExpiryAction;
   isExpired: boolean;
   createdAt: string;
   updatedAt: string;
 }
+
+export type PdfUploadResultExpiryAction =
+  (typeof PdfUploadResultExpiryAction)[keyof typeof PdfUploadResultExpiryAction];
+
+export const PdfUploadResultExpiryAction = {
+  corrupt: "corrupt",
+  revoke: "revoke",
+} as const;
 
 export interface PdfUploadResult {
   id: number;
@@ -25,7 +43,9 @@ export interface PdfUploadResult {
   shareToken: string;
   originalName: string;
   fileSize: number;
+  /** ISO 8601 datetime after which the PDF expires */
   expiryDate: string;
+  expiryAction: PdfUploadResultExpiryAction;
   isExpired: boolean;
   createdAt: string;
   updatedAt: string;
@@ -54,10 +74,29 @@ export interface ErrorResponse {
   error: string;
 }
 
+/**
+ * What happens once the PDF expires.
+- `corrupt`: the file is replaced with garbage bytes so PDF readers cannot open it.
+- `revoke`: the file is deleted and the download endpoint returns 410 Gone.
+
+ */
+export type UploadPdfBodyExpiryAction =
+  (typeof UploadPdfBodyExpiryAction)[keyof typeof UploadPdfBodyExpiryAction];
+
+export const UploadPdfBodyExpiryAction = {
+  corrupt: "corrupt",
+  revoke: "revoke",
+} as const;
+
 export type UploadPdfBody = {
   file: Blob;
-  /** ISO date string (YYYY-MM-DD) after which the PDF becomes inaccessible */
+  /** ISO 8601 datetime after which the PDF expires (e.g. 2025-12-31T18:30:00.000Z) */
   expiryDate: string;
+  /** What happens once the PDF expires.
+- `corrupt`: the file is replaced with garbage bytes so PDF readers cannot open it.
+- `revoke`: the file is deleted and the download endpoint returns 410 Gone.
+ */
+  expiryAction: UploadPdfBodyExpiryAction;
 };
 
 export type GetPdfParams = {

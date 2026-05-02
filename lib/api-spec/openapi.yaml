@@ -43,11 +43,20 @@ paths:
                   format: binary
                 expiryDate:
                   type: string
-                  format: date
-                  description: ISO date string (YYYY-MM-DD) after which the PDF becomes inaccessible
+                  format: date-time
+                  description: ISO 8601 datetime after which the PDF expires (e.g. 2025-12-31T18:30:00.000Z)
+                expiryAction:
+                  type: string
+                  enum: [corrupt, revoke]
+                  description: |
+                    What happens once the PDF expires.
+                    - `corrupt`: the file is replaced with garbage bytes so PDF readers cannot open it.
+                    - `revoke`: the file is deleted and the download endpoint returns 410 Gone.
+                  default: revoke
               required:
                 - file
                 - expiryDate
+                - expiryAction
       responses:
         "201":
           description: PDF uploaded successfully
@@ -340,7 +349,10 @@ components:
           type: integer
         expiryDate:
           type: string
-          format: date
+          description: ISO 8601 datetime (or legacy YYYY-MM-DD) after which the PDF expires
+        expiryAction:
+          type: string
+          enum: [corrupt, revoke]
         isExpired:
           type: boolean
         createdAt:
@@ -354,6 +366,7 @@ components:
         - originalName
         - fileSize
         - expiryDate
+        - expiryAction
         - isExpired
         - createdAt
         - updatedAt
@@ -372,7 +385,10 @@ components:
           type: integer
         expiryDate:
           type: string
-          format: date
+          description: ISO 8601 datetime after which the PDF expires
+        expiryAction:
+          type: string
+          enum: [corrupt, revoke]
         isExpired:
           type: boolean
         createdAt:
@@ -387,6 +403,7 @@ components:
         - originalName
         - fileSize
         - expiryDate
+        - expiryAction
         - isExpired
         - createdAt
         - updatedAt

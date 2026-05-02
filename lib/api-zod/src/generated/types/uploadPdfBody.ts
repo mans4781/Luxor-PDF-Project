@@ -5,9 +5,15 @@
  * PDF Expiry Tool API
  * OpenAPI spec version: 0.1.0
  */
+import type { UploadPdfBodyExpiryAction } from "./uploadPdfBodyExpiryAction";
 
 export type UploadPdfBody = {
   file: Blob;
-  /** ISO date string (YYYY-MM-DD) after which the PDF becomes inaccessible */
+  /** ISO 8601 datetime after which the PDF expires (e.g. 2025-12-31T18:30:00.000Z) */
   expiryDate: Date;
+  /** What happens once the PDF expires.
+- `corrupt`: the file is replaced with garbage bytes so PDF readers cannot open it.
+- `revoke`: the file is deleted and the download endpoint returns 410 Gone.
+ */
+  expiryAction: UploadPdfBodyExpiryAction;
 };

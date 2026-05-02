@@ -9,6 +9,7 @@ export const pdfsTable = pgTable("pdfs", {
   storedPath: text("stored_path").notNull(),
   fileSize: integer("file_size").notNull(),
   expiryDate: text("expiry_date").notNull(),
+  expiryAction: text("expiry_action").notNull().default("revoke"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

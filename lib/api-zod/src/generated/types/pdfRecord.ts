@@ -5,12 +5,15 @@
  * PDF Expiry Tool API
  * OpenAPI spec version: 0.1.0
  */
+import type { PdfRecordExpiryAction } from "./pdfRecordExpiryAction";
 
 export interface PdfRecord {
   id: number;
   originalName: string;
   fileSize: number;
-  expiryDate: Date;
+  /** ISO 8601 datetime (or legacy YYYY-MM-DD) after which the PDF expires */
+  expiryDate: string;
+  expiryAction: PdfRecordExpiryAction;
   isExpired: boolean;
   createdAt: Date;
   updatedAt: Date;

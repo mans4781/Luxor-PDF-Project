@@ -18,12 +18,20 @@ export const HealthCheckResponse = zod.object({
 /**
  * @summary Upload a PDF and set an expiry date
  */
+export const uploadPdfBodyExpiryActionDefault = `revoke`;
+
 export const UploadPdfBody = zod.object({
   file: zod.instanceof(File),
   expiryDate: zod.coerce
     .date()
     .describe(
-      "ISO date string (YYYY-MM-DD) after which the PDF becomes inaccessible",
+      "ISO 8601 datetime after which the PDF expires (e.g. 2025-12-31T18:30:00.000Z)",
+    ),
+  expiryAction: zod
+    .enum(["corrupt", "revoke"])
+    .default(uploadPdfBodyExpiryActionDefault)
+    .describe(
+      "What happens once the PDF expires.\n- `corrupt`: the file is replaced with garbage bytes so PDF readers cannot open it.\n- `revoke`: the file is deleted and the download endpoint returns 410 Gone.\n",
     ),
 });
 
@@ -44,7 +52,12 @@ export const GetPdfResponse = zod.object({
   id: zod.number(),
   originalName: zod.string(),
   fileSize: zod.number(),
-  expiryDate: zod.coerce.date(),
+  expiryDate: zod
+    .string()
+    .describe(
+      "ISO 8601 datetime (or legacy YYYY-MM-DD) after which the PDF expires",
+    ),
+  expiryAction: zod.enum(["corrupt", "revoke"]),
   isExpired: zod.boolean(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
@@ -112,7 +125,12 @@ export const VerifyRevokeOtpResponse = zod.object({
   id: zod.number(),
   originalName: zod.string(),
   fileSize: zod.number(),
-  expiryDate: zod.coerce.date(),
+  expiryDate: zod
+    .string()
+    .describe(
+      "ISO 8601 datetime (or legacy YYYY-MM-DD) after which the PDF expires",
+    ),
+  expiryAction: zod.enum(["corrupt", "revoke"]),
   isExpired: zod.boolean(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),

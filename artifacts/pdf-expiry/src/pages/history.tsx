@@ -6,7 +6,10 @@ import { PdfList, type LocalPdfEntry } from "@/components/pdf-list";
 const STORAGE_KEY = "luxor_pdf_history";
 
 function isExpired(expiryDate: string): boolean {
-  const expiry = new Date(expiryDate + "T23:59:59.999Z");
+  // Support both new ISO 8601 datetime values and legacy YYYY-MM-DD strings.
+  const expiry = /^\d{4}-\d{2}-\d{2}$/.test(expiryDate)
+    ? new Date(expiryDate + "T23:59:59.999Z")
+    : new Date(expiryDate);
   return new Date() > expiry;
 }
 

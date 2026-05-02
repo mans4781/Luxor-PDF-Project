@@ -8,10 +8,21 @@ import { Input } from "@/components/ui/input";
 import {
   UploadCloud, ShieldCheck, X, Lock, Calendar,
   Eye, EyeOff, Printer, ChevronDown, ChevronUp, Copy,
+  FileX2, Ban,
 } from "lucide-react";
 import { formatBytes } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+type ExpiryAction = "corrupt" | "revoke";
 
 function FeatureCard({
   icon: Icon,
@@ -84,7 +95,11 @@ export function PdfUploadForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [expiryEnabled, setExpiryEnabled] = useState(true);
-  const [expiryDate, setExpiryDate] = useState<string>(format(addDays(new Date(), 7), "yyyy-MM-dd"));
+  // Default: 7 days from now, rounded to the next hour, as a `datetime-local` value
+  // (format: YYYY-MM-DDTHH:mm — no timezone).
+  const [expiryDateTime, setExpiryDateTime] = useState<string>(
+    format(addDays(new Date(), 7), "yyyy-MM-dd'T'HH:mm"),
+  );
 
   const [passwordEnabled, setPasswordEnabled] = useState(false);
   const [password, setPassword] = useState("");
@@ -93,6 +108,9 @@ export function PdfUploadForm() {
   const [printEnabled, setPrintEnabled] = useState(false);
   const [allowPrint, setAllowPrint] = useState(false);
   const [allowCopy, setAllowCopy] = useState(false);
+
+  // Popup state for choosing what happens after expiry
+  const [actionDialogOpen, setActionDialogOpen] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -118,21 +136,69 @@ export function PdfUploadForm() {
     if (e.target.files?.length) setFile(e.target.files[0]);
   };
 
-  const handleUpload = () => {
+  // Step 1: validate inputs, then open the corrupt-vs-revoke popup.
+  const handleSecureClick = () => {
     if (!file) return;
     if (passwordEnabled && !password) {
       toast({ title: "Password required", description: "Please enter a password or disable password protection.", variant: "destructive" });
       return;
     }
+    if (expiryEnabled) {
+      const parsed = new Date(expiryDateTime);
+      if (Number.isNaN(parsed.getTime())) {
+        toast({ title: "Invalid expiry", description: "Please pick a valid expiry date and time.", variant: "destructive" });
+        return;
+      }
+      if (parsed.getTime() <= Date.now()) {
+        toast({ title: "Expiry in the past", description: "Pick a date and time in the future.", variant: "destructive" });
+        return;
+      }
+      setActionDialogOpen(true);
+      return;
+    }
+    // No expiry chosen → still need to send the form. Default action is irrelevant
+    // because the file never expires, but the API requires a value.
+    submitUpload("revoke");
+  };
+
+  // Step 2: actually upload, with the chosen post-expiry action.
+  const submitUpload = (action: ExpiryAction) => {
+    if (!file) return;
+    const expiryIso = expiryEnabled
+      ? new Date(expiryDateTime).toISOString()
+      : undefined;
+
     uploadMutation.mutate(
-      { data: { file, expiryDate: expiryEnabled ? expiryDate : undefined } },
+      {
+        data: {
+          file,
+          expiryDate: expiryIso ?? "",
+          expiryAction: action,
+        },
+      },
       {
         onSuccess: (data) => {
-          toast({ title: "Document secured & uploaded", description: "Your PDF has been protected and stored." });
+          toast({
+            title: "Document secured & uploaded",
+            description:
+              action === "corrupt"
+                ? "After expiry, this file will become corrupt and unreadable."
+                : "After expiry, access to this file will be revoked.",
+          });
           setFile(null);
           setPassword("");
+          setActionDialogOpen(false);
           if (fileInputRef.current) fileInputRef.current.value = "";
-          saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
+          saveToLocalHistory({
+            id: data.id,
+            shareToken: data.shareToken,
+            originalName: data.originalName,
+            fileSize: data.fileSize,
+            expiryDate: data.expiryDate,
+            expiryAction: data.expiryAction,
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt,
+          });
           queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
         },
         onError: () => {
@@ -141,6 +207,8 @@ export function PdfUploadForm() {
       },
     );
   };
+
+  const minDateTime = format(new Date(), "yyyy-MM-dd'T'HH:mm");
 
   return (
     <div className="space-y-4">
@@ -182,32 +250,37 @@ export function PdfUploadForm() {
             <div className="w-14 h-14 bg-gradient-to-br from-rose-400 to-red-500 rounded-2xl flex items-center justify-center shadow-md mx-auto opacity-80">
               <UploadCloud className="w-7 h-7 text-white" />
             </div>
-            <p className="text-sm font-semibold text-rose-700 mt-1">Click or drag a PDF here</p>
-            <p className="text-xs text-rose-400">Supports .pdf up to 50MB</p>
+            <div className="text-sm font-semibold text-rose-700">Drop your PDF here</div>
+            <div className="text-xs text-rose-500">or click to browse · max 50 MB</div>
           </div>
         )}
       </div>
 
-      {/* ── Feature 1: Set Expiry Date ── */}
+      {/* ── Feature 1: Expiry Date & Time ── */}
       <FeatureCard
         icon={Calendar}
-        title="Set Expiry Date"
-        description="Document becomes inaccessible after the set date"
+        title="Expiry Date & Time"
+        description="Lock the document at a specific date and time"
         color="border-rose-200 bg-rose-50/60"
         enabled={expiryEnabled}
         onToggle={() => setExpiryEnabled(v => !v)}
       >
         <div className="space-y-2 pt-2">
-          <Label htmlFor="expiryDate" className="text-rose-700 text-xs font-semibold">Expiry Date</Label>
+          <Label htmlFor="expiryDateTime" className="text-rose-700 text-xs font-semibold">
+            Expires on
+          </Label>
           <Input
-            id="expiryDate"
-            type="date"
-            value={expiryDate}
-            min={format(new Date(), "yyyy-MM-dd")}
-            onChange={(e) => setExpiryDate(e.target.value)}
+            id="expiryDateTime"
+            type="datetime-local"
+            value={expiryDateTime}
+            min={minDateTime}
+            onChange={(e) => setExpiryDateTime(e.target.value)}
             className="border-rose-200 focus:border-rose-400 focus:ring-rose-400/20 text-sm"
           />
-          <p className="text-xs text-rose-400">The PDF will be locked after this date — no downloads or views.</p>
+          <p className="text-xs text-rose-400">
+            The PDF will be locked at this exact date and time. You'll choose
+            what happens after expiry — corrupt or revoke — when you upload.
+          </p>
         </div>
       </FeatureCard>
 
@@ -296,11 +369,89 @@ export function PdfUploadForm() {
       <Button
         className="w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white border-0 shadow-md font-semibold"
         disabled={!file || uploadMutation.isPending}
-        onClick={handleUpload}
+        onClick={handleSecureClick}
       >
         <ShieldCheck className="w-4 h-4 mr-2" />
         {uploadMutation.isPending ? "Securing…" : "Secure & Upload"}
       </Button>
+
+      {/* ── Popup: choose post-expiry action ── */}
+      <Dialog
+        open={actionDialogOpen}
+        onOpenChange={(open) => {
+          if (!uploadMutation.isPending) setActionDialogOpen(open);
+        }}
+      >
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900">
+              What should happen after expiry?
+            </DialogTitle>
+            <DialogDescription className="text-slate-500">
+              Once <span className="font-semibold text-slate-700">{file?.name ?? "this PDF"}</span>{" "}
+              expires on{" "}
+              <span className="font-semibold text-slate-700">
+                {expiryDateTime
+                  ? format(new Date(expiryDateTime), "MMM d, yyyy 'at' h:mm a")
+                  : "the chosen date"}
+              </span>
+              , what would you like to happen?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-3 py-2">
+            <button
+              type="button"
+              disabled={uploadMutation.isPending}
+              onClick={() => submitUpload("corrupt")}
+              className="flex items-start gap-3 text-left rounded-xl border-2 border-rose-200 hover:border-rose-400 hover:bg-rose-50 p-4 transition-all disabled:opacity-50"
+            >
+              <div className="w-10 h-10 rounded-lg bg-rose-100 flex items-center justify-center shrink-0">
+                <FileX2 className="w-5 h-5 text-rose-600" />
+              </div>
+              <div className="flex-1">
+                <div className="font-semibold text-slate-900 text-sm">
+                  Do you want it to get corrupt after expiry date?
+                </div>
+                <div className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  After expiry, the file will be replaced with garbage bytes.
+                  Anyone who downloads it will get an unreadable, broken PDF.
+                </div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              disabled={uploadMutation.isPending}
+              onClick={() => submitUpload("revoke")}
+              className="flex items-start gap-3 text-left rounded-xl border-2 border-slate-200 hover:border-slate-400 hover:bg-slate-50 p-4 transition-all disabled:opacity-50"
+            >
+              <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                <Ban className="w-5 h-5 text-slate-700" />
+              </div>
+              <div className="flex-1">
+                <div className="font-semibold text-slate-900 text-sm">
+                  Do you want to revoke it after expiry date?
+                </div>
+                <div className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  After expiry, the file will be removed and the download link
+                  will return a "no longer available" message.
+                </div>
+              </div>
+            </button>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setActionDialogOpen(false)}
+              disabled={uploadMutation.isPending}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

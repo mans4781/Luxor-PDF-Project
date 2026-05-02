@@ -2,7 +2,7 @@
 
 ## Overview
 
-PDF Expiry Tool — a web application for uploading PDFs, setting expiry dates, and making them inaccessible after those dates. After the expiry date, downloading a PDF returns corrupted/invalid binary data that no PDF reader can open.
+PDF Expiry Tool — a web application for uploading PDFs, setting an exact expiry date+time, and making them inaccessible afterwards. At upload time the user picks one of two post-expiry behaviors via a popup: **corrupt** (the file is replaced with random bytes so PDF readers can't open it) or **revoke** (the file is deleted and the download endpoint returns 410 Gone).
 
 ## Stack
 
@@ -49,21 +49,24 @@ PDF Expiry Tool — a web application for uploading PDFs, setting expiry dates, 
 ## Features
 
 - Upload any PDF file (supports large files via multipart/form-data)
-- Set expiry date per PDF
+- Set an exact expiry **date and time** per PDF (`<input type="datetime-local">`, sent to the server as ISO 8601)
+- Choose a post-expiry behavior at upload time via a popup dialog: **corrupt** or **revoke**
 - Dashboard with stats (total, active, expired, total size)
-- History page with filtering by status
-- Download button — returns actual PDF if active, corrupted binary if expired
+- History page with filtering by status; shows expiry date+time and chosen action badge
+- Download button — returns actual PDF if active; after expiry behaves per chosen action
 - Delete PDF (removes from DB and disk)
 
 ## How Expiry Works
 
-The server stores PDFs on disk under `/uploads/`. On download:
-- If the current date is before or equal to the expiry date → serve the real PDF
-- If past expiry → serve a garbage binary with a `.pdf` extension that no reader can open
+The server stores PDFs on disk under `/uploads/`. The `pdfs.expiry_action` column controls post-expiry behavior:
+- **corrupt** — On the first post-expiry download, the file on disk is overwritten with random bytes (capped at 64 KB) and served with `Content-Type: application/pdf` and HTTP 200. PDF readers fail to parse it.
+- **revoke** — The file is deleted from disk and the endpoint returns HTTP 410 with a JSON `{error, expiredAt}` body.
+
+`parseExpiryDate()` and `isExpired()` accept both new ISO 8601 datetime values and legacy `YYYY-MM-DD` strings, so existing rows keep working. `runPdfMigrations()` adds the `expiry_action` column (`TEXT NOT NULL DEFAULT 'revoke'`) idempotently.
 
 ## Schema
 
-- `pdfs` table: id, original_name, stored_path, file_size, expiry_date, created_at, updated_at
+- `pdfs` table: id, share_token, original_name, stored_path, file_size, expiry_date, **expiry_action** (`corrupt`|`revoke`, default `revoke`), created_at, updated_at
 
 ## Authentication (Clerk)
 

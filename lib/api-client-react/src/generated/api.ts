@@ -130,6 +130,7 @@ export const uploadPdf = async (
   const formData = new FormData();
   formData.append(`file`, uploadPdfBody.file);
   formData.append(`expiryDate`, uploadPdfBody.expiryDate);
+  formData.append(`expiryAction`, uploadPdfBody.expiryAction);
 
   return customFetch<PdfUploadResult>(getUploadPdfUrl(), {
     ...options,
