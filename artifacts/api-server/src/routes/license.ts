@@ -13,9 +13,10 @@ router.get("/license/status", async (req: Request, res: Response): Promise<void>
     res.json(status);
   } catch (err) {
     req.log.error({ err, userId }, "license/status failed");
-    // Fail closed: if we can't compute status, return an anonymous-style
-    // payload so the client locks tools rather than silently allowing them.
-    res.status(500).json({
+    // Fail closed: if we can't compute status, return a 200 with an
+    // anonymous-style locked payload so the client never silently allows
+    // tools. The spec advertises this endpoint as always-200.
+    res.status(200).json({
       ...buildAnonymousStatus(),
       lockReason: "not_logged_in",
     });
