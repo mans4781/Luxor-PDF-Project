@@ -32,9 +32,11 @@ export const clerkAppearance = {
     headerTitle:
       "text-slate-900 font-extrabold text-[22px] tracking-tight text-center",
     headerSubtitle: "text-slate-500 text-[14px] text-center mt-1",
+    socialButtons: "flex flex-col gap-2",
     socialButtonsBlockButton:
-      "border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all rounded-xl py-2.5 shadow-sm",
-    socialButtonsBlockButtonText: "text-slate-800 font-semibold",
+      "border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all rounded-xl py-2.5 shadow-sm justify-center",
+    socialButtonsBlockButtonText: "text-slate-800 font-semibold text-[14px]",
+    socialButtonsProviderIcon: "w-5 h-5",
     formFieldLabel: "text-slate-700 font-semibold text-[13px]",
     formFieldInput:
       "border border-slate-300 focus:border-[#1e3a8a] focus:ring-2 focus:ring-[#1e3a8a]/20 rounded-lg py-2.5",
