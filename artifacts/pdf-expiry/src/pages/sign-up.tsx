@@ -1,5 +1,6 @@
 import { SignUp } from "@clerk/react";
 import { AuthShell } from "@/components/auth-shell";
+import { PasswordRules } from "@/components/password-rules";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -12,6 +13,7 @@ export default function SignUpPage() {
         signInUrl={`${basePath}/sign-in`}
         fallbackRedirectUrl={basePath || "/"}
       />
+      <PasswordRules />
     </AuthShell>
   );
 }
