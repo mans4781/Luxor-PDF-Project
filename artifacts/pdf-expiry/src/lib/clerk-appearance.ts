@@ -65,12 +65,12 @@ export const clerkLocalization = {
   signIn: {
     start: {
       title: "Welcome back",
-      subtitle: "Sign in to your Luxor PDF Secure account",
+      subtitle: "Sign in to your Luxor PDF account",
     },
   },
   signUp: {
     start: {
-      title: "Create your Luxor PDF Secure account",
+      title: "Create your Luxor PDF account",
       subtitle: "Unlock secure PDF tools and account features",
     },
   },
