@@ -8,9 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDFDocument } from "pdf-lib";
 import { formatBytes } from "@/lib/utils";
 import { saveFile } from "@/lib/save-file";
-import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Wrench } from "lucide-react";
+import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Wrench, Trash2, FilePlus } from "lucide-react";
 
-type DropColorScheme = "violet" | "indigo" | "purple";
+type DropColorScheme = "violet" | "indigo" | "purple" | "rose" | "emerald";
 
 const dropColors: Record<DropColorScheme, {
   drag: string; idle: string; icon: string; label: string; hint: string; iconBg: string;
@@ -32,6 +32,18 @@ const dropColors: Record<DropColorScheme, {
     idle: "border-purple-200 hover:border-purple-400 hover:bg-purple-50/60 bg-gradient-to-br from-purple-50/50 to-violet-50/30",
     icon: "text-white", iconBg: "bg-gradient-to-br from-purple-500 to-violet-600",
     label: "text-purple-700", hint: "text-purple-400",
+  },
+  rose: {
+    drag: "border-rose-400 bg-rose-50 scale-[1.01]",
+    idle: "border-rose-200 hover:border-rose-400 hover:bg-rose-50/60 bg-gradient-to-br from-rose-50/50 to-red-50/30",
+    icon: "text-white", iconBg: "bg-gradient-to-br from-rose-500 to-red-600",
+    label: "text-rose-700", hint: "text-rose-400",
+  },
+  emerald: {
+    drag: "border-emerald-400 bg-emerald-50 scale-[1.01]",
+    idle: "border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50/60 bg-gradient-to-br from-emerald-50/50 to-teal-50/30",
+    icon: "text-white", iconBg: "bg-gradient-to-br from-emerald-500 to-teal-600",
+    label: "text-emerald-700", hint: "text-emerald-400",
   },
 };
 
@@ -561,6 +573,573 @@ function ExtractTab() {
   );
 }
 
+// ─── Delete Pages ─────────────────────────────────────────────────────────────
+
+function DeleteTab() {
+  const [file, setFile] = useState<File | null>(null);
+  const [pageCount, setPageCount] = useState<number | null>(null);
+  const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
+  const [pageInput, setPageInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleFile(files: File[]) {
+    const f = files[0];
+    setFile(f);
+    setError(null);
+    setSelectedPages(new Set());
+    setPageInput("");
+    try {
+      const buf = await readFileAsArrayBuffer(f);
+      const doc = await PDFDocument.load(buf);
+      setPageCount(doc.getPageCount());
+    } catch {
+      setError("Could not read PDF. Make sure it is a valid, non-encrypted file.");
+      setFile(null);
+      setPageCount(null);
+    }
+  }
+
+  function togglePage(n: number) {
+    setSelectedPages((prev) => {
+      const next = new Set(prev);
+      if (next.has(n)) next.delete(n);
+      else next.add(n);
+      return next;
+    });
+    setError(null);
+  }
+
+  function applyPageInput() {
+    if (!pageCount) return;
+    const pages = new Set<number>();
+    const parts = pageInput.split(",").map((s) => s.trim());
+    for (const part of parts) {
+      if (part.includes("-")) {
+        const [a, b] = part.split("-").map(Number);
+        for (let i = Math.max(1, a); i <= Math.min(pageCount, b); i++) pages.add(i);
+      } else {
+        const n = Number(part);
+        if (!isNaN(n) && n >= 1 && n <= pageCount) pages.add(n);
+      }
+    }
+    setSelectedPages(pages);
+  }
+
+  function selectAll() {
+    if (!pageCount) return;
+    setSelectedPages(new Set(Array.from({ length: pageCount }, (_, i) => i + 1)));
+  }
+
+  function clearAll() {
+    setSelectedPages(new Set());
+  }
+
+  async function deletePages() {
+    if (!file || pageCount === null) return;
+    if (selectedPages.size === 0) {
+      setError("Select at least one page to delete.");
+      return;
+    }
+    if (selectedPages.size >= pageCount) {
+      setError("You cannot delete every page. At least one page must remain.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const buf = await readFileAsArrayBuffer(file);
+      const srcDoc = await PDFDocument.load(buf);
+      const newDoc = await PDFDocument.create();
+      const keepIndices = Array.from({ length: pageCount }, (_, i) => i)
+        .filter((i) => !selectedPages.has(i + 1));
+      const pages = await newDoc.copyPages(srcDoc, keepIndices);
+      pages.forEach((p) => newDoc.addPage(p));
+      const bytes = await newDoc.save();
+      const baseName = file.name.replace(/\.pdf$/i, "");
+      await saveFile(
+        new Blob([bytes], { type: "application/pdf" }),
+        `${baseName}_trimmed.pdf`
+      );
+    } catch {
+      setError("Failed to delete pages. Make sure the file is a valid, non-encrypted PDF.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const MAX_GRID_PAGES = 50;
+  const remaining = pageCount !== null ? pageCount - selectedPages.size : 0;
+
+  return (
+    <div className="space-y-4">
+      {!file ? (
+        <FileDropZone
+          onFiles={handleFile}
+          label="Click or drag a PDF here"
+          hint="Pick which pages to remove — the rest are saved as a new PDF"
+          colorScheme="rose"
+        />
+      ) : (
+        <div className="flex items-center justify-between bg-muted rounded-md px-3 py-2">
+          <div>
+            <p className="text-sm font-medium">{file.name}</p>
+            <p className="text-xs text-muted-foreground">
+              {formatBytes(file.size)} &middot; {pageCount} page{pageCount !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <button
+            data-testid="button-clear-delete-file"
+            onClick={() => { setFile(null); setPageCount(null); setSelectedPages(new Set()); setPageInput(""); setError(null); }}
+            className="text-muted-foreground hover:text-destructive transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {file && pageCount !== null && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Input
+              data-testid="input-delete-range"
+              placeholder="e.g. 1, 3, 5-8, 12"
+              value={pageInput}
+              onChange={(e) => setPageInput(e.target.value)}
+              className="h-8 text-sm"
+            />
+            <Button variant="outline" size="sm" onClick={applyPageInput} data-testid="button-apply-delete-range">
+              Apply
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-xs text-muted-foreground">
+              {selectedPages.size} marked for deletion · {remaining} will remain
+            </span>
+            <button
+              onClick={selectAll}
+              data-testid="button-delete-select-all"
+              className="text-xs text-rose-600 hover:underline"
+            >
+              Select all
+            </button>
+            <button
+              onClick={clearAll}
+              data-testid="button-delete-clear-all"
+              className="text-xs text-muted-foreground hover:underline"
+            >
+              Clear
+            </button>
+          </div>
+
+          {pageCount <= MAX_GRID_PAGES ? (
+            <div
+              className="grid gap-1.5"
+              style={{ gridTemplateColumns: "repeat(auto-fill, minmax(40px, 1fr))" }}
+              data-testid="delete-page-grid"
+            >
+              {Array.from({ length: pageCount }, (_, i) => i + 1).map((n) => (
+                <button
+                  key={n}
+                  data-testid={`delete-page-toggle-${n}`}
+                  onClick={() => togglePage(n)}
+                  className={`h-10 rounded text-sm font-medium transition-all border ${
+                    selectedPages.has(n)
+                      ? "bg-rose-600 text-white border-rose-600 shadow-sm line-through"
+                      : "bg-background border-border hover:border-rose-400 hover:bg-rose-50/50 text-foreground"
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Use the range input above to select pages (e.g. "1-10, 15, 20-25").
+            </p>
+          )}
+        </div>
+      )}
+
+      {error && (
+        <p data-testid="delete-error" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+
+      <Button
+        data-testid="button-delete-pages"
+        onClick={deletePages}
+        disabled={!file || selectedPages.size === 0 || loading}
+        className="w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white border-0 shadow-md font-semibold"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Deleting...
+          </>
+        ) : (
+          <>
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete {selectedPages.size > 0 ? `${selectedPages.size} page${selectedPages.size !== 1 ? "s" : ""}` : "Pages"} & Download
+          </>
+        )}
+      </Button>
+    </div>
+  );
+}
+
+// ─── Add Pages ────────────────────────────────────────────────────────────────
+
+type AddSource = "pdf" | "blank";
+type BlankSize = "A4" | "Letter";
+type InsertWhere = "start" | "end" | "after";
+
+const PAGE_SIZES: Record<BlankSize, [number, number]> = {
+  // points (1pt = 1/72 inch)
+  A4: [595.28, 841.89],
+  Letter: [612, 792],
+};
+
+function AddTab() {
+  const [hostFile, setHostFile] = useState<File | null>(null);
+  const [hostPageCount, setHostPageCount] = useState<number | null>(null);
+
+  const [source, setSource] = useState<AddSource>("pdf");
+
+  const [sourceFile, setSourceFile] = useState<File | null>(null);
+  const [sourcePageCount, setSourcePageCount] = useState<number | null>(null);
+
+  const [blankCount, setBlankCount] = useState<number>(1);
+  const [blankSize, setBlankSize] = useState<BlankSize>("A4");
+
+  const [insertWhere, setInsertWhere] = useState<InsertWhere>("end");
+  const [afterPage, setAfterPage] = useState<number>(1);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleHostFile(files: File[]) {
+    const f = files[0];
+    setHostFile(f);
+    setError(null);
+    try {
+      const buf = await readFileAsArrayBuffer(f);
+      const doc = await PDFDocument.load(buf);
+      const count = doc.getPageCount();
+      setHostPageCount(count);
+      setAfterPage(count);
+    } catch {
+      setError("Could not read PDF. Make sure it is a valid, non-encrypted file.");
+      setHostFile(null);
+      setHostPageCount(null);
+    }
+  }
+
+  async function handleSourceFile(files: File[]) {
+    const f = files[0];
+    setSourceFile(f);
+    setError(null);
+    try {
+      const buf = await readFileAsArrayBuffer(f);
+      const doc = await PDFDocument.load(buf);
+      setSourcePageCount(doc.getPageCount());
+    } catch {
+      setError("Could not read source PDF. Make sure it is a valid, non-encrypted file.");
+      setSourceFile(null);
+      setSourcePageCount(null);
+    }
+  }
+
+  async function addPages() {
+    if (!hostFile || hostPageCount === null) {
+      setError("Please choose a PDF to add pages into.");
+      return;
+    }
+
+    if (source === "pdf" && !sourceFile) {
+      setError("Please choose a source PDF whose pages will be inserted.");
+      return;
+    }
+    if (source === "blank" && (!blankCount || blankCount < 1)) {
+      setError("Enter how many blank pages to add (1 or more).");
+      return;
+    }
+
+    let insertIndex: number;
+    if (insertWhere === "start") insertIndex = 0;
+    else if (insertWhere === "end") insertIndex = hostPageCount;
+    else {
+      if (afterPage < 1 || afterPage > hostPageCount) {
+        setError(`"After page" must be between 1 and ${hostPageCount}.`);
+        return;
+      }
+      insertIndex = afterPage; // insert AFTER page N → at index N
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const hostBuf = await readFileAsArrayBuffer(hostFile);
+      const hostDoc = await PDFDocument.load(hostBuf);
+
+      if (source === "pdf" && sourceFile) {
+        const srcBuf = await readFileAsArrayBuffer(sourceFile);
+        const srcDoc = await PDFDocument.load(srcBuf);
+        const copied = await hostDoc.copyPages(srcDoc, srcDoc.getPageIndices());
+        copied.forEach((p, i) => hostDoc.insertPage(insertIndex + i, p));
+      } else {
+        const [w, h] = PAGE_SIZES[blankSize];
+        for (let i = 0; i < blankCount; i++) {
+          hostDoc.insertPage(insertIndex + i, [w, h]);
+        }
+      }
+
+      const bytes = await hostDoc.save();
+      const baseName = hostFile.name.replace(/\.pdf$/i, "");
+      await saveFile(
+        new Blob([bytes], { type: "application/pdf" }),
+        `${baseName}_with_added_pages.pdf`
+      );
+    } catch {
+      setError("Failed to add pages. Make sure both files are valid, non-encrypted PDFs.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const insertedCount = source === "pdf" ? (sourcePageCount ?? 0) : blankCount;
+
+  return (
+    <div className="space-y-4">
+      {/* Host PDF */}
+      {!hostFile ? (
+        <FileDropZone
+          onFiles={handleHostFile}
+          label="Click or drag the PDF you want to add pages to"
+          hint="This is the document new pages will be inserted into"
+          colorScheme="emerald"
+        />
+      ) : (
+        <div className="flex items-center justify-between bg-muted rounded-md px-3 py-2">
+          <div>
+            <p className="text-sm font-medium">{hostFile.name}</p>
+            <p className="text-xs text-muted-foreground">
+              {formatBytes(hostFile.size)} &middot; {hostPageCount} page{hostPageCount !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <button
+            data-testid="button-clear-add-host"
+            onClick={() => { setHostFile(null); setHostPageCount(null); setError(null); }}
+            className="text-muted-foreground hover:text-destructive transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {hostFile && hostPageCount !== null && (
+        <div className="space-y-4">
+          {/* Source toggle */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground uppercase tracking-wider">
+              What to add
+            </Label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                data-testid="add-source-pdf"
+                onClick={() => setSource("pdf")}
+                className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
+                  source === "pdf"
+                    ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+                    : "bg-background border-border hover:border-emerald-400 text-foreground"
+                }`}
+              >
+                Pages from a PDF
+              </button>
+              <button
+                type="button"
+                data-testid="add-source-blank"
+                onClick={() => setSource("blank")}
+                className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
+                  source === "blank"
+                    ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+                    : "bg-background border-border hover:border-emerald-400 text-foreground"
+                }`}
+              >
+                Blank pages
+              </button>
+            </div>
+          </div>
+
+          {/* Source PDF */}
+          {source === "pdf" && (
+            !sourceFile ? (
+              <FileDropZone
+                onFiles={handleSourceFile}
+                label="Click or drag the source PDF"
+                hint="All pages of this PDF will be inserted at the chosen position"
+                colorScheme="emerald"
+              />
+            ) : (
+              <div className="flex items-center justify-between bg-muted rounded-md px-3 py-2">
+                <div>
+                  <p className="text-sm font-medium">{sourceFile.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatBytes(sourceFile.size)} &middot; {sourcePageCount} page{sourcePageCount !== 1 ? "s" : ""} to insert
+                  </p>
+                </div>
+                <button
+                  data-testid="button-clear-add-source"
+                  onClick={() => { setSourceFile(null); setSourcePageCount(null); setError(null); }}
+                  className="text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )
+          )}
+
+          {source === "blank" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="blank-count" className="text-xs">How many blank pages?</Label>
+                <Input
+                  id="blank-count"
+                  data-testid="input-blank-count"
+                  type="number"
+                  min={1}
+                  max={500}
+                  value={blankCount}
+                  onChange={(e) => setBlankCount(Math.max(1, Math.min(500, Number(e.target.value) || 1)))}
+                  className="h-9 text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="blank-size" className="text-xs">Page size</Label>
+                <select
+                  id="blank-size"
+                  data-testid="select-blank-size"
+                  value={blankSize}
+                  onChange={(e) => setBlankSize(e.target.value as BlankSize)}
+                  className="h-9 w-full text-sm rounded-md border border-input bg-background px-3"
+                >
+                  <option value="A4">A4 (210 × 297 mm)</option>
+                  <option value="Letter">Letter (8.5 × 11 in)</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Insert position */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground uppercase tracking-wider">
+              Where to insert
+            </Label>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                data-testid="insert-where-start"
+                onClick={() => setInsertWhere("start")}
+                className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
+                  insertWhere === "start"
+                    ? "bg-emerald-600 text-white border-emerald-600"
+                    : "bg-background border-border hover:border-emerald-400"
+                }`}
+              >
+                At beginning
+              </button>
+              <button
+                type="button"
+                data-testid="insert-where-end"
+                onClick={() => setInsertWhere("end")}
+                className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
+                  insertWhere === "end"
+                    ? "bg-emerald-600 text-white border-emerald-600"
+                    : "bg-background border-border hover:border-emerald-400"
+                }`}
+              >
+                At end
+              </button>
+              <button
+                type="button"
+                data-testid="insert-where-after"
+                onClick={() => setInsertWhere("after")}
+                className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
+                  insertWhere === "after"
+                    ? "bg-emerald-600 text-white border-emerald-600"
+                    : "bg-background border-border hover:border-emerald-400"
+                }`}
+              >
+                After page…
+              </button>
+            </div>
+            {insertWhere === "after" && (
+              <div className="flex items-center gap-2 pt-1">
+                <Label htmlFor="after-page" className="text-xs whitespace-nowrap">
+                  After page
+                </Label>
+                <Input
+                  id="after-page"
+                  data-testid="input-after-page"
+                  type="number"
+                  min={1}
+                  max={hostPageCount}
+                  value={afterPage}
+                  onChange={(e) => setAfterPage(Math.max(1, Math.min(hostPageCount, Number(e.target.value) || 1)))}
+                  className="h-8 text-sm w-24"
+                />
+                <span className="text-xs text-muted-foreground">
+                  of {hostPageCount}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {insertedCount > 0 && (
+            <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-md px-3 py-2">
+              Result will have {hostPageCount + insertedCount} page{hostPageCount + insertedCount !== 1 ? "s" : ""}
+              {" "}({hostPageCount} original + {insertedCount} new).
+            </p>
+          )}
+        </div>
+      )}
+
+      {error && (
+        <p data-testid="add-error" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+
+      <Button
+        data-testid="button-add-pages"
+        onClick={addPages}
+        disabled={
+          !hostFile ||
+          loading ||
+          (source === "pdf" && !sourceFile) ||
+          (source === "blank" && blankCount < 1)
+        }
+        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-md font-semibold"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Adding...
+          </>
+        ) : (
+          <>
+            <FilePlus className="w-4 h-4 mr-2" />
+            Add Pages & Download
+          </>
+        )}
+      </Button>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function PdfToolContent() {
@@ -575,20 +1154,22 @@ export function PdfToolContent() {
             </div>
             <div>
               <h1 className="text-2xl font-bold">PDF Tool</h1>
-              <p className="text-violet-200 text-sm mt-0.5">Merge, split &amp; extract pages — all processed in your browser</p>
+              <p className="text-violet-200 text-sm mt-0.5">Merge, split, extract, delete &amp; add pages — all processed in your browser</p>
             </div>
           </div>
           <div className="flex gap-2 mt-5 flex-wrap">
             <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Merge className="w-3 h-3" />Merge PDFs</span>
             <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Scissors className="w-3 h-3" />Split by Range</span>
             <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FileOutput className="w-3 h-3" />Extract Pages</span>
+            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Trash2 className="w-3 h-3" />Delete Pages</span>
+            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FilePlus className="w-3 h-3" />Add Pages</span>
           </div>
         </div>
 
         <Card className="border-violet-100 shadow-sm">
           <CardContent className="pt-6">
             <Tabs defaultValue="merge">
-              <TabsList className="grid w-full grid-cols-3 mb-6 bg-violet-50 border border-violet-100 p-1 rounded-xl h-auto">
+              <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 gap-1 mb-6 bg-violet-50 border border-violet-100 p-1 rounded-xl h-auto">
                 <TabsTrigger
                   value="merge"
                   data-testid="tab-merge"
@@ -612,6 +1193,22 @@ export function PdfToolContent() {
                 >
                   <FileOutput className="w-4 h-4" />
                   Extract
+                </TabsTrigger>
+                <TabsTrigger
+                  value="delete"
+                  data-testid="tab-delete"
+                  className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-rose-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </TabsTrigger>
+                <TabsTrigger
+                  value="add"
+                  data-testid="tab-add"
+                  className="flex items-center gap-1.5 rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                >
+                  <FilePlus className="w-4 h-4" />
+                  Add
                 </TabsTrigger>
               </TabsList>
 
@@ -652,6 +1249,32 @@ export function PdfToolContent() {
                   </div>
                 </div>
                 <ExtractTab />
+              </TabsContent>
+
+              <TabsContent value="delete">
+                <div className="bg-gradient-to-r from-rose-50 to-red-50 border border-rose-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
+                  <div className="w-9 h-9 bg-gradient-to-br from-rose-500 to-red-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                    <Trash2 className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-rose-900">Delete Pages</h2>
+                    <p className="text-xs text-rose-600">Remove any pages from anywhere in the PDF — the rest are kept in order.</p>
+                  </div>
+                </div>
+                <DeleteTab />
+              </TabsContent>
+
+              <TabsContent value="add">
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
+                  <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                    <FilePlus className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-emerald-900">Add Pages</h2>
+                    <p className="text-xs text-emerald-600">Insert pages from another PDF — or blank pages — at the start, end, or after any page.</p>
+                  </div>
+                </div>
+                <AddTab />
               </TabsContent>
             </Tabs>
           </CardContent>
