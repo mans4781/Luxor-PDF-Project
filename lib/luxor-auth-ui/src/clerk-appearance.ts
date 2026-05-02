@@ -1,15 +1,8 @@
 import { shadcn } from "@clerk/themes";
 
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-
 export const clerkAppearance = {
   theme: shadcn,
   cssLayerName: "clerk",
-  options: {
-    logoPlacement: "inside" as const,
-    logoLinkUrl: basePath || "/",
-    logoImageUrl: `${typeof window !== "undefined" ? window.location.origin : ""}${basePath}/brand/luxor-icon.png`,
-  },
   variables: {
     colorPrimary: "#1e3a8a",
     colorForeground: "#0f172a",
@@ -46,7 +39,8 @@ export const clerkAppearance = {
     footerActionLink:
       "text-[#1e3a8a] hover:text-[#DC2626] font-semibold transition-colors",
     footerActionText: "text-slate-600",
-    dividerText: "text-slate-400 text-[12px] uppercase tracking-wider font-semibold",
+    dividerText:
+      "text-slate-400 text-[12px] uppercase tracking-wider font-semibold",
     dividerLine: "bg-slate-200",
     identityPreviewEditButton: "text-[#1e3a8a]",
     formFieldSuccessText: "text-emerald-600",

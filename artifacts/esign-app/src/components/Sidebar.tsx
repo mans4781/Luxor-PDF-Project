@@ -3,6 +3,7 @@ import {
   LayoutDashboard, FileText, PenLine, Clock, FolderOpen,
   Settings, ChevronRight, Zap
 } from "lucide-react";
+import { AuthMenu } from "@workspace/luxor-auth-ui";
 
 const NAV = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/" },
@@ -76,14 +77,8 @@ export function Sidebar() {
           </button>
         ))}
 
-        <div className="flex items-center gap-3 px-3 py-2.5 mt-1 rounded-lg cursor-pointer hover:bg-sidebar-accent transition-colors">
-          <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-            Y
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs font-medium text-white truncate">You</p>
-            <p className="text-[10px] text-sidebar-foreground/60 truncate">Free Plan</p>
-          </div>
+        <div className="px-2 py-2 mt-1 [&_.flex.items-center.gap-2]:flex-col [&_.flex.items-center.gap-2]:items-stretch [&_.flex.items-center.gap-2]:gap-2 [&_button]:w-full [&_button]:justify-center">
+          <AuthMenu variant="dark" />
         </div>
       </div>
     </aside>

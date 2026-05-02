@@ -1,9 +1,10 @@
 import { ReactNode } from "react";
 import { ShieldCheck } from "lucide-react";
-import { AccountMenu } from "@/components/account-menu";
+import { AuthMenu } from "@workspace/luxor-auth-ui";
 
 export function Layout({ children }: { children: ReactNode }) {
   const baseUrl = import.meta.env.BASE_URL;
+  const basePath = baseUrl.replace(/\/$/, "");
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -38,7 +39,11 @@ export function Layout({ children }: { children: ReactNode }) {
               <ShieldCheck className="w-3.5 h-3.5" strokeWidth={2.25} />
               <span>Processed in your browser · Private by design</span>
             </div>
-            <AccountMenu />
+            <AuthMenu
+              signInUrl={`${basePath}/sign-in`}
+              signUpUrl={`${basePath}/sign-up`}
+              redirectBackOnAuth={false}
+            />
           </div>
         </div>
       </header>

@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from "react";
+import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { ToolType } from "@/lib/annotationTypes";
 
 const HIGHLIGHT_COLORS = [
@@ -461,6 +462,10 @@ export default function Toolbar({
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
       </button>
+
+      <div style={{ marginLeft: 8, display: "flex", alignItems: "center" }}>
+        <AuthMenu variant="dark" />
+      </div>
     </div>
   );
 }

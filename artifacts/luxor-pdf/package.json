@@ -49,6 +49,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@workspace/api-client-react": "workspace:*",
+    "@workspace/luxor-auth-ui": "workspace:*",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "cmdk": "^1.1.1",
@@ -75,6 +76,8 @@
     "zod": "catalog:"
   },
   "dependencies": {
+    "@clerk/react": "^6.5.0",
+    "@clerk/themes": "^2.4.57",
     "pdfjs-dist": "^5.6.205"
   }
 }

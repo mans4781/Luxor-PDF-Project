@@ -1,11 +1,11 @@
 import { useEffect, useRef } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
-import { ClerkProvider, useClerk } from "@clerk/react";
+import { useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
+import { LuxorClerkProvider } from "@workspace/luxor-auth-ui";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { clerkAppearance, clerkLocalization } from "@/lib/clerk-appearance";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import History from "@/pages/history";
@@ -77,13 +77,11 @@ function ClerkProviderWithRoutes() {
   const [, setLocation] = useLocation();
 
   return (
-    <ClerkProvider
+    <LuxorClerkProvider
       publishableKey={clerkPubKey!}
       proxyUrl={clerkProxyUrl}
-      appearance={clerkAppearance}
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
-      localization={clerkLocalization}
       routerPush={(to) => setLocation(stripBase(to))}
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
     >
@@ -94,7 +92,7 @@ function ClerkProviderWithRoutes() {
           <Toaster />
         </TooltipProvider>
       </QueryClientProvider>
-    </ClerkProvider>
+    </LuxorClerkProvider>
   );
 }
 

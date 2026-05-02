@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../../../lib/luxor-auth-ui/src/**/*.{ts,tsx}";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 

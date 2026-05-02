@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback } from "react";
+import { AuthMenu } from "@workspace/luxor-auth-ui";
 
 interface HomeProps {
   onFileLoad: (file: File) => void;
@@ -43,6 +44,19 @@ export default function Home({ onFileLoad }: HomeProps) {
 
   return (
     <div className="home-screen">
+      <div
+        style={{
+          position: "absolute",
+          top: 16,
+          right: 20,
+          zIndex: 50,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <AuthMenu />
+      </div>
       <div className="home-logo-area">
         <div className="home-logo">L</div>
         <div className="home-title">Luxor PDF Reader</div>

@@ -72,16 +72,22 @@ The server stores PDFs on disk under `/uploads/`. The `pdfs.expiry_action` colum
 
 - `pdfs` table: id, share_token, original_name, stored_path, file_size, expiry_date, **expiry_action** (`corrupt`|`revoke`, default `revoke`), created_at, updated_at
 
-## Authentication (Clerk)
+## Authentication (Clerk) — Suite-wide SSO
 
-- `pdf-expiry` artifact uses Replit-managed Clerk Auth (provisioned via `setupClerkWhitelabelAuth`).
-- Server: `artifacts/api-server/src/app.ts` mounts `clerkProxyMiddleware()` at `CLERK_PROXY_PATH` BEFORE body parsers, then `clerkMiddleware()` after CORS/parsers. `getAuth(req)` available on requests.
-- Client: `artifacts/pdf-expiry/src/App.tsx` wraps app in `<ClerkProvider>` with branded shadcn theme; routes `/sign-in/*?` and `/sign-up/*?` use `routing="path"` with full base-path-prefixed `path` props.
-- Vite v4 layer order set in `index.css` (`@layer theme, base, clerk, components, utilities;`) and `tailwindcss({ optimize: false })` in `vite.config.ts` — required for Clerk styles to survive prod builds.
-- Branded SVG logo at `artifacts/pdf-expiry/public/logo.svg`. Appearance object in `src/lib/clerk-appearance.ts` (brand: indigo `#1e3a8a`, red `#DC2626`, Inter font).
-- Top-right account UI in `src/components/account-menu.tsx`: signed-out shows "Sign in" + "Create account"; signed-in shows avatar (or initials) dropdown with name/email, "Manage account" (opens Clerk UserProfile modal), and "Sign out".
+- **Single sign-on across the suite**: one Luxor PDF Suite Clerk account works across `pdf-expiry`, `luxor-pdf`, and `esign-app`. Since all three artifacts live on the same domain (different paths), Clerk's session cookie is automatically shared.
+- **Auth host**: `pdf-expiry` is the canonical auth host. Its routes `/pdf-expiry/sign-in` and `/pdf-expiry/sign-up` are the only sign-in/sign-up pages in the suite. Other artifacts redirect here for authentication and bounce back via Clerk's native `?redirect_url=<encoded current URL>` query param.
+- **Shared lib**: `lib/luxor-auth-ui` (non-composite, consumed via TS source) exports:
+  - `LuxorClerkProvider` — wraps `<ClerkProvider>` with the brand `clerkAppearance`/`clerkLocalization` and accepts `signInUrl`/`signUpUrl` overrides + optional `routerPush`/`routerReplace` for the auth host.
+  - `AuthMenu` — drop-in widget. Signed-out: "Sign in" + "Create account" buttons (default behavior: navigate to suite-wide auth URLs with `?redirect_url=` so user returns here after auth). Signed-in: Clerk `<UserButton>` avatar dropdown. Has `variant="dark"` for dark backgrounds (luxor-pdf toolbar, esign-app sidebar).
+  - `clerkAppearance` / `clerkLocalization` / `SUITE_AUTH_HOST_BASE = "/pdf-expiry"`.
+  - Lib declares `@clerk/react` and `@clerk/themes` as `dependencies` (not just peerDeps) so Vite in consumer artifacts can resolve them from the lib's source files. Each consumer artifact's `index.css` adds `@source "../../../lib/luxor-auth-ui/src/**/*.{ts,tsx}";` so Tailwind v4 scans the lib's class names.
+- **Server**: `artifacts/api-server/src/app.ts` mounts `clerkProxyMiddleware()` at `CLERK_PROXY_PATH` BEFORE body parsers, then `clerkMiddleware()` after CORS/parsers. `getAuth(req)` available on requests.
+- **pdf-expiry** (`src/App.tsx`): uses `LuxorClerkProvider` with local `signInUrl`/`signUpUrl` + wouter `routerPush`/`routerReplace`. Routes `/sign-in/*?` and `/sign-up/*?` use `routing="path"` with full base-path-prefixed `path` props. The header `<AuthMenu>` uses local URLs and `redirectBackOnAuth={false}` so the Clerk pages handle their own internal flow.
+- **luxor-pdf** (`src/main.tsx`): wraps `<App>` in `LuxorClerkProvider` (defaults to suite auth host). `<AuthMenu>` shown top-right of `Home.tsx` (light variant) and at end of `Toolbar.tsx` (`variant="dark"`).
+- **esign-app** (`src/main.tsx`): wraps `<App>` in `LuxorClerkProvider`. `<AuthMenu variant="dark">` at the bottom of `Sidebar.tsx`, replacing the old "You / Free Plan" placeholder. Sidebar wrapper uses CSS to stack the two buttons vertically in the narrow sidebar.
+- **CSS**: `pdf-expiry/src/index.css` has Vite v4 layer order (`@layer theme, base, clerk, components, utilities;`) + `@import "@clerk/themes/shadcn.css"`, plus `tailwindcss({ optimize: false })` in `vite.config.ts` — required for Clerk styles to survive prod builds.
+- Auth env vars (auto-set, never commit): `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`. In prod, `VITE_CLERK_PROXY_URL` is set automatically. All three artifacts read the same vars via `publishableKeyFromHost(...)` from `@clerk/react/internal`.
 - Home page (`/`) remains publicly accessible per skill guidance — no auth gate on landing.
-- Auth env vars (auto-set, never commit): `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`. In prod, `VITE_CLERK_PROXY_URL` is set automatically.
 - Not yet wired: Stripe subscription billing, paywall gating on premium tabs, 11-day grace period logic.
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
