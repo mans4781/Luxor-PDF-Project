@@ -2,7 +2,7 @@ import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
 import {
   Lock, Shield, Eye, Clock, Key, Printer, KeyRound, Calendar,
   CheckCircle2, Link2, Copy, Sparkles, Globe, Zap, FileLock2,
-  Timer, Ban, Server, MousePointer2,
+  Timer, Ban, Server, MousePointer2, Newspaper,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -556,12 +556,13 @@ export default function PdfSecurityPage() {
             <h2 className="text-3xl font-bold text-slate-900 mb-3">Who relies on Luxor PDF Secure</h2>
             <p className="text-slate-500 max-w-xl mx-auto">From legal teams to indie consultants — anyone who sends a PDF they wish they could take back.</p>
           </motion.div>
-          <motion.div {...stagger} className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div {...stagger} className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
             {[
               { role: "Legal teams",     use: "Send draft contracts with a 7-day expiry. Once the deal is signed elsewhere, revoke and move on.", icon: Shield },
               { role: "HR & recruiting", use: "Distribute offer letters that lock themselves if the candidate doesn't accept by the deadline.",   icon: Clock },
               { role: "Finance & audit", use: "Share quarterly statements with print blocking and a tight expiry — no copies floating around.",   icon: FileLock2 },
               { role: "Consultants",     use: "Deliver proposals with a kill switch. Lose the lead? Revoke the link and the deck is gone.",       icon: Zap },
+              { role: "Publishers",      use: "Send pre-release manuscripts and review galleys with a hard embargo date. When the embargo lifts — or a draft leaks — revoke instantly. No early reviews, no pirated PDFs in circulation.", icon: Newspaper },
             ].map(({ role, use, icon: Icon }) => (
               <motion.div
                 key={role}
