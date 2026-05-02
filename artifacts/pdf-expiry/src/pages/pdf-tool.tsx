@@ -1154,7 +1154,7 @@ export function PdfToolContent() {
             </div>
             <div>
               <h1 className="text-2xl font-bold">PDF Tool</h1>
-              <p className="text-violet-200 text-sm mt-0.5">Merge, split, extract, delete &amp; add pages — all processed in your browser</p>
+              <p className="text-violet-200 text-sm mt-0.5">Merge, split, extract, delete &amp; insert pages — all processed in your browser</p>
             </div>
           </div>
           <div className="flex gap-2 mt-5 flex-wrap">
@@ -1162,7 +1162,7 @@ export function PdfToolContent() {
             <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Scissors className="w-3 h-3" />Split by Range</span>
             <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FileOutput className="w-3 h-3" />Extract Pages</span>
             <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Trash2 className="w-3 h-3" />Delete Pages</span>
-            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FilePlus className="w-3 h-3" />Add Pages</span>
+            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FilePlus className="w-3 h-3" />Insert Pages</span>
           </div>
         </div>
 
