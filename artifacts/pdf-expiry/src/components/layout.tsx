@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import { Link, useLocation } from "wouter";
 import { LayoutDashboard } from "lucide-react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { UsageBadge, DailyLimitBanner } from "@/license/UsageBadge";
@@ -7,26 +6,19 @@ import { basePath } from "@/lib/base-path";
 
 export function Layout({ children }: { children: ReactNode }) {
   const baseUrl = import.meta.env.BASE_URL;
-  const [location] = useLocation();
-  const onDashboard = location === "/" || location === "";
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       {/* Clean brand header (matches luxorpdf.com) */}
       <header className="bg-white border-b border-slate-200">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-          {/* Brand lockup — also acts as a "back to dashboard" link */}
-          <Link
-            href="/"
-            className="group flex items-center gap-3 rounded-lg -mx-2 px-2 py-1 hover:bg-slate-50 transition-colors"
-            aria-label="Back to dashboard"
-            data-testid="header-brand-home"
-          >
+          {/* Brand lockup */}
+          <div className="flex items-center gap-3">
             <img
               src={`${baseUrl}brand/luxor-icon.png`}
               alt=""
               aria-hidden="true"
-              className="h-[48px] w-[48px] select-none rounded-[15%] border border-[#DC2626]/40 bg-white shadow-sm transition-transform group-hover:scale-105"
+              className="h-[48px] w-[48px] select-none rounded-[15%] border border-[#DC2626]/40 bg-white shadow-sm"
               draggable={false}
             />
             <div className="flex flex-col leading-none">
@@ -41,20 +33,18 @@ export function Layout({ children }: { children: ReactNode }) {
                 Private PDF Suite
               </span>
             </div>
-          </Link>
+          </div>
 
           <div className="flex items-center gap-3">
-            {!onDashboard && (
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-[#312E81] hover:text-[#1E1B4B] bg-[#312E81]/5 hover:bg-[#312E81]/10 border border-[#312E81]/15 rounded-lg px-3 py-1.5 transition-colors"
-                aria-label="Back to dashboard"
-                data-testid="header-dashboard-link"
-              >
-                <LayoutDashboard className="w-4 h-4" strokeWidth={2.2} />
-                <span className="hidden sm:inline">Dashboard</span>
-              </Link>
-            )}
+            <a
+              href="/online-tools"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#312E81] hover:text-[#1E1B4B] bg-[#312E81]/5 hover:bg-[#312E81]/10 border border-[#312E81]/15 rounded-lg px-3 py-1.5 transition-colors"
+              aria-label="Back to Online Tools"
+              data-testid="header-online-tools-link"
+            >
+              <LayoutDashboard className="w-4 h-4" strokeWidth={2.2} />
+              <span className="hidden sm:inline">Online Tools</span>
+            </a>
             <UsageBadge />
             <AuthMenu
               signInUrl={`${basePath}/sign-in`}
