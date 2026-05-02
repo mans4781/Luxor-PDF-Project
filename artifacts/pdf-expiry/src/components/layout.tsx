@@ -9,23 +9,16 @@ export function Layout({ children }: { children: ReactNode }) {
       {/* Clean brand header (matches luxorpdf.com) */}
       <header className="bg-white border-b border-slate-200">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-          <a href={baseUrl} className="group flex items-center gap-3">
+          <a href={baseUrl} className="group flex items-center gap-3 select-none">
             <img
-              src={`${baseUrl}brand/luxor-icon.png`}
-              alt=""
-              aria-hidden="true"
-              className="h-[44px] w-[44px] select-none rounded-[15%] border border-[#DC2626]/40 bg-white shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:border-[#DC2626]/70 group-hover:shadow-md"
+              src={`${baseUrl}brand/luxor-logo.svg`}
+              alt="Luxor"
+              className="h-11 w-auto transition-transform duration-300 group-hover:scale-[1.03]"
               draggable={false}
             />
-            <div className="flex flex-col leading-none">
-              <span className="text-[20px] font-extrabold tracking-tight">
-                <span className="text-[#1e3a8a]">Luxor</span>{" "}
-                <span className="text-[#DC2626]">PDF</span>
-              </span>
-              <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                Secure PDF Suite
-              </span>
-            </div>
+            <span className="hidden sm:inline-block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 border-l border-slate-200 pl-3">
+              Secure PDF Suite
+            </span>
           </a>
 
           <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1.5">
