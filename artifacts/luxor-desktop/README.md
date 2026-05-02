@@ -125,8 +125,8 @@ either accepts it silently (EV cert) or shows the standard non-red
 - `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`
 - The only API the renderer sees is `window.luxor` from `src/preload.ts`:
   - `getDeviceId(): Promise<string>` — stable UUID stored in `userData`
-  - `getAppInfo()` — productName, version, loadMode, platform
-  - `isDesktop: true`
+  (kept intentionally narrow per the desktop-wrap spec; presence of the
+  `window.luxor` object is itself the desktop-vs-browser signal).
 - External links open in the user's default browser via `shell.openExternal`.
 - Cross-origin in-app navigation is blocked when in `remote` mode.
 

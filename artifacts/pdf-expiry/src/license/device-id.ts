@@ -3,12 +3,11 @@ const NAME_KEY = "luxor.deviceName";
 
 /**
  * Electron preload bridge exposed by `artifacts/luxor-desktop`.
- * In a plain browser this is `undefined`.
+ * In a plain browser this is `undefined`. The presence of the bridge
+ * itself is the desktop-vs-browser signal — no separate flag needed.
  */
 interface LuxorBridge {
-  isDesktop: true;
   getDeviceId(): Promise<string>;
-  getAppInfo?(): Promise<{ productName: string; version: string; loadMode: string; platform: string }>;
 }
 declare global {
   interface Window {
