@@ -426,7 +426,13 @@ function PasswordTab() {
             <FileDropZone onFiles={(f) => setFile(f[0])} label="Click or drag a PDF here"
               hint="Upload the PDF you want to password-protect" colorScheme="indigo" />
           ) : (
-            <FileRow name={file.name} size={file.size} onRemove={() => setFile(null)} />
+            <FileRow name={file.name} size={file.size} onRemove={() => {
+              // Clear the password instantly when the selected PDF is removed
+              // so it isn't accidentally reused with a different document.
+              setFile(null);
+              setPassword("");
+              setShowPassword(false);
+            }} />
           )}
 
           <div className="space-y-1.5">
