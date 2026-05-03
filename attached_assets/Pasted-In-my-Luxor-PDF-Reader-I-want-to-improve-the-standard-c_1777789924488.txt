@@ -1,0 +1,187 @@
+In my Luxor PDF Reader, I want to improve the standard color system for Text Selection, Highlight, Draw/Pen, Underline, Strike-through, and Add Text tools.
+
+Goal:
+Use beautiful, professional, standard PDF reader colors similar to Adobe Acrobat, Microsoft Edge, and modern document apps.
+
+Please inspect the current color settings, annotation toolbar, highlight tool, draw tool, add text tool, underline tool, and selection overlay. Then update the color palette and default colors without breaking existing annotation behavior.
+
+Required default colors:
+
+1. Text Selection Color
+Use a soft professional blue selection overlay:
+- Selection Blue: #B7D7F0
+- Opacity: 45% to 55%
+
+Behavior:
+- Text selection should be visible but not too dark.
+- Original PDF text must remain readable.
+- Selection should look smooth and uniform.
+- Use this only for active text selection, not saved highlight.
+
+2. Default Highlight Color
+Use a standard soft yellow:
+- Highlight Yellow: #FFF176
+- Opacity: 45% to 55%
+
+Behavior:
+- Highlight should look like a real PDF highlighter.
+- Text must remain readable.
+- Highlight should not look too dark or neon.
+
+3. Highlight Color Palette
+Add these standard highlight colors:
+
+- Yellow: #FFF176
+- Green: #A5D6A7
+- Blue: #90CAF9
+- Pink: #F8BBD0
+- Orange: #FFCC80
+- Purple: #CE93D8
+
+Use opacity around 45% to 55% for all highlight colors.
+
+4. Draw / Pen Tool Default Color
+Use a professional blue as the default draw color:
+- Default Pen Blue: #1565C0
+- Stroke width: 2.5px or 3px
+- Opacity: 100%
+
+5. Draw / Pen Color Palette
+Add these standard pen colors:
+
+- Black: #111827
+- Blue: #1565C0
+- Red: #D32F2F
+- Green: #2E7D32
+- Orange: #EF6C00
+- Purple: #6A1B9A
+- Gray: #4B5563
+
+6. Underline Color
+Default underline color:
+- Underline Blue: #1565C0
+- Line width: 1.5px to 2px
+
+Also allow underline to use the same pen color palette if possible.
+
+7. Strike-through Color
+Default strike-through color:
+- Strike Red: #D32F2F
+- Line width: 1.5px to 2px
+
+8. Add Text Tool Color Palette
+Add these text colors:
+
+- Black: #111827
+- Dark Blue: #0D47A1
+- Red: #B71C1C
+- Green: #1B5E20
+- Gray: #374151
+- Purple: #4A148C
+
+Default Add Text color:
+- Black: #111827
+
+UI Requirements:
+- Add a clean color picker/dropdown in the toolbar.
+- Highlight tool should show highlight color swatches.
+- Draw tool should show pen color swatches and thickness options.
+- Add Text should show text color swatches and font size options if available.
+- Selected color should show a small active border or check mark.
+- Keep the UI minimal, modern, and premium.
+- Use rounded swatches.
+- Add tooltip names for colors:
+  - Yellow
+  - Green
+  - Blue
+  - Pink
+  - Orange
+  - Purple
+  - Black
+  - Red
+  - Gray
+
+Implementation Requirements:
+- Do not rewrite the whole app.
+- Create a central color configuration file or object, for example:
+  - annotationColors.js
+  - colors.ts
+  - pdfAnnotationTheme.js
+
+Suggested config:
+
+const PDF_ANNOTATION_COLORS = {
+  selection: {
+    color: "#B7D7F0",
+    opacity: 0.5
+  },
+  highlights: [
+    { name: "Yellow", value: "#FFF176", opacity: 0.5 },
+    { name: "Green", value: "#A5D6A7", opacity: 0.5 },
+    { name: "Blue", value: "#90CAF9", opacity: 0.5 },
+    { name: "Pink", value: "#F8BBD0", opacity: 0.5 },
+    { name: "Orange", value: "#FFCC80", opacity: 0.5 },
+    { name: "Purple", value: "#CE93D8", opacity: 0.5 }
+  ],
+  pen: [
+    { name: "Black", value: "#111827" },
+    { name: "Blue", value: "#1565C0" },
+    { name: "Red", value: "#D32F2F" },
+    { name: "Green", value: "#2E7D32" },
+    { name: "Orange", value: "#EF6C00" },
+    { name: "Purple", value: "#6A1B9A" },
+    { name: "Gray", value: "#4B5563" }
+  ],
+  text: [
+    { name: "Black", value: "#111827" },
+    { name: "Dark Blue", value: "#0D47A1" },
+    { name: "Red", value: "#B71C1C" },
+    { name: "Green", value: "#1B5E20" },
+    { name: "Gray", value: "#374151" },
+    { name: "Purple", value: "#4A148C" }
+  ],
+  defaults: {
+    highlightColor: "#FFF176",
+    highlightOpacity: 0.5,
+    penColor: "#1565C0",
+    penWidth: 3,
+    underlineColor: "#1565C0",
+    strikeColor: "#D32F2F",
+    textColor: "#111827"
+  }
+};
+
+Functional Requirements:
+- Apply these colors to new annotations.
+- Existing annotations should continue to render normally.
+- New highlights should use the selected highlight color.
+- New draw strokes should use selected pen color and thickness.
+- New underline/strike annotations should use selected color.
+- New Add Text annotations should use selected text color.
+- Store selected colors in annotation data.
+- If user changes color, only future annotations should use the new color unless editing an existing annotation.
+- Persist selected tool color during the session.
+- If the app already has local storage, save the last selected colors.
+
+Testing Checklist:
+1. Select text and confirm selection overlay is soft blue.
+2. Apply yellow highlight and confirm text remains readable.
+3. Apply each highlight color.
+4. Draw using black, blue, red, green, orange, purple, and gray.
+5. Change pen thickness and draw again.
+6. Add underline and confirm blue underline looks clean.
+7. Add strike-through and confirm red strike looks clean.
+8. Add text using different text colors.
+9. Zoom in/out and confirm colors remain consistent.
+10. Reload app and confirm selected color settings persist if implemented.
+11. Confirm existing annotations are not broken.
+
+Expected Result:
+Luxor PDF Reader should have a premium, standard, professional annotation color system that looks close to Adobe Acrobat and Microsoft Edge while keeping its own Luxor style.
+
+After completing:
+1. Show all changed files.
+2. Explain where the color configuration is stored.
+3. Explain how default colors are applied.
+4. Explain how the toolbar color picker works.
+5. Explain how to test each color.

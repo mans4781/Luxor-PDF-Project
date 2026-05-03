@@ -7,6 +7,25 @@ import ThumbnailPanel from "@/components/ThumbnailPanel";
 import SearchBar from "@/components/SearchBar";
 import { useAnnotations } from "@/lib/useAnnotations";
 import { ToolType } from "@/lib/annotationTypes";
+import { DEFAULTS as COLOR_DEFAULTS } from "@/lib/annotationColors";
+
+// localStorage keys for persisting tool-color preferences across sessions.
+const LS_KEYS = {
+  highlight: "luxor-pdf:highlightColor",
+  text: "luxor-pdf:textColor",
+  draw: "luxor-pdf:drawColor",
+  drawThickness: "luxor-pdf:drawThickness",
+  textSize: "luxor-pdf:textSize",
+} as const;
+const lsGet = (k: string, fb: string) => {
+  try { return localStorage.getItem(k) ?? fb; } catch { return fb; }
+};
+const lsGetNum = (k: string, fb: number) => {
+  try { const v = localStorage.getItem(k); return v ? Number(v) || fb : fb; } catch { return fb; }
+};
+const lsSet = (k: string, v: string | number) => {
+  try { localStorage.setItem(k, String(v)); } catch { /* ignore quota */ }
+};
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -36,11 +55,18 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   const [matchIndex, setMatchIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [tool, setTool] = useState<ToolType>("hand");
-  const [highlightColor, setHighlightColor] = useState("#FFE566");
-  const [textColor, setTextColor] = useState("#1a1a1a");
-  const [textSize, setTextSize] = useState(16);
-  const [drawColor, setDrawColor] = useState("#1a1a1a");
-  const [drawThickness, setDrawThickness] = useState(2);
+  const [highlightColor, setHighlightColor] = useState(() => lsGet(LS_KEYS.highlight, COLOR_DEFAULTS.highlightColor));
+  const [textColor, setTextColor] = useState(() => lsGet(LS_KEYS.text, COLOR_DEFAULTS.textColor));
+  const [textSize, setTextSize] = useState(() => lsGetNum(LS_KEYS.textSize, COLOR_DEFAULTS.textSize));
+  const [drawColor, setDrawColor] = useState(() => lsGet(LS_KEYS.draw, COLOR_DEFAULTS.penColor));
+  const [drawThickness, setDrawThickness] = useState(() => lsGetNum(LS_KEYS.drawThickness, COLOR_DEFAULTS.penWidth));
+
+  // Persist tool-color preferences to localStorage whenever they change.
+  useEffect(() => { lsSet(LS_KEYS.highlight, highlightColor); }, [highlightColor]);
+  useEffect(() => { lsSet(LS_KEYS.text, textColor); }, [textColor]);
+  useEffect(() => { lsSet(LS_KEYS.draw, drawColor); }, [drawColor]);
+  useEffect(() => { lsSet(LS_KEYS.drawThickness, drawThickness); }, [drawThickness]);
+  useEffect(() => { lsSet(LS_KEYS.textSize, textSize); }, [textSize]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [splitView, setSplitView] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);

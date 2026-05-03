@@ -11,6 +11,10 @@ import {
   type Rect,
 } from "@/lib/highlightOps";
 import { hitTestAnnotation, type HitContext } from "@/lib/hitTest";
+import {
+  HIGHLIGHT_COLORS as HIGHLIGHT_PALETTE,
+  DEFAULTS as COLOR_DEFAULTS,
+} from "@/lib/annotationColors";
 
 const SHAPE_TOOLS: ToolType[] = ["freehand", "line", "arrow", "oval", "rectangle"];
 const isShapeTool = (t: ToolType) => SHAPE_TOOLS.includes(t);
@@ -570,13 +574,15 @@ export default function PDFPage({
   const [hlSubmenuOpen, setHlSubmenuOpen] = useState(false);
   const [commentInput, setCommentInput] = useState<{ open: boolean; text: string }>({ open: false, text: "" });
 
-  const SELECTION_HL_COLORS = [
-    { value: "rgba(255,255,0,0.3)", circle: "#FFFF00" },
-    { value: "rgba(0,255,0,0.3)", circle: "#00FF00" },
-    { value: "rgba(0,255,255,0.3)", circle: "#00FFFF" },
-    { value: "rgba(255,0,255,0.3)", circle: "#FF00FF" },
-    { value: "rgba(255,0,0,0.3)", circle: "#FF0000" },
-  ];
+  // Right-click popup highlight swatches come from the central palette in
+  // src/lib/annotationColors.ts. The hex `value` is stored on the
+  // annotation and the renderer applies `opacity` via canvas globalAlpha.
+  const SELECTION_HL_COLORS = HIGHLIGHT_PALETTE.map((c) => ({
+    value: c.value,
+    circle: c.value,
+    opacity: c.opacity,
+    label: c.name,
+  }));
 
   const getSelectionRects = useCallback(() => {
     const wrapper = wrapperRef.current;
@@ -761,7 +767,7 @@ export default function PDFPage({
       if (ann.rects.length === 0) continue;
       ctx.save();
       ctx.fillStyle = ann.color;
-      if (typeof ann.opacity === "number") ctx.globalAlpha = ann.opacity;
+      ctx.globalAlpha = typeof ann.opacity === "number" ? ann.opacity : 0.5;
       for (const r of ann.rects) {
         ctx.fillRect(r.x * canvas.width, r.y * canvas.height, r.width * canvas.width, r.height * canvas.height);
       }
@@ -1268,12 +1274,14 @@ export default function PDFPage({
                 {SELECTION_HL_COLORS.map(c => (
                   <div
                     key={c.value}
+                    title={c.label}
                     onClick={() => {
                       const ann = createHighlightFromSelection({
                         id: genId(),
                         page: pageNum,
                         selection: { text: contextMenu.selectedText, rects: contextMenu.rects },
                         color: c.value,
+                        opacity: c.opacity,
                       });
                       onAnnotationAdd(ann);
                       setContextMenu(null);
@@ -1306,7 +1314,7 @@ export default function PDFPage({
               const ann: Annotation = {
                 id: genId(), type: "underline", page: pageNum,
                 rects: contextMenu.rects,
-                color: "#1565C0",
+                color: COLOR_DEFAULTS.underlineColor,
                 selectedText: contextMenu.selectedText,
                 createdAt: new Date().toISOString(),
               };
@@ -1330,7 +1338,7 @@ export default function PDFPage({
               const ann: Annotation = {
                 id: genId(), type: "strike", page: pageNum,
                 rects: contextMenu.rects,
-                color: "#D32F2F",
+                color: COLOR_DEFAULTS.strikeColor,
                 selectedText: contextMenu.selectedText,
                 createdAt: new Date().toISOString(),
               };

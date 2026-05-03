@@ -1,31 +1,19 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { ToolType } from "@/lib/annotationTypes";
+import {
+  HIGHLIGHT_COLORS as PALETTE_HIGHLIGHT,
+  PEN_COLORS as PALETTE_PEN,
+  TEXT_COLORS as PALETTE_TEXT,
+} from "@/lib/annotationColors";
 
-const HIGHLIGHT_COLORS = [
-  { label: "Yellow",     value: "#FFE566" },
-  { label: "Light Blue", value: "#93C5FD" },
-  { label: "Green",      value: "#86EFAC" },
-  { label: "Pink",       value: "#F9A8D4" },
-  { label: "Light Red",  value: "#FCA5A5" },
-];
-
-const TEXT_COLORS = [
-  { label: "Black", value: "#1a1a1a" },
-  { label: "Blue",  value: "#1d4ed8" },
-  { label: "Green", value: "#15803d" },
-  { label: "Red",   value: "#dc2626" },
-];
-
-const DRAW_COLORS = [
-  { label: "Black",   value: "#1a1a1a" },
-  { label: "Blue",    value: "#0078D4" },
-  { label: "Red",     value: "#E81123" },
-  { label: "Magenta", value: "#E3008C" },
-  { label: "Violet",  value: "#8764B8" },
-  { label: "Green",   value: "#00B294" },
-  { label: "Orange",  value: "#FF8C00" },
-];
+// Toolbar swatches are derived from the central palette in
+// src/lib/annotationColors.ts. Mapped to the local { label, value } shape
+// the existing JSX expects so we keep the diff small and the popovers
+// continue to render unchanged.
+const HIGHLIGHT_COLORS = PALETTE_HIGHLIGHT.map((c) => ({ label: c.name, value: c.value }));
+const TEXT_COLORS = PALETTE_TEXT.map((c) => ({ label: c.name, value: c.value }));
+const DRAW_COLORS = PALETTE_PEN.map((c) => ({ label: c.name, value: c.value }));
 
 const THICKNESS_OPTIONS = [
   { label: "Thin",     value: 1,  size: 3  },
