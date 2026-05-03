@@ -35,14 +35,20 @@ export const SELECTION = {
  * page — no `multiply` blend, no dulling overlay — so what you see is
  * exactly the configured color at the configured alpha.
  */
+/**
+ * New ChatGPT-style soft highlight palette. Replaces the older 7-color
+ * neon set (Yellow #FFF200, Green #39FF14, Blue #00BFFF, Pink #FF4FB8,
+ * Red #FF3030, Cyan #00FFFF, Violet #A855FF). The new shades are
+ * intentionally lower-saturation so the underlying text stays sharp and
+ * readable, and so the live drag-select preview matches the committed
+ * highlight color exactly. Order is the user-specified order.
+ */
 export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Yellow", value: "#FFF200", opacity: 0.72 },
-  { name: "Green",  value: "#39FF14", opacity: 0.62 },
-  { name: "Blue",   value: "#00BFFF", opacity: 0.58 },
-  { name: "Pink",   value: "#FF4FB8", opacity: 0.60 },
-  { name: "Red",    value: "#FF3030", opacity: 0.56 },
-  { name: "Cyan",   value: "#00FFFF", opacity: 0.56 },
-  { name: "Violet", value: "#A855FF", opacity: 0.58 },
+  { name: "Green",  value: "#4CAF50", opacity: 0.24 },
+  { name: "Yellow", value: "#FFD600", opacity: 0.28 },
+  { name: "Red",    value: "#F44336", opacity: 0.22 },
+  { name: "Violet", value: "#7E57C2", opacity: 0.22 },
+  { name: "Grey",   value: "#9E9E9E", opacity: 0.22 },
 ];
 
 /**
@@ -57,14 +63,10 @@ export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
 export const SELECTION_PREVIEW_DEFAULT = "rgba(0, 120, 255, 0.25)";
 
 export const SELECTION_PREVIEW_BY_HIGHLIGHT: Record<string, string> = {
-  "#FFF200": "rgba(255, 214, 0, 0.28)",   // Yellow
-  "#39FF14": "rgba(76, 175, 80, 0.24)",   // Green
-  "#00BFFF": "rgba(0, 120, 255, 0.25)",   // Blue (ChatGPT default blue)
-  "#FF4FB8": "rgba(233, 30, 99, 0.22)",   // Pink
-  "#FF3030": "rgba(244, 67, 54, 0.22)",   // Red
-  "#00FFFF": "rgba(0, 188, 212, 0.22)",   // Cyan
-  "#A855FF": "rgba(126, 87, 194, 0.22)",  // Violet
-  // Grey is not in the highlight palette today but reserved for future use.
+  "#4CAF50": "rgba(76, 175, 80, 0.24)",   // Green
+  "#FFD600": "rgba(255, 214, 0, 0.28)",   // Yellow
+  "#F44336": "rgba(244, 67, 54, 0.22)",   // Red
+  "#7E57C2": "rgba(126, 87, 194, 0.22)",  // Violet
   "#9E9E9E": "rgba(158, 158, 158, 0.22)", // Grey
 };
 
@@ -138,9 +140,11 @@ export const DRAW_THICKNESS = {
   default: 3,
 } as const;
 
+/** Default highlight = Yellow (index 1 in the new palette). */
+const DEFAULT_HIGHLIGHT_INDEX = 1;
 export const DEFAULTS = {
-  highlightColor: HIGHLIGHT_COLORS[0].value,   // Yellow #FFF200
-  highlightOpacity: HIGHLIGHT_COLORS[0].opacity, // 0.72
+  highlightColor: HIGHLIGHT_COLORS[DEFAULT_HIGHLIGHT_INDEX].value,   // Yellow #FFD600
+  highlightOpacity: HIGHLIGHT_COLORS[DEFAULT_HIGHLIGHT_INDEX].opacity, // 0.28
   penColor: "#0D62F2",                         // Bright Blue
   penWidth: DRAW_THICKNESS.default,            // 3px
   underlineColor: "#0D62F2",

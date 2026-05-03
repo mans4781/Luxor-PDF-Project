@@ -7,7 +7,7 @@ import ThumbnailPanel from "@/components/ThumbnailPanel";
 import SearchBar from "@/components/SearchBar";
 import { useAnnotations } from "@/lib/useAnnotations";
 import { ToolType } from "@/lib/annotationTypes";
-import { DEFAULTS as COLOR_DEFAULTS, getSelectionPreview } from "@/lib/annotationColors";
+import { DEFAULTS as COLOR_DEFAULTS, getSelectionPreview, HIGHLIGHT_COLORS } from "@/lib/annotationColors";
 import WatermarkModal from "@/components/WatermarkModal";
 import PageNumberModal from "@/components/PageNumberModal";
 import CompressModal from "@/components/CompressModal";
@@ -76,7 +76,16 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   const [matchIndex, setMatchIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [tool, setTool] = useState<ToolType>("hand");
-  const [highlightColor, setHighlightColor] = useState(() => lsGet(LS_KEYS.highlight, COLOR_DEFAULTS.highlightColor));
+  const [highlightColor, setHighlightColor] = useState(() => {
+    // Migrate stale highlight colors from the old neon palette
+    // (#FFF200, #39FF14, #00BFFF, #FF4FB8, #FF3030, #00FFFF, #A855FF) to
+    // the new ChatGPT-style soft palette default.
+    const stored = lsGet(LS_KEYS.highlight, COLOR_DEFAULTS.highlightColor);
+    const valid = HIGHLIGHT_COLORS.some(
+      (c) => c.value.toLowerCase() === String(stored).toLowerCase(),
+    );
+    return valid ? stored : COLOR_DEFAULTS.highlightColor;
+  });
   const [textColor, setTextColor] = useState(() => lsGet(LS_KEYS.text, COLOR_DEFAULTS.textColor));
   const [textSize, setTextSize] = useState(() => lsGetNum(LS_KEYS.textSize, COLOR_DEFAULTS.textSize));
   const [drawColor, setDrawColor] = useState(() => lsGet(LS_KEYS.draw, COLOR_DEFAULTS.penColor));

@@ -1,0 +1,68 @@
+Redesign the PDF Reader toolbar icons for “Highlight” and “Draw” with a more premium and intuitive look.
+
+Goal:
+I want the icons to clearly show the actual action being performed.
+
+New icon concept:
+
+1. Highlight icon
+- The icon should show the tip of a vertical highlighter marker actively highlighting.
+- The highlighter should be standing almost vertically, with the tip touching a short horizontal highlight stroke or highlighted text line.
+- It should look like the marker is working on the page at that moment.
+- The focus should be on the nib/tip area, not on a full bulky marker body.
+- The icon must feel modern, clean, elegant, and professional, similar to the polished style of Microsoft Edge PDF toolbar icons.
+- Keep it simple and recognizable even at small sizes.
+
+2. Draw icon
+- The icon should show an Apple Pencil-style pen tip or stylus tip touching the screen vertically.
+- The pen/stylus should be almost vertical, with only the lower tip visible or emphasized.
+- The tip should look like it is just touching the screen surface, ready to draw.
+- Add a very small smooth stroke or tiny contact line below the tip to indicate drawing input.
+- The icon should feel premium, minimal, and refined.
+- It should resemble a modern digital drawing stylus, not a traditional wooden pencil.
+
+Design requirements:
+- Create both icons as clean SVG vector icons.
+- Use 24x24 viewBox.
+- Use `currentColor` for the main stroke/fill so it adapts to light and dark themes.
+- Use a consistent stroke width around 1.75 to 2 px.
+- Use rounded line caps and rounded line joins.
+- No gradients, no shadows, no glossy effects.
+- Keep the icons visually balanced with proper spacing/padding.
+- The icons must be clearly visible at 16px, 20px, 24px, and 32px.
+- The icons must look premium and polished, not cartoonish.
+- Style should be similar in quality and cleanliness to Microsoft Edge annotation toolbar icons, but original.
+
+Color indicator requirement:
+- Keep a small circular color indicator dot at the lower-right corner of each icon.
+- Highlight icon dot default color: yellow
+- Draw icon dot default color: red
+- These dots should look integrated with the icon, not randomly placed.
+- Add a thin white ring around the color dot for visibility on all backgrounds.
+- Use CSS variables:
+  - Highlight dot: `var(--highlight-color, #FFD600)`
+  - Draw dot: `var(--draw-color, #E53935)`
+
+Implementation requirements:
+- Create two reusable SVG icon components:
+  - `HighlightIcon`
+  - `DrawIcon`
+- Replace the existing toolbar icons with these new components.
+- Keep all current click handlers, tool selection logic, and annotation behavior unchanged.
+- Maintain hover and active states.
+- Hover state: subtle rounded background
+- Selected state: slightly stronger toolbar background
+- Ensure icons remain crisp in toolbar.
+
+Visual details:
+- Highlight icon should visually communicate:
+  “vertical marker tip touching and applying highlight”
+- Draw icon should visually communicate:
+  “vertical digital stylus tip touching the screen”
+
+Expected result:
+The PDF toolbar should now show:
+- A beautiful vertical highlighter-tip icon for Highlight
+- A beautiful vertical Apple Pencil-style stylus-tip icon for Draw
+
+Both icons must be elegant, minimal, professional, and intuitive.
