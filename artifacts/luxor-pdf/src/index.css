@@ -3,7 +3,14 @@
 
 
 :root {
-  --toolbar-bg: #F5F0E8;
+  /* Adobe Acrobat–style dark charcoal header. */
+  --toolbar-bg: #323639;
+  --toolbar-fg: #E6E6E6;
+  --toolbar-fg-muted: #B8B8B8;
+  --toolbar-hover: rgba(255,255,255,0.08);
+  --toolbar-active-bg: rgba(79,142,247,0.22);
+  --toolbar-active-fg: #8FB6FF;
+  --toolbar-sep: rgba(255,255,255,0.12);
   --toolbar-height: 50px;
   --accent: #4f8ef7;
   --accent-hover: #3a74e0;
@@ -74,7 +81,7 @@ html, body, #root {
   border-radius: 6px;
   border: none;
   background: transparent;
-  color: #000;
+  color: var(--toolbar-fg);
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
   font-size: 13px;
@@ -83,8 +90,8 @@ html, body, #root {
   position: relative;
   letter-spacing: 0.2px;
 }
-.toolbar-menu-word:hover { background: rgba(0,0,0,0.07); color: #222; }
-.toolbar-menu-word.active { background: rgba(79,142,247,0.18); color: #2a6dd4; }
+.toolbar-menu-word:hover { background: var(--toolbar-hover); color: #fff; }
+.toolbar-menu-word.active { background: var(--toolbar-active-bg); color: var(--toolbar-active-fg); }
 
 .toolbar-btn {
   display: flex;
@@ -95,7 +102,7 @@ html, body, #root {
   border-radius: 6px;
   border: none;
   background: transparent;
-  color: #000;
+  color: var(--toolbar-fg);
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
   font-size: 15px;
@@ -107,12 +114,12 @@ html, body, #root {
 .toolbar-btn > svg,
 .toolbar-btn svg:not(.toolbar-tip svg) { width: 20px !important; height: 20px !important; }
 
-.toolbar-btn:hover { background: rgba(0,0,0,0.07); color: #222; }
+.toolbar-btn:hover { background: var(--toolbar-hover); color: #fff; }
 .toolbar-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 .toolbar-sep {
   width: 1px; height: 22px;
-  background: rgba(0,0,0,0.12);
+  background: var(--toolbar-sep);
   margin: 0 3px; flex-shrink: 0;
 }
 
@@ -131,10 +138,10 @@ html, body, #root {
 .toolbar-btn:hover .toolbar-tip { opacity: 1; }
 
 .toolbar-input {
-  background: rgba(0,0,0,0.05);
-  border: 1px solid rgba(0,0,0,0.15);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
   border-radius: 4px;
-  color: #333; font-size: 12px;
+  color: var(--toolbar-fg); font-size: 12px;
   padding: 4px 5px;
   width: 46px; text-align: center; outline: none;
 }
@@ -142,14 +149,14 @@ html, body, #root {
 .toolbar-input:focus { border-color: var(--accent); }
 
 .toolbar-select {
-  background: rgba(0,0,0,0.05);
-  border: 1px solid rgba(0,0,0,0.15);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
   border-radius: 4px;
-  color: #333; font-size: 12px;
+  color: var(--toolbar-fg); font-size: 12px;
   padding: 4px 5px; outline: none; cursor: pointer;
 }
 
-.toolbar-label { color: #000; font-size: 13.89px; white-space: nowrap; }
+.toolbar-label { color: var(--toolbar-fg); font-size: 13.89px; white-space: nowrap; }
 
 /* ── Viewer ──────────────────────────────────────────────────────────────── */
 
