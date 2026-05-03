@@ -153,8 +153,10 @@ export function hitTestAnnotation(ann: Annotation, ctx: HitContext): boolean {
         ctx.normY <= ann.y + ann.h
       );
     }
-    case "image": {
-      // Same as redactions: filled rectangle in normalized page coords.
+    case "image":
+    case "edittext": {
+      // Filled rectangle in normalized page coords — eraser deletes the
+      // whole replacement (and re-exposes the original PDF text).
       return (
         ctx.normX >= ann.x &&
         ctx.normX <= ann.x + ann.w &&

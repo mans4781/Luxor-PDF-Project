@@ -353,9 +353,10 @@ export default function Viewer({ file, onClose }: ViewerProps) {
     if (downloading) return;
     const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
     const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
+    const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
     // If no edit feature is active, just hand back the original bytes —
     // no need to round-trip through pdf-lib.
-    if (!watermarkCfg && !pageNoCfg && redactions.length === 0 && images.length === 0) {
+    if (!watermarkCfg && !pageNoCfg && redactions.length === 0 && images.length === 0 && editTexts.length === 0) {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(file);
       a.download = file.name;
@@ -370,6 +371,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         pageNo: pageNoCfg,
         redactions,
         images,
+        editTexts,
         currentPage,
       });
       const url = URL.createObjectURL(blob);

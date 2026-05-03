@@ -353,11 +353,12 @@ export default function Toolbar({
             style={{ minWidth: 230, left: 0, transform: "none", padding: "6px 6px" }}
           >
             {EDIT_FEATURES.map((f) => {
-              const isLive = f.key === "watermark" || f.key === "pageno" || f.key === "redact" || f.key === "image";
+              const isLive = f.key === "watermark" || f.key === "pageno" || f.key === "redact" || f.key === "image" || f.key === "edittext";
               const isActive =
                 (f.key === "watermark" && watermarkActive) ||
                 (f.key === "pageno" && pageNoActive) ||
-                (f.key === "redact" && tool === "redact");
+                (f.key === "redact" && tool === "redact") ||
+                (f.key === "edittext" && tool === "edittext");
               return (
               <button
                 key={f.key}
@@ -368,6 +369,7 @@ export default function Toolbar({
                   else if (f.key === "pageno") onOpenPageNo();
                   else if (f.key === "redact") onToolChange(tool === "redact" ? "hand" : "redact");
                   else if (f.key === "image") onAddImage();
+                  else if (f.key === "edittext") onToolChange(tool === "edittext" ? "hand" : "edittext");
                   else setEditStub(f.key);
                 }}
                 style={{

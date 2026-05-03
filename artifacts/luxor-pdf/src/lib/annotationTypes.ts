@@ -1,4 +1,4 @@
-export type ToolType = "hand" | "highlight" | "eraser" | "text" | "freehand" | "line" | "arrow" | "oval" | "rectangle" | "redact" | "image";
+export type ToolType = "hand" | "highlight" | "eraser" | "text" | "freehand" | "line" | "arrow" | "oval" | "rectangle" | "redact" | "image" | "edittext";
 
 export interface Point { x: number; y: number; }
 
@@ -187,6 +187,39 @@ export interface ImageAnnotation {
   createdAt?: string;
 }
 
+/**
+ * Adobe-style "Edit Text" replacement. The user clicks a paragraph in the
+ * original PDF text, replaces a word/number/sentence, and on save we
+ * cover the original text with a `coverColor` rectangle and draw the
+ * replacement on top. Geometry is NORMALIZED 0..1 against the rendered
+ * page (origin top-left). For v1 we only support edits captured at
+ * `rotation === 0` — the burn-in pipeline ignores entries with any
+ * other rotation rather than placing them in the wrong spot.
+ */
+export interface EditTextAnnotation {
+  id: string;
+  type: "edittext";
+  page: number;
+  /** Original text bounding rect (normalized 0..1). Used for the cover. */
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  /** Estimated font size in PDF user-space points (post-zoom-normalized). */
+  fontSize: number;
+  /** Replacement text the user typed. */
+  text: string;
+  /** Original PDF text, kept for reference / re-edit pre-fill. */
+  originalText?: string;
+  /** Cover color (defaults to white). */
+  coverColor?: string;
+  /** New text color (defaults to black). */
+  textColor?: string;
+  /** Total displayed rotation at the time of the edit. */
+  rotation?: number;
+  createdAt?: string;
+}
+
 export type Annotation =
   | HighlightAnnotation
   | UnderlineAnnotation
@@ -195,4 +228,5 @@ export type Annotation =
   | CommentAnnotation
   | ShapeAnnotation
   | RedactionAnnotation
-  | ImageAnnotation;
+  | ImageAnnotation
+  | EditTextAnnotation;

@@ -19,7 +19,9 @@ import {
   type WatermarkPosition,
   type PageNoPosition,
 } from "./editTypes";
-import type { RedactionAnnotation, ImageAnnotation } from "./annotationTypes";
+import type {
+  RedactionAnnotation, ImageAnnotation, EditTextAnnotation,
+} from "./annotationTypes";
 
 export interface ExportEdits {
   watermark?: WatermarkConfig | null;
@@ -28,6 +30,8 @@ export interface ExportEdits {
   redactions?: RedactionAnnotation[];
   /** Raster images (PNG/JPEG) to embed and draw on each page. */
   images?: ImageAnnotation[];
+  /** Adobe-style text replacements: cover rect + replacement string. */
+  editTexts?: EditTextAnnotation[];
   /** 1-based page that was current in the viewer (used by `pageRange: current`). */
   currentPage: number;
 }
@@ -50,6 +54,11 @@ export async function exportPdfWithEdits(file: File, edits: ExportEdits): Promis
   for (const im of edits.images ?? []) {
     const arr = imagesByPage.get(im.page);
     if (arr) arr.push(im); else imagesByPage.set(im.page, [im]);
+  }
+  const editTextsByPage = new Map<number, EditTextAnnotation[]>();
+  for (const et of edits.editTexts ?? []) {
+    const arr = editTextsByPage.get(et.page);
+    if (arr) arr.push(et); else editTextsByPage.set(et.page, [et]);
   }
 
   // Embed each unique image once and reuse the embedded handle on every
@@ -75,6 +84,9 @@ export async function exportPdfWithEdits(file: File, edits: ExportEdits): Promis
 
     const ims = imagesByPage.get(pageNum);
     if (ims && ims.length) drawImagesOnPage(p, ims, embeddedCache, width, height);
+
+    const ets = editTextsByPage.get(pageNum);
+    if (ets && ets.length) drawEditTextsOnPage(p, ets, font, width, height);
 
     if (edits.watermark && watermarkAppliesTo(edits.watermark, pageNum, edits.currentPage)) {
       drawWatermarkOnPage(p, edits.watermark, fontBold, width, height);
@@ -302,6 +314,50 @@ function drawImagesOnPage(
       }
     }
     page.drawImage(embedded, { x, y, width, height });
+  }
+}
+
+/**
+ * Burn Adobe-style text replacements: cover original PDF text with a
+ * `coverColor` rectangle, then draw the replacement string on top in
+ * Helvetica at the user's chosen `textColor`. Only `rotation === 0`
+ * entries are processed — others are silently skipped to avoid placing
+ * the cover in the wrong spot. Stored coords are normalized 0..1 with
+ * the SCREEN convention (origin top-left, y grows down); we flip y
+ * into PDF user-space (origin bottom-left).
+ */
+function drawEditTextsOnPage(
+  page: ReturnType<PDFDocument["getPages"]>[number],
+  edits: EditTextAnnotation[],
+  font: Awaited<ReturnType<PDFDocument["embedFont"]>>,
+  w: number,
+  h: number,
+) {
+  for (const e of edits) {
+    const rot = (((e.rotation ?? 0) % 360) + 360) % 360;
+    if (rot !== 0) continue;
+    const cx = hexToRgb01(e.coverColor ?? "#FFFFFF");
+    const tx = hexToRgb01(e.textColor ?? "#000000");
+    const rectX = e.x * w;
+    const rectY = h - e.y * h - e.h * h;
+    const rectW = e.w * w;
+    const rectH = e.h * h;
+    page.drawRectangle({
+      x: rectX, y: rectY, width: rectW, height: rectH,
+      color: rgb(cx.r, cx.g, cx.b),
+      opacity: 1,
+    });
+    if (!e.text) continue;
+    // Vertically center the new text in the cover rect; small left pad.
+    const fontSize = e.fontSize;
+    const textY = rectY + (rectH - fontSize) / 2 + fontSize * 0.18;
+    page.drawText(e.text, {
+      x: rectX + 1,
+      y: textY,
+      size: fontSize,
+      font,
+      color: rgb(tx.r, tx.g, tx.b),
+    });
   }
 }
 

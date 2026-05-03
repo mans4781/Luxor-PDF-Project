@@ -741,6 +741,18 @@ export default function PDFPage({
   const textLayerRef = useRef<HTMLDivElement>(null);
   const [pageSize, setPageSize] = useState({ w: 0, h: 0 });
   const [editingText, setEditingText] = useState<{ id: string; x: number; y: number } | null>(null);
+  /** Inline Adobe-style "Edit Text" editor state. Coords are in CSS pixels
+   *  relative to the page wrapper. fontSizePdf is post-zoom-normalized so
+   *  it can be persisted unchanged into the EditTextAnnotation. */
+  const [editingPdfText, setEditingPdfText] = useState<{
+    id?: string;
+    x: number; y: number; w: number; h: number;
+    fontSizeCss: number;
+    fontSizePdf: number;
+    text: string;
+    originalText: string;
+    rotation: number;
+  } | null>(null);
   const highlightRef = useRef<{ active: boolean; startX: number; startY: number } | null>(null);
   const renderTaskRef = useRef<any>(null);
   const textLayerTaskRef = useRef<any>(null);
@@ -1376,6 +1388,84 @@ export default function PDFPage({
   const textAnnotations = annotations.filter(a => a.type === "text") as TextAnnotation[];
   const commentAnnotations = annotations.filter(a => a.type === "comment") as CommentAnnotation[];
   const imageAnnotations = annotations.filter(a => a.type === "image" && a.page === pageNum) as ImageAnnotation[];
+  const editTextAnnotations = annotations.filter(
+    a => a.type === "edittext" && a.page === pageNum,
+  ) as import("@/lib/annotationTypes").EditTextAnnotation[];
+
+  // Edit-Text tool: when active, clicking any text-layer span (i.e. the
+  // original PDF text) opens the inline replacement editor over that
+  // span. We use event delegation on the textLayer container so the
+  // handler survives every textLayer re-render. We also bail out when
+  // the page is rotated, since v1 doesn't support rotated burn-in.
+  useEffect(() => {
+    if (tool !== "edittext") return;
+    const layer = textLayerRef.current;
+    const wrap = wrapperRef.current;
+    if (!layer || !wrap) return;
+    const onClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target || target.tagName !== "SPAN") return;
+      const text = target.textContent ?? "";
+      if (!text.trim()) return;
+      const totalRot =
+        ((pageNativeRotationRef.current + rotation) % 360 + 360) % 360;
+      if (totalRot !== 0) {
+        alert("Edit Text only works on un-rotated pages — please reset rotation first.");
+        return;
+      }
+      e.stopPropagation();
+      e.preventDefault();
+      const wrapBox = wrap.getBoundingClientRect();
+      const spanBox = target.getBoundingClientRect();
+      const x = spanBox.left - wrapBox.left;
+      const y = spanBox.top - wrapBox.top;
+      const w = Math.max(spanBox.width, 24);
+      const h = Math.max(spanBox.height, 12);
+      const fontSizeCss = parseFloat(getComputedStyle(target).fontSize) || h;
+      const fontSizePdf = fontSizeCss / Math.max(zoom, 0.0001);
+      setEditingPdfText({
+        x, y, w, h, fontSizeCss, fontSizePdf,
+        text, originalText: text, rotation: 0,
+      });
+    };
+    layer.addEventListener("click", onClick, true);
+    return () => layer.removeEventListener("click", onClick, true);
+  }, [tool, zoom, rotation, pageNum]);
+
+  const commitEditText = useCallback((newText: string) => {
+    setEditingPdfText(prev => {
+      if (!prev) return null;
+      // No-op (unchanged & not yet stored) → just close.
+      if (!prev.id && newText === prev.originalText) return null;
+      // Empty replacement on a brand-new edit → close without storing.
+      if (!prev.id && !newText.trim()) return null;
+      const W = pageSize.w || 1;
+      const H = pageSize.h || 1;
+      if (prev.id) {
+        // Re-edit of existing annotation: only the text content changes.
+        onAnnotationUpdate(prev.id, { text: newText } as any);
+      } else {
+        const ann: import("@/lib/annotationTypes").EditTextAnnotation = {
+          id: genId(),
+          type: "edittext",
+          page: pageNum,
+          x: prev.x / W,
+          y: prev.y / H,
+          w: prev.w / W,
+          h: prev.h / H,
+          fontSize: prev.fontSizePdf,
+          text: newText,
+          originalText: prev.originalText,
+          coverColor: "#FFFFFF",
+          textColor: "#000000",
+          rotation: prev.rotation,
+          createdAt: new Date().toISOString(),
+        };
+        onAnnotationAdd(ann);
+      }
+      return null;
+    });
+  }, [pageSize.w, pageSize.h, pageNum, onAnnotationAdd, onAnnotationUpdate]);
   const [hoveredComment, setHoveredComment] = useState<string | null>(null);
 
   // Highlight tool is now Adobe/Edge-style: it uses real text selection on
@@ -1395,9 +1485,10 @@ export default function PDFPage({
   return (
     <div
       ref={wrapperRef}
-      className="pdf-page-wrapper"
+      className={`pdf-page-wrapper${tool === "edittext" ? " edit-text-mode" : ""}`}
       style={{ width: pageSize.w || "auto", height: pageSize.h || "auto", "--scale-factor": zoom } as React.CSSProperties}
       id={`page-${pageNum}`}
+      data-edit-text-mode={tool === "edittext" ? "" : undefined}
     >
       <canvas ref={pageCanvasRef} className="pdf-page-canvas" />
 
@@ -1888,6 +1979,98 @@ export default function PDFPage({
           onDelete={() => onAnnotationRemove(ann.id)}
         />
       ))}
+
+      {/* Adobe-style "Edit Text" replacements rendered on screen. The white
+          cover sits at the original PDF text rect; the new text is drawn
+          on top in the same approximate font size. Clicking it while the
+          edittext tool is active re-opens the inline editor. */}
+      {editTextAnnotations.map(ann => {
+        const left = ann.x * pageSize.w;
+        const top = ann.y * pageSize.h;
+        const width = ann.w * pageSize.w;
+        const height = ann.h * pageSize.h;
+        return (
+          <div
+            key={ann.id}
+            style={{
+              position: "absolute",
+              left, top,
+              minWidth: width,
+              height,
+              background: ann.coverColor ?? "#FFFFFF",
+              color: ann.textColor ?? "#000000",
+              fontFamily: "Helvetica, Arial, sans-serif",
+              fontSize: ann.fontSize * zoom,
+              lineHeight: `${height}px`,
+              whiteSpace: "pre",
+              paddingLeft: 1,
+              boxSizing: "border-box",
+              zIndex: 14,
+              cursor: tool === "edittext" ? "text" : "default",
+              pointerEvents: tool === "edittext" ? "auto" : "none",
+              outline: tool === "edittext" ? "1px dashed rgba(13,98,242,0.55)" : "none",
+            }}
+            onClick={(e) => {
+              if (tool !== "edittext") return;
+              e.stopPropagation();
+              setEditingPdfText({
+                id: ann.id,
+                x: left, y: top, w: width, h: height,
+                fontSizeCss: ann.fontSize * zoom,
+                fontSizePdf: ann.fontSize,
+                text: ann.text,
+                originalText: ann.originalText ?? "",
+                rotation: ann.rotation ?? 0,
+              });
+            }}
+          >
+            {ann.text}
+          </div>
+        );
+      })}
+
+      {/* Inline editor for the active text replacement. Auto-focuses,
+          commits on Enter / blur, cancels on Escape. */}
+      {editingPdfText && (
+        <input
+          type="text"
+          autoFocus
+          defaultValue={editingPdfText.text}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              commitEditText((e.target as HTMLInputElement).value);
+            } else if (e.key === "Escape") {
+              e.preventDefault();
+              setEditingPdfText(null);
+            }
+            e.stopPropagation();
+          }}
+          onBlur={(e) => commitEditText(e.target.value)}
+          style={{
+            position: "absolute",
+            left: editingPdfText.x,
+            top: editingPdfText.y,
+            minWidth: Math.max(editingPdfText.w, 60),
+            height: editingPdfText.h,
+            fontSize: editingPdfText.fontSizeCss,
+            fontFamily: "Helvetica, Arial, sans-serif",
+            lineHeight: `${editingPdfText.h}px`,
+            padding: "0 1px",
+            margin: 0,
+            background: "#FFFFFF",
+            color: "#000000",
+            border: "2px solid #0D62F2",
+            outline: "none",
+            borderRadius: 2,
+            boxSizing: "border-box",
+            zIndex: 50,
+            boxShadow: "0 0 0 4px rgba(13,98,242,0.15)",
+          }}
+        />
+      )}
 
       {commentAnnotations.map(ann => {
         const iconX = ann.rects[0] ? ann.rects[0].x * pageSize.w : ann.x * pageSize.w;

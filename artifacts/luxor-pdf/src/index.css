@@ -464,6 +464,20 @@ mark.search-hl {
  * words. We hide the native background and paint our own continuous,
  * line-merged blue strip via the .selection-overlay div in PDFPage.tsx
  * (Adobe Acrobat / Microsoft Edge style). */
+/* Edit-Text mode: highlight the textLayer span the user is hovering so
+   it's clear what they'll click to edit. textLayer spans are normally
+   transparent (used only for selection); under this mode we draw a
+   subtle blue outline + tint behind whatever the mouse is over. */
+.pdf-page-wrapper.edit-text-mode .textLayer {
+  cursor: text;
+}
+.pdf-page-wrapper.edit-text-mode .textLayer span:hover {
+  background: rgba(13, 98, 242, 0.16) !important;
+  outline: 1px solid rgba(13, 98, 242, 0.7);
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+
 .pdf-page-wrapper .textLayer ::selection {
   background: transparent !important;
 }
