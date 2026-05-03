@@ -4,7 +4,7 @@
 
 :root {
   /* Light silver header. */
-  --toolbar-bg: #C0C0C0;
+  --toolbar-bg: #F7F7F7;
   --toolbar-fg: #1F1F1F;
   --toolbar-fg-muted: #4A4A4A;
   --toolbar-hover: rgba(0,0,0,0.08);
