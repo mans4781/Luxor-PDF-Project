@@ -765,8 +765,13 @@ export default function Toolbar({
             <img src={eraserIcon} alt="Eraser" style={{ width: 18, height: 18, objectFit: "contain" }} />
           ) : (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 20H8l-5.3-5.3a1.6 1.6 0 0 1 0-2.27L12.3 2.83a1.6 1.6 0 0 1 2.27 0l6.6 6.6a1.6 1.6 0 0 1 0 2.27L13 20"/>
-              <line x1="18" y1="13" x2="9" y2="4"/>
+              {/* Eraser body scaled +12% on its long axis and -7% on the
+                  short axis (rotated 45° to match the icon's diagonal
+                  orientation) so the rubber looks longer and slimmer. */}
+              <g transform="rotate(45 12 12) scale(0.93 1.12) rotate(-45 12 12)" style={{ transformOrigin: "12px 12px" }}>
+                <path d="M20 20H8l-5.3-5.3a1.6 1.6 0 0 1 0-2.27L12.3 2.83a1.6 1.6 0 0 1 2.27 0l6.6 6.6a1.6 1.6 0 0 1 0 2.27L13 20"/>
+                <line x1="18" y1="13" x2="9" y2="4"/>
+              </g>
             </svg>
           )}
         </button>
