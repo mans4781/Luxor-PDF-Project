@@ -1,0 +1,402 @@
+In my Luxor PDF Reader, I want to add an “Edit” menu for an opened PDF.
+
+Please add the following features under the Edit menu:
+
+1. Redact
+2. Add Image
+3. Add Watermark
+4. Add Page No.
+5. Edit Text
+6. Compress This PDF
+
+Goal:
+Create a clean, professional Edit menu similar to modern PDF software like Adobe Acrobat, Foxit, and Microsoft Edge style, but matching Luxor PDF Reader branding.
+
+-----------------------------------
+EDIT MENU STRUCTURE
+-----------------------------------
+
+Add this menu in the top toolbar/header:
+
+Edit
+├── Redact
+├── Add Image
+├── Add Watermark
+├── Add Page No.
+├── Edit Text
+└── Compress This PDF
+
+Each option should have:
+- clean icon
+- label
+- hover state
+- active/selected state if applicable
+- tooltip if needed
+
+-----------------------------------
+1. REDACT
+-----------------------------------
+
+Feature:
+Allow the user to permanently hide/remove sensitive text or areas from the PDF.
+
+Required behavior:
+- User clicks Edit > Redact.
+- Cursor changes to crosshair or selection cursor.
+- User can select text or draw a rectangle over the area to redact.
+- Selected area should show a redaction preview box.
+- Default redaction color: black.
+- Provide an “Apply Redaction” button.
+- Before final apply, show warning:
+  “Redaction permanently removes/obscures selected content. This action cannot be reversed after saving.”
+- Once applied, the selected area should be permanently covered/removed in the exported/saved PDF.
+- Redaction should not be only a visual annotation if the PDF is saved.
+- It must actually burn into the PDF output.
+
+Optional:
+- Add redaction colors:
+  - Black
+  - White
+- Add label text option:
+  - “REDACTED”
+
+Important:
+- Do not only draw a black rectangle as a temporary annotation.
+- When user saves/export PDF, redacted area must be flattened/permanent.
+
+-----------------------------------
+2. ADD IMAGE
+-----------------------------------
+
+Feature:
+Allow user to insert an image into the open PDF.
+
+Required behavior:
+- User clicks Edit > Add Image.
+- Open file picker.
+- Allow PNG, JPG, JPEG, WEBP.
+- After selecting image, show it on the PDF page.
+- User can drag to position the image.
+- User can resize using corner handles.
+- User can rotate if possible.
+- User can delete selected image.
+- Image position should stay correct after zoom/scroll.
+- Save/export should embed the image into the PDF.
+
+Image annotation/object data should include:
+- id
+- pageNumber
+- image source/blob/base64
+- x
+- y
+- width
+- height
+- rotation
+- opacity
+- createdAt
+
+-----------------------------------
+3. ADD WATERMARK
+-----------------------------------
+
+Feature:
+Allow user to add text or image watermark to PDF.
+
+Required behavior:
+- User clicks Edit > Add Watermark.
+- Open watermark settings modal/panel.
+- User can choose:
+  - Text watermark
+  - Image watermark
+- Text watermark options:
+  - watermark text
+  - font size
+  - font family
+  - color
+  - opacity
+  - rotation angle
+  - position
+- Image watermark options:
+  - upload image
+  - opacity
+  - size
+  - rotation angle
+  - position
+- Page range options:
+  - all pages
+  - current page
+  - custom page range
+- Common positions:
+  - center
+  - top-left
+  - top-right
+  - bottom-left
+  - bottom-right
+  - tiled/repeated watermark
+- Default watermark:
+  - text: “CONFIDENTIAL”
+  - opacity: 0.18
+  - rotation: -35 degrees
+  - position: center
+- Preview watermark before applying.
+- Save/export should apply watermark to the PDF.
+
+-----------------------------------
+4. ADD PAGE NO.
+-----------------------------------
+
+Feature:
+Allow user to add page numbers to PDF pages.
+
+Required behavior:
+- User clicks Edit > Add Page No.
+- Open page number settings modal/panel.
+- User can choose:
+  - position: bottom center, bottom right, bottom left, top center, top right, top left
+  - start number
+  - page range
+  - font size
+  - font family
+  - text color
+  - prefix/suffix
+- Example:
+  - Page 1
+  - 1
+  - 1 of 10
+  - Page 1 of 10
+- Default:
+  - position: bottom center
+  - font size: 11
+  - color: #333333
+  - format: “Page {page} of {total}”
+- Show preview before applying.
+- Save/export should embed page numbers into the PDF.
+
+-----------------------------------
+5. EDIT TEXT
+-----------------------------------
+
+Feature:
+Allow user to edit existing PDF text where possible.
+
+Required behavior:
+- User clicks Edit > Edit Text.
+- Detect editable text layer or PDF text objects if supported.
+- User can click existing text and edit it.
+- Show editable text box overlay aligned with selected text.
+- Preserve font size, approximate font family, color, and position as much as possible.
+- If exact PDF text editing is not possible with current PDF library, implement safe overlay-based text editing:
+  - cover old text with white rectangle
+  - place new editable text on top
+  - save/export as flattened PDF
+- User can:
+  - change text
+  - change font size
+  - change color
+  - delete selected text object
+- Add warning if using overlay method:
+  “This edit replaces the visible text using an overlay and will be flattened when saved.”
+
+Important:
+- Do not break text selection, highlight, draw, eraser, or add text tools.
+- Keep text edits aligned after zoom and scroll.
+- Save/export must preserve visible changes.
+
+-----------------------------------
+6. COMPRESS THIS PDF
+-----------------------------------
+
+Feature:
+Allow user to compress the currently opened PDF.
+
+Required behavior:
+- User clicks Edit > Compress This PDF.
+- Open compression modal/panel.
+- Show options:
+  - Low compression / Best quality
+  - Medium compression / Balanced
+  - High compression / Smaller file
+  - Custom compression if possible
+- Show original file size.
+- After compression, show compressed file size.
+- Show percentage reduction.
+- Provide buttons:
+  - Compress
+  - Download Compressed PDF
+  - Replace Current PDF if safe
+- Compression should reduce:
+  - image quality/resolution where possible
+  - unnecessary metadata
+  - unused objects if supported
+- Do not corrupt the PDF.
+- Keep text readable.
+- Keep pages in correct order.
+
+-----------------------------------
+UI / DESIGN REQUIREMENTS
+-----------------------------------
+
+- Add the Edit menu in the top toolbar/header.
+- Menu should look modern and clean.
+- Use Luxor PDF Reader theme.
+- Menu background: white or light gray.
+- Hover color: subtle blue/gray.
+- Icons should be simple SVG icons.
+- Modal panels should be clean, premium, and easy to use.
+- Keep spacing, typography, and buttons professional.
+- Do not clutter the main toolbar.
+
+Suggested icon ideas:
+- Redact: black rectangle / shield icon
+- Add Image: image/photo icon
+- Add Watermark: droplet/stamp icon
+- Add Page No.: page with # icon
+- Edit Text: T with pencil icon
+- Compress This PDF: compress arrows icon
+
+-----------------------------------
+IMPLEMENTATION REQUIREMENTS
+-----------------------------------
+
+First inspect the current project structure and identify:
+- PDF viewer component
+- toolbar/header component
+- annotation layer
+- PDF save/export logic
+- current PDF library being used
+- whether pdf-lib, PDF.js, or another library is used
+
+Do not rewrite the full app unnecessarily.
+
+Create reusable modules/components if needed:
+
+Suggested components:
+- EditMenu
+- RedactTool
+- AddImageTool
+- WatermarkModal
+- PageNumberModal
+- EditTextTool
+- CompressPdfModal
+
+Suggested functions:
+- openEditMenu()
+- activateEditTool(toolName)
+- addImageToPdf()
+- renderImageObject()
+- applyWatermark()
+- applyPageNumbers()
+- activateRedactionMode()
+- applyRedactions()
+- activateEditTextMode()
+- compressCurrentPdf()
+- saveEditedPdf()
+- exportEditedPdf()
+
+Data model:
+Use a common edit object structure:
+
+{
+  id: "edit_object_id",
+  type: "redaction" | "image" | "watermark" | "pageNumber" | "textEdit",
+  pageNumber: 1,
+  data: {},
+  createdAt: "ISO_DATE"
+}
+
+-----------------------------------
+SAVE / EXPORT REQUIREMENT
+-----------------------------------
+
+Very important:
+All Edit menu features must be included when the user saves or exports the PDF.
+
+- Redactions must be permanent.
+- Images must be embedded.
+- Watermarks must be applied.
+- Page numbers must be embedded.
+- Text edits must be visible and flattened if needed.
+- Compressed PDF must be downloadable as a new file.
+
+Do not make these features only temporary screen overlays.
+
+-----------------------------------
+DO NOT BREAK EXISTING FEATURES
+-----------------------------------
+
+Make sure existing Luxor PDF Reader features still work:
+- open PDF
+- zoom
+- scroll
+- page navigation
+- highlight
+- draw
+- eraser
+- add text
+- text selection
+- annotation colors
+- annotation saving if already implemented
+
+-----------------------------------
+TESTING CHECKLIST
+-----------------------------------
+
+Please test:
+
+Edit Menu:
+1. Open PDF.
+2. Click Edit menu.
+3. Confirm all six options appear:
+   - Redact
+   - Add Image
+   - Add Watermark
+   - Add Page No.
+   - Edit Text
+   - Compress This PDF
+
+Redact:
+4. Select an area and preview redaction.
+5. Apply redaction.
+6. Save/export and confirm redaction is permanent.
+
+Add Image:
+7. Insert PNG/JPG image.
+8. Move and resize image.
+9. Save/export and confirm image appears in PDF.
+
+Watermark:
+10. Add text watermark on all pages.
+11. Add watermark on current page only.
+12. Save/export and confirm watermark is embedded.
+
+Page Number:
+13. Add “Page {page} of {total}”.
+14. Test bottom center and top right.
+15. Save/export and confirm page numbers are embedded.
+
+Edit Text:
+16. Click text and edit/replace it.
+17. Save/export and confirm visible text change remains.
+
+Compress:
+18. Compress PDF in medium mode.
+19. Show original size and compressed size.
+20. Download compressed PDF and confirm it opens correctly.
+
+Regression:
+21. Confirm highlight still works.
+22. Confirm draw still works.
+23. Confirm eraser still works.
+24. Confirm add text still works.
+25. Confirm zoom/scroll/page navigation still work.
+
+-----------------------------------
+FINAL RESPONSE REQUIRED
+-----------------------------------
+
+After completing:
+1. Show all changed files.
+2. Explain how the Edit menu was added.
+3. Explain how each of the six features works.
+4. Explain how save/export handles the edits.
+5. Tell me how to test everything step by step.
