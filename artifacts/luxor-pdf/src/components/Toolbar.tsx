@@ -20,11 +20,11 @@ import {
  * uses the `--highlight-color` CSS variable (set inline on the svg from
  * the `color` prop) with a yellow fallback per spec.
  */
-function HighlightIcon({ color, size = 20 }: { color: string; size?: number }) {
+function HighlightIcon({ color, size = 24 }: { color: string; size?: number }) {
   return (
     <svg
       width={size} height={size} viewBox="0 0 24 24"
-      fill="none" stroke="currentColor" strokeWidth="1.8"
+      fill="none" stroke="currentColor" strokeWidth="1.4"
       strokeLinecap="round" strokeLinejoin="round"
       style={{ ["--highlight-color" as string]: color }}
     >
@@ -35,7 +35,7 @@ function HighlightIcon({ color, size = 20 }: { color: string; size?: number }) {
       {/* Chisel nib tapering down to the page */}
       <path d="M9 11 L10.5 14 L13.5 14 L15 11 Z" />
       {/* Active highlight stroke directly under the nib */}
-      <line x1="4.5" y1="17.5" x2="14" y2="17.5" strokeWidth="2.6" />
+      <line x1="4.5" y1="17.5" x2="14" y2="17.5" strokeWidth="2.2" />
       {/* Color indicator dot, lower-right, with white ring */}
       <circle
         cx="19" cy="19" r="2.6"
@@ -52,11 +52,11 @@ function HighlightIcon({ color, size = 20 }: { color: string; size?: number }) {
  * Cylindrical body up top, conical tip pointing down, integrated color
  * dot at the lower right via `--draw-color` (red fallback per spec).
  */
-function DrawIcon({ color, size = 20 }: { color: string; size?: number }) {
+function DrawIcon({ color, size = 24 }: { color: string; size?: number }) {
   return (
     <svg
       width={size} height={size} viewBox="0 0 24 24"
-      fill="none" stroke="currentColor" strokeWidth="1.8"
+      fill="none" stroke="currentColor" strokeWidth="1.4"
       strokeLinecap="round" strokeLinejoin="round"
       style={{ ["--draw-color" as string]: color }}
     >
@@ -67,7 +67,7 @@ function DrawIcon({ color, size = 20 }: { color: string; size?: number }) {
       {/* Conical tip pointing down */}
       <path d="M9.5 12.5 L12 17 L14.5 12.5 Z" fill="currentColor" />
       {/* Tiny contact stroke under the tip */}
-      <line x1="8" y1="19.5" x2="13" y2="19.5" strokeWidth="1.4" />
+      <line x1="8" y1="19.5" x2="13" y2="19.5" strokeWidth="1.1" />
       {/* Color indicator dot, lower-right, with white ring */}
       <circle
         cx="19" cy="19" r="2.6"
