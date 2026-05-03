@@ -21,19 +21,28 @@ export type Rect = { x: number; y: number; width: number; height: number };
  * Group raw selection rects into visual lines and emit one continuous
  * rectangle per line — Adobe/Edge style.
  *
- * Algorithm (matches the spec's createMergedSelectionRects):
+ * Algorithm (matches the spec's createUniformSelectionRects):
  *   1. Sort by y, then x.
  *   2. Group into rows by y-proximity (within ~50% of line height).
- *   3. For each row, output a single rect spanning min x → max right,
- *      with min y → max bottom for the height. This fills any inter-word
- *      gaps because the row bounding box covers the entire selected range
- *      from first character to last character.
+ *   3. For each row, split it where the horizontal gap between
+ *      consecutive rects exceeds `columnGapFactor × line height`. This
+ *      keeps two-column PDFs from collapsing into a single giant
+ *      cross-column rectangle while still bridging normal inter-word
+ *      whitespace (which is ~0.3em, far below the threshold).
+ *   4. For each sub-row, output a bounding rect spanning min x → max
+ *      right and min y → max bottom. The bounding box fills inter-word
+ *      gaps from the first selected character to the last on that line.
  *
  * We deliberately do NOT join into one giant paragraph rectangle — each
  * visual line gets its own rect, so multi-line selections still look
  * line-by-line like Edge.
+ *
+ * `columnGapFactor` is in units of line-height (so it scales with zoom
+ * automatically because rects here are normalized 0..1 against the page
+ * and line height shrinks/grows with the same denominator). Default 2
+ * means: split if the gap is more than ~2 lines of text wide.
  */
-export function groupRectsIntoLines(rects: Rect[]): Rect[] {
+export function groupRectsIntoLines(rects: Rect[], columnGapFactor = 2): Rect[] {
   if (rects.length === 0) return [];
   const sorted = [...rects].sort((a, b) => a.y - b.y || a.x - b.x);
 
@@ -50,11 +59,30 @@ export function groupRectsIntoLines(rects: Rect[]): Rect[] {
 
   const out: Rect[] = [];
   for (const row of rows) {
-    const left = Math.min(...row.map((r) => r.x));
-    const right = Math.max(...row.map((r) => r.x + r.width));
-    const top = Math.min(...row.map((r) => r.y));
-    const bottom = Math.max(...row.map((r) => r.y + r.height));
-    out.push({ x: left, y: top, width: right - left, height: bottom - top });
+    row.sort((a, b) => a.x - b.x);
+    const lineH = Math.max(...row.map((r) => r.height));
+    const columnGap = lineH * columnGapFactor;
+
+    // Split the row into sub-runs where the gap exceeds the column threshold.
+    let run: Rect[] = [row[0]];
+    const flush = () => {
+      const left = Math.min(...run.map((r) => r.x));
+      const right = Math.max(...run.map((r) => r.x + r.width));
+      const top = Math.min(...run.map((r) => r.y));
+      const bottom = Math.max(...run.map((r) => r.y + r.height));
+      out.push({ x: left, y: top, width: right - left, height: bottom - top });
+    };
+    for (let i = 1; i < row.length; i++) {
+      const prev = run[run.length - 1];
+      const gap = row[i].x - (prev.x + prev.width);
+      if (gap > columnGap) {
+        flush();
+        run = [row[i]];
+      } else {
+        run.push(row[i]);
+      }
+    }
+    flush();
   }
   return out;
 }

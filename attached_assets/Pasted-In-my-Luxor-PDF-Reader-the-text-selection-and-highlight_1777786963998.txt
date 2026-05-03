@@ -1,0 +1,161 @@
+In my Luxor PDF Reader, the text selection and highlight overlay is not uniform. Please fix it to behave like Microsoft Edge PDF Reader and Adobe Acrobat.
+
+Problem shown in screenshot:
+- Text selection appears broken and uneven.
+- Some words are highlighted separately.
+- Some lines have gaps between words.
+- Some lines have different highlight heights.
+- Some selected areas extend too far or stop too early.
+- The selection does not look like a clean continuous strip.
+- Multi-line selection looks patchy instead of smooth.
+
+Required result:
+- Text selection must look smooth, clean, and uniform.
+- Each selected line should become one continuous blue selection strip.
+- Spaces between selected words must also be filled.
+- Multi-line selection should create separate clean rectangles for each line.
+- Do not make one large rectangle over the whole paragraph.
+- The selection should look like Microsoft Edge / Adobe Acrobat PDF selection.
+
+Main behavior:
+1. When user selects text, collect all selection rectangles from the PDF text layer.
+2. Merge rectangles line-by-line.
+3. For each selected line:
+   - Start highlight at the first selected character/word.
+   - End highlight at the last selected character/word.
+   - Fill the space between words.
+   - Use one uniform rectangle height for that line.
+4. Keep each line separate.
+5. Do not include unselected lines.
+6. Do not cover large blank paragraph areas.
+7. Do not cover text outside the selected range.
+
+Important implementation details:
+- The current issue is probably caused by rendering each PDF text span or word rectangle separately.
+- Do not use raw word-level rectangles directly for the final selection/highlight overlay.
+- Use `window.getSelection()` and `Range.getClientRects()` to get the selected text rectangles.
+- Remove tiny/empty rectangles.
+- Sort rectangles by page, then vertical position, then horizontal position.
+- Group rectangles that belong to the same visual line using vertical-center tolerance.
+- Merge only rectangles from the same line.
+- Do not merge rectangles from different columns or different questions if they are far apart horizontally.
+- Because my PDF has two columns, the logic must respect columns.
+- Do not create one long rectangle that crosses from the left column to the right column.
+- If selected rects are on the same Y level but far apart horizontally, treat them as separate line groups.
+- Add a horizontal gap threshold to prevent merging across columns.
+
+Line merging logic:
+- For each rect, calculate:
+  - centerY = y + height / 2
+  - left = x
+  - right = x + width
+- Group rects into the same line if:
+  - their centerY values are close within a tolerance, for example 3–6 px depending on zoom
+  - and they are on the same page
+  - and the horizontal gap between neighbouring rects is not too large
+- For each line group:
+  - mergedX = minimum x
+  - mergedY = minimum y
+  - mergedRight = maximum x + width
+  - mergedBottom = maximum y + height
+  - mergedWidth = mergedRight - mergedX
+  - mergedHeight = mergedBottom - mergedY
+- Use a consistent line height for the merged rectangle.
+- Slightly adjust top and bottom padding so the overlay looks clean, but do not cover the line above or below.
+
+Two-column PDF handling:
+- If two selected rectangles have similar Y positions but are separated by a large horizontal gap, do not merge them.
+- Example:
+  - Left column question line and right column question line may have same Y value.
+  - They must remain separate selection rectangles.
+- Add `maxHorizontalGap` logic:
+  - normal spaces between words should be merged
+  - large gaps between columns should not be merged
+- Suggested:
+  - Merge if gap is less than 25–40 px at current zoom, or dynamically based on average character/word gap.
+  - Do not merge if gap is larger than a column gap threshold.
+
+Highlight feature:
+- Final saved highlights should use these merged line rectangles.
+- Highlight should not have blank spaces between words.
+- Highlight should be uniform line-by-line.
+- Use yellow transparent highlight for saved highlights.
+- Use blue transparent selection overlay only during active selection if the app controls selection styling.
+- Store merged rectangles in PDF coordinates, not screen pixels.
+- Re-render correctly after zoom, scroll, page change, and reload.
+
+Suggested functions to add/fix:
+- getSelectionClientRects()
+- cleanSelectionRects(rects)
+- groupRectsByPage(rects)
+- groupRectsByVisualLine(rects, yTolerance)
+- splitLineGroupsByHorizontalGap(lineGroups, maxHorizontalGap)
+- mergeRectsWithinLine(lineRects)
+- createUniformSelectionRects()
+- convertClientRectToPdfRect()
+- convertPdfRectToViewportRect()
+- createHighlightFromSelection()
+- renderSelectionOverlay()
+- renderHighlightAnnotations()
+
+Pseudo logic:
+
+function createUniformSelectionRects(rawRects) {
+  const cleaned = cleanSelectionRects(rawRects);
+  const byPage = groupRectsByPage(cleaned);
+
+  const result = [];
+
+  for each pageGroup:
+    const lineGroups = groupRectsByVisualLine(pageGroup.rects, yTolerance);
+
+    for each lineGroup:
+      sort lineGroup by x;
+      const separatedGroups = splitLineGroupsByHorizontalGap(lineGroup, maxHorizontalGap);
+
+      for each separatedLine:
+        const merged = mergeRectsWithinLine(separatedLine);
+        result.push(merged);
+
+  return result;
+}
+
+Important:
+- Preserve real PDF text selection.
+- Do not disable normal PDF text selection.
+- Do not break copy text.
+- Do not break highlighter, eraser, draw, or add text tools.
+- Do not affect original PDF text.
+- This fix is only for selection/highlight overlay geometry and rendering.
+- Keep Luxor PDF Reader UI unchanged.
+
+Testing checklist:
+1. Select one word.
+2. Select one full line.
+3. Select one sentence with multiple spaces between words.
+4. Select multiple lines in one paragraph.
+5. Select a full question and its options.
+6. Select text in a two-column PDF page.
+7. Confirm left and right columns do not merge into one long rectangle.
+8. Confirm spaces between words are filled.
+9. Confirm each selected line looks like one smooth strip.
+10. Confirm selection does not cover unselected blank areas.
+11. Apply highlight and confirm saved highlight is also uniform.
+12. Zoom in and zoom out.
+13. Confirm highlight stays aligned after zoom.
+14. Use eraser and confirm only the touched highlight is removed.
+15. Confirm Draw and Add Text tools still work.
+
+Expected visual result:
+- Selection should look smooth, clean, and continuous like Microsoft Edge and Adobe Acrobat.
+- No broken word-by-word highlight.
+- No gaps between selected words.
+- No merging across columns.
+- No oversized paragraph boxes.
+
+After completing:
+1. Show all changed files.
+2. Explain how the selection rectangles are collected.
+3. Explain how rectangles are grouped line-by-line.
+4. Explain how large column gaps are prevented.
+5. Explain how saved highlights stay aligned after zoom.
