@@ -347,8 +347,8 @@ export default function Toolbar({
           title="Edit"
         >
           Edit
-          <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" style={{ marginLeft: 2, opacity: 0.6 }}>
-            <path d="M5 8l5 5 5-5z"/>
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 5 }}>
+            <polyline points="5 8 10 13 15 8" />
           </svg>
         </button>
 
@@ -473,8 +473,8 @@ export default function Toolbar({
           title="Drawing tools"
         >
           Tools
-          <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" style={{ marginLeft: 2, opacity: 0.6 }}>
-            <path d="M5 8l5 5 5-5z"/>
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 5 }}>
+            <polyline points="5 8 10 13 15 8" />
           </svg>
         </button>
 
