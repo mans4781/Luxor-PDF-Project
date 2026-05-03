@@ -1,0 +1,148 @@
+In my Luxor PDF Reader, I want the Highlight and Eraser tools to work exactly like Microsoft Edge PDF Reader.
+
+Goal:
+Implement Microsoft Edge-style PDF text highlighting and erasing.
+
+Current requirement:
+1. Text highlighter should behave like Microsoft Edge.
+2. Highlight should apply only to the exact selected text.
+3. Multi-line selection should highlight line by line, not as one big rectangle.
+4. Highlight should remain properly aligned after zoom, scroll, page change, and reload.
+5. Eraser should behave like Microsoft Edge.
+6. Eraser should remove only the highlight annotation that I click or erase, not remove all highlights from the page or document.
+
+Highlight Tool Requirements:
+- User can select a word, line, sentence, or paragraph.
+- When highlight tool is active, selected text should be highlighted accurately.
+- Highlight should follow the PDF text layer coordinates.
+- Do not highlight extra blank areas.
+- Do not create a large rectangle over the whole paragraph.
+- For multi-line text, create separate highlight rectangles for each line.
+- Highlight should look smooth, clean, and professional.
+- Use a transparent yellow highlight by default.
+- Also allow other highlight colors if the current app already supports them.
+- Highlight opacity should look similar to Microsoft Edge.
+- The original PDF text must remain readable.
+- Highlight annotation should be saved with:
+  - unique annotation ID
+  - page number
+  - selected text
+  - highlight color
+  - opacity
+  - PDF-space coordinates for each rectangle
+  - created date/time
+- Coordinates must be stored in PDF coordinates, not screen pixels.
+- On zoom or page render, convert saved PDF coordinates back to viewport coordinates.
+
+Microsoft Edge-like Highlight Behavior:
+- Drag over text to select.
+- Apply highlight only over the selected text.
+- Highlight should snap to text bounds.
+- When selecting multiple lines, highlight each text line separately.
+- Do not highlight outside the selected text area.
+- Selection should not feel rough or misaligned.
+- The highlight should stay attached to the text, even after zooming.
+
+Eraser Tool Requirements:
+- The eraser should work like Microsoft Edge annotation eraser.
+- When eraser tool is active, clicking or dragging over a highlighted annotation should remove only the targeted highlight.
+- Do not remove unrelated highlights.
+- Do not remove all highlights on the page.
+- Do not remove all highlights in the document.
+- If multiple highlights are on the same page, only the clicked/touched highlight should be erased.
+- If the current annotation model supports partial erasing, erase only the touched part.
+- If partial erasing is not currently supported, at minimum remove only the single touched highlight annotation, like Microsoft Edge.
+- Show a proper eraser cursor when eraser mode is active.
+- Normal text selection should be disabled while eraser mode is active.
+- After erasing, the annotation data should be updated immediately.
+
+Toolbar / UI Requirements:
+- Add or fix Highlight tool button.
+- Add or fix Eraser tool button.
+- Highlight mode and eraser mode should be mutually exclusive.
+- When Highlight is active, Eraser must be inactive.
+- When Eraser is active, Highlight must be inactive.
+- Add active button styling so the user knows which tool is selected.
+- Add simple tooltip labels:
+  - Highlight
+  - Eraser
+- Keep Luxor PDF Reader design unchanged except where needed.
+
+Implementation Requirements:
+- First inspect the existing PDF viewer code, PDF.js rendering, text layer, annotation layer, toolbar, highlight logic, and eraser logic.
+- Do not rewrite the full app.
+- Fix only the PDF highlighter and eraser behavior.
+- Use PDF.js textLayer selection rectangles where possible.
+- Use window.getSelection() and Range.getClientRects() to capture accurate selected text rectangles.
+- Convert selected client rectangles into PDF page viewport coordinates.
+- Save annotations in page-based PDF coordinates.
+- Render highlights in a separate annotation/highlight layer above the PDF page but below interactive controls.
+- Make sure highlights do not block text reading or scrolling.
+- Make sure highlights render correctly on every page.
+
+Suggested functions to create or fix:
+- enableHighlightMode()
+- disableHighlightMode()
+- enableEraserMode()
+- disableEraserMode()
+- getSelectedTextRects()
+- normalizeSelectionRectsByLine()
+- convertClientRectToPdfCoordinates()
+- convertPdfCoordinatesToViewport()
+- createHighlightAnnotation()
+- saveHighlightAnnotation()
+- renderPageHighlights()
+- hitTestHighlightAnnotation()
+- eraseHighlightAnnotation()
+- updateAnnotationsAfterErase()
+
+Data model example:
+{
+  id: "highlight_unique_id",
+  type: "highlight",
+  pageNumber: 1,
+  selectedText: "selected text here",
+  color: "#FFF176",
+  opacity: 0.45,
+  rects: [
+    {
+      x: 100,
+      y: 250,
+      width: 180,
+      height: 14
+    }
+  ],
+  createdAt: "ISO_DATE"
+}
+
+Testing Requirements:
+Test the following carefully:
+1. Highlight one word.
+2. Highlight one full line.
+3. Highlight a sentence.
+4. Highlight a multi-line paragraph.
+5. Highlight different parts of the same page separately.
+6. Use eraser on one highlight only.
+7. Confirm other highlights remain untouched.
+8. Highlight on multiple pages.
+9. Erase highlight on one page without affecting other pages.
+10. Zoom in and zoom out.
+11. Scroll and change page.
+12. Save/reload file if annotation saving exists.
+13. Confirm highlight position stays correct.
+14. Confirm text remains readable.
+15. Confirm no extra blank area is highlighted.
+
+Important:
+- I want Microsoft Edge-style PDF highlighting.
+- Highlight only exact selected text.
+- Eraser must erase only the selected/clicked/touched highlight, not all highlights.
+- Keep the existing app UI and features working.
+- Do not break merge, split, extract, password, print/copy control, or other PDF Reader features.
+
+After completing the fix:
+1. List all changed files.
+2. Explain what was changed.
+3. Explain how the highlight coordinates are saved and restored.
+4. Explain how the eraser detects and removes only the targeted highlight.
+5. Tell me how to test it step by step.

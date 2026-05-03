@@ -798,6 +798,7 @@ export default function PDFPage({
         }],
         color: highlightColor,
         selectedText: "",
+        createdAt: new Date().toISOString(),
       };
       onAnnotationAdd(ann);
     } else {

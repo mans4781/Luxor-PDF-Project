@@ -17,6 +17,8 @@ export interface HighlightAnnotation {
   opacity?: number;
   /** Plain text that was selected when the highlight was created. */
   selectedText?: string;
+  /** ISO timestamp when the annotation was created. */
+  createdAt?: string;
 }
 
 export interface TextAnnotation {

@@ -194,5 +194,6 @@ export function createHighlightFromSelection(args: {
     color: args.color,
     opacity: args.opacity,
     selectedText: args.selection.text,
+    createdAt: new Date().toISOString(),
   };
 }
