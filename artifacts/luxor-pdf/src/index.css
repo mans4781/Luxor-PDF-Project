@@ -3,14 +3,14 @@
 
 
 :root {
-  /* Adobe Acrobat–style dark charcoal header. */
-  --toolbar-bg: #3D3D3D;
-  --toolbar-fg: #E6E6E6;
-  --toolbar-fg-muted: #B8B8B8;
-  --toolbar-hover: rgba(255,255,255,0.08);
-  --toolbar-active-bg: rgba(79,142,247,0.22);
-  --toolbar-active-fg: #8FB6FF;
-  --toolbar-sep: rgba(255,255,255,0.12);
+  /* Light silver header. */
+  --toolbar-bg: #C0C0C0;
+  --toolbar-fg: #1F1F1F;
+  --toolbar-fg-muted: #4A4A4A;
+  --toolbar-hover: rgba(0,0,0,0.08);
+  --toolbar-active-bg: rgba(13,98,242,0.18);
+  --toolbar-active-fg: #0D62F2;
+  --toolbar-sep: rgba(0,0,0,0.18);
   --toolbar-height: 50px;
   --accent: #4f8ef7;
   --accent-hover: #3a74e0;
@@ -90,7 +90,7 @@ html, body, #root {
   position: relative;
   letter-spacing: 0.2px;
 }
-.toolbar-menu-word:hover { background: var(--toolbar-hover); color: #fff; }
+.toolbar-menu-word:hover { background: var(--toolbar-hover); color: #000; }
 .toolbar-menu-word.active { background: var(--toolbar-active-bg); color: var(--toolbar-active-fg); }
 
 .toolbar-btn {
@@ -114,7 +114,7 @@ html, body, #root {
 .toolbar-btn > svg,
 .toolbar-btn svg:not(.toolbar-tip svg) { width: 20px !important; height: 20px !important; }
 
-.toolbar-btn:hover { background: var(--toolbar-hover); color: #fff; }
+.toolbar-btn:hover { background: var(--toolbar-hover); color: #000; }
 .toolbar-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 .toolbar-sep {
@@ -138,8 +138,8 @@ html, body, #root {
 .toolbar-btn:hover .toolbar-tip { opacity: 1; }
 
 .toolbar-input {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(0,0,0,0.22);
   border-radius: 4px;
   color: var(--toolbar-fg); font-size: 12px;
   padding: 4px 5px;
@@ -149,8 +149,8 @@ html, body, #root {
 .toolbar-input:focus { border-color: var(--accent); }
 
 .toolbar-select {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(0,0,0,0.22);
   border-radius: 4px;
   color: var(--toolbar-fg); font-size: 12px;
   padding: 4px 5px; outline: none; cursor: pointer;
