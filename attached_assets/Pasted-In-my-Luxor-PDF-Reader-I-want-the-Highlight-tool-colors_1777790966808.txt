@@ -1,0 +1,203 @@
+In my Luxor PDF Reader, I want the Highlight tool colors to have the same shiny, vibrant, rich, clean look and feel as the attached sample image.
+
+Important requirement:
+The current highlight colors are not shiny or vibrant enough.
+I want the highlight effect to look:
+- bright
+- saturated
+- vivid
+- sharp
+- clean
+- premium
+- marker-like
+- slightly luminous
+- smooth and polished
+
+I do NOT want:
+- dull colors
+- faded colors
+- muddy colors
+- dusty pastel colors
+- weak transparent overlays
+- dirty-looking highlight tones
+
+Goal:
+Update the Highlight tool so that all highlight colors look visually strong and attractive like premium document apps and like the attached reference image.
+
+-----------------------------------
+DESIRED LOOK & FEEL
+-----------------------------------
+The highlights should feel like:
+- a fresh fluorescent marker
+- crisp and polished
+- vibrant but still readable
+- smooth and uniform
+- bold and clear without hiding the text
+
+The highlight should appear:
+- rich in colour
+- slightly glossy/luminous in feel
+- clean-edged
+- vivid on white paper
+- strong enough to be noticeable immediately
+
+Text must remain readable under the highlight.
+
+-----------------------------------
+HIGHLIGHT STYLE REQUIREMENTS
+-----------------------------------
+1. Use more saturated colors.
+2. Increase visual richness compared to the current version.
+3. Use a cleaner transparent overlay.
+4. Keep the highlight smooth and uniform across selected text.
+5. Fill spaces between words properly.
+6. Multi-line text should create clean separate highlight strips per line.
+7. Avoid patchy, broken, dull, or washed-out rendering.
+8. The final result should resemble a bright premium highlighter marker on paper.
+
+-----------------------------------
+RECOMMENDED HIGHLIGHT COLOURS
+-----------------------------------
+Use these vibrant, shiny-looking highlight colours:
+
+1. Yellow
+   - Hex: #FFEB3B
+
+2. Green
+   - Hex: #7CFF5B
+
+3. Blue
+   - Hex: #64D2FF
+
+4. Pink
+   - Hex: #FF6FCF
+
+5. Red
+   - Hex: #FF5252
+
+6. Cyan
+   - Hex: #4DFFFF
+
+7. Violet
+   - Hex: #B97CFF
+
+8. Magenta
+   - Hex: #FF4DDA
+
+9. Grey
+   - Hex: #C7D0D9
+
+-----------------------------------
+RENDERING / OPACITY REQUIREMENTS
+-----------------------------------
+- Use opacity around 50% to 62%
+- Recommended default opacity: 0.56
+- The colours should look more alive and energetic than normal pale highlights
+- The text should still be readable
+- Avoid making the overlay too weak
+- Avoid making it too opaque and heavy
+
+Optional rendering improvement:
+- If needed, slightly boost saturation and brightness before rendering
+- Keep a very clean flat fill with premium transparency
+- Do not add messy gradients
+- If any effect is added, it should be extremely subtle and only enhance the vivid feel
+
+-----------------------------------
+DEFAULT HIGHLIGHT
+-----------------------------------
+Default highlight color:
+- Yellow: #FFEB3B
+- Opacity: 0.56
+
+-----------------------------------
+UI REQUIREMENTS
+-----------------------------------
+- Show these colors as swatches in the Highlight tool popup/dropdown
+- Swatches must display the actual vivid colour
+- Selected swatch should show active border/check mark
+- Add tooltip labels for every colour
+- Keep the UI clean, modern, and premium
+
+-----------------------------------
+IMPLEMENTATION REQUIREMENTS
+-----------------------------------
+- Inspect the current highlight tool, annotation system, toolbar, and color picker
+- Do not rewrite the whole app unnecessarily
+- Update the highlight color configuration and rendering logic
+- Ensure the highlight annotation saves:
+  - color
+  - opacity
+  - selected text
+  - rects
+  - page number
+  - ID
+
+Suggested config:
+
+const HIGHLIGHT_COLORS = [
+  { name: "Yellow", value: "#FFEB3B", opacity: 0.56 },
+  { name: "Green", value: "#7CFF5B", opacity: 0.56 },
+  { name: "Blue", value: "#64D2FF", opacity: 0.56 },
+  { name: "Pink", value: "#FF6FCF", opacity: 0.56 },
+  { name: "Red", value: "#FF5252", opacity: 0.56 },
+  { name: "Cyan", value: "#4DFFFF", opacity: 0.56 },
+  { name: "Violet", value: "#B97CFF", opacity: 0.56 },
+  { name: "Magenta", value: "#FF4DDA", opacity: 0.56 },
+  { name: "Grey", value: "#C7D0D9", opacity: 0.52 }
+];
+
+const DEFAULT_HIGHLIGHT = {
+  color: "#FFEB3B",
+  opacity: 0.56
+};
+
+-----------------------------------
+FUNCTIONAL REQUIREMENTS
+-----------------------------------
+- When a user selects text and applies highlight, use the chosen vibrant color
+- Save the selected color with the annotation
+- Reload must preserve the same color and opacity
+- Highlight must remain aligned after zoom, scroll, page change, and reload
+- Only new highlights should use the newly chosen color
+- Existing highlights should still render correctly
+
+-----------------------------------
+EXPECTED FINAL RESULT
+-----------------------------------
+I want the highlight colours to look:
+- shiny
+- rich
+- vibrant
+- premium
+- smooth
+- eye-catching
+- clean
+- professional
+
+They should visually feel much closer to the attached sample image.
+
+-----------------------------------
+TESTING CHECKLIST
+-----------------------------------
+Please test:
+1. Highlight text in Yellow
+2. Highlight text in Green
+3. Highlight text in Blue
+4. Highlight text in Pink
+5. Highlight text in Red
+6. Highlight text in Cyan
+7. Highlight text in Violet
+8. Highlight text in Magenta
+9. Highlight text in Grey
+10. Confirm all colours look bright and vibrant
+11. Confirm text remains readable
+12. Confirm highlight strips look smooth and uniform
+13. Confirm colours stay the same after reload
+14. Confirm colours remain correct after zoom and scroll
+
+After completing:
+1. Show all changed files
+2. Explain where the vibrant highlight palette is configured
+3. Explain how the rendering was improved to make colours look more shiny/vibrant
+4. Explain how to test the final look

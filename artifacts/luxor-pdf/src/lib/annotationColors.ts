@@ -23,21 +23,22 @@ export const SELECTION = {
 } as const;
 
 /**
- * Vibrant, sharp highlight palette. Solid hex + 0.44 alpha gives a
- * clean, premium look — bright but never neon, and text under the
- * highlight stays readable. Yellow is the default to match the
+ * Shiny, marker-like highlight palette. Saturated hex + ~0.56 alpha
+ * gives a fresh fluorescent-marker look — vivid and luminous on white
+ * paper while still leaving text readable. Grey is dialed back to 0.52
+ * so it doesn't muddy text. Yellow is the default to match the
  * traditional highlighter feel.
  */
 export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Yellow",  value: "#FFEB3B", opacity: 0.44 },
-  { name: "Green",   value: "#76E36A", opacity: 0.44 },
-  { name: "Blue",    value: "#4FC3F7", opacity: 0.44 },
-  { name: "Cyan",    value: "#3DEBFF", opacity: 0.44 },
-  { name: "Pink",    value: "#FF5CA8", opacity: 0.44 },
-  { name: "Magenta", value: "#FF4FD8", opacity: 0.44 },
-  { name: "Red",     value: "#FF5252", opacity: 0.44 },
-  { name: "Violet",  value: "#B388FF", opacity: 0.44 },
-  { name: "Grey",    value: "#B0BEC5", opacity: 0.44 },
+  { name: "Yellow",  value: "#FFEB3B", opacity: 0.56 },
+  { name: "Green",   value: "#7CFF5B", opacity: 0.56 },
+  { name: "Blue",    value: "#64D2FF", opacity: 0.56 },
+  { name: "Cyan",    value: "#4DFFFF", opacity: 0.56 },
+  { name: "Pink",    value: "#FF6FCF", opacity: 0.56 },
+  { name: "Magenta", value: "#FF4DDA", opacity: 0.56 },
+  { name: "Red",     value: "#FF5252", opacity: 0.56 },
+  { name: "Violet",  value: "#B97CFF", opacity: 0.56 },
+  { name: "Grey",    value: "#C7D0D9", opacity: 0.52 },
 ];
 
 export const PEN_COLORS: ColorSwatch[] = [
@@ -61,7 +62,7 @@ export const TEXT_COLORS: ColorSwatch[] = [
 
 export const DEFAULTS = {
   highlightColor: HIGHLIGHT_COLORS[0].value,   // Yellow #FFEB3B
-  highlightOpacity: HIGHLIGHT_COLORS[0].opacity, // 0.44
+  highlightOpacity: HIGHLIGHT_COLORS[0].opacity, // 0.56
   penColor: "#1565C0",
   penWidth: 3,
   underlineColor: "#1565C0",

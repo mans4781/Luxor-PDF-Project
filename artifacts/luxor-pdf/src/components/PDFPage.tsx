@@ -766,8 +766,13 @@ export default function PDFPage({
       if (ann.type !== "highlight") continue;
       if (ann.rects.length === 0) continue;
       ctx.save();
+      // Marker-like fill: "multiply" blend lets the page text show
+      // through the color the way a real highlighter on paper does, so
+      // the colors look richer and more luminous than a flat over-paint
+      // at the same opacity.
       ctx.fillStyle = ann.color;
-      ctx.globalAlpha = typeof ann.opacity === "number" ? ann.opacity : 0.44;
+      ctx.globalAlpha = typeof ann.opacity === "number" ? ann.opacity : 0.56;
+      ctx.globalCompositeOperation = "multiply";
       for (const r of ann.rects) {
         ctx.fillRect(r.x * canvas.width, r.y * canvas.height, r.width * canvas.width, r.height * canvas.height);
       }
