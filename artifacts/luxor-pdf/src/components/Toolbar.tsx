@@ -152,6 +152,7 @@ interface ToolbarProps {
   textSize: number;
   drawColor: string;
   drawThickness: number;
+  shapeFill: boolean;
   isSpeaking: boolean;
   showContents: boolean;
   searchOpen: boolean;
@@ -165,6 +166,7 @@ interface ToolbarProps {
   onTextSizeChange: (s: number) => void;
   onDrawColorChange: (c: string) => void;
   onDrawThicknessChange: (t: number) => void;
+  onShapeFillChange: (v: boolean) => void;
   onEraseAll: () => void;
   onReadAloud: () => void;
   onOpenFile: () => void;
@@ -178,11 +180,11 @@ const isShapeTool = (t: ToolType) => ["freehand", "line", "arrow", "oval", "rect
 
 export default function Toolbar({
   fileName, tool,
-  highlightColor, textColor, textSize, drawColor, drawThickness, isSpeaking,
+  highlightColor, textColor, textSize, drawColor, drawThickness, shapeFill, isSpeaking,
   showContents, searchOpen, splitView,
   onToggleContents, onToggleSearch, onToggleSplit,
   onToolChange,
-  onHighlightColorChange, onTextColorChange, onTextSizeChange, onDrawColorChange, onDrawThicknessChange,
+  onHighlightColorChange, onTextColorChange, onTextSizeChange, onDrawColorChange, onDrawThicknessChange, onShapeFillChange,
   onEraseAll, onReadAloud, onOpenFile, onDownload, onPrint,
 }: ToolbarProps) {
   const [popover, setPopover] = useState<PopoverType>(null);
@@ -319,6 +321,26 @@ export default function Toolbar({
               onColorChange={onDrawColorChange}
               onThicknessChange={onDrawThicknessChange}
             />
+            <div style={{ height: 10 }} />
+            <label
+              style={{
+                display: "flex", alignItems: "center", gap: 8,
+                color: "#ccc", fontSize: 12, cursor: "pointer",
+                userSelect: "none",
+                padding: "6px 4px",
+                borderTop: "1px solid rgba(255,255,255,0.08)",
+                marginTop: 2,
+              }}
+              title="Fill rectangle and oval shapes — great for paragraph highlighting"
+            >
+              <input
+                type="checkbox"
+                checked={shapeFill}
+                onChange={(e) => onShapeFillChange(e.target.checked)}
+                style={{ accentColor: "#0D62F2", cursor: "pointer" }}
+              />
+              <span>Fill shape <span style={{ color: "#888" }}>(rect / oval)</span></span>
+            </label>
           </div>
         )}
       </div>

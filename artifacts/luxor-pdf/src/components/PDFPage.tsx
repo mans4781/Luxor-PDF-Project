@@ -34,6 +34,9 @@ interface PDFPageProps {
   textSize: number;
   drawThickness: number;
   drawColor: string;
+  /** When true, oval/rectangle shapes are also filled with `drawColor`. */
+  shapeFill: boolean;
+  shapeFillOpacity?: number;
   onAnnotationAdd: (a: Annotation) => void;
   onAnnotationUpdate: (id: string, updates: Partial<Annotation>) => void;
   onAnnotationRemove: (id: string) => void;
@@ -522,10 +525,24 @@ function drawShapeOnCtx(ctx: CanvasRenderingContext2D, ann: ShapeAnnotation) {
     case "oval": {
       ctx.beginPath();
       ctx.ellipse(ann.cx, ann.cy, Math.abs(ann.rx), Math.abs(ann.ry), 0, 0, 2 * Math.PI);
+      if (ann.fill) {
+        ctx.save();
+        ctx.fillStyle = ann.color;
+        ctx.globalAlpha = ann.fillOpacity ?? 0.25;
+        ctx.fill();
+        ctx.restore();
+      }
       ctx.stroke();
       break;
     }
     case "rect": {
+      if (ann.fill) {
+        ctx.save();
+        ctx.fillStyle = ann.color;
+        ctx.globalAlpha = ann.fillOpacity ?? 0.25;
+        ctx.fillRect(ann.x, ann.y, ann.w, ann.h);
+        ctx.restore();
+      }
       ctx.strokeRect(ann.x, ann.y, ann.w, ann.h);
       break;
     }
@@ -536,6 +553,7 @@ function drawShapeOnCtx(ctx: CanvasRenderingContext2D, ann: ShapeAnnotation) {
 export default function PDFPage({
   pdfDocument, pageNum, zoom, rotation, searchTerm, tool, annotations,
   highlightColor, textColor, textSize, drawThickness, drawColor,
+  shapeFill, shapeFillOpacity,
   onAnnotationAdd, onAnnotationUpdate, onAnnotationRemove,
   onVisible, onSearchTermChange,
 }: PDFPageProps) {
@@ -1010,6 +1028,13 @@ export default function PDFPage({
         const cy = (startY + pos.y) / 2;
         ctx.beginPath();
         ctx.ellipse(cx, cy, rx, ry, 0, 0, 2 * Math.PI);
+        if (shapeFill) {
+          ctx.save();
+          ctx.fillStyle = drawColor;
+          ctx.globalAlpha = shapeFillOpacity ?? 0.25;
+          ctx.fill();
+          ctx.restore();
+        }
         ctx.stroke();
         break;
       }
@@ -1021,12 +1046,19 @@ export default function PDFPage({
           w = Math.sign(w) * side;
           h = Math.sign(h) * side;
         }
+        if (shapeFill) {
+          ctx.save();
+          ctx.fillStyle = drawColor;
+          ctx.globalAlpha = shapeFillOpacity ?? 0.25;
+          ctx.fillRect(startX, startY, w, h);
+          ctx.restore();
+        }
         ctx.strokeRect(startX, startY, w, h);
         break;
       }
     }
     ctx.restore();
-  }, [tool, drawColor, annotations, pageSize]);
+  }, [tool, drawColor, annotations, pageSize, shapeFill, shapeFillOpacity]);
 
   const onShapeMouseUp = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const state = shapeDrawRef.current;
@@ -1070,7 +1102,7 @@ export default function PDFPage({
         if (rx > 3 && ry > 3) {
           const cx = (startX + pos.x) / 2;
           const cy = (startY + pos.y) / 2;
-          ann = { id: genId(), type: "oval", page: pageNum, cx, cy, rx, ry, color: drawColor, lineWidth: lw };
+          ann = { id: genId(), type: "oval", page: pageNum, cx, cy, rx, ry, color: drawColor, lineWidth: lw, fill: shapeFill, fillOpacity: shapeFillOpacity ?? 0.25 };
         }
         break;
       }
@@ -1083,7 +1115,7 @@ export default function PDFPage({
           h = Math.sign(h) * side;
         }
         if (Math.abs(w) > 3 && Math.abs(h) > 3) {
-          ann = { id: genId(), type: "rect", page: pageNum, x: startX, y: startY, w, h, color: drawColor, lineWidth: lw };
+          ann = { id: genId(), type: "rect", page: pageNum, x: startX, y: startY, w, h, color: drawColor, lineWidth: lw, fill: shapeFill, fillOpacity: shapeFillOpacity ?? 0.25 };
         }
         break;
       }
@@ -1094,7 +1126,7 @@ export default function PDFPage({
     } else {
       redrawAnnotations();
     }
-  }, [tool, pageNum, drawColor, onAnnotationAdd, pageSize]);
+  }, [tool, pageNum, drawColor, onAnnotationAdd, pageSize, shapeFill, shapeFillOpacity]);
 
   const handleTextClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (tool !== "text") return;

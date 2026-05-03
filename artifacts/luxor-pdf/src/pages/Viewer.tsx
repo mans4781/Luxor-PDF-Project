@@ -16,6 +16,7 @@ const LS_KEYS = {
   draw: "luxor-pdf:drawColor",
   drawThickness: "luxor-pdf:drawThickness",
   textSize: "luxor-pdf:textSize",
+  shapeFill: "luxor-pdf:shapeFill",
 } as const;
 const lsGet = (k: string, fb: string) => {
   try { return localStorage.getItem(k) ?? fb; } catch { return fb; }
@@ -60,6 +61,9 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   const [textSize, setTextSize] = useState(() => lsGetNum(LS_KEYS.textSize, COLOR_DEFAULTS.textSize));
   const [drawColor, setDrawColor] = useState(() => lsGet(LS_KEYS.draw, COLOR_DEFAULTS.penColor));
   const [drawThickness, setDrawThickness] = useState(() => lsGetNum(LS_KEYS.drawThickness, COLOR_DEFAULTS.penWidth));
+  const [shapeFill, setShapeFill] = useState<boolean>(() => {
+    try { return localStorage.getItem(LS_KEYS.shapeFill) === "1"; } catch { return false; }
+  });
 
   // Persist tool-color preferences to localStorage whenever they change.
   useEffect(() => { lsSet(LS_KEYS.highlight, highlightColor); }, [highlightColor]);
@@ -67,6 +71,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   useEffect(() => { lsSet(LS_KEYS.draw, drawColor); }, [drawColor]);
   useEffect(() => { lsSet(LS_KEYS.drawThickness, drawThickness); }, [drawThickness]);
   useEffect(() => { lsSet(LS_KEYS.textSize, textSize); }, [textSize]);
+  useEffect(() => { lsSet(LS_KEYS.shapeFill, shapeFill ? "1" : "0"); }, [shapeFill]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [splitView, setSplitView] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -283,8 +288,10 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         onTextSizeChange={setTextSize}
         drawColor={drawColor}
         drawThickness={drawThickness}
+        shapeFill={shapeFill}
         onDrawColorChange={setDrawColor}
         onDrawThicknessChange={setDrawThickness}
+        onShapeFillChange={setShapeFill}
         onEraseAll={clearHighlights}
         onReadAloud={handleReadAloud}
         onOpenFile={handleOpenFile}
@@ -453,6 +460,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                     annotations={getPageAnnotations(left)}
                     highlightColor={highlightColor} textColor={textColor} textSize={textSize}
                     drawColor={drawColor} drawThickness={drawThickness}
+                    shapeFill={shapeFill}
                     onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                     onAnnotationRemove={removeAnnotation}
                     isCurrentPage={left === currentPage} onVisible={handlePageVisible}
@@ -465,6 +473,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                       annotations={getPageAnnotations(right)}
                       highlightColor={highlightColor} textColor={textColor} textSize={textSize}
                       drawColor={drawColor} drawThickness={drawThickness}
+                      shapeFill={shapeFill}
                       onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                       onAnnotationRemove={removeAnnotation}
                       isCurrentPage={right === currentPage} onVisible={handlePageVisible}
@@ -483,6 +492,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                 annotations={getPageAnnotations(pageNum)}
                 highlightColor={highlightColor} textColor={textColor} textSize={textSize}
                 drawColor={drawColor} drawThickness={drawThickness}
+                shapeFill={shapeFill}
                 onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                 onAnnotationRemove={removeAnnotation}
                 isCurrentPage={pageNum === currentPage} onVisible={handlePageVisible}

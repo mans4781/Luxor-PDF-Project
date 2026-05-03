@@ -115,6 +115,9 @@ export interface OvalAnnotation {
   ry: number;
   color: string;
   lineWidth: number;
+  /** When true, fill the shape with `color` at `fillOpacity` (default 0.25). */
+  fill?: boolean;
+  fillOpacity?: number;
 }
 
 export interface RectAnnotation {
@@ -127,6 +130,9 @@ export interface RectAnnotation {
   h: number;
   color: string;
   lineWidth: number;
+  /** When true, fill the shape with `color` at `fillOpacity` (default 0.25). */
+  fill?: boolean;
+  fillOpacity?: number;
 }
 
 export type ShapeAnnotation = FreehandAnnotation | LineAnnotation | ArrowAnnotation | OvalAnnotation | RectAnnotation;
