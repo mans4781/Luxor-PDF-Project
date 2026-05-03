@@ -50,7 +50,7 @@ function ColorGrid({
               padding: 0,
               cursor: "pointer",
               background: c.value,
-              border: isSel ? "2px solid #0D62F2" : "1px solid rgba(255,255,255,0.25)",
+              border: isSel ? "2px solid #0D62F2" : "1px solid rgba(0,0,0,0.2)",
               boxShadow: isSel ? "0 0 0 2px rgba(13,98,242,0.25)" : "none",
               transition: "transform 0.1s, box-shadow 0.1s",
               transform: isSel ? "scale(1.08)" : "none",
@@ -115,7 +115,7 @@ function DrawStylePanel({
         style={{
           display: "flex",
           justifyContent: "space-between",
-          color: "#888",
+          color: "#666",
           fontSize: 10,
           marginTop: 2,
           textTransform: "uppercase",
@@ -123,7 +123,7 @@ function DrawStylePanel({
         }}
       >
         <span>Thin</span>
-        <span style={{ color: "#bbb" }}>{thickness}px</span>
+        <span style={{ color: "#222" }}>{thickness}px</span>
         <span>Thick</span>
       </div>
     </>
@@ -251,7 +251,7 @@ export default function Toolbar({
 
         {popover === "edit" && (
           <div className="popover-panel" style={{ minWidth: 160, left: 0 }}>
-            <div className="popover-label" style={{ color: "#888", fontSize: 11 }}>Coming soon</div>
+            <div className="popover-label" style={{ color: "#666", fontSize: 11 }}>Coming soon</div>
           </div>
         )}
       </div>
@@ -279,9 +279,9 @@ export default function Toolbar({
                 style={{
                   display: "flex", alignItems: "center", gap: 8,
                   width: "100%", padding: "5px 8px", marginBottom: 2,
-                  background: tool === st.id ? "rgba(255,255,255,0.15)" : "transparent",
+                  background: tool === st.id ? "rgba(13,98,242,0.12)" : "transparent",
                   border: "none", borderRadius: 4,
-                  color: tool === st.id ? "#fff" : "#ccc",
+                  color: tool === st.id ? "#0D62F2" : "#222",
                   cursor: "pointer", fontSize: 12, textAlign: "left",
                 }}
               >
@@ -325,10 +325,10 @@ export default function Toolbar({
             <label
               style={{
                 display: "flex", alignItems: "center", gap: 8,
-                color: "#ccc", fontSize: 12, cursor: "pointer",
+                color: "#222", fontSize: 12, cursor: "pointer",
                 userSelect: "none",
                 padding: "6px 4px",
-                borderTop: "1px solid rgba(255,255,255,0.08)",
+                borderTop: "1px solid rgba(0,0,0,0.08)",
                 marginTop: 2,
               }}
               title="Fill rectangle and oval shapes — great for paragraph highlighting"
@@ -339,7 +339,7 @@ export default function Toolbar({
                 onChange={(e) => onShapeFillChange(e.target.checked)}
                 style={{ accentColor: "#0D62F2", cursor: "pointer" }}
               />
-              <span>Fill shape <span style={{ color: "#888" }}>(rect / oval)</span></span>
+              <span>Fill shape <span style={{ color: "#666" }}>(rect / oval)</span></span>
             </label>
           </div>
         )}
@@ -475,12 +475,12 @@ export default function Toolbar({
             <div className="popover-label">Font Size</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
               <button
-                style={{ background: "rgba(255,255,255,0.12)", border: "none", color: "#fff", borderRadius: 4, width: 22, height: 22, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}
+                style={{ background: "rgba(0,0,0,0.08)", border: "none", color: "#222", borderRadius: 4, width: 22, height: 22, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}
                 onClick={() => onTextSizeChange(Math.max(8, textSize - 2))}
               >−</button>
-              <span style={{ color: "#ccc", fontSize: 12, minWidth: 28, textAlign: "center" }}>{textSize}px</span>
+              <span style={{ color: "#222", fontSize: 12, minWidth: 28, textAlign: "center" }}>{textSize}px</span>
               <button
-                style={{ background: "rgba(255,255,255,0.12)", border: "none", color: "#fff", borderRadius: 4, width: 22, height: 22, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}
+                style={{ background: "rgba(0,0,0,0.08)", border: "none", color: "#222", borderRadius: 4, width: 22, height: 22, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}
                 onClick={() => onTextSizeChange(Math.min(72, textSize + 2))}
               >+</button>
             </div>
