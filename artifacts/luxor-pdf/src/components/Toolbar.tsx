@@ -176,6 +176,8 @@ interface ToolbarProps {
   onOpenPageNo: () => void;
   onAddImage: () => void;
   onOpenCompress: () => void;
+  onClearWatermark: () => void;
+  onClearPageNo: () => void;
   watermarkActive: boolean;
   pageNoActive: boolean;
 }
@@ -279,7 +281,9 @@ export default function Toolbar({
   onToolChange,
   onHighlightColorChange, onTextColorChange, onTextSizeChange, onDrawColorChange, onDrawThicknessChange, onShapeFillChange,
   onEraseAll, onReadAloud, onOpenFile, onDownload, onPrint,
-  onOpenWatermark, onOpenPageNo, onAddImage, onOpenCompress, watermarkActive, pageNoActive,
+  onOpenWatermark, onOpenPageNo, onAddImage, onOpenCompress,
+  onClearWatermark, onClearPageNo,
+  watermarkActive, pageNoActive,
 }: ToolbarProps) {
   const [popover, setPopover] = useState<PopoverType>(null);
   // Which Edit-menu feature modal is currently open (null = none).
@@ -366,8 +370,9 @@ export default function Toolbar({
                 title={f.desc}
                 onClick={() => {
                   setPopover(null);
-                  if (f.key === "watermark") onOpenWatermark();
-                  else if (f.key === "pageno") onOpenPageNo();
+                  // Toggle pattern: first click enables / opens, second click disables / clears.
+                  if (f.key === "watermark") (watermarkActive ? onClearWatermark() : onOpenWatermark());
+                  else if (f.key === "pageno") (pageNoActive ? onClearPageNo() : onOpenPageNo());
                   else if (f.key === "redact") onToolChange(tool === "redact" ? "hand" : "redact");
                   else if (f.key === "image") onAddImage();
                   else if (f.key === "edittext") onToolChange(tool === "edittext" ? "hand" : "edittext");
@@ -388,13 +393,13 @@ export default function Toolbar({
               >
                 <span style={{ display: "inline-flex", width: 18, justifyContent: "center" }}>{f.icon}</span>
                 <span style={{ flex: 1 }}>{f.label}</span>
-                {isLive && (
+                {isActive && (
                   <span style={{
                     fontSize: 9, fontWeight: 500, letterSpacing: 0.5,
                     padding: "2px 6px", borderRadius: 999,
-                    background: isActive ? "#0D62F2" : "rgba(13,98,242,0.10)",
-                    color: isActive ? "#fff" : "#0D62F2",
-                  }}>{isActive ? "ON" : "NEW"}</span>
+                    background: "#0D62F2",
+                    color: "#fff",
+                  }}>ON</span>
                 )}
               </button>
               );

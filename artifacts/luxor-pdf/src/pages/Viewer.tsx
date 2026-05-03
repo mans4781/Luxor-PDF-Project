@@ -445,6 +445,8 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         onOpenPageNo={() => setPageNoOpen(true)}
         onAddImage={handleAddImage}
         onOpenCompress={() => setCompressOpen(true)}
+        onClearWatermark={() => setWatermarkCfg(null)}
+        onClearPageNo={() => setPageNoCfg(null)}
         watermarkActive={!!watermarkCfg}
         pageNoActive={!!pageNoCfg}
       />
