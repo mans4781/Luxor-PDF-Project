@@ -19,13 +19,15 @@ import {
   type WatermarkPosition,
   type PageNoPosition,
 } from "./editTypes";
-import type { RedactionAnnotation } from "./annotationTypes";
+import type { RedactionAnnotation, ImageAnnotation } from "./annotationTypes";
 
 export interface ExportEdits {
   watermark?: WatermarkConfig | null;
   pageNo?: PageNoConfig | null;
   /** Redaction boxes (normalized 0..1 page coords) to burn in as opaque black. */
   redactions?: RedactionAnnotation[];
+  /** Raster images (PNG/JPEG) to embed and draw on each page. */
+  images?: ImageAnnotation[];
   /** 1-based page that was current in the viewer (used by `pageRange: current`). */
   currentPage: number;
 }
@@ -38,11 +40,28 @@ export async function exportPdfWithEdits(file: File, edits: ExportEdits): Promis
   const pages = pdf.getPages();
   const total = pages.length;
 
-  // Group redactions by 1-based page index for O(1) lookup per page.
+  // Group redactions and images by 1-based page index for O(1) lookup per page.
   const redactionsByPage = new Map<number, RedactionAnnotation[]>();
   for (const r of edits.redactions ?? []) {
     const arr = redactionsByPage.get(r.page);
     if (arr) arr.push(r); else redactionsByPage.set(r.page, [r]);
+  }
+  const imagesByPage = new Map<number, ImageAnnotation[]>();
+  for (const im of edits.images ?? []) {
+    const arr = imagesByPage.get(im.page);
+    if (arr) arr.push(im); else imagesByPage.set(im.page, [im]);
+  }
+
+  // Embed each unique image once and reuse the embedded handle on every
+  // page that references it. Keyed by dataUrl so duplicates dedupe.
+  const embeddedCache = new Map<string, Awaited<ReturnType<PDFDocument["embedPng"]>>>();
+  for (const im of edits.images ?? []) {
+    if (embeddedCache.has(im.dataUrl)) continue;
+    const bytes = dataUrlToBytes(im.dataUrl);
+    const embedded = im.mime === "image/png"
+      ? await pdf.embedPng(bytes)
+      : await pdf.embedJpg(bytes);
+    embeddedCache.set(im.dataUrl, embedded);
   }
 
   for (let i = 0; i < pages.length; i++) {
@@ -53,6 +72,9 @@ export async function exportPdfWithEdits(file: File, edits: ExportEdits): Promis
     // Redactions FIRST so watermark/page-no remain visible above them.
     const reds = redactionsByPage.get(pageNum);
     if (reds && reds.length) drawRedactionsOnPage(p, reds, width, height);
+
+    const ims = imagesByPage.get(pageNum);
+    if (ims && ims.length) drawImagesOnPage(p, ims, embeddedCache, width, height);
 
     if (edits.watermark && watermarkAppliesTo(edits.watermark, pageNum, edits.currentPage)) {
       drawWatermarkOnPage(p, edits.watermark, fontBold, width, height);
@@ -214,6 +236,72 @@ function drawRedactionsOnPage(
       color: rgb(0, 0, 0),
       opacity: 1,
     });
+  }
+}
+
+/** Decode a `data:` URL of base64-encoded bytes into a Uint8Array. */
+function dataUrlToBytes(dataUrl: string): Uint8Array {
+  const comma = dataUrl.indexOf(",");
+  const b64 = comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl;
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+/**
+ * Burn raster images onto a page. Coordinate handling mirrors
+ * drawRedactionsOnPage so images placed while the viewport was rotated
+ * land in the right user-space rectangle.
+ *
+ * Image *content* is NOT counter-rotated for non-zero `rotation` — the
+ * image is drawn upright in PDF user-space, which is what feels right
+ * when the user later opens the file with /Rotate applied.
+ */
+function drawImagesOnPage(
+  page: ReturnType<PDFDocument["getPages"]>[number],
+  images: ImageAnnotation[],
+  cache: Map<string, Awaited<ReturnType<PDFDocument["embedPng"]>>>,
+  w: number,
+  h: number,
+) {
+  for (const im of images) {
+    const embedded = cache.get(im.dataUrl);
+    if (!embedded) continue;
+    const rot = (((im.rotation ?? 0) % 360) + 360) % 360;
+    let x: number, y: number, width: number, height: number;
+    switch (rot) {
+      case 90: {
+        x = im.y * w;
+        y = h - im.x * h - im.w * h;
+        width = im.h * w;
+        height = im.w * h;
+        break;
+      }
+      case 180: {
+        x = w - im.x * w - im.w * w;
+        y = im.y * h;
+        width = im.w * w;
+        height = im.h * h;
+        break;
+      }
+      case 270: {
+        x = w - im.y * w - im.h * w;
+        y = im.x * h;
+        width = im.h * w;
+        height = im.w * h;
+        break;
+      }
+      case 0:
+      default: {
+        x = im.x * w;
+        y = h - im.y * h - im.h * h;
+        width = im.w * w;
+        height = im.h * h;
+        break;
+      }
+    }
+    page.drawImage(embedded, { x, y, width, height });
   }
 }
 

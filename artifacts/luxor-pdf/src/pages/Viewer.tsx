@@ -98,6 +98,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   useEffect(() => { lsSetJSON(LS_KEYS.watermark, watermarkCfg); }, [watermarkCfg]);
   useEffect(() => { lsSetJSON(LS_KEYS.pageNo, pageNoCfg); }, [pageNoCfg]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const pageInputRef = useRef<HTMLInputElement>(null);
 
   const { annotations, addAnnotation, updateAnnotation, removeAnnotation, clearHighlights, undo, getPageAnnotations } = useAnnotations();
@@ -264,12 +265,97 @@ export default function Viewer({ file, onClose }: ViewerProps) {
     if (f && f.type === "application/pdf") { speechSynthesis.cancel(); onClose(); }
     e.target.value = "";
   };
+
+  // Edit → Add Image. Opens a hidden <input type=file>, decodes the
+  // chosen image to a data URL, normalizes WebP → PNG via canvas (pdf-lib
+  // only embeds PNG/JPEG), and inserts an ImageAnnotation centered on the
+  // current page at ~35% page width. Total displayed rotation is captured
+  // so the burn-in pipeline can map back into PDF user-space.
+  const handleAddImage = useCallback(() => {
+    imageInputRef.current?.click();
+  }, []);
+  const handleImageChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f || !pdfDoc) return;
+    if (!/^image\/(png|jpeg|jpg|webp)$/i.test(f.type)) {
+      alert("Please pick a PNG, JPG, or WebP image.");
+      return;
+    }
+    try {
+      // 1. file → data URL
+      const rawDataUrl: string = await new Promise((res, rej) => {
+        const fr = new FileReader();
+        fr.onload = () => res(fr.result as string);
+        fr.onerror = () => rej(fr.error);
+        fr.readAsDataURL(f);
+      });
+      // 2. decode to get natural dims (and re-encode WebP as PNG)
+      const img = await new Promise<HTMLImageElement>((res, rej) => {
+        const i = new Image();
+        i.onload = () => res(i);
+        i.onerror = () => rej(new Error("decode"));
+        i.src = rawDataUrl;
+      });
+      let dataUrl = rawDataUrl;
+      let mime: "image/png" | "image/jpeg" =
+        f.type === "image/jpeg" || f.type === "image/jpg" ? "image/jpeg" : "image/png";
+      if (f.type === "image/webp") {
+        const cv = document.createElement("canvas");
+        cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+        const ctx = cv.getContext("2d");
+        if (!ctx) throw new Error("canvas-ctx");
+        ctx.drawImage(img, 0, 0);
+        dataUrl = cv.toDataURL("image/png");
+        mime = "image/png";
+      }
+      // 3. read displayed page CSS dims so we can normalize to 0..1
+      const wrapper = document.getElementById(`page-${currentPage}`);
+      const canvasW = wrapper?.offsetWidth ?? 0;
+      const canvasH = wrapper?.offsetHeight ?? 0;
+      if (canvasW <= 0 || canvasH <= 0) {
+        alert("Could not measure the current page — try clicking the page first.");
+        return;
+      }
+      // 4. choose a sensible default size (~35% page width, capped at 60% page height)
+      const aspect = img.naturalHeight / img.naturalWidth;
+      let displayW = Math.min(canvasW * 0.35, 360);
+      let displayH = displayW * aspect;
+      if (displayH > canvasH * 0.6) {
+        displayH = canvasH * 0.6;
+        displayW = displayH / aspect;
+      }
+      const w = displayW / canvasW;
+      const h = displayH / canvasH;
+      // 5. capture total rotation for the export pipeline
+      const page = await pdfDoc.getPage(currentPage);
+      const totalRotation = ((((page.rotate ?? 0) + rotation) % 360) + 360) % 360;
+      addAnnotation({
+        id: (crypto.randomUUID?.() ?? `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`),
+        type: "image",
+        page: currentPage,
+        x: (1 - w) / 2,
+        y: (1 - h) / 2,
+        w, h,
+        rotation: totalRotation,
+        dataUrl,
+        mime,
+        createdAt: new Date().toISOString(),
+      });
+      setTool("hand");
+    } catch (err) {
+      console.error("Add Image failed:", err);
+      alert("Sorry — couldn't read that image.");
+    }
+  }, [pdfDoc, currentPage, rotation, addAnnotation]);
+
   const handleDownload = async () => {
     if (downloading) return;
     const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
+    const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
     // If no edit feature is active, just hand back the original bytes —
     // no need to round-trip through pdf-lib.
-    if (!watermarkCfg && !pageNoCfg && redactions.length === 0) {
+    if (!watermarkCfg && !pageNoCfg && redactions.length === 0 && images.length === 0) {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(file);
       a.download = file.name;
@@ -283,6 +369,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         watermark: watermarkCfg,
         pageNo: pageNoCfg,
         redactions,
+        images,
         currentPage,
       });
       const url = URL.createObjectURL(blob);
@@ -352,8 +439,18 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         onPrint={() => window.print()}
         onOpenWatermark={() => setWatermarkOpen(true)}
         onOpenPageNo={() => setPageNoOpen(true)}
+        onAddImage={handleAddImage}
         watermarkActive={!!watermarkCfg}
         pageNoActive={!!pageNoCfg}
+      />
+
+      {/* Hidden file input for Edit → Add Image. */}
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        style={{ display: "none" }}
+        onChange={handleImageChange}
       />
 
       {watermarkOpen && (

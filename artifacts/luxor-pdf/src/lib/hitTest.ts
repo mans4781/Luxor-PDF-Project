@@ -153,6 +153,15 @@ export function hitTestAnnotation(ann: Annotation, ctx: HitContext): boolean {
         ctx.normY <= ann.y + ann.h
       );
     }
+    case "image": {
+      // Same as redactions: filled rectangle in normalized page coords.
+      return (
+        ctx.normX >= ann.x &&
+        ctx.normX <= ann.x + ann.w &&
+        ctx.normY >= ann.y &&
+        ctx.normY <= ann.y + ann.h
+      );
+    }
     case "text": {
       const b = approxTextBounds(ann);
       return circleIntersectsRect(ctx.cssX, ctx.cssY, ctx.radiusCss, b.x, b.y, b.w, b.h);

@@ -1,4 +1,4 @@
-export type ToolType = "hand" | "highlight" | "eraser" | "text" | "freehand" | "line" | "arrow" | "oval" | "rectangle" | "redact";
+export type ToolType = "hand" | "highlight" | "eraser" | "text" | "freehand" | "line" | "arrow" | "oval" | "rectangle" | "redact" | "image";
 
 export interface Point { x: number; y: number; }
 
@@ -162,6 +162,31 @@ export interface RedactionAnnotation {
   createdAt?: string;
 }
 
+/**
+ * Raster image dropped onto a page via Edit → Add Image. Geometry is
+ * NORMALIZED 0..1 against the rendered page (same scheme as redactions
+ * and highlights) so it survives zoom and rotation. The image bytes
+ * are kept as a data URL so the on-screen overlay and the pdf-lib
+ * burn-in pipeline both have direct access without re-fetching.
+ */
+export interface ImageAnnotation {
+  id: string;
+  type: "image";
+  page: number;
+  /** Top-left, normalized 0..1 of displayed page width/height. */
+  x: number;
+  y: number;
+  /** Width/height, normalized 0..1 of displayed page width/height. */
+  w: number;
+  h: number;
+  /** Total displayed rotation (page.rotate + viewer rotation) at insert time. */
+  rotation?: number;
+  /** Data-URL bytes (`data:image/png;base64,…` or `…/jpeg;base64,…`). */
+  dataUrl: string;
+  mime: "image/png" | "image/jpeg";
+  createdAt?: string;
+}
+
 export type Annotation =
   | HighlightAnnotation
   | UnderlineAnnotation
@@ -169,4 +194,5 @@ export type Annotation =
   | TextAnnotation
   | CommentAnnotation
   | ShapeAnnotation
-  | RedactionAnnotation;
+  | RedactionAnnotation
+  | ImageAnnotation;

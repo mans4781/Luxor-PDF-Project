@@ -3,7 +3,7 @@ import { TextLayer } from "pdfjs-dist";
 import {
   Annotation, HighlightAnnotation, TextAnnotation, CommentAnnotation, ToolType,
   FreehandAnnotation, LineAnnotation, ArrowAnnotation, OvalAnnotation, RectAnnotation,
-  RedactionAnnotation, ShapeAnnotation, Point,
+  RedactionAnnotation, ImageAnnotation, ShapeAnnotation, Point,
 } from "@/lib/annotationTypes";
 import {
   getSelectionRects as readSelectionRects,
@@ -65,6 +65,173 @@ const TEXT_CMYK_COLORS = [
   { name: "Blue",    hex: "#2E3192" },
   { name: "Orange",  hex: "#F7941D" },
 ];
+
+/**
+ * On-screen overlay for an ImageAnnotation. Renders the embedded image
+ * over the page canvas with click-to-select, drag-to-move and a single
+ * bottom-right corner handle for aspect-ratio-preserving resize. The
+ * overlay is invisible to pointer events whenever the user is in a
+ * drawing/eraser tool so it never blocks the underlying tools.
+ */
+interface ImageOverlayProps {
+  ann: ImageAnnotation;
+  pageSize: { w: number; h: number };
+  isInteractive: boolean;
+  onMove: (x: number, y: number) => void;
+  onResize: (w: number, h: number) => void;
+  onDelete: () => void;
+}
+
+function ImageOverlay({ ann, pageSize, isInteractive, onMove, onResize, onDelete }: ImageOverlayProps) {
+  const [selected, setSelected] = useState(false);
+  const [local, setLocal] = useState({ x: ann.x, y: ann.y, w: ann.w, h: ann.h });
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  // Sync from external updates (undo, etc) only when not actively dragging.
+  useEffect(() => {
+    setLocal({ x: ann.x, y: ann.y, w: ann.w, h: ann.h });
+  }, [ann.x, ann.y, ann.w, ann.h]);
+
+  // Click-outside deselects.
+  useEffect(() => {
+    if (!selected) return;
+    const handler = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setSelected(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [selected]);
+
+  const startDrag = useCallback((e: React.MouseEvent) => {
+    if (!isInteractive) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setSelected(true);
+    const startMouseX = e.clientX;
+    const startMouseY = e.clientY;
+    const sx = local.x;
+    const sy = local.y;
+    const lw = local.w;
+    const lh = local.h;
+    const onMove2 = (me: MouseEvent) => {
+      const dx = (me.clientX - startMouseX) / pageSize.w;
+      const dy = (me.clientY - startMouseY) / pageSize.h;
+      const nx = Math.max(0, Math.min(1 - lw, sx + dx));
+      const ny = Math.max(0, Math.min(1 - lh, sy + dy));
+      setLocal(p => ({ ...p, x: nx, y: ny }));
+    };
+    const onUp = (me: MouseEvent) => {
+      const dx = (me.clientX - startMouseX) / pageSize.w;
+      const dy = (me.clientY - startMouseY) / pageSize.h;
+      const nx = Math.max(0, Math.min(1 - lw, sx + dx));
+      const ny = Math.max(0, Math.min(1 - lh, sy + dy));
+      onMove(nx, ny);
+      document.removeEventListener("mousemove", onMove2);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove2);
+    document.addEventListener("mouseup", onUp);
+  }, [isInteractive, local, pageSize.w, pageSize.h, onMove]);
+
+  const startResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const startMouseX = e.clientX;
+    const sw = local.w;
+    const sh = local.h;
+    const aspect = sh / sw; // preserve aspect
+    const lx = local.x;
+    const ly = local.y;
+    const compute = (clientX: number) => {
+      const dx = (clientX - startMouseX) / pageSize.w;
+      let nw = Math.max(0.03, Math.min(1 - lx, sw + dx));
+      let nh = nw * aspect;
+      if (nh > 1 - ly) { nh = 1 - ly; nw = nh / aspect; }
+      return { w: nw, h: nh };
+    };
+    const onMove2 = (me: MouseEvent) => {
+      const r = compute(me.clientX);
+      setLocal(p => ({ ...p, w: r.w, h: r.h }));
+    };
+    const onUp = (me: MouseEvent) => {
+      const r = compute(me.clientX);
+      onResize(r.w, r.h);
+      document.removeEventListener("mousemove", onMove2);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove2);
+    document.addEventListener("mouseup", onUp);
+  }, [local, pageSize.w, onResize]);
+
+  const left = local.x * pageSize.w;
+  const top = local.y * pageSize.h;
+  const width = local.w * pageSize.w;
+  const height = local.h * pageSize.h;
+
+  return (
+    <div
+      ref={wrapRef}
+      style={{
+        position: "absolute",
+        left, top, width, height,
+        zIndex: selected ? 30 : 15,
+        cursor: isInteractive ? "move" : "default",
+        border: selected ? "2px dashed #0D62F2" : "1px dashed rgba(0,0,0,0.18)",
+        boxSizing: "border-box",
+        pointerEvents: isInteractive ? "auto" : "none",
+        background: "transparent",
+      }}
+      onMouseDown={startDrag}
+    >
+      <img
+        src={ann.dataUrl}
+        alt=""
+        draggable={false}
+        style={{
+          width: "100%", height: "100%",
+          display: "block",
+          pointerEvents: "none",
+          userSelect: "none",
+          objectFit: "fill",
+        }}
+      />
+      {selected && (
+        <>
+          <div
+            onMouseDown={startResize}
+            title="Drag to resize"
+            style={{
+              position: "absolute",
+              right: -7, bottom: -7,
+              width: 14, height: 14,
+              background: "#0D62F2",
+              border: "2px solid #fff",
+              borderRadius: 2,
+              cursor: "nwse-resize",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+            }}
+          />
+          <button
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            title="Delete image"
+            style={{
+              position: "absolute",
+              top: -28, right: 0,
+              background: "rgba(40,40,40,0.95)",
+              border: "none", color: "#fff",
+              borderRadius: 4, padding: "3px 10px",
+              cursor: "pointer", fontSize: 12, fontWeight: 500,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+            }}
+          >
+            Delete
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
 
 interface TextBoxProps {
   ann: TextAnnotation;
@@ -1208,6 +1375,7 @@ export default function PDFPage({
 
   const textAnnotations = annotations.filter(a => a.type === "text") as TextAnnotation[];
   const commentAnnotations = annotations.filter(a => a.type === "comment") as CommentAnnotation[];
+  const imageAnnotations = annotations.filter(a => a.type === "image" && a.page === pageNum) as ImageAnnotation[];
   const [hoveredComment, setHoveredComment] = useState<string | null>(null);
 
   // Highlight tool is now Adobe/Edge-style: it uses real text selection on
@@ -1705,6 +1873,18 @@ export default function PDFPage({
           pageWidth={pageSize.w}
           onMove={(x, y) => onAnnotationUpdate(ann.id, { x, y } as any)}
           onUpdate={patch => onAnnotationUpdate(ann.id, patch as any)}
+          onDelete={() => onAnnotationRemove(ann.id)}
+        />
+      ))}
+
+      {imageAnnotations.map(ann => (
+        <ImageOverlay
+          key={ann.id}
+          ann={ann}
+          pageSize={pageSize}
+          isInteractive={tool === "hand"}
+          onMove={(x, y) => onAnnotationUpdate(ann.id, { x, y } as any)}
+          onResize={(w, h) => onAnnotationUpdate(ann.id, { w, h } as any)}
           onDelete={() => onAnnotationRemove(ann.id)}
         />
       ))}
