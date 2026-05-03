@@ -172,6 +172,10 @@ interface ToolbarProps {
   onOpenFile: () => void;
   onDownload: () => void;
   onPrint: () => void;
+  onOpenWatermark: () => void;
+  onOpenPageNo: () => void;
+  watermarkActive: boolean;
+  pageNoActive: boolean;
 }
 
 type PopoverType = "highlight" | "text" | "tools" | "edit" | "draw" | null;
@@ -273,6 +277,7 @@ export default function Toolbar({
   onToolChange,
   onHighlightColorChange, onTextColorChange, onTextSizeChange, onDrawColorChange, onDrawThicknessChange, onShapeFillChange,
   onEraseAll, onReadAloud, onOpenFile, onDownload, onPrint,
+  onOpenWatermark, onOpenPageNo, watermarkActive, pageNoActive,
 }: ToolbarProps) {
   const [popover, setPopover] = useState<PopoverType>(null);
   // Which Edit-menu feature modal is currently open (null = none).
@@ -346,11 +351,19 @@ export default function Toolbar({
             className="popover-panel edit-menu-panel"
             style={{ minWidth: 230, left: 0, transform: "none", padding: "6px 6px" }}
           >
-            {EDIT_FEATURES.map((f) => (
+            {EDIT_FEATURES.map((f) => {
+              const isLive = f.key === "watermark" || f.key === "pageno";
+              const isActive = (f.key === "watermark" && watermarkActive) || (f.key === "pageno" && pageNoActive);
+              return (
               <button
                 key={f.key}
                 title={f.desc}
-                onClick={() => { setEditStub(f.key); setPopover(null); }}
+                onClick={() => {
+                  setPopover(null);
+                  if (f.key === "watermark") onOpenWatermark();
+                  else if (f.key === "pageno") onOpenPageNo();
+                  else setEditStub(f.key);
+                }}
                 style={{
                   display: "flex", alignItems: "center", gap: 10,
                   width: "100%", padding: "7px 10px", marginBottom: 1,
@@ -364,9 +377,18 @@ export default function Toolbar({
                 onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#1a1a1a"; }}
               >
                 <span style={{ display: "inline-flex", width: 18, justifyContent: "center" }}>{f.icon}</span>
-                {f.label}
+                <span style={{ flex: 1 }}>{f.label}</span>
+                {isLive && (
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, letterSpacing: 0.5,
+                    padding: "2px 6px", borderRadius: 999,
+                    background: isActive ? "#0D62F2" : "rgba(13,98,242,0.10)",
+                    color: isActive ? "#fff" : "#0D62F2",
+                  }}>{isActive ? "ON" : "NEW"}</span>
+                )}
               </button>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

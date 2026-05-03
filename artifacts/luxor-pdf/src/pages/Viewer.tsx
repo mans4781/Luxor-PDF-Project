@@ -8,6 +8,10 @@ import SearchBar from "@/components/SearchBar";
 import { useAnnotations } from "@/lib/useAnnotations";
 import { ToolType } from "@/lib/annotationTypes";
 import { DEFAULTS as COLOR_DEFAULTS } from "@/lib/annotationColors";
+import WatermarkModal from "@/components/WatermarkModal";
+import PageNumberModal from "@/components/PageNumberModal";
+import type { WatermarkConfig, PageNoConfig } from "@/lib/editTypes";
+import { exportPdfWithEdits } from "@/lib/pdfExport";
 
 // localStorage keys for persisting tool-color preferences across sessions.
 const LS_KEYS = {
@@ -17,7 +21,19 @@ const LS_KEYS = {
   drawThickness: "luxor-pdf:drawThickness",
   textSize: "luxor-pdf:textSize",
   shapeFill: "luxor-pdf:shapeFill",
+  watermark: "luxor-pdf:watermark",
+  pageNo: "luxor-pdf:pageNo",
 } as const;
+
+function lsGetJSON<T>(k: string): T | null {
+  try { const v = localStorage.getItem(k); return v ? (JSON.parse(v) as T) : null; } catch { return null; }
+}
+function lsSetJSON(k: string, v: unknown | null) {
+  try {
+    if (v === null) localStorage.removeItem(k);
+    else localStorage.setItem(k, JSON.stringify(v));
+  } catch { /* ignore quota */ }
+}
 const lsGet = (k: string, fb: string) => {
   try { return localStorage.getItem(k) ?? fb; } catch { return fb; }
 };
@@ -74,6 +90,13 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   useEffect(() => { lsSet(LS_KEYS.shapeFill, shapeFill ? "1" : "0"); }, [shapeFill]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [splitView, setSplitView] = useState(false);
+  const [watermarkCfg, setWatermarkCfg] = useState<WatermarkConfig | null>(() => lsGetJSON<WatermarkConfig>(LS_KEYS.watermark));
+  const [pageNoCfg, setPageNoCfg] = useState<PageNoConfig | null>(() => lsGetJSON<PageNoConfig>(LS_KEYS.pageNo));
+  const [watermarkOpen, setWatermarkOpen] = useState(false);
+  const [pageNoOpen, setPageNoOpen] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  useEffect(() => { lsSetJSON(LS_KEYS.watermark, watermarkCfg); }, [watermarkCfg]);
+  useEffect(() => { lsSetJSON(LS_KEYS.pageNo, pageNoCfg); }, [pageNoCfg]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pageInputRef = useRef<HTMLInputElement>(null);
 
@@ -241,11 +264,39 @@ export default function Viewer({ file, onClose }: ViewerProps) {
     if (f && f.type === "application/pdf") { speechSynthesis.cancel(); onClose(); }
     e.target.value = "";
   };
-  const handleDownload = () => {
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(file);
-    a.download = file.name;
-    a.click();
+  const handleDownload = async () => {
+    if (downloading) return;
+    // If neither edit feature is active, just hand back the original
+    // bytes — no need to round-trip through pdf-lib.
+    if (!watermarkCfg && !pageNoCfg) {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(file);
+      a.download = file.name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      return;
+    }
+    setDownloading(true);
+    try {
+      const blob = await exportPdfWithEdits(file, {
+        watermark: watermarkCfg,
+        pageNo: pageNoCfg,
+        currentPage,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const dot = file.name.lastIndexOf(".");
+      const base = dot > 0 ? file.name.slice(0, dot) : file.name;
+      a.download = `${base} (edited).pdf`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("Edited PDF export failed:", err);
+      alert("Sorry — couldn't save the edited PDF. The original file may be encrypted or corrupted.");
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const handlePageInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -297,7 +348,43 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         onOpenFile={handleOpenFile}
         onDownload={handleDownload}
         onPrint={() => window.print()}
+        onOpenWatermark={() => setWatermarkOpen(true)}
+        onOpenPageNo={() => setPageNoOpen(true)}
+        watermarkActive={!!watermarkCfg}
+        pageNoActive={!!pageNoCfg}
       />
+
+      {watermarkOpen && (
+        <WatermarkModal
+          initial={watermarkCfg}
+          totalPages={totalPages}
+          currentPage={currentPage}
+          onApply={(cfg) => { setWatermarkCfg(cfg); setWatermarkOpen(false); }}
+          onClear={() => { setWatermarkCfg(null); setWatermarkOpen(false); }}
+          onClose={() => setWatermarkOpen(false)}
+        />
+      )}
+      {pageNoOpen && (
+        <PageNumberModal
+          initial={pageNoCfg}
+          totalPages={totalPages}
+          onApply={(cfg) => { setPageNoCfg(cfg); setPageNoOpen(false); }}
+          onClear={() => { setPageNoCfg(null); setPageNoOpen(false); }}
+          onClose={() => setPageNoOpen(false)}
+        />
+      )}
+
+      {downloading && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+          zIndex: 9100, display: "flex", alignItems: "center", justifyContent: "center",
+          color: "#fff", fontSize: 14, fontWeight: 500,
+        }}>
+          <div style={{ background: "#1a1a1a", padding: "16px 24px", borderRadius: 8 }}>
+            Saving edited PDF…
+          </div>
+        </div>
+      )}
 
       {/* ── Search bar ── */}
       {searchOpen && (
@@ -465,6 +552,8 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                     onAnnotationRemove={removeAnnotation}
                     isCurrentPage={left === currentPage} onVisible={handlePageVisible}
                     onSearchTermChange={handleSearchFromContext}
+                    watermark={watermarkCfg} pageNo={pageNoCfg}
+                    totalPages={totalPages} currentPage={currentPage}
                   />
                   {right <= totalPages && (
                     <PDFPage
@@ -478,6 +567,8 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                       onAnnotationRemove={removeAnnotation}
                       isCurrentPage={right === currentPage} onVisible={handlePageVisible}
                       onSearchTermChange={handleSearchFromContext}
+                      watermark={watermarkCfg} pageNo={pageNoCfg}
+                      totalPages={totalPages} currentPage={currentPage}
                     />
                   )}
                 </div>
@@ -497,6 +588,8 @@ export default function Viewer({ file, onClose }: ViewerProps) {
                 onAnnotationRemove={removeAnnotation}
                 isCurrentPage={pageNum === currentPage} onVisible={handlePageVisible}
                 onSearchTermChange={handleSearchFromContext}
+                watermark={watermarkCfg} pageNo={pageNoCfg}
+                totalPages={totalPages} currentPage={currentPage}
               />
             ))
         )}

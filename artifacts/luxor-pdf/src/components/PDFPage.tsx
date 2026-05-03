@@ -11,6 +11,7 @@ import {
   type Rect,
 } from "@/lib/highlightOps";
 import { hitTestAnnotation, type HitContext } from "@/lib/hitTest";
+import { watermarkAppliesTo, pageNoAppliesTo, formatPageLabel } from "@/lib/editTypes";
 import {
   HIGHLIGHT_COLORS as HIGHLIGHT_PALETTE,
   DEFAULTS as COLOR_DEFAULTS,
@@ -44,6 +45,10 @@ interface PDFPageProps {
   isCurrentPage: boolean;
   onVisible: (page: number) => void;
   onSearchTermChange?: (term: string) => void;
+  watermark?: import("@/lib/editTypes").WatermarkConfig | null;
+  pageNo?: import("@/lib/editTypes").PageNoConfig | null;
+  totalPages?: number;
+  currentPage?: number;
 }
 
 function genId() {
@@ -561,6 +566,7 @@ export default function PDFPage({
   shapeFill, shapeFillOpacity,
   onAnnotationAdd, onAnnotationUpdate, onAnnotationRemove,
   onVisible, onSearchTermChange,
+  watermark, pageNo, totalPages, currentPage,
 }: PDFPageProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const pageCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -1182,6 +1188,100 @@ export default function PDFPage({
       id={`page-${pageNum}`}
     >
       <canvas ref={pageCanvasRef} className="pdf-page-canvas" />
+
+      {/* Watermark / page-number on-screen overlays. These mirror what
+          the pdf-lib export burns into the saved PDF. */}
+      {pageSize.w > 0 && (watermark || pageNo) && (() => {
+        const showWatermark = watermark && watermarkAppliesTo(watermark, pageNum, currentPage ?? pageNum);
+        const showPageNo = pageNo && pageNoAppliesTo(pageNo, pageNum);
+        // Margins are in PDF user-space units to mirror pdfExport.ts; we
+        // scale by `zoom` once for CSS pixels.
+        const cssWatermarkPos = (pos: string): React.CSSProperties => {
+          const M = 36 * zoom;
+          if (pos === "center")       return { left: "50%", top: "50%", transform: "translate(-50%,-50%)" };
+          if (pos === "top-left")     return { left: M, top: M };
+          if (pos === "top-right")    return { right: M, top: M };
+          if (pos === "bottom-left")  return { left: M, bottom: M };
+          if (pos === "bottom-right") return { right: M, bottom: M };
+          return { left: 0, top: 0 };
+        };
+        const cssPageNoPos = (pos: string): React.CSSProperties => {
+          const M = 24 * zoom;
+          switch (pos) {
+            case "bottom-center": return { left: "50%", bottom: M, transform: "translateX(-50%)" };
+            case "bottom-left":   return { left: M, bottom: M };
+            case "bottom-right":  return { right: M, bottom: M };
+            case "top-center":    return { left: "50%", top: M, transform: "translateX(-50%)" };
+            case "top-left":      return { left: M, top: M };
+            case "top-right":     return { right: M, top: M };
+          }
+          return {};
+        };
+        return (
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute", inset: 0,
+              pointerEvents: "none",
+              overflow: "hidden",
+              zIndex: 5,
+            }}
+          >
+            {showWatermark && watermark && watermark.position !== "tiled" && (
+              <div style={{
+                position: "absolute",
+                ...cssWatermarkPos(watermark.position),
+                color: watermark.color,
+                opacity: watermark.opacity,
+                fontSize: watermark.fontSize * zoom,
+                fontWeight: 700,
+                letterSpacing: 1.5,
+                whiteSpace: "nowrap",
+                transform: `${watermark.position === "center" ? "translate(-50%,-50%) " : ""}rotate(${watermark.rotation}deg)`,
+                transformOrigin: "center center",
+                fontFamily: "Helvetica, Arial, sans-serif",
+              }}>{watermark.text}</div>
+            )}
+            {showWatermark && watermark && watermark.position === "tiled" && (() => {
+              const stepX = Math.max(150, watermark.fontSize * 4) * zoom;
+              const stepY = Math.max(120, watermark.fontSize * 3) * zoom;
+              const cols = Math.ceil(pageSize.w / stepX) + 1;
+              const rows = Math.ceil(pageSize.h / stepY) + 1;
+              const tiles: React.ReactNode[] = [];
+              for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+                tiles.push(
+                  <div key={`${r}-${c}`} style={{
+                    position: "absolute",
+                    left: c * stepX,
+                    top: r * stepY,
+                    color: watermark.color,
+                    opacity: watermark.opacity,
+                    fontSize: watermark.fontSize * zoom,
+                    fontWeight: 700,
+                    letterSpacing: 1.5,
+                    whiteSpace: "nowrap",
+                    transform: `rotate(${watermark.rotation}deg)`,
+                    transformOrigin: "0 0",
+                    fontFamily: "Helvetica, Arial, sans-serif",
+                  }}>{watermark.text}</div>
+                );
+              }
+              return tiles;
+            })()}
+            {showPageNo && pageNo && (
+              <div style={{
+                position: "absolute",
+                ...cssPageNoPos(pageNo.position),
+                color: pageNo.color,
+                fontSize: pageNo.fontSize * zoom,
+                fontFamily: "Helvetica, Arial, sans-serif",
+                fontWeight: 500,
+                whiteSpace: "nowrap",
+              }}>{formatPageLabel(pageNo, pageNum, totalPages ?? pageNum)}</div>
+            )}
+          </div>
+        );
+      })()}
 
       <div
         ref={textLayerRef}
