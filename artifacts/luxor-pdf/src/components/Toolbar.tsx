@@ -20,26 +20,26 @@ import {
  * uses the `--highlight-color` CSS variable (set inline on the svg from
  * the `color` prop) with a yellow fallback per spec.
  */
-function HighlightIcon({ color, size = 24 }: { color: string; size?: number }) {
+function HighlightIcon({ color, size = 20 }: { color: string; size?: number }) {
   return (
     <svg
-      width={Math.round(size * 1.44)} height={size} viewBox="0 0 24 24"
-      preserveAspectRatio="none"
-      fill="none" stroke="currentColor" strokeWidth="1.4"
+      width={size} height={size} viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" strokeWidth="1.6"
       strokeLinecap="round" strokeLinejoin="round"
       style={{ ["--highlight-color" as string]: color }}
     >
-      {/* Marker body (top) */}
-      <rect x="9" y="2.5" width="6" height="8.5" rx="1" />
-      {/* Ferrule band */}
-      <line x1="9" y1="7.5" x2="15" y2="7.5" />
+      {/* Marker body (top) — fills viewBox horizontally so it reads at
+          the same visual weight as the eraser glyph beside it. */}
+      <rect x="6" y="1.5" width="12" height="11" rx="1.5" />
+      {/* Ferrule band between body and nib */}
+      <line x1="6" y1="9" x2="18" y2="9" />
       {/* Chisel nib tapering down to the page */}
-      <path d="M9 11 L10.5 14 L13.5 14 L15 11 Z" />
+      <path d="M6 12.5 L9 17 L15 17 L18 12.5 Z" />
       {/* Active highlight stroke directly under the nib */}
-      <line x1="4.5" y1="17.5" x2="14" y2="17.5" strokeWidth="2.2" />
+      <line x1="3" y1="21" x2="16" y2="21" strokeWidth="2.4" />
       {/* Color indicator dot, lower-right, with white ring */}
       <circle
-        cx="19" cy="19" r="2.6"
+        cx="20.5" cy="20" r="2.6"
         fill="var(--highlight-color, #FFD600)"
         stroke="#fff" strokeWidth="1.2"
       />
@@ -53,26 +53,26 @@ function HighlightIcon({ color, size = 24 }: { color: string; size?: number }) {
  * Cylindrical body up top, conical tip pointing down, integrated color
  * dot at the lower right via `--draw-color` (red fallback per spec).
  */
-function DrawIcon({ color, size = 24 }: { color: string; size?: number }) {
+function DrawIcon({ color, size = 20 }: { color: string; size?: number }) {
   return (
     <svg
-      width={Math.round(size * 1.44)} height={size} viewBox="0 0 24 24"
-      preserveAspectRatio="none"
-      fill="none" stroke="currentColor" strokeWidth="1.4"
+      width={size} height={size} viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" strokeWidth="1.6"
       strokeLinecap="round" strokeLinejoin="round"
       style={{ ["--draw-color" as string]: color }}
     >
-      {/* Stylus body (cylindrical, vertical) */}
-      <path d="M10 3 h4 a0.5 0.5 0 0 1 0.5 0.5 v9 h-5 v-9 a0.5 0.5 0 0 1 0.5 -0.5 z" />
+      {/* Stylus body (cylindrical, vertical) — filled out to match the
+          visual weight of the eraser glyph. */}
+      <path d="M8 2 h8 a0.6 0.6 0 0 1 0.6 0.6 v11.4 h-9.2 v-11.4 a0.6 0.6 0 0 1 0.6 -0.6 z" />
       {/* Collar line near the tip */}
-      <line x1="9.5" y1="10" x2="14.5" y2="10" />
+      <line x1="7.4" y1="11" x2="16.6" y2="11" />
       {/* Conical tip pointing down */}
-      <path d="M9.5 12.5 L12 17 L14.5 12.5 Z" fill="currentColor" />
+      <path d="M7.4 14 L12 20 L16.6 14 Z" fill="currentColor" />
       {/* Tiny contact stroke under the tip */}
-      <line x1="8" y1="19.5" x2="13" y2="19.5" strokeWidth="1.1" />
+      <line x1="6" y1="22.5" x2="14" y2="22.5" strokeWidth="1.3" />
       {/* Color indicator dot, lower-right, with white ring */}
       <circle
-        cx="19" cy="19" r="2.6"
+        cx="20.5" cy="20.5" r="2.6"
         fill="var(--draw-color, #E53935)"
         stroke="#fff" strokeWidth="1.2"
       />
