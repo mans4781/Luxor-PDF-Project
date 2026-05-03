@@ -23,7 +23,7 @@ import {
 function HighlightIcon({ color, size = 24 }: { color: string; size?: number }) {
   return (
     <svg
-      width={Math.round(size * 1.2)} height={size} viewBox="0 0 24 24"
+      width={Math.round(size * 1.44)} height={size} viewBox="0 0 24 24"
       preserveAspectRatio="none"
       fill="none" stroke="currentColor" strokeWidth="1.4"
       strokeLinecap="round" strokeLinejoin="round"
@@ -56,7 +56,7 @@ function HighlightIcon({ color, size = 24 }: { color: string; size?: number }) {
 function DrawIcon({ color, size = 24 }: { color: string; size?: number }) {
   return (
     <svg
-      width={Math.round(size * 1.2)} height={size} viewBox="0 0 24 24"
+      width={Math.round(size * 1.44)} height={size} viewBox="0 0 24 24"
       preserveAspectRatio="none"
       fill="none" stroke="currentColor" strokeWidth="1.4"
       strokeLinecap="round" strokeLinejoin="round"
