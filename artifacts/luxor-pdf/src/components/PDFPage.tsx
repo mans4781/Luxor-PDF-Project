@@ -778,6 +778,32 @@ export default function PDFPage({
     for (const ann of annotations) {
       if (ann.type === "highlight") {
         // already drawn above
+      } else if (ann.type === "underline") {
+        ctx.save();
+        ctx.strokeStyle = ann.color;
+        ctx.lineWidth = Math.max(1.5, canvas.height * 0.0022);
+        ctx.lineCap = "round";
+        for (const r of ann.rects) {
+          const y = (r.y + r.height) * canvas.height - ctx.lineWidth * 0.5;
+          ctx.beginPath();
+          ctx.moveTo(r.x * canvas.width, y);
+          ctx.lineTo((r.x + r.width) * canvas.width, y);
+          ctx.stroke();
+        }
+        ctx.restore();
+      } else if (ann.type === "strike") {
+        ctx.save();
+        ctx.strokeStyle = ann.color;
+        ctx.lineWidth = Math.max(1.5, canvas.height * 0.002);
+        ctx.lineCap = "round";
+        for (const r of ann.rects) {
+          const y = (r.y + r.height * 0.55) * canvas.height;
+          ctx.beginPath();
+          ctx.moveTo(r.x * canvas.width, y);
+          ctx.lineTo((r.x + r.width) * canvas.width, y);
+          ctx.stroke();
+        }
+        ctx.restore();
       } else if (ann.type === "comment") {
         ctx.save();
         ctx.globalAlpha = 0.18;
@@ -1079,7 +1105,12 @@ export default function PDFPage({
   const commentAnnotations = annotations.filter(a => a.type === "comment") as CommentAnnotation[];
   const [hoveredComment, setHoveredComment] = useState<string | null>(null);
 
-  const drawCanvasActive = tool === "highlight" || isShapeTool(tool);
+  // Highlight tool is now Adobe/Edge-style: it uses real text selection on
+  // the textLayer beneath. The drawCanvas must NOT capture events for it,
+  // otherwise the user can't drag-select text. Shape tools still use the
+  // canvas. Right-click on a selection opens the markup popup (handled by
+  // the contextmenu listener on the textLayer).
+  const drawCanvasActive = isShapeTool(tool);
 
   // Inline SVG cursor for the eraser — circle the same size as ERASER_RADIUS_CSS.
   const eraserCursorCss = `url("data:image/svg+xml;utf8,${encodeURIComponent(
@@ -1262,6 +1293,54 @@ export default function PDFPage({
                 ))}
               </div>
             )}
+          </div>
+
+          <div
+            style={{
+              padding: "7px 14px", color: "#e0e0e0", fontSize: 13,
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 10,
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#3a3a40")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            onClick={() => {
+              const ann: Annotation = {
+                id: genId(), type: "underline", page: pageNum,
+                rects: contextMenu.rects,
+                color: "#1565C0",
+                selectedText: contextMenu.selectedText,
+                createdAt: new Date().toISOString(),
+              };
+              onAnnotationAdd(ann);
+              setContextMenu(null);
+              window.getSelection()?.removeAllRanges();
+            }}
+          >
+            <span style={{ fontSize: 15, width: 20, textAlign: "center", textDecoration: "underline" }}>U</span>
+            <span>Underline</span>
+          </div>
+
+          <div
+            style={{
+              padding: "7px 14px", color: "#e0e0e0", fontSize: 13,
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 10,
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#3a3a40")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            onClick={() => {
+              const ann: Annotation = {
+                id: genId(), type: "strike", page: pageNum,
+                rects: contextMenu.rects,
+                color: "#D32F2F",
+                selectedText: contextMenu.selectedText,
+                createdAt: new Date().toISOString(),
+              };
+              onAnnotationAdd(ann);
+              setContextMenu(null);
+              window.getSelection()?.removeAllRanges();
+            }}
+          >
+            <span style={{ fontSize: 15, width: 20, textAlign: "center", textDecoration: "line-through" }}>S</span>
+            <span>Strikethrough</span>
           </div>
 
           <div

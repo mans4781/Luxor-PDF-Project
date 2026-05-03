@@ -116,6 +116,8 @@ export function approxTextBounds(ann: { x: number; y: number; content: string; f
 export function hitTestAnnotation(ann: Annotation, ctx: HitContext): boolean {
   switch (ann.type) {
     case "highlight":
+    case "underline":
+    case "strike":
       return ann.rects.some((r) =>
         circleIntersectsRect(
           ctx.normX, ctx.normY,

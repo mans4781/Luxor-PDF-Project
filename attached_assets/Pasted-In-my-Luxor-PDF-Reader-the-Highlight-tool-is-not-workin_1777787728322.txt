@@ -1,0 +1,259 @@
+In my Luxor PDF Reader, the Highlight tool is not working like Adobe Acrobat or Microsoft Edge PDF Reader.
+
+I want to redesign/fix the Highlight tool behavior so it feels professional and natural.
+
+Goal:
+Implement Adobe/Microsoft Edge-style text selection and highlighting.
+
+Main behavior I want:
+1. When the Highlight/Text Selection tool is active, the cursor should become a vertical text-selection cursor, like an I-beam cursor.
+2. When the user moves/drags the cursor horizontally over text, the PDF text should be automatically selected.
+3. User should be able to drag across words, lines, and paragraphs naturally.
+4. When the user stops selecting and right-clicks on the selected text, a small popup/context menu should appear.
+5. The popup should allow the user to choose:
+   - Highlight color
+   - Underline
+   - Strike-through if possible
+   - Copy text
+   - Delete annotation if selected annotation is clicked
+6. After selecting a highlight color, only the selected text should be highlighted.
+7. The selection and highlight should look smooth and uniform like Adobe Acrobat / Microsoft Edge.
+
+Current problem:
+- Highlight tool does not behave like Adobe or Microsoft Edge.
+- Text selection is not natural.
+- Highlight is not accurate.
+- There is no proper I-beam text cursor.
+- There is no right-click popup for highlight color / underline options.
+- Text selection/highlight appears rough and not professional.
+
+Required Highlight Tool Behavior:
+
+1. Cursor behavior:
+- When highlight/text selection mode is active, show a vertical I-beam cursor over PDF text.
+- Cursor should indicate that text can be selected.
+- Over non-text areas, cursor can remain default or crosshair.
+- The user should be able to select text by dragging horizontally or vertically across text.
+
+2. Text selection behavior:
+- Use the PDF.js text layer for real text selection.
+- Do not create fake selection manually unless needed.
+- Allow normal browser/PDF text selection behavior.
+- When user drags from left to right or right to left, text should auto-select naturally.
+- Selection should work for:
+  - one word
+  - one sentence
+  - one full line
+  - multiple lines
+  - paragraph
+  - two-column PDF layout
+- The selection should not jump or select unrelated text.
+- The selection overlay should be uniform:
+  - no gaps between words
+  - one smooth strip per selected line
+  - no giant rectangle over the whole paragraph
+  - no merging across columns
+
+3. Right-click popup behavior:
+- When the user selects text and right-clicks, show a custom popup near the selected text or cursor.
+- The popup should include:
+  - Yellow highlight
+  - Green highlight
+  - Blue highlight
+  - Pink highlight
+  - Underline
+  - Strike-through if possible
+  - Copy
+  - Cancel / close
+- The popup should look modern, small, and similar to Adobe/Microsoft Edge style.
+- The popup should not block the selected text too much.
+- Clicking outside the popup should close it.
+- Pressing Esc should close it.
+- Popup should only appear if there is selected PDF text.
+- If no text is selected, do not show the highlight popup.
+
+4. Highlight application:
+- When user selects a color in the popup, create a highlight annotation from the selected text.
+- Highlight must cover only selected text.
+- Spaces between words should be filled.
+- Multi-line selection should create separate line rectangles.
+- Highlight must be saved as annotation data.
+- Highlight should remain correctly positioned after:
+  - zoom
+  - scroll
+  - page change
+  - reload if annotation saving exists
+
+5. Underline behavior:
+- When user selects Underline from popup:
+  - Add an underline annotation under the selected text.
+  - Underline should follow each selected line separately.
+  - Store it as annotation type: "underline".
+  - It should remain aligned after zoom and scroll.
+- Underline should not cover the text.
+- Underline should be removable by eraser.
+
+6. Strike-through behavior, if possible:
+- When user selects Strike-through:
+  - Add a line through the middle of selected text.
+  - Store it as annotation type: "strike".
+  - It should align properly with selected text.
+- If strike-through is difficult, implement underline first and leave strike-through as optional.
+
+7. Eraser compatibility:
+- Eraser should remove the touched annotation only.
+- If eraser touches a highlight annotation, remove that highlight.
+- If eraser touches an underline annotation, remove that underline.
+- If eraser touches strike-through annotation, remove that strike annotation.
+- Do not erase original PDF text.
+- Do not erase all annotations.
+
+Implementation Requirements:
+- First inspect the current Luxor PDF Reader PDF.js viewer code, text layer, annotation layer, toolbar, highlight logic, and context menu logic.
+- Do not rewrite the whole app unnecessarily.
+- Use the existing PDF text layer for selection.
+- Ensure the text layer has selectable text enabled.
+- Use CSS cursor: text or I-beam over selectable text layer when selection/highlight mode is active.
+- Use `window.getSelection()` to detect selected text.
+- Use `Range.getClientRects()` to get selection rectangles.
+- Clean, group, and merge selection rectangles line-by-line.
+- Convert client rectangles to PDF/page coordinates before storing annotations.
+- Convert PDF coordinates back to viewport coordinates when rendering annotations.
+
+Suggested functions to create/fix:
+- enableTextSelectionMode()
+- disableTextSelectionMode()
+- setTextSelectionCursor()
+- handlePDFTextSelection()
+- handleSelectionContextMenu(event)
+- showSelectionPopup(event, selectedText, selectionRects)
+- hideSelectionPopup()
+- getSelectedPDFText()
+- getSelectionClientRects()
+- cleanSelectionRects()
+- groupRectsByPage()
+- groupRectsByVisualLine()
+- splitLineGroupsByHorizontalGap()
+- mergeRectsWithinLine()
+- createAnnotationFromSelection(type, color)
+- createHighlightAnnotationFromSelection(color)
+- createUnderlineAnnotationFromSelection(color)
+- createStrikeAnnotationFromSelection(color)
+- renderTextMarkupAnnotations(pageNumber)
+- eraseTextMarkupAnnotation(annotationId)
+
+Selection rectangle merging:
+- Do not use raw word rectangles directly.
+- Merge rectangles line-by-line.
+- Fill spaces between words.
+- Keep each selected line separate.
+- Do not merge across columns.
+- Use vertical center tolerance to group same-line rects.
+- Use horizontal gap threshold to prevent merging between left/right columns.
+
+Suggested annotation data model:
+
+{
+  id: "annotation_unique_id",
+  type: "highlight" | "underline" | "strike",
+  pageNumber: 1,
+  selectedText: "selected text here",
+  color: "#FFF176",
+  opacity: 0.45,
+  rects: [
+    {
+      x: 100,
+      y: 250,
+      width: 180,
+      height: 14
+    }
+  ],
+  createdAt: "ISO_DATE"
+}
+
+For underline:
+{
+  id: "underline_unique_id",
+  type: "underline",
+  pageNumber: 1,
+  selectedText: "selected text here",
+  color: "#1565C0",
+  rects: [
+    {
+      x: 100,
+      y: 250,
+      width: 180,
+      height: 14
+    }
+  ],
+  lineWidth: 1.5,
+  createdAt: "ISO_DATE"
+}
+
+Rendering:
+- Highlight: render semi-transparent rectangle behind text.
+- Underline: render line near bottom of each text rect.
+- Strike-through: render line around vertical center of each text rect.
+- Render these in an annotation layer above PDF page but below UI controls.
+- Ensure pointer events do not block normal selection unless eraser is active.
+
+Toolbar / UI:
+- Add or fix the Highlight/Text Selection button.
+- When active:
+  - show I-beam cursor on PDF text
+  - allow text selection
+  - allow right-click popup
+- Add a small modern popup menu:
+  - color swatches
+  - underline button
+  - strike button
+  - copy button
+- Popup should use Luxor design style:
+  - white background
+  - subtle shadow
+  - rounded corners
+  - small icons/text
+  - clean spacing
+
+Important:
+- Do not break Draw, Eraser, Add Text, or existing PDF Reader features.
+- Do not disable copy text.
+- Do not use screenshots or image overlays for text markup.
+- Do not highlight extra blank areas.
+- Do not merge selection rectangles across columns.
+- Do not erase original PDF content.
+
+Testing checklist:
+1. Activate Highlight/Text Selection tool.
+2. Confirm cursor becomes vertical I-beam over PDF text.
+3. Drag horizontally over one word and confirm text selects naturally.
+4. Drag across one full line.
+5. Drag across multiple lines.
+6. Drag across a paragraph.
+7. Select text in a two-column PDF and confirm columns do not merge wrongly.
+8. Right-click selected text and confirm popup appears.
+9. Select yellow highlight and confirm selected text is highlighted.
+10. Repeat with different colors.
+11. Select text and apply underline.
+12. Select text and apply strike-through if implemented.
+13. Click outside popup and confirm it closes.
+14. Press Esc and confirm popup closes.
+15. Zoom in/out and confirm markup stays aligned.
+16. Scroll and change page and confirm markup remains correct.
+17. Use eraser and confirm only touched highlight/underline/strike is removed.
+18. Confirm Draw and Add Text tools still work.
+
+Expected final result:
+- Luxor PDF Reader highlight/text markup should feel like Adobe Acrobat or Microsoft Edge.
+- User selects text naturally with an I-beam cursor.
+- Right-click opens a popup for highlight color and underline options.
+- Highlight is smooth, uniform, accurate, and professional.
+- Annotations stay aligned after zoom and scroll.
+
+After completing:
+1. Show all changed files.
+2. Explain how text selection mode works.
+3. Explain how right-click popup works.
+4. Explain how highlight / underline / strike annotations are saved.
+5. Explain how annotations remain aligned after zoom.
+6. Explain how to test the feature step by step.

@@ -21,6 +21,34 @@ export interface HighlightAnnotation {
   createdAt?: string;
 }
 
+/**
+ * Underline / strike-through text-markup annotations. Same per-line rect
+ * geometry as HighlightAnnotation (normalized 0..1 against the rendered
+ * page) so they survive zoom/rotation. Renderer draws a single line
+ * along the bottom (underline) or middle (strike) of each rect.
+ */
+export interface UnderlineAnnotation {
+  id: string;
+  type: "underline";
+  page: number;
+  rects: { x: number; y: number; width: number; height: number }[];
+  color: string;
+  selectedText?: string;
+  createdAt?: string;
+}
+
+export interface StrikeAnnotation {
+  id: string;
+  type: "strike";
+  page: number;
+  rects: { x: number; y: number; width: number; height: number }[];
+  color: string;
+  selectedText?: string;
+  createdAt?: string;
+}
+
+export type TextMarkupAnnotation = HighlightAnnotation | UnderlineAnnotation | StrikeAnnotation;
+
 export interface TextAnnotation {
   id: string;
   type: "text";
@@ -103,4 +131,10 @@ export interface RectAnnotation {
 
 export type ShapeAnnotation = FreehandAnnotation | LineAnnotation | ArrowAnnotation | OvalAnnotation | RectAnnotation;
 
-export type Annotation = HighlightAnnotation | TextAnnotation | CommentAnnotation | ShapeAnnotation;
+export type Annotation =
+  | HighlightAnnotation
+  | UnderlineAnnotation
+  | StrikeAnnotation
+  | TextAnnotation
+  | CommentAnnotation
+  | ShapeAnnotation;
