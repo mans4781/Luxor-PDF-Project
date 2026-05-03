@@ -19,7 +19,7 @@ export type HighlightSwatch = ColorSwatch & { opacity: number };
 export const SELECTION = {
   /** Bright yellow-green used by the live text-selection overlay. */
   color: "#C1F73B",
-  opacity: 0.55,
+  opacity: 0.38,
 } as const;
 
 /**

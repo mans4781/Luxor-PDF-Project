@@ -479,9 +479,12 @@ mark.search-hl {
 }
 .pdf-page-wrapper .selection-overlay > div {
   position: absolute;
-  /* Bright yellow-green (#C1F73B @ 55%) — matches SELECTION in
-   * src/lib/annotationColors.ts. Keeps original PDF text readable. */
-  background: rgba(193, 247, 59, 0.55);
+  /* Bright yellow-green (#C1F73B). `multiply` lets the color tint the
+   * page so it glows like a real highlighter while the text stays
+   * razor-sharp underneath. Matches SELECTION in
+   * src/lib/annotationColors.ts. */
+  background: rgba(193, 247, 59, 0.38);
+  mix-blend-mode: multiply;
   border-radius: 1px;
 }
 
