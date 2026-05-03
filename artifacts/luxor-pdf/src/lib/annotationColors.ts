@@ -23,22 +23,20 @@ export const SELECTION = {
 } as const;
 
 /**
- * Shiny, marker-like highlight palette. Saturated hex + ~0.56 alpha
- * gives a fresh fluorescent-marker look — vivid and luminous on white
- * paper while still leaving text readable. Grey is dialed back to 0.52
- * so it doesn't muddy text. Yellow is the default to match the
+ * Crisp, premium fluorescent-marker palette — 7 saturated hex values at
+ * a uniform 0.54 alpha, rendered with `multiply` blend mode by the
+ * canvas so the color glows on white paper while every letter of the
+ * underlying text stays razor-sharp. Yellow is the default to match the
  * traditional highlighter feel.
  */
 export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Yellow",  value: "#FFEB3B", opacity: 0.56 },
-  { name: "Green",   value: "#7CFF5B", opacity: 0.56 },
-  { name: "Blue",    value: "#64D2FF", opacity: 0.56 },
-  { name: "Cyan",    value: "#4DFFFF", opacity: 0.56 },
-  { name: "Pink",    value: "#FF6FCF", opacity: 0.56 },
-  { name: "Magenta", value: "#FF4DDA", opacity: 0.56 },
-  { name: "Red",     value: "#FF5252", opacity: 0.56 },
-  { name: "Violet",  value: "#B97CFF", opacity: 0.56 },
-  { name: "Grey",    value: "#C7D0D9", opacity: 0.52 },
+  { name: "Yellow", value: "#FFEB3B", opacity: 0.54 },
+  { name: "Green",  value: "#76FF5A", opacity: 0.54 },
+  { name: "Blue",   value: "#5AC8FA", opacity: 0.54 },
+  { name: "Pink",   value: "#FF6FB5", opacity: 0.54 },
+  { name: "Red",    value: "#FF5252", opacity: 0.54 },
+  { name: "Cyan",   value: "#4DFFFF", opacity: 0.54 },
+  { name: "Violet", value: "#B57CFF", opacity: 0.54 },
 ];
 
 /**

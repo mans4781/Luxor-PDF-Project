@@ -1,0 +1,208 @@
+In my Luxor PDF Reader, I want the Highlight tool to use crisp, bright, vibrant, clean highlight colours like the attached sample.
+
+Main requirement:
+The highlights must look:
+- crisp
+- bright
+- vibrant
+- clean
+- premium
+- marker-like
+- smooth
+- sharply visible
+- text-friendly
+
+Very important:
+- Text under the highlight must remain sharply visible.
+- Highlight must not look dull, muddy, pale, dirty, faded, or weak.
+- Highlight must look like a premium fluorescent marker on white paper.
+- Highlight strips must be smooth and uniform line-by-line.
+
+-----------------------------------
+GOAL
+-----------------------------------
+Update the Highlight tool so that it uses 7 beautiful, crisp, vibrant highlight colours with strong visual clarity.
+
+I want 7 highlight colours:
+
+1. Yellow
+   - Hex: #FFEB3B
+
+2. Green
+   - Hex: #76FF5A
+
+3. Blue
+   - Hex: #5AC8FA
+
+4. Pink
+   - Hex: #FF6FB5
+
+5. Red
+   - Hex: #FF5252
+
+6. Cyan
+   - Hex: #4DFFFF
+
+7. Violet
+   - Hex: #B57CFF
+
+-----------------------------------
+LOOK AND FEEL REQUIREMENTS
+-----------------------------------
+The highlight effect should:
+- feel luminous and fresh
+- look rich and saturated
+- appear clean and polished
+- be highly visible on white PDF paper
+- keep black text very sharp and readable
+- resemble premium PDF highlight styling
+
+Do NOT use:
+- dull pastel highlights
+- low-contrast overlay
+- muddy transparent fill
+- grayish dirty tones
+- weak washed-out colour
+
+-----------------------------------
+OPACITY / RENDERING
+-----------------------------------
+Use opacity around:
+- 50% to 58%
+
+Recommended default:
+- opacity: 0.54
+
+Why:
+- enough brightness and visibility
+- text remains sharp and readable
+- highlight looks bold but not too heavy
+
+Optional improvement:
+- If needed, slightly increase saturation/brightness in rendering
+- Keep the fill clean and flat
+- Do not add messy gradients
+- Do not blur the highlight
+
+-----------------------------------
+DEFAULT HIGHLIGHT
+-----------------------------------
+Default highlight:
+- Yellow (#FFEB3B)
+- Opacity: 0.54
+
+-----------------------------------
+HIGHLIGHT BEHAVIOR
+-----------------------------------
+- Apply highlight only to selected text.
+- Multi-line selection should create separate clean highlight strips per line.
+- Spaces between words must also be highlighted.
+- Highlight must look uniform, not broken word-by-word.
+- Do not create patchy rectangles.
+- Do not cover extra blank areas.
+- Text must remain clearly readable under all 7 highlight colours.
+- Highlight must stay correctly aligned after zoom, scroll, and page re-render.
+
+-----------------------------------
+UI REQUIREMENTS
+-----------------------------------
+- Add these 7 colours as swatches in the Highlight tool popup/dropdown.
+- Each swatch should display the real vibrant colour.
+- Selected swatch should show a visible active border/check mark.
+- Add tooltips for:
+  - Yellow
+  - Green
+  - Blue
+  - Pink
+  - Red
+  - Cyan
+  - Violet
+
+-----------------------------------
+IMPLEMENTATION REQUIREMENTS
+-----------------------------------
+- Inspect the current highlight tool, annotation rendering, and colour picker.
+- Do not rewrite the whole app unnecessarily.
+- Update the highlight palette and rendering logic only where needed.
+- Save highlight colour and opacity in annotation data.
+- Ensure highlight colour persists after reload.
+
+Suggested config:
+
+const HIGHLIGHT_COLORS = [
+  { name: "Yellow", value: "#FFEB3B", opacity: 0.54 },
+  { name: "Green", value: "#76FF5A", opacity: 0.54 },
+  { name: "Blue", value: "#5AC8FA", opacity: 0.54 },
+  { name: "Pink", value: "#FF6FB5", opacity: 0.54 },
+  { name: "Red", value: "#FF5252", opacity: 0.54 },
+  { name: "Cyan", value: "#4DFFFF", opacity: 0.54 },
+  { name: "Violet", value: "#B57CFF", opacity: 0.54 }
+];
+
+const DEFAULT_HIGHLIGHT = {
+  color: "#FFEB3B",
+  opacity: 0.54
+};
+
+-----------------------------------
+ANNOTATION DATA
+-----------------------------------
+Please save each highlight like this:
+
+{
+  id: "highlight_001",
+  type: "highlight",
+  pageNumber: 1,
+  selectedText: "sample text",
+  color: "#FFEB3B",
+  opacity: 0.54,
+  rects: [
+    { x: 100, y: 250, width: 180, height: 14 }
+  ],
+  createdAt: "ISO_DATE"
+}
+
+-----------------------------------
+FUNCTIONAL REQUIREMENTS
+-----------------------------------
+- New highlights should use the selected highlight colour.
+- Existing highlights should continue working.
+- The chosen colour should be stored with the annotation.
+- Reloading the PDF should preserve the exact highlight colour and opacity.
+- Highlight must remain aligned after zoom in/out, scroll, and page changes.
+
+-----------------------------------
+EXPECTED RESULT
+-----------------------------------
+I want all 7 highlight colours to look:
+- crisp
+- bright
+- vibrant
+- clean
+- premium
+- sharply visible
+
+And I want the black text to remain clearly readable under every colour.
+
+-----------------------------------
+TESTING CHECKLIST
+-----------------------------------
+Please test:
+1. Highlight text in Yellow
+2. Highlight text in Green
+3. Highlight text in Blue
+4. Highlight text in Pink
+5. Highlight text in Red
+6. Highlight text in Cyan
+7. Highlight text in Violet
+8. Confirm all colours look bright and crisp
+9. Confirm text remains sharply visible
+10. Confirm highlight strips are smooth and uniform
+11. Confirm colours stay the same after reload
+12. Confirm highlight stays aligned after zoom and scroll
+
+After completing:
+1. Show all changed files
+2. Explain where the 7 highlight colours are configured
+3. Explain how the rendering was improved to make highlights crisp and vibrant
+4. Explain how to test all 7 colours
