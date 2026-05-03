@@ -1,0 +1,168 @@
+In my Luxor PDF Reader, I want a modern annotation toolbar with icons and behavior similar to the attached reference image.
+
+Goal:
+Create a clean, minimal, professional PDF annotation toolbar for:
+1. Highlight
+2. Draw / Pen
+3. Eraser
+
+The toolbar style should feel similar to Microsoft Edge / modern PDF readers, but it should not be an exact copy. It should match the Luxor PDF Reader branding and look polished.
+
+What I want:
+- Small, clean, modern toolbar icons
+- Similar visual style to the attached sample
+- Simple top toolbar or floating toolbar
+- Highlight, Draw, and Eraser tools
+- Smooth user experience similar to Microsoft Edge
+
+UI / Design Requirements:
+1. Toolbar should contain:
+   - Highlight icon
+   - Draw / Pen icon
+   - Eraser icon
+
+2. Icon style:
+   - Minimal
+   - Sharp
+   - Clean
+   - Vector/SVG based
+   - Professional
+   - Similar in simplicity to the attached screenshot
+   - Not bulky or cartoonish
+
+3. Active state:
+   - When a tool is selected, show it as active
+   - Active tool should have a blue underline, blue accent, border, or highlighted background similar to the reference
+   - Inactive tools should remain neutral
+
+4. Toolbar behavior:
+   - Only one tool active at a time
+   - Clicking Highlight activates highlight mode
+   - Clicking Draw activates pen mode
+   - Clicking Eraser activates eraser mode
+   - Switching tools must deactivate the previous tool
+
+5. Tool dropdown/options:
+   - Draw tool should have a small dropdown for:
+     - pen color
+     - pen thickness
+   - Highlight tool should have a small dropdown for:
+     - highlight color
+     - opacity if possible
+   - Eraser can have:
+     - normal erase mode
+     - optional stroke erase mode if needed
+
+6. Appearance:
+   - Background: white or light gray
+   - Border: subtle
+   - Shadow: light and modern
+   - Rounded corners if appropriate
+   - The toolbar should look premium and refined
+
+Functional Requirements:
+
+1. Highlight Tool
+- User selects text in PDF
+- Only selected text should be highlighted
+- Highlight should be uniform line-by-line
+- Spaces between words should be filled
+- Multi-line selection should create separate clean strips
+- Highlight should remain aligned after zoom and scroll
+- Default color can be yellow
+
+2. Draw / Pen Tool
+- User can draw freehand annotations over the PDF
+- One mouse down to mouse up = one full stroke
+- Stroke should render smoothly
+- Support different colors and thickness
+- Drawing should stay in correct position after zoom / page scroll
+
+3. Eraser Tool
+- Eraser should remove touched annotations
+- For draw strokes:
+  - if eraser touches a stroke, erase that full stroke instantly
+- For highlights:
+  - if eraser touches a highlight, remove that highlight annotation
+- Do not erase original PDF text/content
+- Only erase Luxor annotation objects
+
+Implementation Requirements:
+- First inspect the current Luxor PDF Reader toolbar, annotation layer, and tool handling
+- Do not rewrite the whole app unnecessarily
+- Add or update the toolbar UI with these 3 icons
+- Use clean SVG icons, not blurry bitmap icons
+- Keep the Luxor PDF Reader design language consistent
+- Make the toolbar responsive and clean
+
+Suggested components:
+- AnnotationToolbar
+- ToolbarButton
+- ToolDropdown
+- HighlightTool
+- DrawTool
+- EraserTool
+
+Suggested state structure:
+- activeTool: "highlight" | "draw" | "eraser" | null
+- drawSettings:
+  - color
+  - thickness
+- highlightSettings:
+  - color
+  - opacity
+- eraserSettings:
+  - mode
+
+Suggested functions:
+- renderAnnotationToolbar()
+- setActiveTool(toolName)
+- toggleToolDropdown(toolName)
+- applyToolbarActiveState()
+- enableHighlightMode()
+- enableDrawMode()
+- enableEraserMode()
+- disableAllTools()
+
+Icon requirements:
+Please create or use similar-style SVG icons for:
+1. Highlight
+   - A marker/highlighter nib icon
+2. Draw
+   - A pen or pencil nib icon
+3. Eraser
+   - A simple eraser icon
+
+Important:
+- The icons should be similar in style to the attached image, but not an exact copy
+- Keep them elegant, small, and modern
+- They should look good on desktop PDF reader UI
+- Maintain a professional PDF software appearance
+
+Extra UX improvements:
+- Add tooltip on hover:
+  - Highlight
+  - Draw
+  - Eraser
+- Add active blue indicator under selected tool
+- Show dropdown arrow for tools that have settings
+- Ensure toolbar remains visually aligned and neat
+
+Testing checklist:
+1. Click Highlight and verify icon becomes active
+2. Select text and highlight it
+3. Click Draw and verify icon becomes active
+4. Draw freehand on the PDF
+5. Click Eraser and verify icon becomes active
+6. Erase a stroke and a highlight
+7. Verify only one tool is active at a time
+8. Verify dropdowns open correctly
+9. Verify toolbar looks polished and modern
+10. Verify UI is similar in feel to the attached screenshot
+
+After completing:
+1. Show all changed files
+2. Explain how the toolbar icons were added
+3. Explain how active tool state works
+4. Explain how Highlight / Draw / Eraser were connected
+5. If possible, show me a preview of the updated toolbar

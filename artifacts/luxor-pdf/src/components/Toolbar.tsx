@@ -71,7 +71,7 @@ interface ToolbarProps {
   onPrint: () => void;
 }
 
-type PopoverType = "highlight" | "text" | "tools" | "edit" | null;
+type PopoverType = "highlight" | "text" | "tools" | "edit" | "draw" | null;
 
 const isShapeTool = (t: ToolType) => ["freehand", "line", "arrow", "oval", "rectangle"].includes(t);
 
@@ -257,32 +257,20 @@ export default function Toolbar({
       {/* ── 4. Highlighter icon ─────────────────────────────── */}
       <div style={{ position: "relative" }}>
         <button
-          className={`toolbar-btn ${tool === "highlight" ? "active" : ""}`}
+          className={`toolbar-btn annot-btn ${tool === "highlight" ? "active" : ""}`}
           onClick={() => { onToolChange(tool === "highlight" ? "hand" : "highlight"); toggle("highlight"); }}
-          title="Highlight text"
-          style={{ gap: 0, width: 38 }}
+          title="Highlight"
         >
           <span className="toolbar-tip">Highlight</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
-            <defs>
-              <linearGradient id="hlg" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
-                <stop offset="0%" stopColor="#FFD700"/>
-                <stop offset="100%" stopColor="#FFA500"/>
-              </linearGradient>
-            </defs>
-            <g transform="rotate(-45, 12, 12)">
-              <rect x="9.5" y="1" width="5" height="3.5" rx="1.5" fill="#e69500" stroke="#cc8400" strokeWidth="0.4"/>
-              <rect x="9.5" y="4.5" width="5" height="12" rx="0.8" fill="url(#hlg)" stroke="#e69500" strokeWidth="0.3"/>
-              <rect x="10.8" y="6" width="1.4" height="8" rx="0.7" fill="white" fillOpacity="0.4"/>
-              <path d="M9.5 16.5 L10.8 20.5 L13.2 20.5 L14.5 16.5 Z" fill="#FFA500"/>
-              <path d="M10.8 20.5 L12 22.5 L13.2 20.5 Z" fill="#e69500"/>
-            </g>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 11l-6 6v4h4l6-6"/>
+            <path d="M22 12.5l-3-3a1.5 1.5 0 0 0-2.12 0L8 18.38l5.12 5.12 8.88-8.88a1.5 1.5 0 0 0 0-2.12z" transform="translate(-1 -3.5)"/>
+            <line x1="14" y1="6" x2="20" y2="12"/>
           </svg>
-          <div style={{
-            position: "absolute", bottom: 3, right: 3,
-            width: 7, height: 7, borderRadius: "50%",
-            background: highlightColor, border: "1px solid rgba(255,255,255,0.4)"
-          }} />
+          <span
+            className="annot-color-swatch"
+            style={{ background: highlightColor }}
+          />
         </button>
 
         {popover === "highlight" && (
@@ -303,35 +291,86 @@ export default function Toolbar({
         )}
       </div>
 
+      {/* ── 4b. Draw / Pen icon ─────────────────────────────── */}
+      <div style={{ position: "relative" }}>
+        <button
+          className={`toolbar-btn annot-btn ${tool === "freehand" ? "active" : ""}`}
+          onClick={() => { onToolChange(tool === "freehand" ? "hand" : "freehand"); toggle("draw"); }}
+          title="Draw"
+        >
+          <span className="toolbar-tip">Draw</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+            <path d="M2 2l7.586 7.586"/>
+            <circle cx="11" cy="11" r="1.6" fill="currentColor"/>
+          </svg>
+          <span
+            className="annot-color-swatch"
+            style={{ background: drawColor }}
+          />
+        </button>
+
+        {popover === "draw" && (
+          <div className="popover-panel" style={{ minWidth: 200 }}>
+            <div className="popover-label">Pen Color</div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {DRAW_COLORS.map(c => (
+                <button
+                  key={c.value}
+                  className={`color-dot ${drawColor === c.value ? "sel" : ""}`}
+                  style={{ background: c.value }}
+                  title={c.label}
+                  onClick={() => onDrawColorChange(c.value)}
+                />
+              ))}
+            </div>
+            <div style={{ height: 8 }} />
+            <div className="popover-label">Thickness</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {THICKNESS_OPTIONS.map(t => (
+                <button
+                  key={t.value}
+                  title={t.label}
+                  onClick={() => onDrawThicknessChange(t.value)}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    width: 24, height: 24, border: "none", borderRadius: 4,
+                    background: drawThickness === t.value ? "rgba(255,255,255,0.2)" : "transparent",
+                    cursor: "pointer", padding: 0,
+                  }}
+                >
+                  <div style={{
+                    width: t.size, height: t.size,
+                    borderRadius: "50%",
+                    background: drawColor,
+                    border: drawThickness === t.value ? "1.5px solid #fff" : "1px solid rgba(255,255,255,0.3)",
+                  }} />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* ── 5. Eraser icon ──────────────────────────────────── */}
       <div style={{ position: "relative" }}>
         <button
-          className={`toolbar-btn ${tool === "eraser" ? "active" : ""}`}
+          className={`toolbar-btn annot-btn ${tool === "eraser" ? "active" : ""}`}
           onClick={() => onToolChange(tool === "eraser" ? "hand" : "eraser")}
-          title="Eraser — drag to erase parts of highlights. Alt+click = clear all. Right-click to upload custom icon."
+          title="Eraser — click annotations to erase. Alt+click = clear all highlights. Right-click to upload a custom icon."
           onContextMenu={e => { e.preventDefault(); eraserUploadRef.current?.click(); }}
           onAuxClick={e => { if (e.altKey) onEraseAll(); }}
           onMouseDown={e => { if (e.altKey) { e.preventDefault(); onEraseAll(); } }}
           style={{ position: "relative", overflow: "visible" }}
         >
-          <span className="toolbar-tip">Eraser — drag to erase parts (Alt+click to clear all)</span>
+          <span className="toolbar-tip">Eraser</span>
           {eraserIcon ? (
             <img src={eraserIcon} alt="Eraser" style={{ width: 18, height: 18, objectFit: "contain" }} />
           ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
-              <defs>
-                <linearGradient id="erg" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
-                  <stop offset="0%" stopColor="#7B8CDE"/>
-                  <stop offset="100%" stopColor="#4A5AC7"/>
-                </linearGradient>
-              </defs>
-              <g transform="rotate(-30, 12, 12)">
-                <rect x="7" y="2" width="10" height="13" rx="2" fill="url(#erg)" stroke="#3d4db3" strokeWidth="0.5"/>
-                <rect x="8.5" y="4" width="2" height="8" rx="1" fill="white" fillOpacity="0.25"/>
-                <rect x="7" y="15" width="10" height="5" rx="1.5" fill="#E8E8E8" stroke="#ccc" strokeWidth="0.4"/>
-                <line x1="7" y1="15" x2="17" y2="15" stroke="#bbb" strokeWidth="0.8"/>
-              </g>
-              <line x1="4" y1="22" x2="20" y2="22" stroke="#999" strokeWidth="1.8" strokeLinecap="round"/>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 20H8l-5.3-5.3a1.6 1.6 0 0 1 0-2.27L12.3 2.83a1.6 1.6 0 0 1 2.27 0l6.6 6.6a1.6 1.6 0 0 1 0 2.27L13 20"/>
+              <line x1="18" y1="13" x2="9" y2="4"/>
             </svg>
           )}
         </button>
