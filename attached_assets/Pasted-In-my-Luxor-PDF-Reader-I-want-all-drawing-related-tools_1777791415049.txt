@@ -1,0 +1,248 @@
+In my Luxor PDF Reader, I want all drawing-related tools to use a clean, rich, premium colour palette similar to the attached reference image.
+
+Goal:
+Add a professional colour palette and thickness selector for all draw features/tools, with the same look and feel as the sample.
+
+Apply this colour system to all drawing tools, such as:
+- Pen / Draw
+- Pencil
+- Marker / Freehand
+- Shapes (line, arrow, rectangle, circle, etc.) if available
+- Underline tool if it uses drawing color
+- Strike-through if it uses drawing color
+- Add Text border/text colour if connected to draw color system
+- Any future ink/drawing annotation tools
+
+Important:
+I want a colour picker panel similar to the attached sample:
+- multiple circular colour swatches
+- clean grid layout
+- active selected colour shown clearly
+- thickness slider below
+- modern, minimal, polished UI
+
+-----------------------------------
+1. REQUIRED COLOUR PALETTE
+-----------------------------------
+Please create a colour palette similar to the reference image using these swatches.
+
+Row 1: Neutral colors
+1. Black       - #000000
+2. Dark Gray   - #666666
+3. Gray        - #999999
+4. Light Gray  - #BBBBBB
+5. Silver      - #D0D0D0
+6. White       - #F5F5F5
+
+Row 2: Warm vibrant colors
+7. Deep Pink   - #C21872
+8. Bright Red  - #F21E1E
+9. Orange      - #FF5A00
+10. Amber      - #FFB000
+11. Golden     - #F7C600
+12. Bright Yellow - #F4E300
+
+Row 3: Fresh greens / cool tones
+13. Lime       - #A8E61D
+14. Bright Green - #2EE600
+15. Dark Green - #0B8F5A
+16. Teal Cyan  - #16A6C9
+17. Bright Blue - #0D62F2
+18. Deep Violet - #4B0FC6
+
+Row 4: Purple / brown family
+19. Violet     - #6A17D6
+20. Purple     - #7A0FA3
+21. Skin / Beige - #E8C9B5
+22. Tan        - #C49766
+23. Brown      - #9A5E2D
+24. Dark Brown - #6B4536
+
+Row 5: Soft accent colors
+25. Light Pink - #E676E8
+26. Peach      - #F4C06E
+27. Soft Yellow - #EFE86A
+28. Mint Green - #6DE48B
+29. Sky Blue   - #74C8F0
+30. Lavender   - #AFA6F5
+
+-----------------------------------
+2. UI REQUIREMENTS
+-----------------------------------
+Create a colour picker popup/dropdown/panel with:
+- Title: "Colors"
+- Circular color swatches in a neat grid
+- Similar arrangement to the attached reference
+- White or light-gray panel background
+- Clean spacing
+- Subtle border / shadow
+- Rounded corners
+- Premium modern feel
+
+Selected color state:
+- Selected swatch should have a blue outline/ring like the reference
+- Show clear active state
+- Only one color selected at a time per tool
+
+Thickness section:
+- Add title: "Thickness"
+- Add a slider below the color swatches
+- Show preview stroke above or near slider
+- Show labels:
+  - Thin
+  - Thick
+- Thickness should update the currently selected drawing tool
+
+-----------------------------------
+3. APPLY TO ALL DRAW TOOLS
+-----------------------------------
+This same palette should be available for all draw-related tools.
+
+For Pen / Pencil / Draw:
+- User can pick any color from the palette
+- User can choose thickness
+- New strokes should use the selected color and thickness
+
+For Shapes:
+- Shape outline should use selected color
+- If fill is supported, keep fill optional
+- Thickness should control border width
+
+For Underline / Strike-through:
+- If color is editable, use the same palette
+- Default to blue or black if needed, but let user change it
+
+For Add Text:
+- If text color picker exists, use the same palette
+- If separate logic is preferred, still reuse the same central color set
+
+For Highlighter:
+- If highlighter uses a separate palette, keep it separate if needed
+- But if you want consistency, you may reuse selected bright colors with suitable opacity
+
+-----------------------------------
+4. DEFAULT SETTINGS
+-----------------------------------
+Default selected color:
+- Blue: #0D62F2
+
+Default thickness:
+- Medium, around 3px
+
+Suggested thickness presets or slider range:
+- 1px to 10px
+or
+- 1, 2, 3, 5, 8, 10
+
+-----------------------------------
+5. IMPLEMENTATION REQUIREMENTS
+-----------------------------------
+- Inspect the current Luxor PDF Reader toolbar, annotation tools, drawing logic, and settings UI
+- Do not rewrite the entire app unnecessarily
+- Create a central reusable draw color palette configuration
+- Reuse the same palette across all drawing-related tools
+- Store selected color and thickness in tool state
+- Persist the selected color/thickness during the session
+- If app settings/local storage already exist, save last selected values there
+
+Suggested config example:
+
+const DRAW_TOOL_COLORS = [
+  { name: "Black", value: "#000000" },
+  { name: "Dark Gray", value: "#666666" },
+  { name: "Gray", value: "#999999" },
+  { name: "Light Gray", value: "#BBBBBB" },
+  { name: "Silver", value: "#D0D0D0" },
+  { name: "White", value: "#F5F5F5" },
+
+  { name: "Deep Pink", value: "#C21872" },
+  { name: "Bright Red", value: "#F21E1E" },
+  { name: "Orange", value: "#FF5A00" },
+  { name: "Amber", value: "#FFB000" },
+  { name: "Golden", value: "#F7C600" },
+  { name: "Bright Yellow", value: "#F4E300" },
+
+  { name: "Lime", value: "#A8E61D" },
+  { name: "Bright Green", value: "#2EE600" },
+  { name: "Dark Green", value: "#0B8F5A" },
+  { name: "Teal Cyan", value: "#16A6C9" },
+  { name: "Bright Blue", value: "#0D62F2" },
+  { name: "Deep Violet", value: "#4B0FC6" },
+
+  { name: "Violet", value: "#6A17D6" },
+  { name: "Purple", value: "#7A0FA3" },
+  { name: "Skin", value: "#E8C9B5" },
+  { name: "Tan", value: "#C49766" },
+  { name: "Brown", value: "#9A5E2D" },
+  { name: "Dark Brown", value: "#6B4536" },
+
+  { name: "Light Pink", value: "#E676E8" },
+  { name: "Peach", value: "#F4C06E" },
+  { name: "Soft Yellow", value: "#EFE86A" },
+  { name: "Mint Green", value: "#6DE48B" },
+  { name: "Sky Blue", value: "#74C8F0" },
+  { name: "Lavender", value: "#AFA6F5" }
+];
+
+const DEFAULT_DRAW_SETTINGS = {
+  color: "#0D62F2",
+  thickness: 3
+};
+
+-----------------------------------
+6. SUGGESTED FUNCTIONS / COMPONENTS
+-----------------------------------
+Please create or update reusable functions/components like:
+
+- DrawColorPalette
+- ThicknessSlider
+- ToolStylePanel
+- getDrawToolColors()
+- setActiveDrawColor(color)
+- setActiveDrawThickness(value)
+- applyDrawStyleToTool(toolName)
+- saveToolStyleSettings()
+- loadToolStyleSettings()
+
+-----------------------------------
+7. BEHAVIOR REQUIREMENTS
+-----------------------------------
+- When user changes color, only future drawings should use that selected color
+- Existing drawings should stay unchanged unless edited
+- When user changes thickness, new strokes/shapes should use new thickness
+- Switching between draw tools should keep or intelligently manage the selected style
+- Panel should open smoothly and feel polished
+- UI must be neat and visually aligned
+
+-----------------------------------
+8. TESTING CHECKLIST
+-----------------------------------
+Please test:
+1. Open Pen/Draw tool and verify the color palette appears
+2. Select multiple colors and draw with them
+3. Change thickness and draw again
+4. Test black, red, green, blue, purple, brown, and gray specifically
+5. Test the same palette for shapes if shapes exist
+6. Test underline/strike-through if they support color
+7. Test Add Text color if connected to the same system
+8. Confirm selected swatch shows active blue ring
+9. Confirm selected thickness affects new drawings
+10. Reload app and confirm saved settings persist if implemented
+
+-----------------------------------
+9. EXPECTED RESULT
+-----------------------------------
+I want a premium draw-tool color panel similar to the attached reference image:
+- beautiful color combinations
+- circular swatches
+- modern popup
+- blue active selection ring
+- thickness slider
+- consistent across all drawing tools
+
+After completing:
+1. Show all changed files
+2. Explain how the color palette was added
+3. Explain how the same palette is reused across all draw tools
+4. Explain how thickness settings work
+5. If possible, show me a preview of the updated panel

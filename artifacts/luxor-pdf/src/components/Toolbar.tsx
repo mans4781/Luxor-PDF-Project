@@ -3,25 +3,138 @@ import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { ToolType } from "@/lib/annotationTypes";
 import {
   HIGHLIGHT_COLORS as PALETTE_HIGHLIGHT,
-  PEN_COLORS as PALETTE_PEN,
-  TEXT_COLORS as PALETTE_TEXT,
+  DRAW_PALETTE as PALETTE_DRAW,
+  DRAW_THICKNESS,
 } from "@/lib/annotationColors";
 
 // Toolbar swatches are derived from the central palette in
-// src/lib/annotationColors.ts. Mapped to the local { label, value } shape
-// the existing JSX expects so we keep the diff small and the popovers
-// continue to render unchanged.
+// src/lib/annotationColors.ts. The 30-color DRAW_PALETTE is shared by
+// the pen, all shape tools, and the Add-Text color picker so every
+// drawing-related surface uses one consistent color system.
 const HIGHLIGHT_COLORS = PALETTE_HIGHLIGHT.map((c) => ({ label: c.name, value: c.value }));
-const TEXT_COLORS = PALETTE_TEXT.map((c) => ({ label: c.name, value: c.value }));
-const DRAW_COLORS = PALETTE_PEN.map((c) => ({ label: c.name, value: c.value }));
+const TEXT_COLORS = PALETTE_DRAW.map((c) => ({ label: c.name, value: c.value }));
+const DRAW_COLORS = PALETTE_DRAW.map((c) => ({ label: c.name, value: c.value }));
 
-const THICKNESS_OPTIONS = [
-  { label: "Thin",     value: 1,  size: 3  },
-  { label: "Medium",   value: 2,  size: 5  },
-  { label: "Thick",    value: 4,  size: 8  },
-  { label: "Heavy",    value: 6,  size: 11 },
-  { label: "Very Heavy", value: 10, size: 15 },
-];
+/**
+ * 6-column circular color swatch grid. Selected swatch shows a blue
+ * ring (matches the spec's premium reference image). Reused by every
+ * drawing-related popover (pen, shape tools, add-text).
+ */
+function ColorGrid({
+  colors, selected, onSelect,
+}: {
+  colors: { label: string; value: string }[];
+  selected: string;
+  onSelect: (v: string) => void;
+}) {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(6, 1fr)",
+        gap: 6,
+        justifyItems: "center",
+      }}
+    >
+      {colors.map((c) => {
+        const isSel = selected.toLowerCase() === c.value.toLowerCase();
+        return (
+          <button
+            key={c.value}
+            title={c.label}
+            onClick={() => onSelect(c.value)}
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: "50%",
+              padding: 0,
+              cursor: "pointer",
+              background: c.value,
+              border: isSel ? "2px solid #0D62F2" : "1px solid rgba(255,255,255,0.25)",
+              boxShadow: isSel ? "0 0 0 2px rgba(13,98,242,0.25)" : "none",
+              transition: "transform 0.1s, box-shadow 0.1s",
+              transform: isSel ? "scale(1.08)" : "none",
+              outline: "none",
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Color grid + Thickness slider, used by all drawing tools so they
+ * share one consistent style panel. `standalone` wraps it in its own
+ * popover-panel so the Draw button can drop it in directly.
+ */
+function DrawStylePanel({
+  color, thickness, onColorChange, onThicknessChange, standalone,
+}: {
+  color: string;
+  thickness: number;
+  onColorChange: (c: string) => void;
+  onThicknessChange: (t: number) => void;
+  standalone?: boolean;
+}) {
+  const previewSize = Math.max(2, Math.min(DRAW_THICKNESS.max, thickness));
+  const inner = (
+    <>
+      <div className="popover-label">Colors</div>
+      <ColorGrid colors={DRAW_COLORS} selected={color} onSelect={onColorChange} />
+      <div style={{ height: 12 }} />
+      <div className="popover-label">Thickness</div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: 22,
+          marginBottom: 6,
+        }}
+      >
+        <div
+          style={{
+            width: "70%",
+            height: previewSize,
+            borderRadius: previewSize,
+            background: color,
+          }}
+        />
+      </div>
+      <input
+        type="range"
+        min={DRAW_THICKNESS.min}
+        max={DRAW_THICKNESS.max}
+        step={1}
+        value={thickness}
+        onChange={(e) => onThicknessChange(parseInt(e.target.value, 10))}
+        style={{ width: "100%", accentColor: "#0D62F2", cursor: "pointer" }}
+      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          color: "#888",
+          fontSize: 10,
+          marginTop: 2,
+          textTransform: "uppercase",
+          letterSpacing: 0.6,
+        }}
+      >
+        <span>Thin</span>
+        <span style={{ color: "#bbb" }}>{thickness}px</span>
+        <span>Thick</span>
+      </div>
+    </>
+  );
+  if (!standalone) return inner;
+  return (
+    <div className="popover-panel" style={{ minWidth: 230 }}>
+      {inner}
+    </div>
+  );
+}
 
 const SHAPE_TOOLS: { id: ToolType; label: string }[] = [
   { id: "freehand",  label: "Freehand" },
@@ -200,42 +313,12 @@ export default function Toolbar({
               </button>
             ))}
             <div style={{ height: 6 }} />
-            <div className="popover-label">Color</div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {DRAW_COLORS.map(c => (
-                <button
-                  key={c.value}
-                  className={`color-dot ${drawColor === c.value ? "sel" : ""}`}
-                  style={{ background: c.value }}
-                  title={c.label}
-                  onClick={() => onDrawColorChange(c.value)}
-                />
-              ))}
-            </div>
-            <div style={{ height: 8 }} />
-            <div className="popover-label">Thickness</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {THICKNESS_OPTIONS.map(t => (
-                <button
-                  key={t.value}
-                  title={t.label}
-                  onClick={() => onDrawThicknessChange(t.value)}
-                  style={{
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    width: 24, height: 24, border: "none", borderRadius: 4,
-                    background: drawThickness === t.value ? "rgba(255,255,255,0.2)" : "transparent",
-                    cursor: "pointer", padding: 0,
-                  }}
-                >
-                  <div style={{
-                    width: t.size, height: t.size,
-                    borderRadius: "50%",
-                    background: drawColor,
-                    border: drawThickness === t.value ? "1.5px solid #fff" : "1px solid rgba(255,255,255,0.3)",
-                  }} />
-                </button>
-              ))}
-            </div>
+            <DrawStylePanel
+              color={drawColor}
+              thickness={drawThickness}
+              onColorChange={onDrawColorChange}
+              onThicknessChange={onDrawThicknessChange}
+            />
           </div>
         )}
       </div>
@@ -300,44 +383,13 @@ export default function Toolbar({
         </button>
 
         {popover === "draw" && (
-          <div className="popover-panel" style={{ minWidth: 200 }}>
-            <div className="popover-label">Pen Color</div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {DRAW_COLORS.map(c => (
-                <button
-                  key={c.value}
-                  className={`color-dot ${drawColor === c.value ? "sel" : ""}`}
-                  style={{ background: c.value }}
-                  title={c.label}
-                  onClick={() => onDrawColorChange(c.value)}
-                />
-              ))}
-            </div>
-            <div style={{ height: 8 }} />
-            <div className="popover-label">Thickness</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {THICKNESS_OPTIONS.map(t => (
-                <button
-                  key={t.value}
-                  title={t.label}
-                  onClick={() => onDrawThicknessChange(t.value)}
-                  style={{
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    width: 24, height: 24, border: "none", borderRadius: 4,
-                    background: drawThickness === t.value ? "rgba(255,255,255,0.2)" : "transparent",
-                    cursor: "pointer", padding: 0,
-                  }}
-                >
-                  <div style={{
-                    width: t.size, height: t.size,
-                    borderRadius: "50%",
-                    background: drawColor,
-                    border: drawThickness === t.value ? "1.5px solid #fff" : "1px solid rgba(255,255,255,0.3)",
-                  }} />
-                </button>
-              ))}
-            </div>
-          </div>
+          <DrawStylePanel
+            color={drawColor}
+            thickness={drawThickness}
+            onColorChange={onDrawColorChange}
+            onThicknessChange={onDrawThicknessChange}
+            standalone
+          />
         )}
       </div>
 
@@ -411,17 +463,11 @@ export default function Toolbar({
               >+</button>
             </div>
             <div className="popover-label">Text Color</div>
-            <div style={{ display: "flex", gap: 7 }}>
-              {TEXT_COLORS.map(c => (
-                <button
-                  key={c.value}
-                  className={`color-dot ${textColor === c.value ? "sel" : ""}`}
-                  style={{ background: c.value }}
-                  title={c.label}
-                  onClick={() => onTextColorChange(c.value)}
-                />
-              ))}
-            </div>
+            <ColorGrid
+              colors={TEXT_COLORS}
+              selected={textColor}
+              onSelect={onTextColorChange}
+            />
           </div>
         )}
       </div>
