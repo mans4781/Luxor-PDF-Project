@@ -479,9 +479,9 @@ mark.search-hl {
 }
 .pdf-page-wrapper .selection-overlay > div {
   position: absolute;
-  /* Soft professional blue (#B7D7F0 @ 50%) — matches SELECTION in
+  /* Bright yellow (#FFEB3B @ 55%) — matches SELECTION in
    * src/lib/annotationColors.ts. Keeps original PDF text readable. */
-  background: rgba(183, 215, 240, 0.5);
+  background: rgba(255, 235, 59, 0.55);
   border-radius: 1px;
 }
 

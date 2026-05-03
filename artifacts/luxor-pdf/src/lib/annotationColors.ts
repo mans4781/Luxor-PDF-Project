@@ -17,9 +17,9 @@ export type ColorSwatch = { name: string; value: string };
 export type HighlightSwatch = ColorSwatch & { opacity: number };
 
 export const SELECTION = {
-  /** Soft professional blue used by the live text-selection overlay. */
-  color: "#B7D7F0",
-  opacity: 0.5,
+  /** Bright yellow used by the live text-selection overlay. */
+  color: "#FFEB3B",
+  opacity: 0.55,
 } as const;
 
 /**
