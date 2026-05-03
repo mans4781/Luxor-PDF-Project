@@ -381,7 +381,7 @@ export default function Toolbar({
                   border: "none", borderRadius: 5,
                   color: "#1a1a1a",
                   cursor: "pointer", fontSize: 13, textAlign: "left",
-                  fontWeight: 500,
+                  fontWeight: 400,
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(13,98,242,0.10)"; e.currentTarget.style.color = "#0D62F2"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#1a1a1a"; }}
@@ -390,7 +390,7 @@ export default function Toolbar({
                 <span style={{ flex: 1 }}>{f.label}</span>
                 {isLive && (
                   <span style={{
-                    fontSize: 9, fontWeight: 700, letterSpacing: 0.5,
+                    fontSize: 9, fontWeight: 500, letterSpacing: 0.5,
                     padding: "2px 6px", borderRadius: 999,
                     background: isActive ? "#0D62F2" : "rgba(13,98,242,0.10)",
                     color: isActive ? "#fff" : "#0D62F2",
