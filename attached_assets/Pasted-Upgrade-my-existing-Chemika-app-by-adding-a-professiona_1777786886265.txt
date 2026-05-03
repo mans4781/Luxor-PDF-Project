@@ -1,0 +1,702 @@
+Upgrade my existing Chemika app by adding a professional desktop-style top menu bar similar in workflow to MathType, but designed originally for Chemika.
+
+Product:
+Chemika
+Parent brand: EquationX Studio
+
+Current app:
+Chemika is a partially built chemistry equation editor with a toolbar, visual editor, symbol buttons, reaction arrows, formula tools, and export/copy features.
+
+Main goal:
+Add a top menu bar with these menus:
+
+File
+Edit
+Format
+Style
+Size
+Preference
+Help
+
+Important:
+Do not rebuild the app from zero.
+Inspect the current Chemika project first.
+Reuse existing editor, toolbar, canvas, shortcut, export, and symbol logic.
+Add a professional top menu system without breaking existing features.
+
+Important legal/design note:
+Do not copy MathType UI exactly.
+Do not use MathType/WIRIS icons or copyrighted assets.
+Create an original Chemika-style menu inspired by professional equation editors.
+
+Design style:
+- Desktop software style
+- Clean, compact, premium
+- Light grey menu bar background
+- Black menu text
+- Crimson/red Chemika accent only for selected/active states
+- Small dropdown menus
+- Keyboard shortcuts displayed on the right
+- Submenus where needed
+- Smooth hover states
+
+Top menu layout:
+File      Edit      Format      Style      Size      Preference      Help
+
+---
+
+## 1. File Menu
+
+Add menu items:
+
+New Equation
+Open .chemika File
+Save
+Save As .chemika
+Import
+Export
+Export as SVG
+Export as PNG
+Export as MathML
+Export as LaTeX
+Export as PDF Preview
+Copy for Word
+Copy for InDesign
+Copy for PageMaker / Legacy Apps
+Print
+Recent Files
+Close Equation
+
+Behavior:
+- New Equation clears the current editor after confirmation if unsaved changes exist.
+- Open .chemika imports a saved Chemika equation object.
+- Save saves current equation/canvas state.
+- Save As exports a .chemika file.
+- Export as SVG downloads SVG.
+- Export as PNG downloads PNG.
+- Export as MathML downloads MathML.
+- Export as LaTeX downloads .tex or copies LaTeX depending on current export design.
+- Copy for Word uses MathML first, then SVG/PNG fallback.
+- Copy for InDesign uses SVG/PNG.
+- Copy for PageMaker uses PNG fallback.
+- Print opens browser print for current equation/canvas.
+- Recent Files shows recently opened/saved .chemika files from localStorage if available.
+- Close Equation closes/clears current equation area.
+
+Suggested shortcuts:
+Ctrl + N = New Equation
+Ctrl + O = Open
+Ctrl + S = Save
+Ctrl + Shift + S = Save As
+Ctrl + P = Print
+Ctrl + E = Export panel
+
+---
+
+## 2. Edit Menu
+
+Add menu items:
+
+Undo
+Redo
+Cut
+Copy
+Paste
+Delete
+Select All
+Clear Equation
+Duplicate Selected Object
+Find Symbol
+Find Compound
+Insert from Compound Library
+Insert Recent Symbol
+Insert Favorite Symbol
+Edit Selected Equation Object
+Remove Selected Object
+
+Behavior:
+- Undo and Redo use existing editor history if available.
+- Cut/Copy/Paste work with selected text/equation object.
+- Delete removes selected equation part or selected canvas object.
+- Select All selects all editor content or all canvas objects depending on focus.
+- Clear Equation clears editor.
+- Find Symbol opens symbol search.
+- Find Compound opens Compound Library.
+- Insert from Compound Library opens compound search panel.
+- Edit Selected Equation Object opens edit modal.
+- Remove Selected Object deletes selected canvas object.
+
+Suggested shortcuts:
+Ctrl + Z = Undo
+Ctrl + Y = Redo
+Ctrl + X = Cut
+Ctrl + C = Copy
+Ctrl + V = Paste
+Delete = Delete
+Ctrl + A = Select All
+Ctrl + K = Find Symbol
+Ctrl + Shift + C = Compound Library
+
+Important:
+Do not break normal keyboard behavior:
+- Backspace must delete equation content.
+- Delete must work.
+- Space must work.
+- Arrow keys must work.
+- Shortcuts must only intercept exact shortcut combinations.
+
+---
+
+## 3. Format Menu
+
+Add menu items for chemistry/equation structures:
+
+Subscript
+Superscript
+Subscript + Superscript
+Isotope Notation
+Ion Charge
+Fraction
+Square Root
+n-th Root
+Parentheses
+Square Brackets
+Curly Brackets
+Absolute Value
+Matrix / Table
+Aligned Equation
+Reaction Arrow
+Reversible Reaction Arrow
+Equilibrium Arrow
+Arrow with Condition Above
+Arrow with Condition Below
+Arrow with Conditions Above and Below
+Insert State Symbol
+Insert Bond
+Insert Organic Template
+Insert Text Label
+
+Behavior:
+- Each menu item inserts the corresponding structure into the active Chemika editor.
+- Use MathLive commands if MathLive is used.
+- Otherwise use existing insertion utilities.
+
+Suggested shortcuts:
+Ctrl + L = Subscript
+Ctrl + H = Superscript
+Ctrl + J = Subscript + Superscript
+Ctrl + F = Fraction
+Ctrl + R = Reaction Arrow
+Ctrl + Shift + R = Reversible Reaction Arrow
+Ctrl + E = Equilibrium Arrow
+
+Important:
+These menu actions should call the same functions as toolbar buttons to avoid duplicate logic.
+
+---
+
+## 4. Style Menu
+
+Add menu items:
+
+Normal Text
+Chemical Text
+Math Italic
+Bold
+Italic
+Bold Italic
+Roman / Upright
+Greek Letter Mode
+Blackboard Bold
+Script Style
+Fraktur Style
+Monospace
+Vector Style
+Reaction Condition Style
+Formula Style
+Structure Label Style
+Reset Style
+
+Chemika-specific style options:
+- Chemical formula style
+- Reaction condition style
+- Ion charge style
+- Isotope style
+- Organic label style
+- Mechanism arrow style
+
+Behavior:
+- Apply style to selected content where possible.
+- If no selection, set current typing style.
+- Reset Style returns selected/current style to default.
+
+Suggested shortcuts:
+Ctrl + B = Bold
+Ctrl + I = Italic
+Ctrl + G = Greek Letter Mode
+
+---
+
+## 5. Size Menu
+
+Add menu items:
+
+Tiny
+Small
+Normal
+Large
+Huge
+Increase Size
+Decrease Size
+Reset Size
+
+Also add specific controls:
+Formula Size
+Subscript Size
+Superscript Size
+Arrow Size
+Structure Size
+Toolbar Icon Size
+Preview Popup Size
+
+Default sizes:
+- Formula size: Normal
+- Subscript/superscript: Auto
+- Reaction arrows: Standard
+- Toolbar icons: Compact
+- Preview popup: Large
+
+Behavior:
+- Apply size to selected equation object or selected text.
+- If no selection, set default size for new content.
+- Toolbar Icon Size should allow:
+  Compact
+  Comfortable
+  Large
+- Arrow Size should allow:
+  Standard
+  Long
+  Extra Long
+
+Important:
+Make reaction arrows standard length by default.
+Keep toolbar icons small by default, with large preview popup on hover/click.
+
+Suggested shortcuts:
+Ctrl + Shift + . = Increase Size
+Ctrl + Shift + , = Decrease Size
+
+---
+
+## 6. Preference Menu
+
+Add menu items:
+
+Auto Chemistry Format
+Auto Subscript Numbers
+Auto Superscript Ion Charges
+Auto Reaction Arrow Conversion
+Auto Greek Shortcut Mode
+Continuous Greek Mode
+Show Symbol Preview Popup
+Show Tooltips
+Show Status Bar
+Show Side Export Panel
+Show Compound Library Panel
+Theme
+Editor Mode
+Copy/Paste Settings
+Export Settings
+Keyboard Shortcuts
+Reset Preferences
+
+Preference details:
+
+Auto Chemistry Format:
+When ON:
+H2O becomes H₂O
+CO2 becomes CO₂
+Ca(OH)2 becomes Ca(OH)₂
+NH4+ becomes NH₄⁺
+SO4 2- becomes SO₄²⁻
+-> becomes ⟶
+<-> becomes ⇌
+
+Auto Subscript Numbers:
+Numbers after chemical symbols become subscripts.
+
+Auto Superscript Ion Charges:
++, −, 2+, 3− become superscript charges when appropriate.
+
+Auto Reaction Arrow Conversion:
+-> becomes ⟶
+<- becomes ⟵
+<-> becomes ⇌
+== becomes ⇋
+
+Auto Greek Shortcut Mode:
+Ctrl + G activates one-character Greek mode.
+
+Continuous Greek Mode:
+Greek mode stays active until Esc.
+
+Show Symbol Preview Popup:
+Controls large popup preview for compact toolbar icons.
+
+Theme submenu:
+- Light
+- Dark
+- System
+
+Editor Mode submenu:
+- Visual WYSIWYG
+- Visual + Source
+- Source Only
+
+Copy/Paste Settings submenu:
+- Default Copy: Word-compatible
+- Default Copy: SVG
+- Default Copy: PNG
+- Default Copy: MathML
+- Default Copy: LaTeX
+- Enable OLE Desktop Button
+- Prefer MathML for Word
+- Prefer SVG for InDesign
+- Prefer PNG for Legacy Apps
+
+Export Settings submenu:
+- SVG quality
+- PNG scale 1x / 2x / 4x
+- Transparent background
+- Include annotations
+- Include metadata
+- Include Chemika editable data
+
+Keyboard Shortcuts:
+Open shortcut help/settings modal.
+
+Reset Preferences:
+Restore default Chemika settings.
+
+Important:
+Store preferences in localStorage.
+Preferences should persist after refresh.
+
+---
+
+## 7. Help Menu
+
+Add menu items:
+
+Chemika Help
+Keyboard Shortcuts
+Chemika Quick Start
+Formula Typing Guide
+Reaction Arrow Guide
+Ion and Charge Guide
+Compound Library Guide
+Copy to Word Guide
+Copy to InDesign Guide
+Copy to PageMaker Guide
+OLE Object Desktop Guide
+Report a Problem
+About Chemika
+
+Help content:
+Create help modals/pages for:
+
+1. Keyboard Shortcuts:
+Show all shortcuts:
+Ctrl + L = Subscript
+Ctrl + H = Superscript
+Ctrl + J = Subscript + Superscript
+Ctrl + G = Greek Mode
+Ctrl + R = Reaction Arrow
+Ctrl + Shift + R = Reversible Reaction Arrow
+Ctrl + E = Equilibrium Arrow
+Ctrl + F = Fraction
+Ctrl + K = Symbol Search
+Ctrl + Shift + C = Compound Library
+Ctrl + Shift + H = Text Highlight
+Ctrl + Alt + H = Highlight Pen
+Ctrl + Shift + E = Eraser
+Esc = Close popup / exit mode
+
+2. Formula Typing Guide:
+H2O → H₂O
+CO2 → CO₂
+Ca(OH)2 → Ca(OH)₂
+NH4+ → NH₄⁺
+SO4 2- → SO₄²⁻
+
+3. Reaction Arrow Guide:
+-> → ⟶
+<-> → ⇌
+== → ⇋
+heat over arrow
+catalyst over arrow
+temperature/pressure over arrow
+
+4. Copy to Word Guide:
+Explain:
+Use Copy for Word.
+Chemika tries MathML first, then SVG/PNG fallback.
+Do not use Copy LaTeX unless you want source code.
+
+5. OLE Object Desktop Guide:
+Explain:
+True Windows OLE object support requires Chemika Desktop.
+Browser version cannot create real OLE objects.
+Future desktop version can support OLE/COM registration.
+
+6. About Chemika:
+Show:
+Chemika
+EquationX Studio
+Version number
+Copyright placeholder
+Build info
+
+---
+
+## Technical implementation
+
+Create these components:
+
+src/components/menu/ChemikaMenuBar.jsx
+src/components/menu/MenuDropdown.jsx
+src/components/menu/MenuItem.jsx
+src/components/menu/MenuSeparator.jsx
+src/components/menu/MenuSubmenu.jsx
+src/components/menu/PreferenceMenu.jsx
+src/components/menu/HelpModal.jsx
+src/components/menu/KeyboardShortcutsModal.jsx
+
+Create/update utilities:
+
+src/utils/menuActions.js
+src/utils/preferences.js
+src/utils/shortcutRegistry.js
+src/utils/editorCommands.js
+
+Data files:
+
+src/data/chemikaMenus.js
+src/data/chemikaShortcuts.js
+src/data/chemikaHelpContent.js
+
+---
+
+## Menu component behavior
+
+Menu bar:
+- Click menu title to open dropdown.
+- Hover to switch between open menus.
+- Click outside closes menu.
+- Esc closes menu.
+- Arrow keys can navigate menu if possible.
+- Enter activates selected item if keyboard navigation is implemented.
+
+Menu item data structure:
+
+{
+  id: "file-new",
+  menu: "File",
+  label: "New Equation",
+  shortcut: "Ctrl+N",
+  action: "newEquation",
+  enabled: true
+}
+
+Submenu data structure:
+
+{
+  id: "preference-theme",
+  label: "Theme",
+  submenu: [
+    { label: "Light", action: "setThemeLight" },
+    { label: "Dark", action: "setThemeDark" },
+    { label: "System", action: "setThemeSystem" }
+  ]
+}
+
+---
+
+## Central command system
+
+Create a central command dispatcher:
+
+executeChemikaCommand(commandId, context)
+
+All menu items, toolbar buttons, and keyboard shortcuts should call the same command system.
+
+Examples:
+executeChemikaCommand("insertSubscript")
+executeChemikaCommand("insertSuperscript")
+executeChemikaCommand("copyForWord")
+executeChemikaCommand("openCompoundLibrary")
+executeChemikaCommand("toggleAutoChemistryFormat")
+executeChemikaCommand("openKeyboardShortcuts")
+
+This avoids duplicate logic.
+
+---
+
+## Integration with existing features
+
+Menus must connect to existing Chemika features:
+
+- Existing editor insertion logic
+- Existing toolbar symbols
+- Existing export functions
+- Existing Compound Library if present
+- Existing Annotation tools if present
+- Existing keyboard shortcuts
+- Existing canvas object editing
+- Existing localStorage document state
+
+If a feature is not implemented yet:
+- Show disabled menu item or placeholder toast:
+"This feature is coming soon."
+Do not break the app.
+
+---
+
+## Styling
+
+Menu bar CSS:
+
+.chemika-menu-bar {
+  height: 34px;
+  background: #f3f4f6;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 2px;
+  color: #111827;
+  font-size: 13px;
+  user-select: none;
+}
+
+.chemika-menu-title {
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.chemika-menu-title:hover,
+.chemika-menu-title.active {
+  background: #e5e7eb;
+}
+
+.chemika-menu-dropdown {
+  min-width: 240px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+  padding: 6px;
+  z-index: 9999;
+}
+
+.chemika-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #111827;
+  cursor: pointer;
+}
+
+.chemika-menu-item:hover {
+  background: #f3f4f6;
+}
+
+.chemika-menu-item.disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.chemika-menu-shortcut {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.chemika-menu-separator {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 5px 0;
+}
+
+---
+
+## Accessibility
+
+Add:
+- role="menubar"
+- role="menu"
+- role="menuitem"
+- aria-expanded
+- aria-disabled
+- keyboard closing with Esc
+- focus management where reasonable
+
+---
+
+## Manual test checklist
+
+Create:
+docs/CHEMIKA_MENU_BAR.md
+
+Checklist:
+
+1. Top menu bar appears with File, Edit, Format, Style, Size, Preference, Help.
+2. File menu opens and closes properly.
+3. Edit menu opens and closes properly.
+4. Format menu inserts subscript, superscript, fraction, reaction arrows.
+5. Style menu applies bold/italic where supported.
+6. Size menu changes selected equation size where supported.
+7. Preference menu toggles Auto Chemistry Format.
+8. Preference menu settings persist after refresh.
+9. Help menu opens keyboard shortcuts modal.
+10. Copy for Word is available under File.
+11. Export SVG/PNG/MathML/LaTeX is available under File.
+12. Compound Library can be opened from Edit menu if available.
+13. Disabled features do not crash app.
+14. Esc closes dropdown.
+15. Clicking outside closes dropdown.
+16. Keyboard shortcuts shown in menus match actual shortcuts.
+17. Existing Chemika toolbar still works.
+18. Backspace/Delete/Space still work in editor.
+19. Existing copy/export still works.
+20. UI looks original and not a direct copy of MathType.
+
+---
+
+## Final result
+
+Chemika should now feel like professional desktop equation software with a complete menu bar:
+
+File
+Edit
+Format
+Style
+Size
+Preference
+Help
+
+The menu should include MathType-style workflow features from a Chemika perspective:
+- chemistry equation creation
+- formatting
+- copy/export
+- compound library
+- preferences
+- shortcut help
+- Word/InDesign/PageMaker export
+- future OLE Desktop guidance
+
+Keep the UI original, modern, compact, and Chemika-branded.
