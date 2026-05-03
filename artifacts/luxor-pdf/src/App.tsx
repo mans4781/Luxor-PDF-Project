@@ -18,7 +18,7 @@ export default function App() {
   }
 
   if (file) {
-    return <Viewer file={file} onClose={() => setFile(null)} />;
+    return <Viewer file={file} onClose={() => setFile(null)} onFileLoad={setFile} />;
   }
 
   return <Home onFileLoad={setFile} />;

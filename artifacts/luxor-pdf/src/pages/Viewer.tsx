@@ -58,9 +58,12 @@ const zoomLabel = (z: number) => `${Math.round((z / ZOOM_BASE) * 100)}%`;
 interface ViewerProps {
   file: File;
   onClose: () => void;
+  onFileLoad: (f: File) => void;
 }
 
-export default function Viewer({ file, onClose }: ViewerProps) {
+type CloseIntent = null | "close" | "open" | { kind: "swap"; file: File };
+
+export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -97,6 +100,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   const [pageNoOpen, setPageNoOpen] = useState(false);
   const [compressOpen, setCompressOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [closeIntent, setCloseIntent] = useState<CloseIntent>(null);
   useEffect(() => { lsSetJSON(LS_KEYS.watermark, watermarkCfg); }, [watermarkCfg]);
   useEffect(() => { lsSetJSON(LS_KEYS.pageNo, pageNoCfg); }, [pageNoCfg]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -261,12 +265,117 @@ export default function Viewer({ file, onClose }: ViewerProps) {
     }
   }, [isSpeaking, pdfDoc, currentPage]);
 
+  // True whenever the user has applied any reversible edit that would
+  // be lost if the PDF is closed without saving.
+  const isDirty = annotations.length > 0 || watermarkCfg !== null || pageNoCfg !== null;
+
   const handleOpenFile = () => fileInputRef.current?.click();
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
-    if (f && f.type === "application/pdf") { speechSynthesis.cancel(); onClose(); }
     e.target.value = "";
+    if (!f || f.type !== "application/pdf") return;
+    if (isDirty) {
+      // Defer the swap until the user answers Save / Don't Save / Cancel.
+      setCloseIntent({ kind: "swap", file: f });
+    } else {
+      speechSynthesis.cancel();
+      onFileLoad(f);
+    }
   };
+
+  // ── File menu actions ──────────────────────────────────────
+  const handleFileSaveAs = useCallback(() => {
+    // Browsers can't truly "save as" — handleDownload already prompts a
+    // save dialog on Windows when downloads.always_ask is enabled and
+    // exports the PDF with all current edits burned in.
+    if (!file) { alert("No PDF is currently open."); return; }
+    handleDownload();
+  }, [file]);
+
+  const handleFileSaveCopy = useCallback(async () => {
+    if (!file) { alert("No PDF is currently open."); return; }
+    if (downloading) return;
+    const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
+    const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
+    const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
+    const dot = file.name.lastIndexOf(".");
+    const base = dot > 0 ? file.name.slice(0, dot) : file.name;
+    const copyName = `${base} - Copy.pdf`;
+    if (!watermarkCfg && !pageNoCfg && redactions.length === 0 && images.length === 0 && editTexts.length === 0) {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(file);
+      a.download = copyName;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      return;
+    }
+    setDownloading(true);
+    try {
+      const blob = await exportPdfWithEdits(file, {
+        watermark: watermarkCfg, pageNo: pageNoCfg,
+        redactions, images, editTexts, currentPage,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = copyName; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("Save a copy failed:", err);
+      alert("Sorry — couldn't save a copy of the PDF.");
+    } finally {
+      setDownloading(false);
+    }
+  }, [file, downloading, annotations, watermarkCfg, pageNoCfg, currentPage]);
+
+  const handleFileClose = useCallback(() => {
+    if (!file) { alert("No PDF is currently open."); return; }
+    if (isDirty) setCloseIntent("close");
+    else { speechSynthesis.cancel(); onClose(); }
+  }, [file, isDirty, onClose]);
+
+  // Resolve a pending close/open intent after the user answers the
+  // unsaved-changes confirmation dialog.
+  const resolveCloseIntent = useCallback((choice: "save" | "discard" | "cancel") => {
+    if (closeIntent === null) return;
+    if (choice === "cancel") { setCloseIntent(null); return; }
+    const intent = closeIntent;
+    const proceed = () => {
+      speechSynthesis.cancel();
+      if (intent === "close") onClose();
+      else if (intent === "open") fileInputRef.current?.click();
+      else if (typeof intent === "object" && intent.kind === "swap") onFileLoad(intent.file);
+      setCloseIntent(null);
+    };
+    if (choice === "save") {
+      // Trigger save first, then proceed regardless of result.
+      handleDownload().finally(proceed);
+    } else {
+      proceed();
+    }
+  }, [closeIntent, onClose, onFileLoad]);
+
+  // File-menu keyboard shortcuts. Placed in its own effect so it can
+  // depend on the handlers (which are defined just above) without TDZ
+  // issues from the main shortcuts effect higher up the file.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const k = e.key.toLowerCase();
+      if (k === "s" && e.shiftKey && !e.altKey) {
+        e.preventDefault(); handleFileSaveAs();
+      } else if (k === "s" && e.altKey && !e.shiftKey) {
+        e.preventDefault(); handleFileSaveCopy();
+      } else if (k === "o" && !e.shiftKey && !e.altKey) {
+        e.preventDefault();
+        if (isDirty) setCloseIntent("open");
+        else handleOpenFile();
+      } else if (k === "w" && !e.shiftKey && !e.altKey) {
+        e.preventDefault(); handleFileClose();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isDirty, handleFileSaveAs, handleFileSaveCopy, handleFileClose]);
 
   // Edit → Add Image. Opens a hidden <input type=file>, decodes the
   // chosen image to a data URL, normalizes WebP → PNG via canvas (pdf-lib
@@ -449,6 +558,9 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         onClearPageNo={() => setPageNoCfg(null)}
         watermarkActive={!!watermarkCfg}
         pageNoActive={!!pageNoCfg}
+        onFileSaveAs={handleFileSaveAs}
+        onFileSaveCopy={handleFileSaveCopy}
+        onFileClose={handleFileClose}
       />
 
       {/* Hidden file input for Edit → Add Image. */}
@@ -484,6 +596,58 @@ export default function Viewer({ file, onClose }: ViewerProps) {
           file={file}
           onClose={() => setCompressOpen(false)}
         />
+      )}
+
+      {/* ── Unsaved-changes confirmation ──────────────────── */}
+      {closeIntent !== null && (
+        <div
+          onClick={() => resolveCloseIntent("cancel")}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+            zIndex: 9200, display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff", color: "#1a1a1a",
+              width: 440, maxWidth: "92vw",
+              borderRadius: 12, padding: "22px 22px 18px",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
+            }}
+          >
+            <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 8 }}>Unsaved changes</div>
+            <div style={{ fontSize: 13, lineHeight: 1.5, color: "#444", marginBottom: 18 }}>
+              You have unsaved changes. Do you want to save before {closeIntent === "close" ? "closing" : "opening another file"}?
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <button
+                onClick={() => resolveCloseIntent("cancel")}
+                style={{
+                  background: "#fff", color: "#1a1a1a",
+                  border: "1px solid rgba(0,0,0,0.2)", borderRadius: 6,
+                  padding: "8px 14px", fontSize: 13, fontWeight: 400, cursor: "pointer",
+                }}
+              >Cancel</button>
+              <button
+                onClick={() => resolveCloseIntent("discard")}
+                style={{
+                  background: "#fff", color: "#c0392b",
+                  border: "1px solid rgba(192,57,43,0.4)", borderRadius: 6,
+                  padding: "8px 14px", fontSize: 13, fontWeight: 400, cursor: "pointer",
+                }}
+              >Don't Save</button>
+              <button
+                onClick={() => resolveCloseIntent("save")}
+                style={{
+                  background: "#0D62F2", color: "#fff",
+                  border: "none", borderRadius: 6,
+                  padding: "8px 18px", fontSize: 13, fontWeight: 500, cursor: "pointer",
+                }}
+              >Save</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {downloading && (

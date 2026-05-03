@@ -180,9 +180,13 @@ interface ToolbarProps {
   onClearPageNo: () => void;
   watermarkActive: boolean;
   pageNoActive: boolean;
+  // File menu
+  onFileSaveAs: () => void;
+  onFileSaveCopy: () => void;
+  onFileClose: () => void;
 }
 
-type PopoverType = "highlight" | "text" | "tools" | "edit" | "draw" | null;
+type PopoverType = "highlight" | "text" | "tools" | "edit" | "draw" | "file" | null;
 
 /**
  * Edit menu items. The dropdown UI is shipped now; the feature
@@ -284,6 +288,7 @@ export default function Toolbar({
   onOpenWatermark, onOpenPageNo, onAddImage, onOpenCompress,
   onClearWatermark, onClearPageNo,
   watermarkActive, pageNoActive,
+  onFileSaveAs, onFileSaveCopy, onFileClose,
 }: ToolbarProps) {
   const [popover, setPopover] = useState<PopoverType>(null);
   // Which Edit-menu feature modal is currently open (null = none).
@@ -338,6 +343,76 @@ export default function Toolbar({
       </button>
 
       <div className="toolbar-sep" />
+
+      {/* ── 1b. File menu (text word) ───────────────────────── */}
+      <div style={{ position: "relative" }}>
+        <button
+          className={`toolbar-menu-word ${popover === "file" ? "active" : ""}`}
+          onClick={() => toggle("file")}
+          title="File"
+        >
+          File
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 5 }}>
+            <polyline points="5 8 10 13 15 8" />
+          </svg>
+        </button>
+
+        {popover === "file" && (
+          <div
+            className="popover-panel edit-menu-panel"
+            style={{
+              left: 0, transform: "none",
+              minWidth: 240, padding: "8px 6px",
+              background: "#FFFFFF", color: "#1a1a1a",
+              border: "1px solid rgba(0,0,0,0.10)",
+              boxShadow: "0 8px 28px rgba(0,0,0,0.18)",
+            }}
+          >
+            {[
+              { key: "open", label: "Open", shortcut: "Ctrl+O", icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
+              ) },
+              { key: "saveas", label: "Save As", shortcut: "Ctrl+Shift+S", icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              ) },
+              { key: "savecopy", label: "Save a Copy", shortcut: "Ctrl+Alt+S", icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              ) },
+              { key: "close", label: "Close", shortcut: "Ctrl+W", icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              ) },
+            ].map((item, i) => (
+              <div key={item.key}>
+                {i === 3 && <div style={{ height: 1, background: "rgba(0,0,0,0.08)", margin: "4px 4px" }} />}
+                <button
+                  onClick={() => {
+                    setPopover(null);
+                    if (item.key === "open") onOpenFile();
+                    else if (item.key === "saveas") onFileSaveAs();
+                    else if (item.key === "savecopy") onFileSaveCopy();
+                    else if (item.key === "close") onFileClose();
+                  }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    width: "100%", padding: "7px 10px", marginBottom: 1,
+                    background: "transparent",
+                    border: "none", borderRadius: 5,
+                    color: "#1a1a1a",
+                    cursor: "pointer", fontSize: 13, textAlign: "left",
+                    fontWeight: 400,
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(13,98,242,0.10)"; e.currentTarget.style.color = "#0D62F2"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#1a1a1a"; }}
+                >
+                  <span style={{ display: "inline-flex", width: 18, justifyContent: "center" }}>{item.icon}</span>
+                  <span style={{ flex: 1 }}>{item.label}</span>
+                  <span style={{ fontSize: 11, color: "#888", letterSpacing: 0.3 }}>{item.shortcut}</span>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* ── 2. Edit menu (text word) ────────────────────────── */}
       <div style={{ position: "relative" }}>

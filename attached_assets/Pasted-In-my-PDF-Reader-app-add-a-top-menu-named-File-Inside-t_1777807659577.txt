@@ -1,0 +1,56 @@
+In my PDF Reader app, add a top menu named “File”.
+
+Inside the “File” menu, add the following dropdown options:
+
+1. Open
+   - Opens a PDF file from the user’s computer.
+   - When clicked, show the system file picker.
+   - Allow only .pdf files.
+   - After selecting a PDF, load and display it in the PDF viewer.
+   - If a PDF is already open and has unsaved changes, ask the user whether to save before opening a new file.
+
+2. Save As
+   - Saves the currently opened PDF with a new name or in a different location.
+   - When clicked, show the system save dialog.
+   - Allow the user to choose the folder and file name.
+   - Save the PDF with all current changes, including annotations, highlights, drawings, inserted pages, deleted pages, edited text, watermarks, page numbers, and compression changes.
+   - If no PDF is open, show a message: “No PDF is currently open.”
+
+3. Save a Copy
+   - Saves a copy of the currently opened PDF to any location selected by the user.
+   - When clicked, show the system save dialog.
+   - Allow the user to choose the folder and file name.
+   - The original opened PDF path should not change.
+   - After saving the copy, the app should continue working on the original PDF file.
+   - If no PDF is open, show a message: “No PDF is currently open.”
+
+4. Close
+   - Closes the currently opened PDF.
+   - When clicked, clear the PDF viewer and remove the current file from the active workspace.
+   - If the PDF has unsaved changes, show a confirmation popup:
+     “You have unsaved changes. Do you want to save before closing?”
+   - Popup buttons:
+     - Save
+     - Don’t Save
+     - Cancel
+   - If user clicks Save, save the PDF first and then close it.
+   - If user clicks Don’t Save, close the PDF without saving.
+   - If user clicks Cancel, keep the PDF open.
+   - If no PDF is open, show a message: “No PDF is currently open.”
+
+Design requirements:
+- The File menu should appear in the top menu bar.
+- Dropdown should look clean, modern, and professional.
+- Add small icons beside each option:
+  - Open: folder icon
+  - Save As: save icon
+  - Save a Copy: copy icon
+  - Close: close/X icon
+- Add keyboard shortcuts:
+  - Open: Ctrl + O
+  - Save As: Ctrl + Shift + S
+  - Save a Copy: Ctrl + Alt + S
+  - Close: Ctrl + W
+- Make sure all features work properly on Windows 11.
+- Do not disturb the existing PDF viewer layout or existing tools.
+- Connect these menu actions to the real PDF file handling system, not only dummy buttons.
