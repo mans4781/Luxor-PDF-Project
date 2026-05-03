@@ -1,0 +1,64 @@
+Redesign the PDF Reader toolbar icons for “Highlight” and “Draw” to look premium, clean, and professional like Microsoft Edge PDF annotation icons.
+
+Current issue:
+The existing icons look too thin/basic and the small color dots look separate from the icon. I want modern vector toolbar icons with excellent clarity at small sizes.
+
+Create two new SVG vector icons:
+
+1. Highlight icon
+- Use a sleek highlighter marker shape, slightly tilted.
+- The marker should have a clean chisel tip.
+- Add a small underline/highlight stroke below the tip to clearly show text highlighting.
+- Keep the icon minimal, elegant, and toolbar-friendly.
+- Use black/dark stroke for the main icon.
+- Add a small circular color indicator near the bottom-right of the icon.
+- The color indicator should show the currently selected highlight color.
+- Default indicator color: bright yellow.
+- The yellow dot must look integrated, aligned, and polished, not randomly placed.
+
+2. Draw icon
+- Use a sleek pen/pencil/nib shape, slightly tilted.
+- Add a small smooth freehand curve stroke near the tip to show drawing.
+- Keep the shape clean and modern like Microsoft Edge toolbar icons.
+- Use black/dark stroke for the main icon.
+- Add a small circular color indicator near the bottom-right of the icon.
+- Default indicator color: bright red.
+- The red dot must be visually aligned with the icon and look intentional.
+
+Design requirements:
+- Icons must be pure SVG, not PNG or emoji.
+- Size: 24x24 viewBox.
+- Stroke width should be consistent, around 1.7 to 2 px.
+- Use rounded line caps and rounded line joins.
+- No blur, no shadows, no gradients.
+- Must look sharp at 16px, 20px, 24px, and 32px.
+- Icons should support light and dark themes.
+- Main stroke should use `currentColor` so toolbar color can change automatically.
+- Color dot should use a CSS variable:
+  - Highlight dot: `var(--highlight-color, #FFD600)`
+  - Draw dot: `var(--draw-color, #E53935)`
+- Add a thin white outline or ring around the color dot so it remains visible on dark or colored toolbar backgrounds.
+- The icons must be visually balanced with equal padding inside the 24x24 viewBox.
+- They should match the professional style of Microsoft Edge PDF Reader annotation toolbar icons, but must be original and not copied.
+
+Implementation requirements:
+- Create reusable components:
+  - `HighlightIcon`
+  - `DrawIcon`
+- Replace the existing highlight and draw toolbar icons with these new SVG components.
+- Keep the existing click handlers and tool selection logic unchanged.
+- The color dot must update dynamically when the user changes highlight or draw color.
+- Make sure active/selected toolbar state still works.
+- Add hover state:
+  - subtle rounded background
+  - icon remains crisp
+- Add selected state:
+  - slightly stronger background
+  - icon color remains readable
+- Do not change any other PDF viewer functionality.
+
+Expected result:
+The toolbar should show two beautiful Microsoft Edge-style vector icons:
+- A highlighter with yellow color indicator
+- A drawing pen with red color indicator
+Both should look clean, modern, polished, and professional in the PDF Reader toolbar.

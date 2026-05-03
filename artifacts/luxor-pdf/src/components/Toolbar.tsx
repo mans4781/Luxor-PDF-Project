@@ -11,6 +11,45 @@ import {
 // src/lib/annotationColors.ts. The 30-color DRAW_PALETTE is shared by
 // the pen, all shape tools, and the Add-Text color picker so every
 // drawing-related surface uses one consistent color system.
+/**
+ * Microsoft Edge-style highlighter icon. The marker is tilted ~40° with a
+ * chisel tip and a thick highlight stroke beneath it. The color indicator
+ * is embedded in the SVG so it stays perfectly aligned with the icon at
+ * any size and inherits a white ring for contrast on dark toolbars.
+ */
+function HighlightIcon({ color, size = 20 }: { color: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <g transform="rotate(-40 12 11)">
+        <rect x="10" y="2.5" width="5" height="9" rx="0.8" />
+        <line x1="10" y1="6" x2="15" y2="6" />
+        <path d="M10 11.5l2.5 4 2.5-4z" fill="currentColor" stroke="currentColor" />
+      </g>
+      <line x1="3.5" y1="20.5" x2="13" y2="20.5" strokeWidth="2.4" />
+      <circle cx="18.5" cy="18.5" r="3" fill={color} stroke="#fff" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+/**
+ * Microsoft Edge-style pen icon. A tilted nib with a small smooth curve
+ * beneath the tip suggesting freehand drawing, plus an embedded color dot.
+ */
+function DrawIcon({ color, size = 20 }: { color: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <g transform="rotate(-40 12 11)">
+        <path d="M10.5 2.5h3.5a0.6 0.6 0 0 1 0.6 0.6v8.4h-4.7v-8.4a0.6 0.6 0 0 1 0.6 -0.6z" />
+        <line x1="10.5" y1="6" x2="14.6" y2="6" />
+        <path d="M10.4 11.5l2.25 4 2.25-4z" fill="currentColor" stroke="currentColor" />
+        <line x1="12.55" y1="15.5" x2="12.55" y2="17" />
+      </g>
+      <path d="M3.5 19.5c1.4-1.5 2.8 1.4 4.2 0s2.8-1.4 4.2 0 2.8 1.4 4.2 0" strokeWidth="1.6" />
+      <circle cx="19" cy="19" r="3" fill={color} stroke="#fff" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
 const HIGHLIGHT_COLORS = PALETTE_HIGHLIGHT.map((c) => ({ label: c.name, value: c.value }));
 const TEXT_COLORS = PALETTE_DRAW.map((c) => ({ label: c.name, value: c.value }));
 const DRAW_COLORS = PALETTE_DRAW.map((c) => ({ label: c.name, value: c.value }));
@@ -639,15 +678,7 @@ export default function Toolbar({
           title="Highlight"
         >
           <span className="toolbar-tip">Highlight</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 11l-6 6v4h4l6-6"/>
-            <path d="M22 12.5l-3-3a1.5 1.5 0 0 0-2.12 0L8 18.38l5.12 5.12 8.88-8.88a1.5 1.5 0 0 0 0-2.12z" transform="translate(-1 -3.5)"/>
-            <line x1="14" y1="6" x2="20" y2="12"/>
-          </svg>
-          <span
-            className="annot-color-swatch"
-            style={{ background: highlightColor }}
-          />
+          <HighlightIcon color={highlightColor || "#FFD600"} />
         </button>
 
         {popover === "highlight" && (
@@ -676,16 +707,7 @@ export default function Toolbar({
           title="Draw"
         >
           <span className="toolbar-tip">Draw</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 19l7-7 3 3-7 7-3-3z"/>
-            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
-            <path d="M2 2l7.586 7.586"/>
-            <circle cx="11" cy="11" r="1.6" fill="currentColor"/>
-          </svg>
-          <span
-            className="annot-color-swatch"
-            style={{ background: drawColor }}
-          />
+          <DrawIcon color={drawColor || "#E53935"} />
         </button>
 
         {popover === "draw" && (
