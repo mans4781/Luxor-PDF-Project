@@ -23,20 +23,26 @@ export const SELECTION = {
 } as const;
 
 /**
- * Crisp, premium fluorescent-marker palette — 7 saturated hex values at
- * a uniform 0.54 alpha, rendered with `multiply` blend mode by the
- * canvas so the color glows on white paper while every letter of the
- * underlying text stays razor-sharp. Yellow is the default to match the
- * traditional highlighter feel.
+ * Crisp, premium fluorescent-marker palette — 7 saturated hex values
+ * with per-color alphas tuned so the color stays *vibrant* on white
+ * PDF paper while the black text underneath remains sharp.
+ *
+ * Yellow uses a higher alpha (0.72) because pure yellow on white tends
+ * to wash out otherwise. Stronger primaries (Red, Cyan) sit slightly
+ * lower so the underlying text doesn't get tinted too darkly.
+ *
+ * The renderer paints these as `rgba(R, G, B, alpha)` directly on the
+ * page — no `multiply` blend, no dulling overlay — so what you see is
+ * exactly the configured color at the configured alpha.
  */
 export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Yellow", value: "#FFEB3B", opacity: 0.54 },
-  { name: "Green",  value: "#76FF5A", opacity: 0.54 },
-  { name: "Blue",   value: "#5AC8FA", opacity: 0.54 },
-  { name: "Pink",   value: "#FF6FB5", opacity: 0.54 },
-  { name: "Red",    value: "#FF5252", opacity: 0.54 },
-  { name: "Cyan",   value: "#4DFFFF", opacity: 0.54 },
-  { name: "Violet", value: "#B57CFF", opacity: 0.54 },
+  { name: "Yellow", value: "#FFF200", opacity: 0.72 },
+  { name: "Green",  value: "#39FF14", opacity: 0.62 },
+  { name: "Blue",   value: "#00BFFF", opacity: 0.58 },
+  { name: "Pink",   value: "#FF4FB8", opacity: 0.60 },
+  { name: "Red",    value: "#FF3030", opacity: 0.56 },
+  { name: "Cyan",   value: "#00FFFF", opacity: 0.56 },
+  { name: "Violet", value: "#A855FF", opacity: 0.58 },
 ];
 
 /**
@@ -101,8 +107,8 @@ export const DRAW_THICKNESS = {
 } as const;
 
 export const DEFAULTS = {
-  highlightColor: HIGHLIGHT_COLORS[0].value,   // Yellow #FFEB3B
-  highlightOpacity: HIGHLIGHT_COLORS[0].opacity, // 0.56
+  highlightColor: HIGHLIGHT_COLORS[0].value,   // Yellow #FFF200
+  highlightOpacity: HIGHLIGHT_COLORS[0].opacity, // 0.72
   penColor: "#0D62F2",                         // Bright Blue
   penWidth: DRAW_THICKNESS.default,            // 3px
   underlineColor: "#0D62F2",

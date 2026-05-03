@@ -14,6 +14,7 @@ import { hitTestAnnotation, type HitContext } from "@/lib/hitTest";
 import {
   HIGHLIGHT_COLORS as HIGHLIGHT_PALETTE,
   DEFAULTS as COLOR_DEFAULTS,
+  highlightOpacityFor,
 } from "@/lib/annotationColors";
 
 const SHAPE_TOOLS: ToolType[] = ["freehand", "line", "arrow", "oval", "rectangle"];
@@ -788,13 +789,16 @@ export default function PDFPage({
       if (ann.type !== "highlight") continue;
       if (ann.rects.length === 0) continue;
       ctx.save();
-      // Marker-like fill: "multiply" blend lets the page text show
-      // through the color the way a real highlighter on paper does, so
-      // the colors look richer and more luminous than a flat over-paint
-      // at the same opacity.
+      // Vibrant marker fill: paint the swatch's hex at its own alpha
+      // straight onto the page (default `source-over` blend, no
+      // multiply). This is the canvas equivalent of a DOM rect with
+      // `background: rgba(R,G,B,a); opacity: 1; mix-blend-mode: normal`
+      // and is what keeps the color crisp and bright instead of
+      // washed-out. PDF text is dark enough that a 0.56–0.72 alpha
+      // tint still reads sharply through the highlight.
+      ctx.globalCompositeOperation = "source-over";
       ctx.fillStyle = ann.color;
-      ctx.globalAlpha = typeof ann.opacity === "number" ? ann.opacity : 0.56;
-      ctx.globalCompositeOperation = "multiply";
+      ctx.globalAlpha = typeof ann.opacity === "number" ? ann.opacity : highlightOpacityFor(ann.color);
       for (const r of ann.rects) {
         ctx.fillRect(r.x * canvas.width, r.y * canvas.height, r.width * canvas.width, r.height * canvas.height);
       }
@@ -871,7 +875,8 @@ export default function PDFPage({
     redrawAnnotations();
     const { startX, startY } = highlightRef.current;
     ctx.save();
-    ctx.globalAlpha = 0.38;
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = highlightOpacityFor(highlightColor);
     ctx.fillStyle = highlightColor;
     ctx.fillRect(startX, startY, pos.x - startX, pos.y - startY);
     ctx.restore();
@@ -894,6 +899,7 @@ export default function PDFPage({
           height: Math.abs(h) / canvas.height,
         }],
         color: highlightColor,
+        opacity: highlightOpacityFor(highlightColor),
         selectedText: "",
         createdAt: new Date().toISOString(),
       };

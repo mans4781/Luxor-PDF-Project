@@ -1,0 +1,196 @@
+In my Luxor PDF Reader, the highlight color still looks dull. Please fix both the highlight color palette and the rendering/background issue.
+
+I suspect the problem may be caused by:
+1. Weak/pale highlight colors
+2. Highlight layer blending with the PDF background incorrectly
+3. Highlight being placed behind the PDF canvas where it becomes faded
+4. Opacity being applied in the wrong place
+5. Text or page layer affecting highlight visibility
+
+Goal:
+Make the highlight look crisp, bright, vibrant, and clean, like a real fluorescent marker, while keeping text sharply readable.
+
+Important:
+Do not only change the hex color.
+Please inspect and fix:
+- color palette
+- opacity/alpha
+- highlight layer position
+- z-index
+- blend mode
+- background interaction
+- text layer visibility
+
+-----------------------------------
+1. REVISED VIBRANT HIGHLIGHT PALETTE
+-----------------------------------
+
+Use stronger, more fluorescent colors:
+
+const HIGHLIGHT_COLORS = [
+  { name: "Yellow", value: "#FFF200", alpha: 0.72 },
+  { name: "Green", value: "#39FF14", alpha: 0.62 },
+  { name: "Blue", value: "#00BFFF", alpha: 0.58 },
+  { name: "Pink", value: "#FF4FB8", alpha: 0.60 },
+  { name: "Red", value: "#FF3030", alpha: 0.56 },
+  { name: "Cyan", value: "#00FFFF", alpha: 0.56 },
+  { name: "Violet", value: "#A855FF", alpha: 0.58 }
+];
+
+Default highlight:
+- Yellow: #FFF200
+- Alpha: 0.72
+
+Reason:
+- Yellow needs stronger alpha because yellow often becomes dull on white PDF pages.
+- Other colors should remain slightly lower so text stays readable.
+
+-----------------------------------
+2. FIX THE HIGHLIGHT LAYER
+-----------------------------------
+
+The highlight annotation must be rendered as a separate overlay layer above the PDF canvas but below selectable text.
+
+Correct layer order:
+
+1. PDF canvas/page image
+2. Highlight annotation layer
+3. Text layer
+4. Selection layer / UI controls
+
+Suggested structure:
+
+<div class="pdf-page">
+  <canvas class="pdf-canvas"></canvas>
+  <div class="highlight-layer"></div>
+  <div class="textLayer"></div>
+  <div class="annotation-ui-layer"></div>
+</div>
+
+Required CSS:
+
+.pdf-page {
+  position: relative;
+  background: #FFFFFF;
+}
+
+.pdf-canvas {
+  position: relative;
+  z-index: 1;
+}
+
+.highlight-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+.textLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  opacity: 1 !important;
+}
+
+.highlight-annotation-rect {
+  position: absolute;
+  background-color: rgba(...);
+  opacity: 1 !important;
+  mix-blend-mode: normal;
+  filter: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+Very important:
+- Do NOT put the highlight behind the PDF canvas.
+- Do NOT apply opacity to the parent page.
+- Do NOT apply opacity to the text layer.
+- Do NOT use faded filters.
+- Use RGBA background color on the highlight rectangle itself.
+
+-----------------------------------
+3. PREVENT BACKGROUND FROM MAKING HIGHLIGHT DULL
+-----------------------------------
+
+Please check if any CSS is reducing the color intensity, such as:
+
+- opacity on `.pdf-page`
+- opacity on `.page`
+- opacity on `.textLayer`
+- opacity on `.annotationLayer`
+- filter: brightness()
+- filter: opacity()
+- mix-blend-mode: multiply
+- backdrop-filter
+- parent transform causing opacity issues
+- canvas overlay covering highlight
+
+Remove or correct these if they are making highlights dull.
+
+Use:
+- mix-blend-mode: normal
+- opacity: 1 on the highlight rectangle
+- alpha only inside rgba()
+- white PDF page background: #FFFFFF
+
+-----------------------------------
+4. HIGHLIGHT RENDERING
+-----------------------------------
+
+When rendering each highlight rectangle:
+
+- Convert hex color to rgba using the annotation alpha.
+- Example:
+  background-color: rgba(255, 242, 0, 0.72)
+
+Do not use:
+  opacity: 0.72
+
+Use:
+  background-color: rgba(255, 242, 0, 0.72);
+  opacity: 1;
+
+This keeps the highlight vivid and keeps the text sharp.
+
+-----------------------------------
+5. TEXT MUST REMAIN SHARP
+-----------------------------------
+
+The original PDF text must remain:
+- black
+- sharp
+- fully readable
+- not faded
+- not blurred
+- not affected by highlight transparency
+
+If highlight is rendered above the text and hiding it, move text layer above highlight layer.
+If highlight is rendered below canvas and becoming invisible/dull, move highlight above canvas.
+
+-----------------------------------
+6. TESTING REQUIREMENTS
+-----------------------------------
+
+Please test:
+1. Apply Yellow highlight and confirm it looks bright fluorescent yellow.
+2. Apply Green highlight and confirm it looks vivid.
+3. Apply Blue highlight and confirm it looks clean and bright.
+4. Apply Pink highlight and confirm it looks vibrant.
+5. Apply Red highlight and confirm text remains readable.
+6. Apply Cyan highlight and confirm it looks crisp.
+7. Apply Violet highlight and confirm it looks rich.
+8. Confirm text remains sharp and black.
+9. Confirm highlights do not look washed out.
+10. Confirm highlights stay aligned after zoom and scroll.
+11. Confirm saved highlights retain exact color and alpha after reload.
+
+Expected result:
+The highlight should look like a bright marker on a white PDF page, not like a dull faded overlay.
+
+After completing:
+1. Show all changed files.
+2. Explain whether the issue was palette, layer order, opacity, or background.
+3. Explain how the revised palette is stored.
+4. Explain how highlight rendering keeps the text sharp and the highlight bright.
