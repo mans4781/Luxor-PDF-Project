@@ -1,0 +1,66 @@
+In my PDF Reader, update the text selection background color so that when a user selects words or a paragraph before applying highlight, the selected text background looks exactly like ChatGPT’s text selection background color.
+
+Goal:
+When the user drags the mouse to select text in the PDF, the temporary selection background should look soft, clean, modern, and clearly visible, similar to ChatGPT’s selection color.
+
+Required selection style:
+- Use a soft light blue selection background.
+- Suggested color: rgba(0, 120, 255, 0.25)
+- Alternative hex fallback: #B8D7FF
+- Text must remain sharp and readable.
+- The selected text should not become dull, blurred, or washed out.
+- The selection must look smooth and premium, not harsh or neon.
+- It should work well on both white PDF pages and slightly off-white PDF pages.
+
+Important:
+This is for text selection preview only, before applying the final highlight.
+Do not change the final highlight colors.
+Final highlight colors like yellow, green, blue, pink, orange, red, and purple should remain separate.
+
+Implementation requirements:
+1. Find the PDF text layer selection styling.
+2. Override the default browser/PDF.js text selection color.
+3. Apply the selection background to the PDF text layer only.
+4. Use CSS similar to:
+
+::selection {
+  background: rgba(0, 120, 255, 0.25);
+  color: inherit;
+}
+
+.textLayer ::selection {
+  background: rgba(0, 120, 255, 0.25);
+  color: inherit;
+}
+
+.textLayer span::selection {
+  background: rgba(0, 120, 255, 0.25);
+  color: inherit;
+}
+
+5. Also add Firefox support:
+
+.textLayer ::-moz-selection {
+  background: rgba(0, 120, 255, 0.25);
+  color: inherit;
+}
+
+.textLayer span::-moz-selection {
+  background: rgba(0, 120, 255, 0.25);
+  color: inherit;
+}
+
+6. Make sure selection works when selecting:
+- a single word
+- multiple words
+- full line
+- full paragraph
+- text across multiple lines
+
+7. The selection color must appear only during text selection.
+8. After the user applies highlight, the actual highlight annotation should use the selected highlight color, not the blue selection color.
+9. Make sure this does not break copy, search, highlight, or text layer alignment.
+10. Test it on Windows 11 in Chrome/Electron.
+
+Expected result:
+When I select text inside the PDF Reader, the selected words or paragraph should show a beautiful ChatGPT-like soft blue selection background. Text must stay readable and crisp. After applying highlight, the final highlight color should appear normally.

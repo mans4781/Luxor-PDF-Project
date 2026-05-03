@@ -493,13 +493,28 @@ mark.search-hl {
 }
 .pdf-page-wrapper .selection-overlay > div {
   position: absolute;
-  /* Bright yellow-green (#C1F73B). `multiply` lets the color tint the
-   * page so it glows like a real highlighter while the text stays
-   * razor-sharp underneath. Matches SELECTION in
-   * src/lib/annotationColors.ts. */
-  background: rgba(193, 247, 59, 0.38);
+  /* ChatGPT-style soft blue selection background. We use `multiply` so
+   * the color tints the page underneath while the rasterized text stays
+   * razor-sharp. Looks clean on both pure-white and slightly off-white
+   * pages. The final highlight annotation colors (yellow / green / etc.)
+   * are unaffected — those are painted by .annot-highlight, not here. */
+  background: rgba(0, 120, 255, 0.25);
   mix-blend-mode: multiply;
   border-radius: 1px;
+}
+
+/* Belt-and-braces: if the native browser selection ever surfaces (e.g.
+ * during keyboard select-all before the overlay catches up), use the
+ * same ChatGPT blue instead of the OS default. */
+.pdf-page-wrapper .textLayer ::selection,
+.pdf-page-wrapper .textLayer span::selection {
+  background: rgba(0, 120, 255, 0.25);
+  color: inherit;
+}
+.pdf-page-wrapper .textLayer ::-moz-selection,
+.pdf-page-wrapper .textLayer span::-moz-selection {
+  background: rgba(0, 120, 255, 0.25);
+  color: inherit;
 }
 
 .pdf-page-canvas {
