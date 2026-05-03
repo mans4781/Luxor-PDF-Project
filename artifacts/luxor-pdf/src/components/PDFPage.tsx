@@ -7,10 +7,10 @@ import {
 } from "@/lib/annotationTypes";
 import {
   getSelectionRects as readSelectionRects,
-  eraseHighlightPart,
   createHighlightFromSelection,
   type Rect,
 } from "@/lib/highlightOps";
+import { hitTestAnnotation, type HitContext } from "@/lib/hitTest";
 
 const SHAPE_TOOLS: ToolType[] = ["freehand", "line", "arrow", "oval", "rectangle"];
 const isShapeTool = (t: ToolType) => SHAPE_TOOLS.includes(t);
@@ -554,12 +554,12 @@ export default function PDFPage({
   } | null>(null);
 
   /**
-   * In-flight eraser overrides: while the user drags the eraser we mutate
-   * a per-annotation rect list here and redraw, then commit on mouseup so
-   * we don't push 60 history entries per drag.
+   * Edge-style eraser: touching any part of an annotation deletes the
+   * whole thing. We track which IDs we've already removed during the
+   * current drag so we don't try to remove the same one twice.
    */
-  const pendingEraseRef = useRef<Map<string, Rect[]>>(new Map());
   const eraserActiveRef = useRef(false);
+  const erasedThisDragRef = useRef<Set<string>>(new Set());
 
   const [copiedToast, setCopiedToast] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
@@ -714,16 +714,14 @@ export default function PDFPage({
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
     list: Annotation[],
-    eraseOverrides: Map<string, Rect[]>,
   ) {
     for (const ann of list) {
       if (ann.type !== "highlight") continue;
-      const rects = eraseOverrides.has(ann.id) ? eraseOverrides.get(ann.id)! : ann.rects;
-      if (rects.length === 0) continue;
+      if (ann.rects.length === 0) continue;
       ctx.save();
       ctx.fillStyle = ann.color;
       if (typeof ann.opacity === "number") ctx.globalAlpha = ann.opacity;
-      for (const r of rects) {
+      for (const r of ann.rects) {
         ctx.fillRect(r.x * canvas.width, r.y * canvas.height, r.width * canvas.width, r.height * canvas.height);
       }
       ctx.restore();
@@ -735,8 +733,7 @@ export default function PDFPage({
     if (!canvas || pageSize.w === 0) return;
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const overrides = pendingEraseRef.current;
-    renderHighlights(ctx, canvas, annotations, overrides);
+    renderHighlights(ctx, canvas, annotations);
     for (const ann of annotations) {
       if (ann.type === "highlight") {
         // already drawn above
@@ -806,79 +803,68 @@ export default function PDFPage({
     }
   }, [pageNum, highlightColor, onAnnotationAdd]);
 
-  // ── Eraser tool ─────────────────────────────────────────────
-  // Drag-erase: clip touched parts of highlight rects via splitHighlightRect.
-  // Keep in-flight changes in pendingEraseRef and commit on mouseup.
+  // ── Edge-style eraser ────────────────────────────────────
+  // On pointer down/move while eraser active, hit-test every annotation
+  // on the current page and call onAnnotationRemove for each one we
+  // touch. Each annotation is removed AT MOST ONCE per drag.
 
-  const applyEraserAt = useCallback((cssX: number, cssY: number) => {
-    const canvas = drawCanvasRef.current;
-    if (!canvas || pageSize.w === 0) return false;
-    // Convert eraser circle to a normalized square (axis-aligned hit test).
-    const rxN = ERASER_RADIUS_CSS / pageSize.w;
-    const ryN = ERASER_RADIUS_CSS / pageSize.h;
-    const cxN = cssX / pageSize.w;
-    const cyN = cssY / pageSize.h;
-    const eraserRect: Rect = {
-      x: cxN - rxN, y: cyN - ryN,
-      width: rxN * 2, height: ryN * 2,
-    };
-
-    let changed = false;
-    for (const ann of annotations) {
-      if (ann.type !== "highlight" || ann.page !== pageNum) continue;
-      const current = pendingEraseRef.current.get(ann.id) ?? ann.rects;
-      const next = eraseHighlightPart(current, eraserRect);
-      if (next.length !== current.length || next.some((r, i) => {
-        const c = current[i];
-        return !c || c.x !== r.x || c.y !== r.y || c.width !== r.width || c.height !== r.height;
-      })) {
-        pendingEraseRef.current.set(ann.id, next);
-        changed = true;
-      }
-    }
-    return changed;
-  }, [annotations, pageNum, pageSize]);
-
-  const getCssPos = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = drawCanvasRef.current!;
-    const rect = canvas.getBoundingClientRect();
+  const getCssPosFromEvent = (e: { clientX: number; clientY: number }) => {
+    const wrapper = wrapperRef.current!;
+    const rect = wrapper.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
 
-  const onEraserMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  const buildHitContext = useCallback((cssX: number, cssY: number): HitContext | null => {
+    const canvas = drawCanvasRef.current;
+    if (!canvas || pageSize.w === 0) return null;
+    const canvasScaleX = canvas.width / pageSize.w;
+    const canvasScaleY = canvas.height / pageSize.h;
+    return {
+      cssX, cssY,
+      canvasX: cssX * canvasScaleX,
+      canvasY: cssY * canvasScaleY,
+      normX: cssX / pageSize.w,
+      normY: cssY / pageSize.h,
+      radiusCss: ERASER_RADIUS_CSS,
+      radiusCanvas: ERASER_RADIUS_CSS * canvasScaleX,
+      radiusNormX: ERASER_RADIUS_CSS / pageSize.w,
+      radiusNormY: ERASER_RADIUS_CSS / pageSize.h,
+    };
+  }, [pageSize]);
+
+  const eraseAt = useCallback((cssX: number, cssY: number) => {
+    const ctx = buildHitContext(cssX, cssY);
+    if (!ctx) return;
+    for (const ann of annotations) {
+      if (ann.page !== pageNum) continue;
+      if (erasedThisDragRef.current.has(ann.id)) continue;
+      if (hitTestAnnotation(ann, ctx)) {
+        erasedThisDragRef.current.add(ann.id);
+        onAnnotationRemove(ann.id);
+      }
+    }
+  }, [annotations, pageNum, buildHitContext, onAnnotationRemove]);
+
+  const onEraserPointerDown = useCallback((e: React.PointerEvent) => {
     if (e.button !== 0) return;
+    e.preventDefault();
+    (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
     eraserActiveRef.current = true;
-    const p = getCssPos(e);
-    if (applyEraserAt(p.x, p.y)) redrawAnnotations();
-  }, [applyEraserAt]);
+    erasedThisDragRef.current = new Set();
+    const p = getCssPosFromEvent(e);
+    eraseAt(p.x, p.y);
+  }, [eraseAt]);
 
-  const onEraserMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  const onEraserPointerMove = useCallback((e: React.PointerEvent) => {
     if (!eraserActiveRef.current) return;
-    const p = getCssPos(e);
-    if (applyEraserAt(p.x, p.y)) redrawAnnotations();
-  }, [applyEraserAt]);
+    const p = getCssPosFromEvent(e);
+    eraseAt(p.x, p.y);
+  }, [eraseAt]);
 
-  const commitEraser = useCallback(() => {
-    if (pendingEraseRef.current.size === 0) {
-      eraserActiveRef.current = false;
-      return;
-    }
-    for (const [id, rects] of pendingEraseRef.current.entries()) {
-      if (rects.length === 0) onAnnotationRemove(id);
-      else onAnnotationUpdate(id, { rects } as Partial<HighlightAnnotation>);
-    }
-    pendingEraseRef.current.clear();
+  const onEraserPointerUp = useCallback(() => {
     eraserActiveRef.current = false;
-  }, [onAnnotationRemove, onAnnotationUpdate]);
-
-  const onEraserMouseUp = useCallback(() => {
-    if (!eraserActiveRef.current) return;
-    commitEraser();
-  }, [commitEraser]);
-
-  const onEraserMouseLeave = useCallback(() => {
-    if (eraserActiveRef.current) commitEraser();
-  }, [commitEraser]);
+    erasedThisDragRef.current = new Set();
+  }, []);
 
   const onShapeMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (e.button !== 0) return;
@@ -1052,7 +1038,7 @@ export default function PDFPage({
   const commentAnnotations = annotations.filter(a => a.type === "comment") as CommentAnnotation[];
   const [hoveredComment, setHoveredComment] = useState<string | null>(null);
 
-  const drawCanvasActive = tool === "highlight" || isShapeTool(tool) || tool === "eraser";
+  const drawCanvasActive = tool === "highlight" || isShapeTool(tool);
 
   // Inline SVG cursor for the eraser — circle the same size as ERASER_RADIUS_CSS.
   const eraserCursorCss = `url("data:image/svg+xml;utf8,${encodeURIComponent(
@@ -1082,33 +1068,50 @@ export default function PDFPage({
           display: "block",
           zIndex: 3,
           pointerEvents: drawCanvasActive ? "all" : "none",
-          cursor: tool === "eraser" ? eraserCursorCss : (drawCanvasActive ? "crosshair" : "inherit"),
+          cursor: drawCanvasActive ? "crosshair" : "inherit",
         }}
         onMouseDown={
           tool === "highlight" ? onHighlightMouseDown
-            : tool === "eraser" ? onEraserMouseDown
             : isShapeTool(tool) ? onShapeMouseDown
             : undefined
         }
         onMouseMove={
           tool === "highlight" ? onHighlightMouseMove
-            : tool === "eraser" ? onEraserMouseMove
             : isShapeTool(tool) ? onShapeMouseMove
             : undefined
         }
         onMouseUp={
           tool === "highlight" ? onHighlightMouseUp
-            : tool === "eraser" ? onEraserMouseUp
             : isShapeTool(tool) ? onShapeMouseUp
             : undefined
         }
         onMouseLeave={
           tool === "highlight" ? onHighlightMouseUp
-            : tool === "eraser" ? onEraserMouseLeave
             : isShapeTool(tool) ? onShapeMouseUp
             : undefined
         }
       />
+
+      {tool === "eraser" && (
+        <div
+          className="eraser-overlay"
+          style={{
+            position: "absolute",
+            top: 0, left: 0,
+            width: pageSize.w || "100%",
+            height: pageSize.h || "100%",
+            zIndex: 150,
+            cursor: eraserCursorCss,
+            touchAction: "none",
+            userSelect: "none",
+          }}
+          onPointerDown={onEraserPointerDown}
+          onPointerMove={onEraserPointerMove}
+          onPointerUp={onEraserPointerUp}
+          onPointerCancel={onEraserPointerUp}
+          onContextMenu={(e) => e.preventDefault()}
+        />
+      )}
 
       {copiedToast && (
         <div style={{

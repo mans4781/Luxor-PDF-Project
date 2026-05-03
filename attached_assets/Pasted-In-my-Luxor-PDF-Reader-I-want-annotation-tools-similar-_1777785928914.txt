@@ -1,0 +1,256 @@
+In my Luxor PDF Reader, I want annotation tools similar to Microsoft Edge PDF Reader.
+
+I want these tools:
+1. Eraser
+2. Highlighter
+3. Draw / Pen
+4. Add Text
+
+The behavior should feel like Microsoft Edge PDF annotation tools.
+
+Main requirement:
+Anything drawn in one continuous mouse click/drag should be treated as one single annotation stroke. When I use the eraser and touch/click that stroke, the complete stroke should be erased instantly.
+
+Example:
+- I select Draw tool.
+- I press mouse down and draw continuously until mouse up.
+- That complete drawing is one stroke annotation.
+- Later, when I select Eraser and click or drag over any part of that stroke, the entire stroke should vanish instantly.
+- The eraser must not remove unrelated strokes or highlights.
+- Only the touched annotation should be erased.
+
+Tools Required:
+
+1. Draw / Pen Tool
+- User can draw freehand on the PDF.
+- Drawing should start on mouse down and end on mouse up.
+- One mouse down to mouse up action = one single stroke annotation.
+- Each stroke should have:
+  - unique ID
+  - page number
+  - stroke color
+  - stroke width
+  - opacity
+  - list of points
+  - created date/time
+- Support mouse and touch/pointer events.
+- Drawing should remain aligned after zoom, scroll, and page change.
+- Store stroke points in PDF/page coordinates, not screen pixels.
+
+2. Highlighter Tool
+- User can highlight selected PDF text like Microsoft Edge.
+- Highlight should apply only to exact selected text.
+- Multi-line text selection should create separate highlight rectangles for each line.
+- Highlight should not cover extra blank space.
+- Highlight should look transparent and smooth.
+- Default color should be yellow.
+- Each highlight should have:
+  - unique ID
+  - page number
+  - selected text
+  - color
+  - opacity
+  - list of rectangles
+  - created date/time
+- Store coordinates in PDF/page coordinates so it remains correct after zoom.
+
+3. Eraser Tool
+- Eraser should work like Microsoft Edge.
+- When eraser mode is active, clicking or dragging over an annotation should erase that complete annotation instantly.
+- For Draw/Pen:
+  - If eraser touches any point/segment of a continuous stroke, erase the entire stroke.
+  - Do not erase only a small part of the line.
+  - One continuous drawing stroke must be removed as a whole.
+- For Highlight:
+  - If eraser touches a highlighted text annotation, erase that highlight annotation.
+  - If the highlight was created as one selected paragraph, remove that one highlight annotation.
+  - Do not remove all highlights on the page.
+- For Add Text:
+  - If eraser touches/clicks a text box annotation, remove that text annotation.
+- Eraser should not remove the PDF’s original content.
+- Eraser should only remove annotations created by Luxor PDF Reader.
+- Erasing must update annotation storage immediately.
+- Show a visible eraser cursor or small eraser circle while eraser mode is active.
+- Text selection and drawing should be disabled while eraser mode is active.
+- Eraser should work on mouse click, mouse drag, and touch/pointer movement.
+
+4. Add Text Tool
+- User can click anywhere on the PDF page and add a text box.
+- Text box should be editable immediately after creation.
+- User should be able to type text, resize or move it if possible.
+- Text should remain at the same PDF position after zoom and page reload.
+- Text annotation should have:
+  - unique ID
+  - page number
+  - text content
+  - x and y position
+  - font size
+  - font family
+  - color
+  - width and height
+  - created date/time
+- Add Text should not disturb original PDF text.
+
+Toolbar Requirements:
+- Add or fix these buttons:
+  - Draw
+  - Highlight
+  - Eraser
+  - Add Text
+- Only one tool should be active at a time.
+- Active tool button should be visually highlighted.
+- Add simple tooltips:
+  - Draw
+  - Highlight
+  - Eraser
+  - Add Text
+- Include basic settings if possible:
+  - pen color
+  - pen thickness
+  - highlighter color
+  - text color
+  - text size
+- Keep the existing Luxor PDF Reader UI design unchanged unless required.
+
+Implementation Requirements:
+- First inspect the existing PDF viewer, PDF.js rendering, text layer, annotation layer, toolbar, mouse/pointer handlers, and storage system.
+- Do not rewrite the whole app unnecessarily.
+- Add a proper annotation layer above each PDF page.
+- Store annotations separately from the original PDF content.
+- Use PDF/page coordinates for all annotation data.
+- Convert PDF/page coordinates to viewport coordinates when rendering.
+- Convert mouse/pointer screen coordinates to PDF/page coordinates when creating annotations.
+- Make sure annotations work after:
+  - zoom in
+  - zoom out
+  - scrolling
+  - page change
+  - reload if saving exists
+
+Suggested annotation data model:
+
+{
+  id: "unique_annotation_id",
+  type: "draw" | "highlight" | "text",
+  pageNumber: 1,
+  createdAt: "ISO_DATE",
+  data: {}
+}
+
+Draw annotation example:
+{
+  id: "draw_001",
+  type: "draw",
+  pageNumber: 1,
+  color: "#E53935",
+  strokeWidth: 3,
+  opacity: 1,
+  points: [
+    { "x": 120, "y": 240 },
+    { "x": 121, "y": 241 },
+    { "x": 122, "y": 243 }
+  ]
+}
+
+Highlight annotation example:
+{
+  id: "highlight_001",
+  type: "highlight",
+  pageNumber: 1,
+  selectedText: "selected text",
+  color: "#FFF176",
+  opacity: 0.45,
+  rects: [
+    { "x": 100, "y": 250, "width": 180, "height": 14 }
+  ]
+}
+
+Text annotation example:
+{
+  id: "text_001",
+  type: "text",
+  pageNumber: 1,
+  text: "Type text here",
+  x: 150,
+  y: 300,
+  width: 220,
+  height: 40,
+  fontSize: 16,
+  fontFamily: "Arial",
+  color: "#000000"
+}
+
+Suggested functions:
+- setActiveTool(toolName)
+- enableDrawTool()
+- enableHighlightTool()
+- enableEraserTool()
+- enableTextTool()
+- disableAllTools()
+- getPageFromPointerEvent(event)
+- screenToPdfPoint(event, pageNumber)
+- pdfPointToScreenPoint(point, pageNumber)
+- startDrawStroke(event)
+- continueDrawStroke(event)
+- finishDrawStroke(event)
+- createDrawAnnotation(points)
+- createHighlightFromSelection()
+- getSelectionRects()
+- createTextAnnotation(event)
+- renderAnnotations(pageNumber)
+- renderDrawAnnotation(annotation)
+- renderHighlightAnnotation(annotation)
+- renderTextAnnotation(annotation)
+- hitTestAnnotation(event)
+- hitTestDrawStroke(annotation, eraserPoint, eraserRadius)
+- hitTestHighlight(annotation, eraserPoint)
+- hitTestTextAnnotation(annotation, eraserPoint)
+- eraseAnnotation(annotationId)
+- saveAnnotations()
+- loadAnnotations()
+
+Eraser hit testing logic:
+- On pointer down and pointer move in eraser mode:
+  1. Get eraser position in PDF/page coordinates.
+  2. Find the annotation under the eraser.
+  3. If annotation type is draw:
+     - Check if eraser touches any segment or point of the stroke.
+     - If yes, delete the entire draw annotation immediately.
+  4. If annotation type is highlight:
+     - Check if eraser touches any highlight rectangle.
+     - If yes, delete that highlight annotation immediately.
+  5. If annotation type is text:
+     - Check if eraser touches the text box bounds.
+     - If yes, delete that text annotation immediately.
+  6. Re-render annotations immediately.
+- Do not wait until mouse up to erase.
+- Do not erase all annotations.
+- Do not erase original PDF content.
+
+Important Microsoft Edge-like behavior:
+- Drawings created in one continuous mouse press must erase as one object.
+- Eraser must erase instantly when touching an annotation.
+- Multiple separate pen strokes must remain separate objects.
+- Eraser should remove only the touched stroke/highlight/text box.
+- Highlight must be based on real text selection.
+- Add Text should allow typing directly on the PDF.
+- Annotations must remain correctly positioned after zoom and scroll.
+
+Testing checklist:
+1. Draw one continuous line and erase it by touching any part of it.
+2. Draw three separate strokes and erase only one.
+3. Highlight one word and erase only that highlight.
+4. Highlight a paragraph and erase only that paragraph highlight.
+5. Add text and erase only that text box.
+6. Zoom in and zoom out, then test drawing, highlighting, text, and eraser.
+7. Scroll between pages and confirm annotations stay on the correct page.
+8. Reload the PDF if saving exists and confirm annotations remain.
+9. Confirm eraser does not remove original PDF text or images.
+10. Confirm only one tool is active at a time.
+
+After completing:
+- Show all changed files.
+- Explain how draw strokes are grouped.
+- Explain how eraser hit detection works.
+- Explain how annotations are saved in PDF coordinates.
+- Explain how to test every tool step by step.
