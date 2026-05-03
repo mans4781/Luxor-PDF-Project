@@ -143,6 +143,16 @@ export function hitTestAnnotation(ann: Annotation, ctx: HitContext): boolean {
       const lw = (ann.lineWidth || 1) / 2;
       return pointNearRectOutline(ctx.canvasX, ctx.canvasY, ann.x, ann.y, ann.w, ann.h, ctx.radiusCanvas + lw);
     }
+    case "redact": {
+      // Redactions are filled, so hit anywhere inside the box (in normalized
+      // page coords). Lets the eraser tool delete a redaction by touching it.
+      return (
+        ctx.normX >= ann.x &&
+        ctx.normX <= ann.x + ann.w &&
+        ctx.normY >= ann.y &&
+        ctx.normY <= ann.y + ann.h
+      );
+    }
     case "text": {
       const b = approxTextBounds(ann);
       return circleIntersectsRect(ctx.cssX, ctx.cssY, ctx.radiusCss, b.x, b.y, b.w, b.h);

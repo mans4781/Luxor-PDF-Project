@@ -3,7 +3,7 @@ import { TextLayer } from "pdfjs-dist";
 import {
   Annotation, HighlightAnnotation, TextAnnotation, CommentAnnotation, ToolType,
   FreehandAnnotation, LineAnnotation, ArrowAnnotation, OvalAnnotation, RectAnnotation,
-  ShapeAnnotation, Point,
+  RedactionAnnotation, ShapeAnnotation, Point,
 } from "@/lib/annotationTypes";
 import {
   getSelectionRects as readSelectionRects,
@@ -18,7 +18,7 @@ import {
   highlightOpacityFor,
 } from "@/lib/annotationColors";
 
-const SHAPE_TOOLS: ToolType[] = ["freehand", "line", "arrow", "oval", "rectangle"];
+const SHAPE_TOOLS: ToolType[] = ["freehand", "line", "arrow", "oval", "rectangle", "redact"];
 const isShapeTool = (t: ToolType) => SHAPE_TOOLS.includes(t);
 
 /** Eraser cursor radius in CSS pixels — matches the visual cursor circle. */
@@ -577,6 +577,9 @@ export default function PDFPage({
   const highlightRef = useRef<{ active: boolean; startX: number; startY: number } | null>(null);
   const renderTaskRef = useRef<any>(null);
   const textLayerTaskRef = useRef<any>(null);
+  /** Captured during the last successful page render so the redact tool can
+   *  store the total displayed rotation (page.rotate + viewer rotation). */
+  const pageNativeRotationRef = useRef<number>(0);
 
   const shapeDrawRef = useRef<{
     active: boolean;
@@ -681,6 +684,7 @@ export default function PDFPage({
         const page = await pdfDocument.getPage(pageNum);
         const dpr = Math.max(2, window.devicePixelRatio || 1);
         const totalRotation = ((page.rotate ?? 0) + rotation) % 360;
+        pageNativeRotationRef.current = page.rotate ?? 0;
         const viewport = page.getViewport({ scale: zoom * dpr, rotation: totalRotation });
         const cssW = viewport.width / dpr;
         const cssH = viewport.height / dpr;
@@ -852,6 +856,12 @@ export default function PDFPage({
         ctx.globalAlpha = 0.18;
         ctx.fillStyle = "#4169E1";
         for (const r of ann.rects) ctx.fillRect(r.x * canvas.width, r.y * canvas.height, r.width * canvas.width, r.height * canvas.height);
+        ctx.restore();
+      } else if (ann.type === "redact") {
+        ctx.save();
+        ctx.fillStyle = "#000000";
+        ctx.globalAlpha = 1;
+        ctx.fillRect(ann.x * canvas.width, ann.y * canvas.height, ann.w * canvas.width, ann.h * canvas.height);
         ctx.restore();
       } else if (ann.type !== "text") {
         drawShapeOnCtx(ctx, ann as ShapeAnnotation);
@@ -1074,6 +1084,16 @@ export default function PDFPage({
         ctx.strokeRect(startX, startY, w, h);
         break;
       }
+      case "redact": {
+        const w = pos.x - startX;
+        const h = pos.y - startY;
+        ctx.save();
+        ctx.fillStyle = "#000000";
+        ctx.globalAlpha = 1;
+        ctx.fillRect(startX, startY, w, h);
+        ctx.restore();
+        break;
+      }
     }
     ctx.restore();
   }, [tool, drawColor, annotations, pageSize, shapeFill, shapeFillOpacity]);
@@ -1089,7 +1109,7 @@ export default function PDFPage({
     const lw = drawThickness * (canvas.width / pageSize.w);
     const { startX, startY, shiftKey, points } = state;
 
-    let ann: ShapeAnnotation | null = null;
+    let ann: ShapeAnnotation | RedactionAnnotation | null = null;
 
     switch (tool) {
       case "freehand": {
@@ -1134,6 +1154,30 @@ export default function PDFPage({
         }
         if (Math.abs(w) > 3 && Math.abs(h) > 3) {
           ann = { id: genId(), type: "rect", page: pageNum, x: startX, y: startY, w, h, color: drawColor, lineWidth: lw, fill: shapeFill, fillOpacity: shapeFillOpacity ?? 0.4 };
+        }
+        break;
+      }
+      case "redact": {
+        // Normalize the drag rect into a top-left + positive size in CANVAS
+        // pixels, then convert to 0..1 page-relative coords for storage.
+        let x = startX, y = startY, w = pos.x - startX, h = pos.y - startY;
+        if (w < 0) { x = pos.x; w = -w; }
+        if (h < 0) { y = pos.y; h = -h; }
+        if (w > 3 && h > 3) {
+          ann = {
+            id: genId(),
+            type: "redact",
+            page: pageNum,
+            x: x / canvas.width,
+            y: y / canvas.height,
+            w: w / canvas.width,
+            h: h / canvas.height,
+            // Capture the displayed orientation. Includes both the PDF's
+            // native page rotation and the user-applied viewer rotation so
+            // the export pipeline can unrotate back into PDF user-space.
+            rotation: ((pageNativeRotationRef.current + rotation) % 360 + 360) % 360,
+            createdAt: new Date().toISOString(),
+          };
         }
         break;
       }

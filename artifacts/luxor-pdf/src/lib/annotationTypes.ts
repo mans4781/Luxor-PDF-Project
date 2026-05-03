@@ -1,4 +1,4 @@
-export type ToolType = "hand" | "highlight" | "eraser" | "text" | "freehand" | "line" | "arrow" | "oval" | "rectangle";
+export type ToolType = "hand" | "highlight" | "eraser" | "text" | "freehand" | "line" | "arrow" | "oval" | "rectangle" | "redact";
 
 export interface Point { x: number; y: number; }
 
@@ -137,10 +137,36 @@ export interface RectAnnotation {
 
 export type ShapeAnnotation = FreehandAnnotation | LineAnnotation | ArrowAnnotation | OvalAnnotation | RectAnnotation;
 
+/**
+ * Permanent redaction box. Coordinates are NORMALIZED 0..1 against the
+ * rendered page (same scheme as highlights) so they survive zoom and
+ * rotation, and so the export pipeline can convert them to PDF user-space
+ * units regardless of viewer DPR. Always rendered as fully opaque black —
+ * once burned in by pdf-lib the underlying content is permanently covered.
+ */
+export interface RedactionAnnotation {
+  id: string;
+  type: "redact";
+  page: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  /**
+   * Total rotation (page.rotate + viewer rotation, normalized 0/90/180/270)
+   * applied to the rendered viewport when the box was drawn. The export
+   * pipeline uses this to map the rect back into PDF user-space, which is
+   * always unrotated regardless of view orientation.
+   */
+  rotation?: number;
+  createdAt?: string;
+}
+
 export type Annotation =
   | HighlightAnnotation
   | UnderlineAnnotation
   | StrikeAnnotation
   | TextAnnotation
   | CommentAnnotation
-  | ShapeAnnotation;
+  | ShapeAnnotation
+  | RedactionAnnotation;

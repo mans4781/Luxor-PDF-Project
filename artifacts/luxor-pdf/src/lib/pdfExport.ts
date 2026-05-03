@@ -19,10 +19,13 @@ import {
   type WatermarkPosition,
   type PageNoPosition,
 } from "./editTypes";
+import type { RedactionAnnotation } from "./annotationTypes";
 
 export interface ExportEdits {
   watermark?: WatermarkConfig | null;
   pageNo?: PageNoConfig | null;
+  /** Redaction boxes (normalized 0..1 page coords) to burn in as opaque black. */
+  redactions?: RedactionAnnotation[];
   /** 1-based page that was current in the viewer (used by `pageRange: current`). */
   currentPage: number;
 }
@@ -35,10 +38,21 @@ export async function exportPdfWithEdits(file: File, edits: ExportEdits): Promis
   const pages = pdf.getPages();
   const total = pages.length;
 
+  // Group redactions by 1-based page index for O(1) lookup per page.
+  const redactionsByPage = new Map<number, RedactionAnnotation[]>();
+  for (const r of edits.redactions ?? []) {
+    const arr = redactionsByPage.get(r.page);
+    if (arr) arr.push(r); else redactionsByPage.set(r.page, [r]);
+  }
+
   for (let i = 0; i < pages.length; i++) {
     const pageNum = i + 1;
     const p = pages[i];
     const { width, height } = p.getSize();
+
+    // Redactions FIRST so watermark/page-no remain visible above them.
+    const reds = redactionsByPage.get(pageNum);
+    if (reds && reds.length) drawRedactionsOnPage(p, reds, width, height);
 
     if (edits.watermark && watermarkAppliesTo(edits.watermark, pageNum, edits.currentPage)) {
       drawWatermarkOnPage(p, edits.watermark, fontBold, width, height);
@@ -137,6 +151,70 @@ function drawPageNoOnPage(
     x,
     y,
   });
+}
+
+/**
+ * Burn opaque black rectangles over each redaction. Stored coords are
+ * normalized (0..1) with the SCREEN convention (origin top-left, y grows
+ * down), so we flip y into pdf-lib user-space (origin bottom-left).
+ */
+function drawRedactionsOnPage(
+  page: ReturnType<PDFDocument["getPages"]>[number],
+  redactions: RedactionAnnotation[],
+  w: number,
+  h: number,
+) {
+  for (const r of redactions) {
+    // Map from displayed-canvas top-left coords into PDF user-space (origin
+    // bottom-left, ALWAYS unrotated — pdf-lib drawRectangle uses MediaBox
+    // coords regardless of any /Rotate set on the page). `w` and `h` here
+    // are page user-space dimensions from page.getSize(). When the
+    // rendered viewport was rotated 90/270, the displayed canvas is `h`
+    // wide and `w` tall; we account for that in the per-rotation case.
+    const rot = (((r.rotation ?? 0) % 360) + 360) % 360;
+    let x: number, y: number, width: number, height: number;
+    switch (rot) {
+      case 90: {
+        // Displayed: h wide × w tall. Screen TL (rx*h, ry*w) → user BL.
+        x = r.y * w;
+        y = h - r.x * h - r.w * h;
+        width = r.h * w;
+        height = r.w * h;
+        break;
+      }
+      case 180: {
+        x = w - r.x * w - r.w * w;
+        y = r.y * h;
+        width = r.w * w;
+        height = r.h * h;
+        break;
+      }
+      case 270: {
+        // Displayed: h wide × w tall. Mirror of the 90° case.
+        x = w - r.y * w - r.h * w;
+        y = r.x * h;
+        width = r.h * w;
+        height = r.w * h;
+        break;
+      }
+      case 0:
+      default: {
+        x = r.x * w;
+        y = h - r.y * h - r.h * h;
+        width = r.w * w;
+        height = r.h * h;
+        break;
+      }
+    }
+    page.drawRectangle({
+      x,
+      y,
+      width,
+      height,
+      color: rgb(0, 0, 0),
+      opacity: 1,
+    });
+  }
 }
 
 // Re-export types touched by callers so they don't need to import twice.

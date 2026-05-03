@@ -266,9 +266,10 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   };
   const handleDownload = async () => {
     if (downloading) return;
-    // If neither edit feature is active, just hand back the original
-    // bytes — no need to round-trip through pdf-lib.
-    if (!watermarkCfg && !pageNoCfg) {
+    const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
+    // If no edit feature is active, just hand back the original bytes —
+    // no need to round-trip through pdf-lib.
+    if (!watermarkCfg && !pageNoCfg && redactions.length === 0) {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(file);
       a.download = file.name;
@@ -281,6 +282,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
       const blob = await exportPdfWithEdits(file, {
         watermark: watermarkCfg,
         pageNo: pageNoCfg,
+        redactions,
         currentPage,
       });
       const url = URL.createObjectURL(blob);
