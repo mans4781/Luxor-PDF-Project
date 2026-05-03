@@ -1,0 +1,158 @@
+In my Luxor PDF Reader, I want a sharp, vibrant, clean, premium-looking highlight color palette similar to the attached sample style.
+
+Important requirement:
+- Highlight colors must look bright, sharp, and clean.
+- They should feel vivid and professional.
+- They should not look dull, faded, muddy, dirty, or washed out.
+- Text must remain clearly readable under the highlight.
+- The visual style should feel modern and premium.
+
+Please update the Highlight tool color palette in my PDF Reader.
+
+Note:
+You should use a vibrant transparent highlight effect, not a pale or low-contrast overlay.
+
+Required highlight colors:
+(I know I listed more than 7 names; please include all of these colors in the final palette.)
+
+1. Blue
+   - Hex: #4FC3F7
+
+2. Grey
+   - Hex: #B0BEC5
+
+3. Red
+   - Hex: #FF5252
+
+4. Pink
+   - Hex: #FF5CA8
+
+5. Violet
+   - Hex: #B388FF
+
+6. Green
+   - Hex: #76E36A
+
+7. Yellow
+   - Hex: #FFEB3B
+
+8. Cyan
+   - Hex: #3DEBFF
+
+9. Magenta
+   - Hex: #FF4FD8
+
+Highlight behavior:
+- Use these colors as highlight annotation colors.
+- The fill must look vibrant and clean.
+- Keep highlight opacity around 40% to 48% so the text remains readable.
+- Recommended default opacity: 0.44
+- The highlight should appear smooth and uniform across the selected text.
+- Spaces between words must also be highlighted properly.
+- Multi-line text must render as separate clean highlight strips per line.
+- Do not create patchy or broken word-by-word highlight blocks.
+
+Default highlight color:
+- Yellow (#FFEB3B)
+- Opacity: 0.44
+
+UI requirements:
+- Add these colors as selectable swatches in the Highlight tool dropdown/popup.
+- Each swatch should show the actual vibrant color.
+- Selected color should have a visible active border or check mark.
+- Use clean tooltip labels:
+  - Blue
+  - Grey
+  - Red
+  - Pink
+  - Violet
+  - Green
+  - Yellow
+  - Cyan
+  - Magenta
+
+Implementation requirements:
+- Do not rewrite the whole app.
+- Inspect the existing highlight tool, annotation system, toolbar, and color picker.
+- Create or update a central color configuration object/file.
+
+Suggested configuration:
+
+const HIGHLIGHT_COLORS = [
+  { name: "Blue", value: "#4FC3F7", opacity: 0.44 },
+  { name: "Grey", value: "#B0BEC5", opacity: 0.44 },
+  { name: "Red", value: "#FF5252", opacity: 0.44 },
+  { name: "Pink", value: "#FF5CA8", opacity: 0.44 },
+  { name: "Violet", value: "#B388FF", opacity: 0.44 },
+  { name: "Green", value: "#76E36A", opacity: 0.44 },
+  { name: "Yellow", value: "#FFEB3B", opacity: 0.44 },
+  { name: "Cyan", value: "#3DEBFF", opacity: 0.44 },
+  { name: "Magenta", value: "#FF4FD8", opacity: 0.44 }
+];
+
+const DEFAULT_HIGHLIGHT = {
+  color: "#FFEB3B",
+  opacity: 0.44
+};
+
+Functional requirements:
+- When user selects text and applies a highlight, the chosen color should be used.
+- The selected highlight color should be saved with the annotation data.
+- On reload, saved highlights must retain the same color and opacity.
+- Zooming, scrolling, and page changes must not affect highlight position or appearance.
+- Only new highlights should use the newly selected color unless editing existing annotations.
+
+Annotation data example:
+{
+  id: "highlight_001",
+  type: "highlight",
+  pageNumber: 1,
+  selectedText: "sample text",
+  color: "#4FC3F7",
+  opacity: 0.44,
+  rects: [
+    { x: 100, y: 250, width: 180, height: 14 }
+  ],
+  createdAt: "ISO_DATE"
+}
+
+Suggested functions:
+- getHighlightPalette()
+- setHighlightColor(color, opacity)
+- getCurrentHighlightColor()
+- applyHighlightColorToSelection()
+- saveHighlightAnnotation()
+- renderHighlightAnnotation()
+- loadHighlightAnnotations()
+
+Expected visual result:
+- Blue should look fresh and bright
+- Grey should look soft but visible
+- Red should look bold and sharp
+- Pink should look lively and clean
+- Violet should look rich and elegant
+- Green should look vivid and energetic
+- Yellow should look bright and classic
+- Cyan should look electric and clean
+- Magenta should look striking and modern
+
+Testing checklist:
+1. Select text and apply Blue highlight.
+2. Repeat for Grey.
+3. Repeat for Red.
+4. Repeat for Pink.
+5. Repeat for Violet.
+6. Repeat for Green.
+7. Repeat for Yellow.
+8. Repeat for Cyan.
+9. Repeat for Magenta.
+10. Confirm text remains readable for every color.
+11. Confirm the colors look vibrant and sharp.
+12. Confirm highlight stays aligned after zooming and scrolling.
+13. Reload and confirm saved highlight colors remain correct.
+
+After completing:
+1. Show all changed files.
+2. Explain where the highlight colors are configured.
+3. Explain how the chosen color is saved in annotations.
+4. Explain how to test all highlight colors.

@@ -22,13 +22,22 @@ export const SELECTION = {
   opacity: 0.5,
 } as const;
 
+/**
+ * Vibrant, sharp highlight palette. Solid hex + 0.44 alpha gives a
+ * clean, premium look — bright but never neon, and text under the
+ * highlight stays readable. Yellow is the default to match the
+ * traditional highlighter feel.
+ */
 export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Yellow", value: "#FFF176", opacity: 0.5 },
-  { name: "Green",  value: "#A5D6A7", opacity: 0.5 },
-  { name: "Blue",   value: "#90CAF9", opacity: 0.5 },
-  { name: "Pink",   value: "#F8BBD0", opacity: 0.5 },
-  { name: "Orange", value: "#FFCC80", opacity: 0.5 },
-  { name: "Purple", value: "#CE93D8", opacity: 0.5 },
+  { name: "Yellow",  value: "#FFEB3B", opacity: 0.44 },
+  { name: "Green",   value: "#76E36A", opacity: 0.44 },
+  { name: "Blue",    value: "#4FC3F7", opacity: 0.44 },
+  { name: "Cyan",    value: "#3DEBFF", opacity: 0.44 },
+  { name: "Pink",    value: "#FF5CA8", opacity: 0.44 },
+  { name: "Magenta", value: "#FF4FD8", opacity: 0.44 },
+  { name: "Red",     value: "#FF5252", opacity: 0.44 },
+  { name: "Violet",  value: "#B388FF", opacity: 0.44 },
+  { name: "Grey",    value: "#B0BEC5", opacity: 0.44 },
 ];
 
 export const PEN_COLORS: ColorSwatch[] = [
@@ -51,8 +60,8 @@ export const TEXT_COLORS: ColorSwatch[] = [
 ];
 
 export const DEFAULTS = {
-  highlightColor: HIGHLIGHT_COLORS[0].value,   // Yellow #FFF176
-  highlightOpacity: HIGHLIGHT_COLORS[0].opacity,
+  highlightColor: HIGHLIGHT_COLORS[0].value,   // Yellow #FFEB3B
+  highlightOpacity: HIGHLIGHT_COLORS[0].opacity, // 0.44
   penColor: "#1565C0",
   penWidth: 3,
   underlineColor: "#1565C0",

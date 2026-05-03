@@ -767,7 +767,7 @@ export default function PDFPage({
       if (ann.rects.length === 0) continue;
       ctx.save();
       ctx.fillStyle = ann.color;
-      ctx.globalAlpha = typeof ann.opacity === "number" ? ann.opacity : 0.5;
+      ctx.globalAlpha = typeof ann.opacity === "number" ? ann.opacity : 0.44;
       for (const r of ann.rects) {
         ctx.fillRect(r.x * canvas.width, r.y * canvas.height, r.width * canvas.width, r.height * canvas.height);
       }
