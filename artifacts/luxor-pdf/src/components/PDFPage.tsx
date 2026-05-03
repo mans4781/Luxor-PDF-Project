@@ -527,8 +527,11 @@ function drawShapeOnCtx(ctx: CanvasRenderingContext2D, ann: ShapeAnnotation) {
       ctx.ellipse(ann.cx, ann.cy, Math.abs(ann.rx), Math.abs(ann.ry), 0, 0, 2 * Math.PI);
       if (ann.fill) {
         ctx.save();
+        // Vibrant marker fill: `multiply` blend lets the page text show
+        // through razor-sharp underneath while the color glows on white.
         ctx.fillStyle = ann.color;
-        ctx.globalAlpha = ann.fillOpacity ?? 0.25;
+        ctx.globalAlpha = ann.fillOpacity ?? 0.4;
+        ctx.globalCompositeOperation = "multiply";
         ctx.fill();
         ctx.restore();
       }
@@ -539,7 +542,8 @@ function drawShapeOnCtx(ctx: CanvasRenderingContext2D, ann: ShapeAnnotation) {
       if (ann.fill) {
         ctx.save();
         ctx.fillStyle = ann.color;
-        ctx.globalAlpha = ann.fillOpacity ?? 0.25;
+        ctx.globalAlpha = ann.fillOpacity ?? 0.4;
+        ctx.globalCompositeOperation = "multiply";
         ctx.fillRect(ann.x, ann.y, ann.w, ann.h);
         ctx.restore();
       }
@@ -1031,7 +1035,8 @@ export default function PDFPage({
         if (shapeFill) {
           ctx.save();
           ctx.fillStyle = drawColor;
-          ctx.globalAlpha = shapeFillOpacity ?? 0.25;
+          ctx.globalAlpha = shapeFillOpacity ?? 0.4;
+          ctx.globalCompositeOperation = "multiply";
           ctx.fill();
           ctx.restore();
         }
@@ -1049,7 +1054,8 @@ export default function PDFPage({
         if (shapeFill) {
           ctx.save();
           ctx.fillStyle = drawColor;
-          ctx.globalAlpha = shapeFillOpacity ?? 0.25;
+          ctx.globalAlpha = shapeFillOpacity ?? 0.4;
+          ctx.globalCompositeOperation = "multiply";
           ctx.fillRect(startX, startY, w, h);
           ctx.restore();
         }
@@ -1102,7 +1108,7 @@ export default function PDFPage({
         if (rx > 3 && ry > 3) {
           const cx = (startX + pos.x) / 2;
           const cy = (startY + pos.y) / 2;
-          ann = { id: genId(), type: "oval", page: pageNum, cx, cy, rx, ry, color: drawColor, lineWidth: lw, fill: shapeFill, fillOpacity: shapeFillOpacity ?? 0.25 };
+          ann = { id: genId(), type: "oval", page: pageNum, cx, cy, rx, ry, color: drawColor, lineWidth: lw, fill: shapeFill, fillOpacity: shapeFillOpacity ?? 0.4 };
         }
         break;
       }
@@ -1115,7 +1121,7 @@ export default function PDFPage({
           h = Math.sign(h) * side;
         }
         if (Math.abs(w) > 3 && Math.abs(h) > 3) {
-          ann = { id: genId(), type: "rect", page: pageNum, x: startX, y: startY, w, h, color: drawColor, lineWidth: lw, fill: shapeFill, fillOpacity: shapeFillOpacity ?? 0.25 };
+          ann = { id: genId(), type: "rect", page: pageNum, x: startX, y: startY, w, h, color: drawColor, lineWidth: lw, fill: shapeFill, fillOpacity: shapeFillOpacity ?? 0.4 };
         }
         break;
       }
