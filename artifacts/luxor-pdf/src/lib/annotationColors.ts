@@ -46,6 +46,38 @@ export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
 ];
 
 /**
+ * Soft, ChatGPT-style translucent shades used as the live text-selection
+ * preview before the user commits the highlight. These are intentionally
+ * lower-saturation than the final HIGHLIGHT_COLORS so the selected text
+ * stays sharp and readable while dragging. The map is keyed by the
+ * highlight swatch hex so the selection preview can mirror whichever
+ * highlight color the user has currently picked. Anything not in the map
+ * (e.g. Grey from a future palette) falls back to SELECTION_PREVIEW_DEFAULT.
+ */
+export const SELECTION_PREVIEW_DEFAULT = "rgba(0, 120, 255, 0.25)";
+
+export const SELECTION_PREVIEW_BY_HIGHLIGHT: Record<string, string> = {
+  "#FFF200": "rgba(255, 214, 0, 0.28)",   // Yellow
+  "#39FF14": "rgba(76, 175, 80, 0.24)",   // Green
+  "#00BFFF": "rgba(0, 120, 255, 0.25)",   // Blue (ChatGPT default blue)
+  "#FF4FB8": "rgba(233, 30, 99, 0.22)",   // Pink
+  "#FF3030": "rgba(244, 67, 54, 0.22)",   // Red
+  "#00FFFF": "rgba(0, 188, 212, 0.22)",   // Cyan
+  "#A855FF": "rgba(126, 87, 194, 0.22)",  // Violet
+  // Grey is not in the highlight palette today but reserved for future use.
+  "#9E9E9E": "rgba(158, 158, 158, 0.22)", // Grey
+};
+
+/** Resolve a highlight hex to its soft selection-preview shade. */
+export function getSelectionPreview(highlightHex: string): string {
+  return (
+    SELECTION_PREVIEW_BY_HIGHLIGHT[highlightHex.toUpperCase()] ??
+    SELECTION_PREVIEW_BY_HIGHLIGHT[highlightHex] ??
+    SELECTION_PREVIEW_DEFAULT
+  );
+}
+
+/**
  * Premium 30-color palette shared by every drawing-related tool
  * (pen / freehand, line, arrow, oval, rectangle, add-text, and any
  * future ink tool). Arranged in 5 rows of 6 to render as a clean grid:

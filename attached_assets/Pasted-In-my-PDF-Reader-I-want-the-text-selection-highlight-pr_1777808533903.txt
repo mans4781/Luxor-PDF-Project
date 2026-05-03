@@ -1,0 +1,113 @@
+In my PDF Reader, I want the text selection / highlight preview colors to have the same soft, premium, modern feel as ChatGPT’s text selection background, but available in 5 shades:
+
+1. Green
+2. Yellow
+3. Red
+4. Violet
+5. Grey
+
+Goal:
+When a user selects words, lines, or a paragraph in the PDF, the background color should look soft, elegant, translucent, and clearly visible — not harsh, neon, dull, or muddy. The effect should feel similar to ChatGPT-style selection, but in different color families.
+
+Important visual requirements:
+- All colors must have the same visual style:
+  - soft
+  - translucent
+  - clean
+  - premium
+  - smooth
+  - text remains sharp and readable
+- The colors must work well on white PDF pages.
+- The selected text must never become blurry or difficult to read.
+- Do not use overly saturated or dark fills.
+- The effect should look like a refined modern selection/highlight overlay.
+
+Create the following color palette:
+
+1. Green selection / highlight preview
+- background: rgba(76, 175, 80, 0.24)
+- fallback hex: #CDEECC
+
+2. Yellow selection / highlight preview
+- background: rgba(255, 214, 0, 0.28)
+- fallback hex: #FFF2A8
+
+3. Red selection / highlight preview
+- background: rgba(244, 67, 54, 0.22)
+- fallback hex: #F8C1BD
+
+4. Violet selection / highlight preview
+- background: rgba(126, 87, 194, 0.22)
+- fallback hex: #D8C8F2
+
+5. Grey selection / highlight preview
+- background: rgba(158, 158, 158, 0.22)
+- fallback hex: #E0E0E0
+
+Implementation requirements:
+1. Add support for these 5 soft selection/highlight shades.
+2. Apply the selection color to the PDF text layer only.
+3. Use CSS variables so colors can be switched dynamically.
+
+Example variables:
+:root {
+  --selection-green: rgba(76, 175, 80, 0.24);
+  --selection-yellow: rgba(255, 214, 0, 0.28);
+  --selection-red: rgba(244, 67, 54, 0.22);
+  --selection-violet: rgba(126, 87, 194, 0.22);
+  --selection-grey: rgba(158, 158, 158, 0.22);
+}
+
+4. Add a dynamic variable for currently selected preview color:
+:root {
+  --active-selection-color: rgba(255, 214, 0, 0.28);
+}
+
+5. Apply it like this:
+.textLayer ::selection {
+  background: var(--active-selection-color);
+  color: inherit;
+}
+
+.textLayer span::selection {
+  background: var(--active-selection-color);
+  color: inherit;
+}
+
+.textLayer ::-moz-selection {
+  background: var(--active-selection-color);
+  color: inherit;
+}
+
+.textLayer span::-moz-selection {
+  background: var(--active-selection-color);
+  color: inherit;
+}
+
+6. Add logic so when the user chooses Green, Yellow, Red, Violet, or Grey from the highlight palette, the selection preview immediately uses that same soft translucent shade.
+7. Make sure the preview works correctly for:
+- single word
+- multiple words
+- full line
+- full paragraph
+- multiple lines
+
+8. Keep text readable and crisp in every color.
+9. Do not break:
+- copy
+- search
+- highlight
+- annotation placement
+- text layer alignment
+
+10. Test in Windows 11, Chrome, and Electron.
+
+Expected result:
+My PDF Reader should support 5 premium ChatGPT-style soft selection/highlight shades:
+- Green
+- Yellow
+- Red
+- Violet
+- Grey
+
+All of them should look elegant, translucent, and refined, with readable text and a consistent modern appearance.

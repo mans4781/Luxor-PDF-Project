@@ -491,29 +491,41 @@ mark.search-hl {
   pointer-events: none;
   z-index: 6;
 }
+/* ChatGPT-style soft selection preview. The active shade is driven by
+ * --active-selection-color, which Viewer.tsx sets from whichever
+ * highlight color is currently picked (Yellow / Green / Red / Violet /
+ * Grey / etc.). `mix-blend-mode: multiply` keeps the rasterized text
+ * razor-sharp underneath while the color tints the page — looks clean
+ * on both pure-white and slightly off-white pages. The final highlight
+ * annotation colors are unaffected; those are painted by
+ * .annot-highlight from HIGHLIGHT_COLORS, not here. */
+:root {
+  --selection-green:  rgba(76, 175, 80, 0.24);
+  --selection-yellow: rgba(255, 214, 0, 0.28);
+  --selection-red:    rgba(244, 67, 54, 0.22);
+  --selection-violet: rgba(126, 87, 194, 0.22);
+  --selection-grey:   rgba(158, 158, 158, 0.22);
+  --active-selection-color: rgba(0, 120, 255, 0.25);
+}
+
 .pdf-page-wrapper .selection-overlay > div {
   position: absolute;
-  /* ChatGPT-style soft blue selection background. We use `multiply` so
-   * the color tints the page underneath while the rasterized text stays
-   * razor-sharp. Looks clean on both pure-white and slightly off-white
-   * pages. The final highlight annotation colors (yellow / green / etc.)
-   * are unaffected — those are painted by .annot-highlight, not here. */
-  background: rgba(0, 120, 255, 0.25);
+  background: var(--active-selection-color);
   mix-blend-mode: multiply;
   border-radius: 1px;
 }
 
 /* Belt-and-braces: if the native browser selection ever surfaces (e.g.
- * during keyboard select-all before the overlay catches up), use the
- * same ChatGPT blue instead of the OS default. */
+ * during keyboard select-all before the overlay catches up), match the
+ * same active soft shade instead of the OS default. */
 .pdf-page-wrapper .textLayer ::selection,
 .pdf-page-wrapper .textLayer span::selection {
-  background: rgba(0, 120, 255, 0.25);
+  background: var(--active-selection-color);
   color: inherit;
 }
 .pdf-page-wrapper .textLayer ::-moz-selection,
 .pdf-page-wrapper .textLayer span::-moz-selection {
-  background: rgba(0, 120, 255, 0.25);
+  background: var(--active-selection-color);
   color: inherit;
 }
 

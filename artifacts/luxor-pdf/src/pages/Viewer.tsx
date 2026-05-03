@@ -7,7 +7,7 @@ import ThumbnailPanel from "@/components/ThumbnailPanel";
 import SearchBar from "@/components/SearchBar";
 import { useAnnotations } from "@/lib/useAnnotations";
 import { ToolType } from "@/lib/annotationTypes";
-import { DEFAULTS as COLOR_DEFAULTS } from "@/lib/annotationColors";
+import { DEFAULTS as COLOR_DEFAULTS, getSelectionPreview } from "@/lib/annotationColors";
 import WatermarkModal from "@/components/WatermarkModal";
 import PageNumberModal from "@/components/PageNumberModal";
 import CompressModal from "@/components/CompressModal";
@@ -87,6 +87,16 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
 
   // Persist tool-color preferences to localStorage whenever they change.
   useEffect(() => { lsSet(LS_KEYS.highlight, highlightColor); }, [highlightColor]);
+  // Drive the soft text-selection preview color (--active-selection-color)
+  // from whichever highlight color is currently picked, so dragging to
+  // select text shows a ChatGPT-style translucent shade in the same hue
+  // family the user will commit when they release.
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      "--active-selection-color",
+      getSelectionPreview(highlightColor),
+    );
+  }, [highlightColor]);
   useEffect(() => { lsSet(LS_KEYS.text, textColor); }, [textColor]);
   useEffect(() => { lsSet(LS_KEYS.draw, drawColor); }, [drawColor]);
   useEffect(() => { lsSet(LS_KEYS.drawThickness, drawThickness); }, [drawThickness]);
