@@ -18,20 +18,22 @@ import type { HighlightAnnotation } from "./annotationTypes";
 export type Rect = { x: number; y: number; width: number; height: number };
 
 /**
- * Group raw selection rects into visual lines and merge ONLY the truly
- * adjacent fragments inside each line.
+ * Group raw selection rects into visual lines and emit one continuous
+ * rectangle per line — Adobe/Edge style.
  *
- * The previous implementation merged with a `+ 2` gap threshold that was
- * meant to be pixels but was applied to normalized (0..1) values, so every
- * fragment on a row collapsed into one box and the merge stretched y/height
- * to the union — producing highlights that bled into the lines above and
- * below. We now:
- *   - Group rects into rows by y-proximity (within ~50% of line height).
- *   - Inside a row, keep a consistent line bounding box (min y, max bottom)
- *     so per-fragment y jitter doesn't make the strip taller.
- *   - Only join adjacent fragments (gap small relative to line height).
+ * Algorithm (matches the spec's createMergedSelectionRects):
+ *   1. Sort by y, then x.
+ *   2. Group into rows by y-proximity (within ~50% of line height).
+ *   3. For each row, output a single rect spanning min x → max right,
+ *      with min y → max bottom for the height. This fills any inter-word
+ *      gaps because the row bounding box covers the entire selected range
+ *      from first character to last character.
+ *
+ * We deliberately do NOT join into one giant paragraph rectangle — each
+ * visual line gets its own rect, so multi-line selections still look
+ * line-by-line like Edge.
  */
-export function groupRectsIntoLines(rects: Rect[], smallGap = 0.25): Rect[] {
+export function groupRectsIntoLines(rects: Rect[]): Rect[] {
   if (rects.length === 0) return [];
   const sorted = [...rects].sort((a, b) => a.y - b.y || a.x - b.x);
 
@@ -48,24 +50,11 @@ export function groupRectsIntoLines(rects: Rect[], smallGap = 0.25): Rect[] {
 
   const out: Rect[] = [];
   for (const row of rows) {
-    row.sort((a, b) => a.x - b.x);
+    const left = Math.min(...row.map((r) => r.x));
+    const right = Math.max(...row.map((r) => r.x + r.width));
     const top = Math.min(...row.map((r) => r.y));
     const bottom = Math.max(...row.map((r) => r.y + r.height));
-    const lineH = bottom - top;
-    const joinGap = lineH * smallGap;
-
-    let cur: Rect = { x: row[0].x, y: top, width: row[0].width, height: lineH };
-    for (let i = 1; i < row.length; i++) {
-      const r = row[i];
-      const curRight = cur.x + cur.width;
-      if (r.x <= curRight + joinGap) {
-        cur.width = Math.max(curRight, r.x + r.width) - cur.x;
-      } else {
-        out.push(cur);
-        cur = { x: r.x, y: top, width: r.width, height: lineH };
-      }
-    }
-    out.push(cur);
+    out.push({ x: left, y: top, width: right - left, height: bottom - top });
   }
   return out;
 }

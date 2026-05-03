@@ -452,12 +452,28 @@ mark.search-hl {
   --total-scale-factor: calc(var(--scale-factor, 1) * var(--user-unit));
 }
 
-/* Microsoft Edge-style blue selection highlight on the pdfjs text layer */
+/* The pdfjs text layer renders one span per word, so the browser's native
+ * ::selection background paints per-glyph and shows white gaps between
+ * words. We hide the native background and paint our own continuous,
+ * line-merged blue strip via the .selection-overlay div in PDFPage.tsx
+ * (Adobe Acrobat / Microsoft Edge style). */
 .pdf-page-wrapper .textLayer ::selection {
-  background: rgba(0, 120, 215, 0.35) !important;
+  background: transparent !important;
 }
 .pdf-page-wrapper .textLayer ::-moz-selection {
-  background: rgba(0, 120, 215, 0.35) !important;
+  background: transparent !important;
+}
+
+.pdf-page-wrapper .selection-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+.pdf-page-wrapper .selection-overlay > div {
+  position: absolute;
+  background: rgba(0, 120, 215, 0.32);
+  border-radius: 1px;
 }
 
 .pdf-page-canvas {

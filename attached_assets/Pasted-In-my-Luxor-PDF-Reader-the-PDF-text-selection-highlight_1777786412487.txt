@@ -1,0 +1,107 @@
+In my Luxor PDF Reader, the PDF text selection/highlight overlay is not looking professional.
+
+Problem:
+When I select text in the PDF, there are visible blank gaps between words. The selection/highlight appears broken word-by-word. I want the selection/highlight area to look smooth and uniform like Adobe Acrobat Reader or Microsoft Edge PDF Reader.
+
+Current issue:
+- Each word is being highlighted separately.
+- Spaces between words are not filled.
+- Selected lines look patchy.
+- The blue selection/highlight overlay has gaps between words.
+- It should appear as one continuous smooth selection strip per line.
+
+Required behavior:
+1. During text selection, the selection overlay should look uniform.
+2. For each selected line, the selected area should appear as one continuous rectangle from the first selected character to the last selected character.
+3. Spaces between selected words must also be filled.
+4. Multi-line selection should create separate continuous rectangles per line.
+5. Do not create one big rectangle over the whole paragraph.
+6. Each line should have its own clean continuous selection/highlight strip.
+7. The visual result should feel like Adobe Acrobat Reader and Microsoft Edge PDF Reader.
+
+Highlight behavior:
+- When user selects text and applies highlight, the final highlight should also be uniform.
+- Highlight should not show gaps between words.
+- Highlight should cover the full selected text range on each line, including spaces between words.
+- For multi-line selection, create one merged rectangle per line.
+- The highlight should not cover unrelated lines or extra blank area outside the selected text.
+
+Implementation requirements:
+- Inspect the current PDF text layer, selection logic, highlight rendering, and annotation rendering.
+- The issue is likely caused by using individual word/span/clientRects directly.
+- Fix this by merging text selection rectangles that belong to the same visual line.
+- Use window.getSelection() and Range.getClientRects() to collect selected text rectangles.
+- Group rectangles by line using Y-coordinate tolerance.
+- For each line group:
+  - Find minimum x
+  - Find maximum x + width
+  - Find minimum y
+  - Find maximum y + height
+  - Create one merged rectangle for that line
+- Fill spaces between words inside that line rectangle.
+- Store the merged line rectangles as the annotation geometry.
+- Convert client rectangles to PDF/page coordinates before saving.
+- Convert PDF/page coordinates back to viewport coordinates when rendering.
+- Keep coordinates accurate after zoom, scroll, and page change.
+
+Suggested function:
+createMergedSelectionRects(selectionRects) {
+  1. Get all client rects from selected range.
+  2. Remove empty or tiny rects.
+  3. Sort rects by page number, then y, then x.
+  4. Group rects into same line if their vertical centers are close.
+  5. For each line group, merge all word rects into one continuous rect.
+  6. Return merged line rectangles.
+}
+
+Suggested helper functions:
+- getSelectionClientRects()
+- groupRectsByPage()
+- groupRectsByLine(rects, yTolerance)
+- mergeLineRects(lineRects)
+- normalizeSelectionRects()
+- convertClientRectToPdfRect()
+- convertPdfRectToViewportRect()
+- renderMergedHighlightRects()
+- createHighlightFromMergedSelection()
+
+Important:
+- Do not highlight extra white space before the first selected word.
+- Do not highlight extra white space after the last selected word.
+- Do not make one large rectangle over the full paragraph.
+- Only merge horizontally inside the same selected line.
+- Maintain separate rectangles for separate lines.
+- Maintain separate annotations for separate user selections.
+- Keep eraser behavior working:
+  - Eraser should erase only the selected/touched annotation.
+  - If one continuous selection highlight was created, erasing it should remove that highlight annotation only.
+- Keep Draw, Add Text, and other PDF Reader features unchanged.
+
+Selection styling:
+- Make the selection/highlight overlay smooth and clean.
+- Use a semi-transparent blue for active text selection if the app controls it.
+- Use semi-transparent yellow for final highlight.
+- Text must remain readable.
+- The overlay should not be too dark.
+- It should visually match Adobe Acrobat Reader / Microsoft Edge style.
+
+Testing checklist:
+1. Select a single word.
+2. Select one full line.
+3. Select a sentence with spaces between words.
+4. Select a multi-line paragraph.
+5. Confirm spaces between words are filled smoothly.
+6. Confirm each line is one continuous strip.
+7. Confirm there is no big paragraph rectangle.
+8. Apply highlight and confirm final highlight is also uniform.
+9. Zoom in and out and confirm highlight stays aligned.
+10. Scroll pages and confirm highlight remains correct.
+11. Use eraser and confirm only the touched highlight annotation is removed.
+12. Confirm Draw and Add Text tools still work.
+
+After fixing:
+- Show all changed files.
+- Explain how rectangles are merged line-by-line.
+- Explain how spaces between words are filled.
+- Explain how PDF coordinate conversion is handled.
+- Explain how to test the result against Adobe/Microsoft Edge behavior.

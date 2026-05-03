@@ -710,6 +710,47 @@ export default function PDFPage({
     if (textLayerRef.current) highlightTextInLayer(textLayerRef.current, searchTerm);
   }, [searchTerm, pageSize]);
 
+  // ── Custom blue selection overlay (Adobe / Edge style) ──────
+  // The pdfjs text layer has one span per word, so the browser's native
+  // selection paints with white gaps between words. We hide the native
+  // background (in CSS) and paint our own continuous, line-merged blue
+  // strip here. Recomputed on every selectionchange via rAF coalescing.
+  const [selRects, setSelRects] = useState<Rect[]>([]);
+  useEffect(() => {
+    let raf = 0;
+    const recompute = () => {
+      raf = 0;
+      const wrapper = wrapperRef.current;
+      if (!wrapper) return;
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+        setSelRects((prev) => (prev.length === 0 ? prev : []));
+        return;
+      }
+      const range = sel.getRangeAt(0);
+      let touchesPage = false;
+      try { touchesPage = range.intersectsNode(wrapper); } catch { touchesPage = wrapper.contains(range.commonAncestorContainer); }
+      if (!touchesPage) {
+        setSelRects((prev) => (prev.length === 0 ? prev : []));
+        return;
+      }
+      const result = readSelectionRects(wrapper);
+      const rects = (result?.rects ?? []).filter(
+        (r) => r.x + r.width > 0 && r.y + r.height > 0 && r.x < 1 && r.y < 1,
+      );
+      setSelRects(rects);
+    };
+    const onChange = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(recompute);
+    };
+    document.addEventListener("selectionchange", onChange);
+    return () => {
+      document.removeEventListener("selectionchange", onChange);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [pageSize]);
+
   function renderHighlights(
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
@@ -1060,6 +1101,26 @@ export default function PDFPage({
         ref={textLayerRef}
         className="textLayer"
       />
+
+      {selRects.length > 0 && pageSize.w > 0 && (
+        <div
+          className="selection-overlay"
+          style={{ width: pageSize.w, height: pageSize.h }}
+          aria-hidden="true"
+        >
+          {selRects.map((r, i) => (
+            <div
+              key={i}
+              style={{
+                left: r.x * pageSize.w,
+                top: r.y * pageSize.h,
+                width: r.width * pageSize.w,
+                height: r.height * pageSize.h,
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       <canvas
         ref={drawCanvasRef}
