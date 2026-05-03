@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect, type ReactNode } from "react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { ToolType } from "@/lib/annotationTypes";
 import {
@@ -176,6 +176,93 @@ interface ToolbarProps {
 
 type PopoverType = "highlight" | "text" | "tools" | "edit" | "draw" | null;
 
+/**
+ * Edit menu items. The dropdown UI is shipped now; the feature
+ * implementations (true burn-in redaction, native image embedding,
+ * watermark/page-number export, in-place text editing, image
+ * recompression) are tracked as separate follow-up tasks because each
+ * one needs pdf-lib integration and its own dedicated modal/tool.
+ * Clicking any item opens a "Coming soon" stub modal.
+ */
+type EditFeatureKey = "redact" | "image" | "watermark" | "pageno" | "edittext" | "compress";
+
+interface EditFeatureDef {
+  key: EditFeatureKey;
+  label: string;
+  desc: string;
+  icon: ReactNode;
+}
+
+const EDIT_FEATURES: EditFeatureDef[] = [
+  {
+    key: "redact",
+    label: "Redact",
+    desc: "Permanently hide sensitive text or areas. Burned into the PDF on save.",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="6" width="18" height="12" rx="1" fill="currentColor" stroke="none"/>
+      </svg>
+    ),
+  },
+  {
+    key: "image",
+    label: "Add Image",
+    desc: "Insert PNG, JPG or WEBP onto a page. Drag, resize, rotate.",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <circle cx="9" cy="9" r="2"/>
+        <path d="M21 15l-5-5L5 21"/>
+      </svg>
+    ),
+  },
+  {
+    key: "watermark",
+    label: "Add Watermark",
+    desc: "Text or image watermark across pages with rotation, opacity and position.",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2.5C12 2.5 5 11 5 15.5a7 7 0 0 0 14 0C19 11 12 2.5 12 2.5z"/>
+      </svg>
+    ),
+  },
+  {
+    key: "pageno",
+    label: "Add Page No.",
+    desc: "Insert page numbers with custom format, font and position.",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="4" y="3" width="16" height="18" rx="2"/>
+        <text x="12" y="16" fontSize="9" fontWeight="700" textAnchor="middle" fill="currentColor" stroke="none">#</text>
+      </svg>
+    ),
+  },
+  {
+    key: "edittext",
+    label: "Edit Text",
+    desc: "Click existing PDF text to edit it (overlay-based, flattened on save).",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 7h12M10 7v12"/>
+        <path d="M16.5 14.5l3 3-3 3-3-0 0-3 3-3z"/>
+      </svg>
+    ),
+  },
+  {
+    key: "compress",
+    label: "Compress This PDF",
+    desc: "Reduce file size with low / medium / high compression presets.",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="4 9 9 9 9 4"/>
+        <polyline points="20 15 15 15 15 20"/>
+        <path d="M9 9L3 3"/>
+        <path d="M15 15l6 6"/>
+      </svg>
+    ),
+  },
+];
+
 const isShapeTool = (t: ToolType) => ["freehand", "line", "arrow", "oval", "rectangle"].includes(t);
 
 export default function Toolbar({
@@ -188,6 +275,11 @@ export default function Toolbar({
   onEraseAll, onReadAloud, onOpenFile, onDownload, onPrint,
 }: ToolbarProps) {
   const [popover, setPopover] = useState<PopoverType>(null);
+  // Which Edit-menu feature modal is currently open (null = none).
+  // Each value matches one of the 6 Edit menu items. The actual
+  // feature implementations are tracked as separate follow-up tasks;
+  // this dialog is the user-facing stub for now.
+  const [editStub, setEditStub] = useState<EditFeatureKey | null>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const [eraserIcon, setEraserIcon] = useState<string | null>(null);
   const eraserUploadRef = useRef<HTMLInputElement>(null);
@@ -250,11 +342,91 @@ export default function Toolbar({
         </button>
 
         {popover === "edit" && (
-          <div className="popover-panel" style={{ minWidth: 160, left: 0 }}>
-            <div className="popover-label" style={{ color: "#666", fontSize: 11 }}>Coming soon</div>
+          <div
+            className="popover-panel edit-menu-panel"
+            style={{ minWidth: 230, left: 0, transform: "none", padding: "6px 6px" }}
+          >
+            {EDIT_FEATURES.map((f) => (
+              <button
+                key={f.key}
+                title={f.desc}
+                onClick={() => { setEditStub(f.key); setPopover(null); }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  width: "100%", padding: "7px 10px", marginBottom: 1,
+                  background: "transparent",
+                  border: "none", borderRadius: 5,
+                  color: "#1a1a1a",
+                  cursor: "pointer", fontSize: 13, textAlign: "left",
+                  fontWeight: 500,
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(13,98,242,0.10)"; e.currentTarget.style.color = "#0D62F2"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#1a1a1a"; }}
+              >
+                <span style={{ display: "inline-flex", width: 18, justifyContent: "center" }}>{f.icon}</span>
+                {f.label}
+              </button>
+            ))}
           </div>
         )}
       </div>
+
+      {/* ── Edit feature stub modal ─────────────────────────── */}
+      {editStub && (() => {
+        const f = EDIT_FEATURES.find(x => x.key === editStub)!;
+        return (
+          <div
+            onClick={() => setEditStub(null)}
+            style={{
+              position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+              zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: "#FFFFFF", color: "#1a1a1a",
+                width: 420, maxWidth: "92vw",
+                borderRadius: 12, padding: "22px 22px 18px",
+                boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
+                fontFamily: "inherit",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                <div style={{
+                  width: 38, height: 38, borderRadius: 8,
+                  background: "rgba(13,98,242,0.12)", color: "#0D62F2",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  {f.icon}
+                </div>
+                <div>
+                  <div style={{ fontSize: 17, fontWeight: 600 }}>{f.label}</div>
+                  <div style={{ fontSize: 11, color: "#888", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 2 }}>Coming soon</div>
+                </div>
+              </div>
+              <div style={{ fontSize: 13, lineHeight: 1.5, color: "#444", marginBottom: 18 }}>
+                {f.desc}
+                <br /><br />
+                This feature is being implemented as a dedicated follow-up task so it can be built properly with native PDF burn-in via pdf-lib, rather than a temporary on-screen overlay. The Edit menu and dropdown are live now so the workflow is in place.
+              </div>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                <button
+                  onClick={() => setEditStub(null)}
+                  style={{
+                    background: "#0D62F2", color: "#fff",
+                    border: "none", borderRadius: 6,
+                    padding: "8px 18px", fontSize: 13, fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  Got it
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── 3. Tools menu (text word) ───────────────────────── */}
       <div style={{ position: "relative" }}>

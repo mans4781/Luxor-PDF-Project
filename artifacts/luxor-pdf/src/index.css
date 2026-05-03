@@ -591,6 +591,10 @@ mark.search-hl {
   border-top: 1px solid rgba(0,0,0,0.12);
 }
 
+/* Edit menu is a left-aligned dropdown, so anchor the arrow tip
+ * over the Edit button instead of the panel center. */
+.popover-panel.edit-menu-panel::before { left: 28px; transform: rotate(45deg); }
+
 .popover-label {
   color: #666; font-size: 10px;
   margin-bottom: 6px;
