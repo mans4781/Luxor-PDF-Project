@@ -10,6 +10,7 @@ import { ToolType } from "@/lib/annotationTypes";
 import { DEFAULTS as COLOR_DEFAULTS } from "@/lib/annotationColors";
 import WatermarkModal from "@/components/WatermarkModal";
 import PageNumberModal from "@/components/PageNumberModal";
+import CompressModal from "@/components/CompressModal";
 import type { WatermarkConfig, PageNoConfig } from "@/lib/editTypes";
 import { exportPdfWithEdits } from "@/lib/pdfExport";
 
@@ -94,6 +95,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
   const [pageNoCfg, setPageNoCfg] = useState<PageNoConfig | null>(() => lsGetJSON<PageNoConfig>(LS_KEYS.pageNo));
   const [watermarkOpen, setWatermarkOpen] = useState(false);
   const [pageNoOpen, setPageNoOpen] = useState(false);
+  const [compressOpen, setCompressOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
   useEffect(() => { lsSetJSON(LS_KEYS.watermark, watermarkCfg); }, [watermarkCfg]);
   useEffect(() => { lsSetJSON(LS_KEYS.pageNo, pageNoCfg); }, [pageNoCfg]);
@@ -442,6 +444,7 @@ export default function Viewer({ file, onClose }: ViewerProps) {
         onOpenWatermark={() => setWatermarkOpen(true)}
         onOpenPageNo={() => setPageNoOpen(true)}
         onAddImage={handleAddImage}
+        onOpenCompress={() => setCompressOpen(true)}
         watermarkActive={!!watermarkCfg}
         pageNoActive={!!pageNoCfg}
       />
@@ -472,6 +475,12 @@ export default function Viewer({ file, onClose }: ViewerProps) {
           onApply={(cfg) => { setPageNoCfg(cfg); setPageNoOpen(false); }}
           onClear={() => { setPageNoCfg(null); setPageNoOpen(false); }}
           onClose={() => setPageNoOpen(false)}
+        />
+      )}
+      {compressOpen && (
+        <CompressModal
+          file={file}
+          onClose={() => setCompressOpen(false)}
         />
       )}
 

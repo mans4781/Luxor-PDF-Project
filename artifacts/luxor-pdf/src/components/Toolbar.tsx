@@ -175,6 +175,7 @@ interface ToolbarProps {
   onOpenWatermark: () => void;
   onOpenPageNo: () => void;
   onAddImage: () => void;
+  onOpenCompress: () => void;
   watermarkActive: boolean;
   pageNoActive: boolean;
 }
@@ -278,7 +279,7 @@ export default function Toolbar({
   onToolChange,
   onHighlightColorChange, onTextColorChange, onTextSizeChange, onDrawColorChange, onDrawThicknessChange, onShapeFillChange,
   onEraseAll, onReadAloud, onOpenFile, onDownload, onPrint,
-  onOpenWatermark, onOpenPageNo, onAddImage, watermarkActive, pageNoActive,
+  onOpenWatermark, onOpenPageNo, onAddImage, onOpenCompress, watermarkActive, pageNoActive,
 }: ToolbarProps) {
   const [popover, setPopover] = useState<PopoverType>(null);
   // Which Edit-menu feature modal is currently open (null = none).
@@ -353,7 +354,7 @@ export default function Toolbar({
             style={{ minWidth: 230, left: 0, transform: "none", padding: "6px 6px" }}
           >
             {EDIT_FEATURES.map((f) => {
-              const isLive = f.key === "watermark" || f.key === "pageno" || f.key === "redact" || f.key === "image" || f.key === "edittext";
+              const isLive = f.key === "watermark" || f.key === "pageno" || f.key === "redact" || f.key === "image" || f.key === "edittext" || f.key === "compress";
               const isActive =
                 (f.key === "watermark" && watermarkActive) ||
                 (f.key === "pageno" && pageNoActive) ||
@@ -370,6 +371,7 @@ export default function Toolbar({
                   else if (f.key === "redact") onToolChange(tool === "redact" ? "hand" : "redact");
                   else if (f.key === "image") onAddImage();
                   else if (f.key === "edittext") onToolChange(tool === "edittext" ? "hand" : "edittext");
+                  else if (f.key === "compress") onOpenCompress();
                   else setEditStub(f.key);
                 }}
                 style={{
