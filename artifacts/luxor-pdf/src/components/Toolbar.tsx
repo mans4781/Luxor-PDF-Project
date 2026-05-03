@@ -12,40 +12,68 @@ import {
 // the pen, all shape tools, and the Add-Text color picker so every
 // drawing-related surface uses one consistent color system.
 /**
- * Microsoft Edge-style highlighter icon. The marker is tilted ~40° with a
- * chisel tip and a thick highlight stroke beneath it. The color indicator
- * is embedded in the SVG so it stays perfectly aligned with the icon at
- * any size and inherits a white ring for contrast on dark toolbars.
+ * Highlight icon — vertical chisel-tip marker actively highlighting a
+ * short stroke beneath it. The marker stands almost upright with the
+ * focus on the nib / ferrule area (no bulky body), Microsoft Edge style.
+ * The color dot is embedded in the SVG with a white ring so it stays
+ * aligned at any size and pops on light or dark toolbars. The dot fill
+ * uses the `--highlight-color` CSS variable (set inline on the svg from
+ * the `color` prop) with a yellow fallback per spec.
  */
 function HighlightIcon({ color, size = 20 }: { color: string; size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <g transform="rotate(-40 12 11)">
-        <rect x="10" y="2.5" width="5" height="9" rx="0.8" />
-        <line x1="10" y1="6" x2="15" y2="6" />
-        <path d="M10 11.5l2.5 4 2.5-4z" fill="currentColor" stroke="currentColor" />
-      </g>
-      <line x1="3.5" y1="20.5" x2="13" y2="20.5" strokeWidth="2.4" />
-      <circle cx="18.5" cy="18.5" r="3" fill={color} stroke="#fff" strokeWidth="1.2" />
+    <svg
+      width={size} height={size} viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" strokeWidth="1.8"
+      strokeLinecap="round" strokeLinejoin="round"
+      style={{ ["--highlight-color" as string]: color }}
+    >
+      {/* Marker body (top) */}
+      <rect x="9" y="2.5" width="6" height="8.5" rx="1" />
+      {/* Ferrule band */}
+      <line x1="9" y1="7.5" x2="15" y2="7.5" />
+      {/* Chisel nib tapering down to the page */}
+      <path d="M9 11 L10.5 14 L13.5 14 L15 11 Z" />
+      {/* Active highlight stroke directly under the nib */}
+      <line x1="4.5" y1="17.5" x2="14" y2="17.5" strokeWidth="2.6" />
+      {/* Color indicator dot, lower-right, with white ring */}
+      <circle
+        cx="19" cy="19" r="2.6"
+        fill="var(--highlight-color, #FFD600)"
+        stroke="#fff" strokeWidth="1.2"
+      />
     </svg>
   );
 }
 
 /**
- * Microsoft Edge-style pen icon. A tilted nib with a small smooth curve
- * beneath the tip suggesting freehand drawing, plus an embedded color dot.
+ * Draw icon — vertical Apple Pencil-style stylus tip touching the page,
+ * with a tiny contact stroke under the tip suggesting freehand input.
+ * Cylindrical body up top, conical tip pointing down, integrated color
+ * dot at the lower right via `--draw-color` (red fallback per spec).
  */
 function DrawIcon({ color, size = 20 }: { color: string; size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <g transform="rotate(-40 12 11)">
-        <path d="M10.5 2.5h3.5a0.6 0.6 0 0 1 0.6 0.6v8.4h-4.7v-8.4a0.6 0.6 0 0 1 0.6 -0.6z" />
-        <line x1="10.5" y1="6" x2="14.6" y2="6" />
-        <path d="M10.4 11.5l2.25 4 2.25-4z" fill="currentColor" stroke="currentColor" />
-        <line x1="12.55" y1="15.5" x2="12.55" y2="17" />
-      </g>
-      <path d="M3.5 19.5c1.4-1.5 2.8 1.4 4.2 0s2.8-1.4 4.2 0 2.8 1.4 4.2 0" strokeWidth="1.6" />
-      <circle cx="19" cy="19" r="3" fill={color} stroke="#fff" strokeWidth="1.2" />
+    <svg
+      width={size} height={size} viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" strokeWidth="1.8"
+      strokeLinecap="round" strokeLinejoin="round"
+      style={{ ["--draw-color" as string]: color }}
+    >
+      {/* Stylus body (cylindrical, vertical) */}
+      <path d="M10 3 h4 a0.5 0.5 0 0 1 0.5 0.5 v9 h-5 v-9 a0.5 0.5 0 0 1 0.5 -0.5 z" />
+      {/* Collar line near the tip */}
+      <line x1="9.5" y1="10" x2="14.5" y2="10" />
+      {/* Conical tip pointing down */}
+      <path d="M9.5 12.5 L12 17 L14.5 12.5 Z" fill="currentColor" />
+      {/* Tiny contact stroke under the tip */}
+      <line x1="8" y1="19.5" x2="13" y2="19.5" strokeWidth="1.4" />
+      {/* Color indicator dot, lower-right, with white ring */}
+      <circle
+        cx="19" cy="19" r="2.6"
+        fill="var(--draw-color, #E53935)"
+        stroke="#fff" strokeWidth="1.2"
+      />
     </svg>
   );
 }
