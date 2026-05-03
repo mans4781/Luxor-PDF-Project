@@ -306,13 +306,15 @@ export default function Toolbar({
       {/* ── 5. Eraser icon ──────────────────────────────────── */}
       <div style={{ position: "relative" }}>
         <button
-          className="toolbar-btn"
-          onClick={onEraseAll}
-          title="Erase all highlights — right-click to upload custom icon"
+          className={`toolbar-btn ${tool === "eraser" ? "active" : ""}`}
+          onClick={() => onToolChange(tool === "eraser" ? "hand" : "eraser")}
+          title="Eraser — drag to erase parts of highlights. Alt+click = clear all. Right-click to upload custom icon."
           onContextMenu={e => { e.preventDefault(); eraserUploadRef.current?.click(); }}
+          onAuxClick={e => { if (e.altKey) onEraseAll(); }}
+          onMouseDown={e => { if (e.altKey) { e.preventDefault(); onEraseAll(); } }}
           style={{ position: "relative", overflow: "visible" }}
         >
-          <span className="toolbar-tip">Erase Highlights (right-click to change icon)</span>
+          <span className="toolbar-tip">Eraser — drag to erase parts (Alt+click to clear all)</span>
           {eraserIcon ? (
             <img src={eraserIcon} alt="Eraser" style={{ width: 18, height: 18, objectFit: "contain" }} />
           ) : (

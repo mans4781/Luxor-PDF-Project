@@ -5,50 +5,18 @@ import {
   FreehandAnnotation, LineAnnotation, ArrowAnnotation, OvalAnnotation, RectAnnotation,
   ShapeAnnotation, Point,
 } from "@/lib/annotationTypes";
+import {
+  getSelectionRects as readSelectionRects,
+  eraseHighlightPart,
+  createHighlightFromSelection,
+  type Rect,
+} from "@/lib/highlightOps";
 
 const SHAPE_TOOLS: ToolType[] = ["freehand", "line", "arrow", "oval", "rectangle"];
 const isShapeTool = (t: ToolType) => SHAPE_TOOLS.includes(t);
 
-type Rect = { x: number; y: number; width: number; height: number };
-function mergeOverlappingRects(rects: Rect[]): Rect[] {
-  if (rects.length <= 1) return rects;
-  const rows: Rect[][] = [];
-  for (const r of rects) {
-    let placed = false;
-    for (const row of rows) {
-      const sample = row[0];
-      if (Math.abs(r.y - sample.y) < sample.height * 0.5) {
-        row.push(r);
-        placed = true;
-        break;
-      }
-    }
-    if (!placed) rows.push([r]);
-  }
-  const merged: Rect[] = [];
-  for (const row of rows) {
-    row.sort((a, b) => a.x - b.x);
-    let cur = { ...row[0] };
-    for (let i = 1; i < row.length; i++) {
-      const r = row[i];
-      const curRight = cur.x + cur.width;
-      if (r.x <= curRight + 2) {
-        const newRight = Math.max(curRight, r.x + r.width);
-        const newY = Math.min(cur.y, r.y);
-        const newBottom = Math.max(cur.y + cur.height, r.y + r.height);
-        cur.x = Math.min(cur.x, r.x);
-        cur.y = newY;
-        cur.width = newRight - cur.x;
-        cur.height = newBottom - newY;
-      } else {
-        merged.push(cur);
-        cur = { ...r };
-      }
-    }
-    merged.push(cur);
-  }
-  return merged;
-}
+/** Eraser cursor radius in CSS pixels — matches the visual cursor circle. */
+const ERASER_RADIUS_CSS = 10;
 interface PDFPageProps {
   pdfDocument: any;
   pageNum: number;
@@ -585,6 +553,14 @@ export default function PDFPage({
     shiftKey: boolean;
   } | null>(null);
 
+  /**
+   * In-flight eraser overrides: while the user drags the eraser we mutate
+   * a per-annotation rect list here and redraw, then commit on mouseup so
+   * we don't push 60 history entries per drag.
+   */
+  const pendingEraseRef = useRef<Map<string, Rect[]>>(new Map());
+  const eraserActiveRef = useRef(false);
+
   const [copiedToast, setCopiedToast] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
     x: number; y: number;
@@ -604,28 +580,8 @@ export default function PDFPage({
 
   const getSelectionRects = useCallback(() => {
     const wrapper = wrapperRef.current;
-    const sel = window.getSelection();
-    if (!wrapper || !sel || sel.rangeCount === 0) return null;
-    const txt = sel.toString().trim();
-    if (!txt) return null;
-    const range = sel.getRangeAt(0);
-    const clientRects = range.getClientRects();
-    if (clientRects.length === 0) return null;
-
-    const wrapperRect = wrapper.getBoundingClientRect();
-
-    const rawRects: { x: number; y: number; width: number; height: number }[] = [];
-    for (let i = 0; i < clientRects.length; i++) {
-      const r = clientRects[i];
-      rawRects.push({
-        x: (r.left - wrapperRect.left) / wrapperRect.width,
-        y: (r.top - wrapperRect.top) / wrapperRect.height,
-        width: r.width / wrapperRect.width,
-        height: r.height / wrapperRect.height,
-      });
-    }
-    const rects = mergeOverlappingRects(rawRects);
-    return { text: txt, rects };
+    if (!wrapper) return null;
+    return readSelectionRects(wrapper);
   }, [pageSize]);
 
   useEffect(() => {
@@ -754,17 +710,36 @@ export default function PDFPage({
     if (textLayerRef.current) highlightTextInLayer(textLayerRef.current, searchTerm);
   }, [searchTerm, pageSize]);
 
+  function renderHighlights(
+    ctx: CanvasRenderingContext2D,
+    canvas: HTMLCanvasElement,
+    list: Annotation[],
+    eraseOverrides: Map<string, Rect[]>,
+  ) {
+    for (const ann of list) {
+      if (ann.type !== "highlight") continue;
+      const rects = eraseOverrides.has(ann.id) ? eraseOverrides.get(ann.id)! : ann.rects;
+      if (rects.length === 0) continue;
+      ctx.save();
+      ctx.fillStyle = ann.color;
+      if (typeof ann.opacity === "number") ctx.globalAlpha = ann.opacity;
+      for (const r of rects) {
+        ctx.fillRect(r.x * canvas.width, r.y * canvas.height, r.width * canvas.width, r.height * canvas.height);
+      }
+      ctx.restore();
+    }
+  }
+
   function redrawAnnotations() {
     const canvas = drawCanvasRef.current;
     if (!canvas || pageSize.w === 0) return;
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const overrides = pendingEraseRef.current;
+    renderHighlights(ctx, canvas, annotations, overrides);
     for (const ann of annotations) {
       if (ann.type === "highlight") {
-        ctx.save();
-        ctx.fillStyle = ann.color;
-        for (const r of ann.rects) ctx.fillRect(r.x * canvas.width, r.y * canvas.height, r.width * canvas.width, r.height * canvas.height);
-        ctx.restore();
+        // already drawn above
       } else if (ann.type === "comment") {
         ctx.save();
         ctx.globalAlpha = 0.18;
@@ -822,12 +797,87 @@ export default function PDFPage({
           height: Math.abs(h) / canvas.height,
         }],
         color: highlightColor,
+        selectedText: "",
       };
       onAnnotationAdd(ann);
     } else {
       redrawAnnotations();
     }
   }, [pageNum, highlightColor, onAnnotationAdd]);
+
+  // ── Eraser tool ─────────────────────────────────────────────
+  // Drag-erase: clip touched parts of highlight rects via splitHighlightRect.
+  // Keep in-flight changes in pendingEraseRef and commit on mouseup.
+
+  const applyEraserAt = useCallback((cssX: number, cssY: number) => {
+    const canvas = drawCanvasRef.current;
+    if (!canvas || pageSize.w === 0) return false;
+    // Convert eraser circle to a normalized square (axis-aligned hit test).
+    const rxN = ERASER_RADIUS_CSS / pageSize.w;
+    const ryN = ERASER_RADIUS_CSS / pageSize.h;
+    const cxN = cssX / pageSize.w;
+    const cyN = cssY / pageSize.h;
+    const eraserRect: Rect = {
+      x: cxN - rxN, y: cyN - ryN,
+      width: rxN * 2, height: ryN * 2,
+    };
+
+    let changed = false;
+    for (const ann of annotations) {
+      if (ann.type !== "highlight" || ann.page !== pageNum) continue;
+      const current = pendingEraseRef.current.get(ann.id) ?? ann.rects;
+      const next = eraseHighlightPart(current, eraserRect);
+      if (next.length !== current.length || next.some((r, i) => {
+        const c = current[i];
+        return !c || c.x !== r.x || c.y !== r.y || c.width !== r.width || c.height !== r.height;
+      })) {
+        pendingEraseRef.current.set(ann.id, next);
+        changed = true;
+      }
+    }
+    return changed;
+  }, [annotations, pageNum, pageSize]);
+
+  const getCssPos = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = drawCanvasRef.current!;
+    const rect = canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
+
+  const onEraserMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (e.button !== 0) return;
+    eraserActiveRef.current = true;
+    const p = getCssPos(e);
+    if (applyEraserAt(p.x, p.y)) redrawAnnotations();
+  }, [applyEraserAt]);
+
+  const onEraserMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!eraserActiveRef.current) return;
+    const p = getCssPos(e);
+    if (applyEraserAt(p.x, p.y)) redrawAnnotations();
+  }, [applyEraserAt]);
+
+  const commitEraser = useCallback(() => {
+    if (pendingEraseRef.current.size === 0) {
+      eraserActiveRef.current = false;
+      return;
+    }
+    for (const [id, rects] of pendingEraseRef.current.entries()) {
+      if (rects.length === 0) onAnnotationRemove(id);
+      else onAnnotationUpdate(id, { rects } as Partial<HighlightAnnotation>);
+    }
+    pendingEraseRef.current.clear();
+    eraserActiveRef.current = false;
+  }, [onAnnotationRemove, onAnnotationUpdate]);
+
+  const onEraserMouseUp = useCallback(() => {
+    if (!eraserActiveRef.current) return;
+    commitEraser();
+  }, [commitEraser]);
+
+  const onEraserMouseLeave = useCallback(() => {
+    if (eraserActiveRef.current) commitEraser();
+  }, [commitEraser]);
 
   const onShapeMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (e.button !== 0) return;
@@ -1001,7 +1051,14 @@ export default function PDFPage({
   const commentAnnotations = annotations.filter(a => a.type === "comment") as CommentAnnotation[];
   const [hoveredComment, setHoveredComment] = useState<string | null>(null);
 
-  const drawCanvasActive = tool === "highlight" || isShapeTool(tool);
+  const drawCanvasActive = tool === "highlight" || isShapeTool(tool) || tool === "eraser";
+
+  // Inline SVG cursor for the eraser — circle the same size as ERASER_RADIUS_CSS.
+  const eraserCursorCss = `url("data:image/svg+xml;utf8,${encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='${ERASER_RADIUS_CSS * 2 + 4}' height='${ERASER_RADIUS_CSS * 2 + 4}'>` +
+    `<circle cx='${ERASER_RADIUS_CSS + 2}' cy='${ERASER_RADIUS_CSS + 2}' r='${ERASER_RADIUS_CSS}' fill='rgba(255,255,255,0.55)' stroke='rgba(0,0,0,0.85)' stroke-width='1.2'/>` +
+    `</svg>`
+  )}") ${ERASER_RADIUS_CSS + 2} ${ERASER_RADIUS_CSS + 2}, crosshair`;
 
   return (
     <div
@@ -1024,12 +1081,32 @@ export default function PDFPage({
           display: "block",
           zIndex: 3,
           pointerEvents: drawCanvasActive ? "all" : "none",
-          cursor: drawCanvasActive ? "crosshair" : "inherit",
+          cursor: tool === "eraser" ? eraserCursorCss : (drawCanvasActive ? "crosshair" : "inherit"),
         }}
-        onMouseDown={tool === "highlight" ? onHighlightMouseDown : isShapeTool(tool) ? onShapeMouseDown : undefined}
-        onMouseMove={tool === "highlight" ? onHighlightMouseMove : isShapeTool(tool) ? onShapeMouseMove : undefined}
-        onMouseUp={tool === "highlight" ? onHighlightMouseUp : isShapeTool(tool) ? onShapeMouseUp : undefined}
-        onMouseLeave={tool === "highlight" ? onHighlightMouseUp : isShapeTool(tool) ? onShapeMouseUp : undefined}
+        onMouseDown={
+          tool === "highlight" ? onHighlightMouseDown
+            : tool === "eraser" ? onEraserMouseDown
+            : isShapeTool(tool) ? onShapeMouseDown
+            : undefined
+        }
+        onMouseMove={
+          tool === "highlight" ? onHighlightMouseMove
+            : tool === "eraser" ? onEraserMouseMove
+            : isShapeTool(tool) ? onShapeMouseMove
+            : undefined
+        }
+        onMouseUp={
+          tool === "highlight" ? onHighlightMouseUp
+            : tool === "eraser" ? onEraserMouseUp
+            : isShapeTool(tool) ? onShapeMouseUp
+            : undefined
+        }
+        onMouseLeave={
+          tool === "highlight" ? onHighlightMouseUp
+            : tool === "eraser" ? onEraserMouseLeave
+            : isShapeTool(tool) ? onShapeMouseUp
+            : undefined
+        }
       />
 
       {copiedToast && (
@@ -1096,10 +1173,12 @@ export default function PDFPage({
                   <div
                     key={c.value}
                     onClick={() => {
-                      const ann: HighlightAnnotation = {
-                        id: genId(), type: "highlight", page: pageNum,
-                        rects: contextMenu.rects, color: c.value,
-                      };
+                      const ann = createHighlightFromSelection({
+                        id: genId(),
+                        page: pageNum,
+                        selection: { text: contextMenu.selectedText, rects: contextMenu.rects },
+                        color: c.value,
+                      });
                       onAnnotationAdd(ann);
                       setContextMenu(null);
                       window.getSelection()?.removeAllRanges();

@@ -1,0 +1,77 @@
+I want you to fix the Highlight and Eraser tools in my Luxor PDF Reader app.
+
+Current problems:
+1. Text highlighting is not working properly.
+   - When I select a text, line, or paragraph, the highlight is not accurately applied.
+   - Sometimes the highlight covers extra area.
+   - Only the exact selected text portion should be highlighted.
+
+2. Eraser tool is deleting the entire highlighted annotation.
+   - When I click the eraser on a highlighted area, the whole highlight vanishes.
+   - I do not want this behavior.
+   - I want to erase only the specific portion of the highlight where I drag or click the eraser.
+
+Required behavior:
+
+Highlight Tool:
+- Allow the user to select text, a line, or a paragraph inside the PDF.
+- Apply highlight only to the selected text bounds.
+- The highlight should not cover unselected text.
+- Highlight should follow the real text selection coordinates.
+- If multiple lines are selected, highlight each line separately based on its exact text area.
+- Do not create one big rectangle over the whole selection unless the PDF text layout requires it.
+- Use PDF.js text layer selection coordinates or annotation coordinates correctly.
+- Store each highlight as an annotation object with:
+  - page number
+  - coordinates
+  - selected text
+  - color
+  - opacity
+  - unique annotation ID
+
+Eraser Tool:
+- Do not delete the entire highlight annotation immediately.
+- The eraser should work like a partial eraser.
+- When the user drags the eraser over a highlighted area, only the touched/covered part should be removed.
+- If the eraser touches only part of a highlighted line, split the existing highlight into smaller remaining highlight rectangles.
+- Example:
+  - If one highlighted line is from x=100 to x=400
+  - and eraser removes x=200 to x=250
+  - then keep two highlight parts:
+    - x=100 to x=200
+    - x=250 to x=400
+- If the eraser fully covers a highlight rectangle, then remove that rectangle only.
+- If the highlight contains multiple rectangles, erase only the affected rectangle/portion, not the full annotation.
+- The eraser size should be adjustable or fixed at a reasonable radius.
+- Show eraser cursor visually when eraser tool is active.
+
+Implementation requirements:
+- First inspect the current PDF viewer, highlight tool, annotation storage, and eraser code.
+- Do not rewrite the whole app unnecessarily.
+- Fix only the highlight and eraser behavior.
+- Keep the existing UI and design of Luxor PDF Reader unchanged.
+- Add clean reusable functions:
+  - createHighlightFromSelection()
+  - getSelectionRects()
+  - saveHighlightAnnotation()
+  - eraseHighlightPart()
+  - splitHighlightRect()
+  - renderHighlights()
+- Make sure highlight annotations remain visible after zooming, scrolling, and changing pages.
+- Coordinates must scale correctly with PDF zoom level.
+- Highlights should be saved in page-based PDF coordinates, not only screen pixels.
+- On render, convert PDF coordinates back to viewport coordinates.
+- Test with:
+  1. Single word highlight
+  2. One full line highlight
+  3. Multi-line paragraph highlight
+  4. Partial erasing from middle of a highlighted line
+  5. Erasing only one line from a multi-line highlighted paragraph
+  6. Zoom in/out and confirm highlight position remains correct
+
+Important:
+- Do not make the eraser remove the whole highlighted annotation unless the entire highlighted area is erased.
+- Only the selected portion should be highlighted.
+- Only the erased portion should be removed.
+
+After fixing, show me exactly which files were changed and explain the logic briefly.

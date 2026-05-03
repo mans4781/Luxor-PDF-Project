@@ -6,8 +6,17 @@ export interface HighlightAnnotation {
   id: string;
   type: "highlight";
   page: number;
+  /**
+   * Per-line rectangles in NORMALIZED page coordinates (0..1 of the
+   * rendered page width/height). Multi-line selections produce one
+   * rect per visual line, never a single bounding box across lines.
+   */
   rects: { x: number; y: number; width: number; height: number }[];
   color: string;
+  /** Optional opacity (0..1). Renderer falls back to color's own alpha. */
+  opacity?: number;
+  /** Plain text that was selected when the highlight was created. */
+  selectedText?: string;
 }
 
 export interface TextAnnotation {
