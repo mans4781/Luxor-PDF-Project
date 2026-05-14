@@ -16,11 +16,10 @@ const COMPANY_LINKS: LinkItem[] = [
   { label: "About Us", href: "/about" },
   { label: "Features", href: "/features" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Contact", href: "/contact" },
 ];
 
 const RESOURCE_LINKS: LinkItem[] = [
-  { label: "Help Center", href: "/contact" },
+  { label: "Help Center", href: "mailto:hello@luxorpdf.com" },
   { label: "Documentation", href: "/features" },
   { label: "Security Guide", href: "/#security" },
   { label: "Brand Assets", href: "/brand" },

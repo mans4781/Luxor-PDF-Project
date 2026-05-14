@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ChevronDown, BookOpen, FileSignature, Lock, Home, Layers, Sparkles, Tag, Info, Mail, Wrench } from "lucide-react";
+import { ChevronDown, BookOpen, FileSignature, Lock, Home, Layers, Sparkles, Tag, Info, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -174,10 +174,6 @@ export function Navbar() {
           <Link href="/pricing" className={`group ${linkCls}`}>
             <Tag className={linkIconCls} strokeWidth={2.2} />
             Pricing
-          </Link>
-          <Link href="/contact" className={`group ${linkCls}`}>
-            <Mail className={linkIconCls} strokeWidth={2.2} />
-            Contact
           </Link>
         </nav>
 
