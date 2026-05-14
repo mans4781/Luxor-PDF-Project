@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { LoginModal } from "@/components/LoginModal";
 
 export function CTA() {
+  const [authOpen, setAuthOpen] = useState(false);
   return (
     <section className="py-24 md:py-32 relative overflow-hidden bg-gradient-to-b from-white via-indigo-50/30 to-white border-t border-slate-100">
       <div className="container mx-auto px-6 relative z-10">
@@ -33,11 +36,13 @@ export function CTA() {
               </p>
             </div>
             <div className="flex flex-col gap-3">
-              <Button asChild size="lg" className="h-14 px-8 text-base font-semibold bg-white text-[#312E81] hover:bg-neutral-100 rounded-lg shadow-xl group">
-                <Link href="/pricing">
-                  Start free
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Link>
+              <Button
+                size="lg"
+                onClick={() => setAuthOpen(true)}
+                className="h-14 px-8 text-base font-semibold bg-white text-[#312E81] hover:bg-neutral-100 rounded-lg shadow-xl group"
+              >
+                Start free
+                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button asChild size="lg" variant="outline" className="h-14 px-8 text-base font-medium bg-transparent border-white/30 text-white hover:bg-white/10 rounded-lg">
                 <Link href="/pricing">See pricing</Link>
@@ -46,6 +51,7 @@ export function CTA() {
           </div>
         </motion.div>
       </div>
+      <LoginModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </section>
   );
 }

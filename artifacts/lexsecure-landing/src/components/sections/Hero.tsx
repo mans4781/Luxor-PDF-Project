@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Wrench, ShieldCheck, Clock, Shield, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { LoginModal } from "@/components/LoginModal";
 
 const HERO_STATS = [
   { icon: Wrench,       value: "8+",       label: "PDF tools" },
@@ -15,6 +17,7 @@ const FADE_UP = {
 };
 
 export function Hero() {
+  const [authOpen, setAuthOpen] = useState(false);
   return (
     <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-br from-blue-50/60 via-white to-rose-50/40">
       <div className="absolute inset-0 pointer-events-none z-0">
@@ -47,11 +50,13 @@ export function Hero() {
             </motion.p>
 
             <motion.div variants={FADE_UP} className="flex flex-col sm:flex-row items-start gap-4">
-              <Button asChild size="lg" className="w-full sm:w-auto h-12 px-7 text-base font-semibold bg-[#312E81] hover:bg-[#3730A3] text-white rounded-lg shadow-sm group">
-                <Link href="/pricing">
-                  Start free
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Link>
+              <Button
+                size="lg"
+                onClick={() => setAuthOpen(true)}
+                className="w-full sm:w-auto h-12 px-7 text-base font-semibold bg-[#312E81] hover:bg-[#3730A3] text-white rounded-lg shadow-sm group"
+              >
+                Start free
+                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button asChild size="lg" variant="outline" className="w-full sm:w-auto h-12 px-7 text-base font-medium rounded-lg border-slate-300 text-slate-700 hover:bg-slate-50">
                 <Link href="/pricing">See pricing</Link>

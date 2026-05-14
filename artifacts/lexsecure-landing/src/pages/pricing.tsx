@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Check, ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
+import { LoginModal } from "@/components/LoginModal";
 
 type Plan = {
   id: string;
@@ -118,6 +119,7 @@ const FAQS = [
 
 export default function PricingPage() {
   const [yearly, setYearly] = useState(true);
+  const [authOpen, setAuthOpen] = useState(false);
 
   return (
     <ProductPageLayout>
@@ -333,15 +335,20 @@ export default function PricingPage() {
           </h2>
           <p className="text-slate-600 mb-8 text-lg">No credit card. No commitment. 14-day Pro trial included.</p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <Link href="/web-app" className="px-7 py-3.5 rounded-lg bg-[#312E81] text-white font-semibold hover:bg-[#3730A3] transition-colors shadow-sm">
+            <button
+              type="button"
+              onClick={() => setAuthOpen(true)}
+              className="px-7 py-3.5 rounded-lg bg-[#312E81] text-white font-semibold hover:bg-[#3730A3] transition-colors shadow-sm"
+            >
               Start free
-            </Link>
+            </button>
             <a href="mailto:sales@luxorpdf.com" className="px-7 py-3.5 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-white transition-colors">
               Talk to sales
             </a>
           </div>
         </div>
       </section>
+      <LoginModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </ProductPageLayout>
   );
 }
