@@ -76,10 +76,22 @@ export function BoldBranded() {
               <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-100 border-none font-semibold">Pro Plan</Badge>
             </div>
             
-            <div className="bg-white border border-indigo-100 rounded-lg p-4 flex items-center justify-center mb-4 shadow-inner">
+            <div className="relative bg-white border border-indigo-100 rounded-lg p-4 pr-12 flex items-center justify-center mb-4 shadow-inner">
               <code className="font-mono text-xl md:text-2xl font-bold text-slate-800 tracking-[0.2em] text-center">
                 LXR-PRO-7F3K-9QW2-XM4P-A1B8
               </code>
+              <button
+                type="button"
+                aria-label="Copy license key"
+                title="Copy license key"
+                onClick={() => navigator.clipboard?.writeText("LXR-PRO-7F3K-9QW2-XM4P-A1B8")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-500 hover:text-indigo-700 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <rect x="9" y="9" width="11" height="11" rx="2" ry="2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                </svg>
+              </button>
             </div>
             
             <div className="flex justify-between text-sm text-slate-600 font-medium">
