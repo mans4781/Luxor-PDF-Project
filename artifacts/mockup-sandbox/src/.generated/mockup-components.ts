@@ -7,6 +7,7 @@ export const modules: ModuleMap = {
   "./components/mockups/landing-themes/Scheme2.tsx": () => import("../components/mockups/landing-themes/Scheme2.tsx"),
   "./components/mockups/landing-themes/Scheme3.tsx": () => import("../components/mockups/landing-themes/Scheme3.tsx"),
   "./components/mockups/landing-themes/StripePremium.tsx": () => import("../components/mockups/landing-themes/StripePremium.tsx"),
+  "./components/mockups/luxor-invoices/AllInvoices.tsx": () => import("../components/mockups/luxor-invoices/AllInvoices.tsx"),
   "./components/mockups/luxor-invoices/Aurora.tsx": () => import("../components/mockups/luxor-invoices/Aurora.tsx"),
   "./components/mockups/luxor-invoices/BoldBranded.tsx": () => import("../components/mockups/luxor-invoices/BoldBranded.tsx"),
   "./components/mockups/luxor-invoices/ClassicProfessional.tsx": () => import("../components/mockups/luxor-invoices/ClassicProfessional.tsx"),
