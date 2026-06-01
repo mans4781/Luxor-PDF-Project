@@ -29,7 +29,7 @@ export function BoldBranded() {
           <div className="text-right">
             <div className="text-blue-200 text-sm font-medium tracking-widest uppercase mb-1">INVOICE</div>
             <div className="text-white text-lg font-semibold mb-2">LXR-INV-2026-00428</div>
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-rose-500 text-white font-bold text-sm tracking-wide">
+            <div className="mt-1 inline-block px-4 py-1 border-2 border-rose-300 text-rose-200 font-bold text-lg rounded transform rotate-[-5deg] tracking-widest shadow-sm font-serif">
               PAID
             </div>
           </div>
@@ -87,7 +87,7 @@ export function BoldBranded() {
             
             <div className="flex justify-between text-sm text-slate-600 font-medium">
               <div><span className="text-slate-400">Seats:</span> 1 device</div>
-              <div><span className="text-slate-400">Valid:</span> 01 Jun 2026 to 01 Jun 2027</div>
+              <div><span className="text-slate-400">Valid:</span> 01 Jun 2026 — 01 Jun 2027</div>
             </div>
           </div>
         </div>
