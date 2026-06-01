@@ -28,10 +28,7 @@ export function BoldBranded() {
           
           <div className="text-right">
             <div className="text-blue-200 text-sm font-medium tracking-widest uppercase mb-1">INVOICE</div>
-            <div className="text-white text-lg font-semibold mb-2">LXR-INV-2026-00428</div>
-            <div className="mt-1 inline-block px-4 py-1 border-2 border-rose-300 text-rose-200 font-bold text-lg rounded transform rotate-[-5deg] tracking-widest shadow-sm font-serif">
-              PAID
-            </div>
+            <div className="text-white text-lg font-semibold">LXR-INV-2026-00428</div>
           </div>
         </div>
 
@@ -124,6 +121,9 @@ export function BoldBranded() {
         {/* TOTALS & PAYMENT */}
         <div className="px-10 pb-10 flex justify-between items-end">
           <div className="w-1/2">
+            <div className="mb-5 inline-block px-4 py-1 border-2 border-[#DC2626] text-[#DC2626] font-bold text-lg rounded transform rotate-[-5deg] tracking-widest shadow-sm font-serif">
+              PAID
+            </div>
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Payment Details</h3>
             <div className="text-sm text-slate-600 space-y-1">
               <p><span className="font-medium text-slate-800">Method:</span> Razorpay (UPI)</p>
