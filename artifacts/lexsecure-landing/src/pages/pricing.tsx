@@ -51,7 +51,7 @@ const PLANS: Plan[] = [
       "Luxor PDF Reader (full)",
       "Unlimited general tools (convert, merge, split)",
       "Password protect, expiry, revoke, copy & print restriction",
-      "3 devices",
+      "1 user · 2 devices",
       "Priority email support",
     ],
   },
@@ -71,7 +71,7 @@ const PLANS: Plan[] = [
       "Everything in Individual, plus:",
       "Shared monthly secure pool across the team",
       "Team licenses & admin console",
-      "Unlimited devices per user",
+      "5 users · 10 devices",
       "SSO & audit logs",
       "Priority support",
     ],
@@ -88,7 +88,7 @@ const PLANS: Plan[] = [
     features: [
       "Everything in Team, plus:",
       "Unlimited secure actions every month",
-      "Unlimited devices",
+      "10 users · 20 devices",
       "Advanced admin & usage analytics",
       "Dedicated success manager",
       "Volume discounts",
@@ -110,6 +110,58 @@ const PLANS: Plan[] = [
       "Dedicated SSO & SAML",
       "On-prem / private deployment options",
       "SLA & dedicated support",
+    ],
+  },
+];
+
+/** Column order matches PLANS: Individual, Team, Business, Enterprise. */
+const COMPARE_COLUMNS = ["Individual", "Team", "Business", "Enterprise"] as const;
+
+type CompareValue = string;
+type CompareRow = { feature: string; values: [CompareValue, CompareValue, CompareValue, CompareValue]; emphasize?: boolean };
+type CompareGroup = { group: string; note?: string; rows: CompareRow[] };
+
+const UNLIMITED_ALL: [string, string, string, string] = ["Unlimited", "Unlimited", "Unlimited", "Unlimited"];
+const YES_ALL: [string, string, string, string] = ["Yes", "Yes", "Yes", "Yes"];
+
+const COMPARE_GROUPS: CompareGroup[] = [
+  {
+    group: "Seats & devices",
+    rows: [
+      { feature: "Users", values: ["1 user", "5 users", "10 users", "Custom"] },
+      { feature: "Devices", values: ["2 devices", "10 devices", "20 devices", "Custom"] },
+    ],
+  },
+  {
+    group: "General tools",
+    note: "Always unlimited on every paid plan.",
+    rows: [
+      { feature: "PDF Reader", values: UNLIMITED_ALL },
+      { feature: "Merge PDF", values: UNLIMITED_ALL },
+      { feature: "Split PDF", values: UNLIMITED_ALL },
+      { feature: "Extract Pages", values: UNLIMITED_ALL },
+      { feature: "Delete Pages", values: UNLIMITED_ALL },
+      { feature: "Convert PDF to Image", values: UNLIMITED_ALL },
+      { feature: "Convert Image to PDF", values: UNLIMITED_ALL },
+    ],
+  },
+  {
+    group: "Secure actions",
+    note: "These three features draw from one shared monthly pool — not separate allowances.",
+    rows: [
+      { feature: "Password Protect PDF", values: ["10 / month", "50 / month", "Unlimited", "Custom"], emphasize: true },
+      { feature: "Expiry Date / Secure PDF", values: ["10 / month", "50 / month", "Unlimited", "Custom"], emphasize: true },
+      { feature: "Print / Copy Restriction", values: ["10 / month", "50 / month", "Unlimited", "Custom"], emphasize: true },
+    ],
+  },
+  {
+    group: "Management & support",
+    rows: [
+      { feature: "License Key Activation", values: YES_ALL },
+      { feature: "Admin Dashboard", values: ["No", "Yes", "Yes", "Yes"] },
+      { feature: "User Management", values: ["No", "Yes", "Yes", "Yes"] },
+      { feature: "Device Management", values: ["Basic", "Yes", "Yes", "Yes"] },
+      { feature: "Priority Support", values: ["No", "Basic", "Priority", "Dedicated"] },
     ],
   },
 ];
@@ -151,6 +203,52 @@ function checkoutHref(plan: Plan, yearly: boolean): string | null {
     return `${CHECKOUT_BASE}?plan=${plan.checkoutPlan}`;
   }
   return `${CHECKOUT_BASE}?plan=${yearly ? plan.checkoutPlan.yearly : plan.checkoutPlan.monthly}`;
+}
+
+function CompareCell({ value }: { value: string }) {
+  if (value === "No") {
+    return <span className="inline-block text-slate-300">—</span>;
+  }
+  if (value === "Yes") {
+    return (
+      <span className="inline-flex w-5 h-5 rounded-full bg-emerald-50 items-center justify-center">
+        <Check className="w-3 h-3 text-emerald-600" strokeWidth={3} />
+      </span>
+    );
+  }
+  if (value === "Unlimited") {
+    return <span className="font-medium text-slate-700">Unlimited</span>;
+  }
+  return <span className="text-slate-700">{value}</span>;
+}
+
+function CompareGroupRows({ group }: { group: CompareGroup }) {
+  return (
+    <>
+      <tr className="bg-slate-50/60 border-t border-slate-200">
+        <td colSpan={5} className="px-5 py-2.5">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{group.group}</span>
+          {group.note && <span className="ml-2 text-xs text-slate-400 normal-case font-normal">{group.note}</span>}
+        </td>
+      </tr>
+      {group.rows.map((row) => (
+        <tr key={row.feature} className="border-t border-slate-100">
+          <td className="px-5 py-3 text-slate-700">
+            {row.feature}
+            {row.emphasize && <span className="text-[#FB7185]">*</span>}
+          </td>
+          {row.values.map((value, i) => (
+            <td
+              key={i}
+              className={`px-4 py-3 text-center ${COMPARE_COLUMNS[i] === "Team" ? "bg-[#EAF2FB]/40" : ""}`}
+            >
+              <CompareCell value={value} />
+            </td>
+          ))}
+        </tr>
+      ))}
+    </>
+  );
 }
 
 export default function PricingPage() {
@@ -332,6 +430,51 @@ export default function PricingPage() {
             <a href="mailto:sales@luxorpdf.com" className="text-[#312E81] font-semibold hover:underline">
               Talk to sales →
             </a>
+          </p>
+        </div>
+      </section>
+
+      {/* Full comparison table */}
+      <section className="pb-24 bg-white">
+        <div className="container mx-auto px-6 max-w-6xl">
+          <div className="text-center mb-10">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Compare plans</p>
+            <h2 className="text-3xl md:text-4xl text-slate-900 tracking-[-0.02em]">
+              Every feature, side by side.
+            </h2>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-slate-200">
+            <table className="w-full min-w-[720px] border-collapse text-sm">
+              <thead>
+                <tr className="bg-slate-50">
+                  <th className="text-left font-semibold text-slate-900 px-5 py-4 w-[28%]">Feature</th>
+                  {COMPARE_COLUMNS.map((col) => (
+                    <th
+                      key={col}
+                      className={`text-center font-semibold px-4 py-4 ${
+                        col === "Team" ? "text-[#312E81] bg-[#EAF2FB]" : "text-slate-900"
+                      }`}
+                    >
+                      {col}
+                      {col === "Team" && (
+                        <span className="block text-[10px] font-bold uppercase tracking-wider text-[#FB7185]">
+                          Most popular
+                        </span>
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARE_GROUPS.map((grp) => (
+                  <CompareGroupRows key={grp.group} group={grp} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs text-slate-500 mt-4 text-center">
+            * Password Protect, Expiry / Secure PDF, and Print / Copy Restriction share a single monthly pool of secure actions.
           </p>
         </div>
       </section>
