@@ -251,3 +251,9 @@ id = "EmBlcc5VcOjFez_2z0Wp1"
 uri = "file://attached_assets/brand/luxor-secure-icon.svg"
 type = "image"
 title = "Luxor PDF Secure — SVG (source)"
+
+[[outputs]]
+id = "osusogByVM29DrrmSXqTf"
+uri = "file://scripts/dist/luxor-invoices-A4.pdf"
+type = "pdf"
+title = "Luxor PDF — All 7 Invoice Templates (A4, print-ready)"

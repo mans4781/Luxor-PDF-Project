@@ -6,6 +6,7 @@
   "scripts": {
     "hello": "tsx ./src/hello.ts",
     "keys:generate": "tsx ./src/generate-keys.ts",
+    "invoices:pdf": "tsx ./src/generate-invoice-pdf.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
@@ -14,6 +15,8 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "pdf-lib": "^1.17.1",
+    "playwright": "^1.60.0",
     "tsx": "catalog:"
   }
 }
