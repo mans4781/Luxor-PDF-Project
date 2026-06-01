@@ -176,3 +176,106 @@ export async function sendLicenseEmail(params: LicenseEmailParams): Promise<bool
     return false;
   }
 }
+
+export interface InviteEmailParams {
+  to: string;
+  orgName: string;
+  inviterName?: string | null;
+  /** Absolute URL the invitee opens to accept (carries the raw token). */
+  acceptUrl: string;
+  /** ISO date string after which the invite link stops working. */
+  expiresAt: string;
+}
+
+/**
+ * Sends a team invitation email containing the accept link. Best-effort:
+ * returns false on failure so an email problem never blocks invite creation.
+ */
+export async function sendInviteEmail(params: InviteEmailParams): Promise<boolean> {
+  const { to, orgName, inviterName, acceptUrl, expiresAt } = params;
+
+  try {
+    const { client, fromEmail } = await getResendClient();
+
+    const inviter = inviterName ? `${inviterName} has` : "You've been";
+    const expires = new Date(expiresAt).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const html = `<!doctype html>
+<html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;margin:0;padding:32px 16px;color:#0f172a">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">
+    <tr><td style="padding:32px 32px 16px">
+      <div style="font-size:22px;font-weight:800;letter-spacing:-0.01em">
+        <span style="color:#1e3a8a">Luxor</span>
+        <span style="color:#dc2626">PDF</span>
+        <span style="color:#b45309">Secure</span>
+      </div>
+    </td></tr>
+    <tr><td style="padding:8px 32px 0">
+      <h1 style="margin:0 0 8px;font-size:24px;font-weight:700">You're invited to join ${orgName}</h1>
+      <p style="margin:0 0 24px;color:#475569;line-height:1.55">
+        ${inviter} invited to join <strong>${orgName}</strong> on Luxor PDF Secure. Accept your invite to unlock the full PDF toolkit on up to 2 devices.
+      </p>
+    </td></tr>
+    <tr><td style="padding:0 32px">
+      <a href="${acceptUrl}" style="display:block;background:#312e81;color:#fff;text-decoration:none;text-align:center;padding:14px 20px;border-radius:10px;font-weight:600;font-size:15px">
+        Accept invitation
+      </a>
+      <p style="margin:14px 0 0;color:#64748b;font-size:13px;text-align:center">
+        This invite expires on <strong>${expires}</strong>
+      </p>
+    </td></tr>
+    <tr><td style="padding:24px 32px">
+      <h2 style="font-size:15px;margin:0 0 10px">How it works</h2>
+      <ol style="margin:0;padding-left:20px;color:#475569;line-height:1.7;font-size:14px">
+        <li>Click "Accept invitation" above.</li>
+        <li>Sign in or create your free account (use this email address).</li>
+        <li>Your seat unlocks automatically — no license key needed.</li>
+      </ol>
+    </td></tr>
+    <tr><td style="padding:0 32px 32px">
+      <p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6">
+        If you weren't expecting this, you can safely ignore this email.<br>
+        © ${new Date().getFullYear()} Luxor PDF Secure.
+      </p>
+    </td></tr>
+  </table>
+</body></html>`;
+
+    const text = [
+      `You're invited to join ${orgName} on Luxor PDF Secure.`,
+      "",
+      `Accept your invitation: ${acceptUrl}`,
+      `This invite expires on ${expires}.`,
+      "",
+      "How it works:",
+      "  1. Open the link above.",
+      "  2. Sign in or create your free account using this email address.",
+      "  3. Your seat unlocks automatically — no license key needed.",
+      "",
+      "If you weren't expecting this, you can safely ignore this email.",
+    ].join("\n");
+
+    const { data, error } = await client.emails.send({
+      from: fromEmail,
+      to: [to],
+      subject: `You're invited to join ${orgName} on Luxor PDF Secure`,
+      html,
+      text,
+    });
+
+    if (error) {
+      logger.error({ err: error, to }, "Resend rejected invite email");
+      return false;
+    }
+
+    logger.info({ to, orgName, emailId: data?.id }, "Invite email sent");
+    return true;
+  } catch (err) {
+    logger.error({ err, to }, "Failed to send invite email");
+    return false;
+  }
+}

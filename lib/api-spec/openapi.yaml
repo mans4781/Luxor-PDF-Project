@@ -795,6 +795,208 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /org:
+    get:
+      operationId: getOrg
+      tags: [org]
+      summary: Get the team the caller administers (members, devices, invites, seats)
+      responses:
+        "200":
+          description: Organization summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrgSummary"
+        "401":
+          description: Caller is not signed in
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "404":
+          description: Caller does not administer any organization
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+
+  /org/invite:
+    post:
+      operationId: inviteOrgMember
+      tags: [org]
+      summary: Invite an email address to the caller's team (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InviteMemberBody"
+      responses:
+        "200":
+          description: Invite created and emailed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteMemberResult"
+        "400":
+          description: Invalid request body
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "401":
+          description: Caller is not signed in
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "403":
+          description: Caller does not administer any organization
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "409":
+          description: Seats full, already a member, or already invited
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+
+  /org/revoke-invite:
+    post:
+      operationId: revokeOrgInvite
+      tags: [org]
+      summary: Revoke a pending invite (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevokeInviteBody"
+      responses:
+        "200":
+          description: Invite revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResult"
+        "400":
+          description: Invalid request body
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "401":
+          description: Caller is not signed in
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "403":
+          description: Caller does not administer any organization
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "404":
+          description: Invite not found
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+
+  /org/accept-invite:
+    post:
+      operationId: acceptOrgInvite
+      tags: [org]
+      summary: Accept a team invite as the signed-in user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AcceptInviteBody"
+      responses:
+        "200":
+          description: Invite accepted; caller is now a member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcceptInviteResult"
+        "400":
+          description: Invalid or expired token, email mismatch, or org inactive
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "401":
+          description: Caller is not signed in
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "409":
+          description: No seats available
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+
+  /org/remove-member:
+    post:
+      operationId: removeOrgMember
+      tags: [org]
+      summary: Remove a member, freeing their seat (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RemoveMemberBody"
+      responses:
+        "200":
+          description: Member removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResult"
+        "400":
+          description: Invalid request body or cannot remove the owner
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "401":
+          description: Caller is not signed in
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "403":
+          description: Caller does not administer any organization
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "404":
+          description: Member not found
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+
+  /org/activate-device:
+    post:
+      operationId: activateOrgDevice
+      tags: [org]
+      summary: Bind a device for the signed-in team member (up to 2)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivateOrgDeviceBody"
+      responses:
+        "200":
+          description: Device bound
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivateOrgDeviceResult"
+        "400":
+          description: Invalid request body
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "401":
+          description: Caller is not signed in
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "403":
+          description: Caller is not an active team member
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "409":
+          description: Device limit reached
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+
+  /org/deactivate-device:
+    post:
+      operationId: deactivateOrgDevice
+      tags: [org]
+      summary: Deactivate a member's device (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeactivateOrgDeviceBody"
+      responses:
+        "200":
+          description: Device deactivated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResult"
+        "400":
+          description: Invalid request body
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "401":
+          description: Caller is not signed in
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "403":
+          description: Caller does not administer any organization
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+        "404":
+          description: Device not found
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+
 components:
   schemas:
     HealthStatus:
@@ -1436,9 +1638,15 @@ components:
       type: object
       properties:
         plan:
-          $ref: "#/components/schemas/ProductKeyPlan"
+          $ref: "#/components/schemas/CheckoutPlan"
         provider:
           $ref: "#/components/schemas/BillingProvider"
+        seats:
+          type: ["integer", "null"]
+          description: Seat count for a `team` plan (subscription quantity). Ignored for individual plans.
+        orgName:
+          type: ["string", "null"]
+          description: Display name for the team/organization (team plan only).
         successUrl:
           type: string
           description: Absolute URL Stripe redirects to on success.
@@ -1473,3 +1681,247 @@ components:
       required:
         - id
         - durationDays
+
+    CheckoutPlan:
+      type: string
+      enum:
+        - monthly
+        - quarterly
+        - yearly
+        - lifetime
+        - team
+
+    OrgRole:
+      type: string
+      enum:
+        - admin
+        - member
+
+    OrgDevice:
+      type: object
+      properties:
+        deviceId:
+          type: string
+        deviceName:
+          type: ["string", "null"]
+        os:
+          type: ["string", "null"]
+        firstActivatedAt:
+          type: string
+          format: date-time
+        lastSeenAt:
+          type: string
+          format: date-time
+      required:
+        - deviceId
+        - firstActivatedAt
+        - lastSeenAt
+
+    OrgMember:
+      type: object
+      properties:
+        userId:
+          type: string
+        email:
+          type: ["string", "null"]
+        role:
+          type: string
+        status:
+          type: string
+        joinedAt:
+          type: string
+          format: date-time
+        devices:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrgDevice"
+      required:
+        - userId
+        - role
+        - status
+        - joinedAt
+        - devices
+
+    OrgPendingInvite:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        role:
+          type: string
+        invitedBy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - email
+        - role
+        - invitedBy
+        - createdAt
+        - expiresAt
+
+    OrgSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        planName:
+          type: string
+        status:
+          type: string
+        maxSeats:
+          type: integer
+        seatsUsed:
+          type: integer
+        seatsAvailable:
+          type: integer
+        subscriptionStartDate:
+          type: string
+          format: date-time
+        subscriptionEndDate:
+          type: string
+          format: date-time
+        subscriptionActive:
+          type: boolean
+        isOwner:
+          type: boolean
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrgMember"
+        pendingInvites:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrgPendingInvite"
+      required:
+        - id
+        - name
+        - planName
+        - status
+        - maxSeats
+        - seatsUsed
+        - seatsAvailable
+        - subscriptionStartDate
+        - subscriptionEndDate
+        - subscriptionActive
+        - isOwner
+        - members
+        - pendingInvites
+
+    InviteMemberBody:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        role:
+          $ref: "#/components/schemas/OrgRole"
+      required:
+        - email
+
+    InviteMemberResult:
+      type: object
+      properties:
+        email:
+          type: string
+        role:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        emailSent:
+          type: boolean
+      required:
+        - email
+        - role
+        - expiresAt
+        - emailSent
+
+    RevokeInviteBody:
+      type: object
+      properties:
+        inviteId:
+          type: integer
+      required:
+        - inviteId
+
+    AcceptInviteBody:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
+
+    AcceptInviteResult:
+      type: object
+      properties:
+        orgName:
+          type: string
+        role:
+          type: string
+      required:
+        - orgName
+        - role
+
+    RemoveMemberBody:
+      type: object
+      properties:
+        userId:
+          type: string
+      required:
+        - userId
+
+    ActivateOrgDeviceBody:
+      type: object
+      properties:
+        deviceId:
+          type: string
+        deviceName:
+          type: ["string", "null"]
+        os:
+          type: ["string", "null"]
+      required:
+        - deviceId
+
+    ActivateOrgDeviceResult:
+      type: object
+      properties:
+        deviceId:
+          type: string
+        devicesUsed:
+          type: integer
+        devicesAllowed:
+          type: integer
+      required:
+        - deviceId
+        - devicesUsed
+        - devicesAllowed
+
+    DeactivateOrgDeviceBody:
+      type: object
+      properties:
+        userId:
+          type: string
+        deviceId:
+          type: string
+      required:
+        - userId
+        - deviceId
+
+    OkResult:
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required:
+        - ok

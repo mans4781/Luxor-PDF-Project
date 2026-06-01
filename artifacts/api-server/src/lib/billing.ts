@@ -14,6 +14,7 @@ import {
   type ProductPlan,
 } from "@workspace/license-keys";
 import { logger } from "./logger";
+import { createOrganizationWithOwner, type CreateOrgParams } from "./org";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -63,6 +64,44 @@ const STRIPE_PRICE_ENV: Record<ProductPlan, string> = {
 export function stripePriceIdFor(plan: ProductPlan): string | null {
   const envName = STRIPE_PRICE_ENV[plan];
   return process.env[envName] ?? null;
+}
+
+/** Per-seat recurring price for the Team/Business plan. */
+export function stripeTeamPriceId(): string | null {
+  return process.env["STRIPE_PRICE_TEAM"] ?? null;
+}
+
+export interface ApplyTeamPlanParams {
+  ownerUserId: string;
+  ownerEmail?: string | null;
+  orgName: string;
+  seats: number;
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
+  subscriptionStartDate: Date;
+  subscriptionEndDate: Date;
+}
+
+/**
+ * Provisions (or idempotently updates) a Team organization for a paid Team
+ * checkout. The buyer becomes the org admin; `seats` becomes `maxSeats`.
+ */
+export async function applyTeamPlan(
+  params: ApplyTeamPlanParams,
+): Promise<{ orgId: number }> {
+  const createParams: CreateOrgParams = {
+    name: params.orgName,
+    ownerUserId: params.ownerUserId,
+    ownerEmail: params.ownerEmail ?? null,
+    planName: "team",
+    maxSeats: Math.max(1, Math.floor(params.seats)),
+    stripeCustomerId: params.stripeCustomerId ?? null,
+    stripeSubscriptionId: params.stripeSubscriptionId ?? null,
+    subscriptionStartDate: params.subscriptionStartDate,
+    subscriptionEndDate: params.subscriptionEndDate,
+  };
+  const org = await createOrganizationWithOwner(createParams);
+  return { orgId: org.id };
 }
 
 /** Idempotency table for webhook events. Created at startup. */

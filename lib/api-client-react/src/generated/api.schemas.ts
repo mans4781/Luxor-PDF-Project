@@ -402,9 +402,29 @@ export interface BillingProviders {
   providers: BillingProviderInfo[];
 }
 
+export type CheckoutPlan = (typeof CheckoutPlan)[keyof typeof CheckoutPlan];
+
+export const CheckoutPlan = {
+  monthly: "monthly",
+  quarterly: "quarterly",
+  yearly: "yearly",
+  lifetime: "lifetime",
+  team: "team",
+} as const;
+
 export interface CreateCheckoutSessionBody {
-  plan: ProductKeyPlan;
+  plan: CheckoutPlan;
   provider?: BillingProvider;
+  /**
+   * Seat count for a `team` plan (subscription quantity). Ignored for individual plans.
+   * @nullable
+   */
+  seats?: number | null;
+  /**
+   * Display name for the team/organization (team plan only).
+   * @nullable
+   */
+  orgName?: string | null;
   /** Absolute URL Stripe redirects to on success. */
   successUrl: string;
   /** Absolute URL Stripe redirects to on cancel. */
@@ -420,6 +440,110 @@ export interface CreateCheckoutSessionResult {
 export interface AdminExtendKeyResult {
   id: number;
   durationDays: number;
+}
+
+export type OrgRole = (typeof OrgRole)[keyof typeof OrgRole];
+
+export const OrgRole = {
+  admin: "admin",
+  member: "member",
+} as const;
+
+export interface OrgDevice {
+  deviceId: string;
+  /** @nullable */
+  deviceName?: string | null;
+  /** @nullable */
+  os?: string | null;
+  firstActivatedAt: string;
+  lastSeenAt: string;
+}
+
+export interface OrgMember {
+  userId: string;
+  /** @nullable */
+  email?: string | null;
+  role: string;
+  status: string;
+  joinedAt: string;
+  devices: OrgDevice[];
+}
+
+export interface OrgPendingInvite {
+  id: number;
+  email: string;
+  role: string;
+  invitedBy: string;
+  createdAt: string;
+  expiresAt: string;
+}
+
+export interface OrgSummary {
+  id: number;
+  name: string;
+  planName: string;
+  status: string;
+  maxSeats: number;
+  seatsUsed: number;
+  seatsAvailable: number;
+  subscriptionStartDate: string;
+  subscriptionEndDate: string;
+  subscriptionActive: boolean;
+  isOwner: boolean;
+  members: OrgMember[];
+  pendingInvites: OrgPendingInvite[];
+}
+
+export interface InviteMemberBody {
+  email: string;
+  role?: OrgRole;
+}
+
+export interface InviteMemberResult {
+  email: string;
+  role: string;
+  expiresAt: string;
+  emailSent: boolean;
+}
+
+export interface RevokeInviteBody {
+  inviteId: number;
+}
+
+export interface AcceptInviteBody {
+  token: string;
+}
+
+export interface AcceptInviteResult {
+  orgName: string;
+  role: string;
+}
+
+export interface RemoveMemberBody {
+  userId: string;
+}
+
+export interface ActivateOrgDeviceBody {
+  deviceId: string;
+  /** @nullable */
+  deviceName?: string | null;
+  /** @nullable */
+  os?: string | null;
+}
+
+export interface ActivateOrgDeviceResult {
+  deviceId: string;
+  devicesUsed: number;
+  devicesAllowed: number;
+}
+
+export interface DeactivateOrgDeviceBody {
+  userId: string;
+  deviceId: string;
+}
+
+export interface OkResult {
+  ok: boolean;
 }
 
 /**

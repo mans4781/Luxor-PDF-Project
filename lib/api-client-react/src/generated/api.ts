@@ -17,8 +17,12 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AcceptInviteBody,
+  AcceptInviteResult,
   ActivateLicenseBody,
   ActivateLicenseResult,
+  ActivateOrgDeviceBody,
+  ActivateOrgDeviceResult,
   AdminExtendKeyBody,
   AdminExtendKeyResult,
   AdminGenerateKeysBody,
@@ -31,18 +35,25 @@ import type {
   CreateCheckoutSessionResult,
   DeactivateDeviceBody,
   DeactivateDeviceResult,
+  DeactivateOrgDeviceBody,
   DeletePdfParams,
   DownloadPdfParams,
   ErrorResponse,
   GetPdfParams,
   HealthStatus,
+  InviteMemberBody,
+  InviteMemberResult,
   LicenseStatus,
+  OkResult,
+  OrgSummary,
   PdfRecord,
   PdfStats,
   PdfUploadResult,
+  RemoveMemberBody,
   RenewLicenseBody,
   RenewLicenseResult,
   RequestRevokeOtpBody,
+  RevokeInviteBody,
   RevokeOtpRequestResult,
   TodayUsage,
   UploadPdfBody,
@@ -1993,3 +2004,582 @@ export function useGetUsageToday<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Get the team the caller administers (members, devices, invites, seats)
+ */
+export const getGetOrgUrl = () => {
+  return `/api/org`;
+};
+
+export const getOrg = async (options?: RequestInit): Promise<OrgSummary> => {
+  return customFetch<OrgSummary>(getGetOrgUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetOrgQueryKey = () => {
+  return [`/api/org`] as const;
+};
+
+export const getGetOrgQueryOptions = <
+  TData = Awaited<ReturnType<typeof getOrg>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getOrg>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetOrgQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getOrg>>> = ({
+    signal,
+  }) => getOrg({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getOrg>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetOrgQueryResult = NonNullable<Awaited<ReturnType<typeof getOrg>>>;
+export type GetOrgQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get the team the caller administers (members, devices, invites, seats)
+ */
+
+export function useGetOrg<
+  TData = Awaited<ReturnType<typeof getOrg>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getOrg>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetOrgQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Invite an email address to the caller's team (admin only)
+ */
+export const getInviteOrgMemberUrl = () => {
+  return `/api/org/invite`;
+};
+
+export const inviteOrgMember = async (
+  inviteMemberBody: InviteMemberBody,
+  options?: RequestInit,
+): Promise<InviteMemberResult> => {
+  return customFetch<InviteMemberResult>(getInviteOrgMemberUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(inviteMemberBody),
+  });
+};
+
+export const getInviteOrgMemberMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof inviteOrgMember>>,
+    TError,
+    { data: BodyType<InviteMemberBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof inviteOrgMember>>,
+  TError,
+  { data: BodyType<InviteMemberBody> },
+  TContext
+> => {
+  const mutationKey = ["inviteOrgMember"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof inviteOrgMember>>,
+    { data: BodyType<InviteMemberBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return inviteOrgMember(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type InviteOrgMemberMutationResult = NonNullable<
+  Awaited<ReturnType<typeof inviteOrgMember>>
+>;
+export type InviteOrgMemberMutationBody = BodyType<InviteMemberBody>;
+export type InviteOrgMemberMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Invite an email address to the caller's team (admin only)
+ */
+export const useInviteOrgMember = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof inviteOrgMember>>,
+    TError,
+    { data: BodyType<InviteMemberBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof inviteOrgMember>>,
+  TError,
+  { data: BodyType<InviteMemberBody> },
+  TContext
+> => {
+  return useMutation(getInviteOrgMemberMutationOptions(options));
+};
+
+/**
+ * @summary Revoke a pending invite (admin only)
+ */
+export const getRevokeOrgInviteUrl = () => {
+  return `/api/org/revoke-invite`;
+};
+
+export const revokeOrgInvite = async (
+  revokeInviteBody: RevokeInviteBody,
+  options?: RequestInit,
+): Promise<OkResult> => {
+  return customFetch<OkResult>(getRevokeOrgInviteUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(revokeInviteBody),
+  });
+};
+
+export const getRevokeOrgInviteMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof revokeOrgInvite>>,
+    TError,
+    { data: BodyType<RevokeInviteBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof revokeOrgInvite>>,
+  TError,
+  { data: BodyType<RevokeInviteBody> },
+  TContext
+> => {
+  const mutationKey = ["revokeOrgInvite"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof revokeOrgInvite>>,
+    { data: BodyType<RevokeInviteBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return revokeOrgInvite(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RevokeOrgInviteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof revokeOrgInvite>>
+>;
+export type RevokeOrgInviteMutationBody = BodyType<RevokeInviteBody>;
+export type RevokeOrgInviteMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Revoke a pending invite (admin only)
+ */
+export const useRevokeOrgInvite = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof revokeOrgInvite>>,
+    TError,
+    { data: BodyType<RevokeInviteBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof revokeOrgInvite>>,
+  TError,
+  { data: BodyType<RevokeInviteBody> },
+  TContext
+> => {
+  return useMutation(getRevokeOrgInviteMutationOptions(options));
+};
+
+/**
+ * @summary Accept a team invite as the signed-in user
+ */
+export const getAcceptOrgInviteUrl = () => {
+  return `/api/org/accept-invite`;
+};
+
+export const acceptOrgInvite = async (
+  acceptInviteBody: AcceptInviteBody,
+  options?: RequestInit,
+): Promise<AcceptInviteResult> => {
+  return customFetch<AcceptInviteResult>(getAcceptOrgInviteUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(acceptInviteBody),
+  });
+};
+
+export const getAcceptOrgInviteMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof acceptOrgInvite>>,
+    TError,
+    { data: BodyType<AcceptInviteBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof acceptOrgInvite>>,
+  TError,
+  { data: BodyType<AcceptInviteBody> },
+  TContext
+> => {
+  const mutationKey = ["acceptOrgInvite"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof acceptOrgInvite>>,
+    { data: BodyType<AcceptInviteBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return acceptOrgInvite(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AcceptOrgInviteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof acceptOrgInvite>>
+>;
+export type AcceptOrgInviteMutationBody = BodyType<AcceptInviteBody>;
+export type AcceptOrgInviteMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Accept a team invite as the signed-in user
+ */
+export const useAcceptOrgInvite = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof acceptOrgInvite>>,
+    TError,
+    { data: BodyType<AcceptInviteBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof acceptOrgInvite>>,
+  TError,
+  { data: BodyType<AcceptInviteBody> },
+  TContext
+> => {
+  return useMutation(getAcceptOrgInviteMutationOptions(options));
+};
+
+/**
+ * @summary Remove a member, freeing their seat (admin only)
+ */
+export const getRemoveOrgMemberUrl = () => {
+  return `/api/org/remove-member`;
+};
+
+export const removeOrgMember = async (
+  removeMemberBody: RemoveMemberBody,
+  options?: RequestInit,
+): Promise<OkResult> => {
+  return customFetch<OkResult>(getRemoveOrgMemberUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(removeMemberBody),
+  });
+};
+
+export const getRemoveOrgMemberMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeOrgMember>>,
+    TError,
+    { data: BodyType<RemoveMemberBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof removeOrgMember>>,
+  TError,
+  { data: BodyType<RemoveMemberBody> },
+  TContext
+> => {
+  const mutationKey = ["removeOrgMember"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof removeOrgMember>>,
+    { data: BodyType<RemoveMemberBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return removeOrgMember(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RemoveOrgMemberMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removeOrgMember>>
+>;
+export type RemoveOrgMemberMutationBody = BodyType<RemoveMemberBody>;
+export type RemoveOrgMemberMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Remove a member, freeing their seat (admin only)
+ */
+export const useRemoveOrgMember = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeOrgMember>>,
+    TError,
+    { data: BodyType<RemoveMemberBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof removeOrgMember>>,
+  TError,
+  { data: BodyType<RemoveMemberBody> },
+  TContext
+> => {
+  return useMutation(getRemoveOrgMemberMutationOptions(options));
+};
+
+/**
+ * @summary Bind a device for the signed-in team member (up to 2)
+ */
+export const getActivateOrgDeviceUrl = () => {
+  return `/api/org/activate-device`;
+};
+
+export const activateOrgDevice = async (
+  activateOrgDeviceBody: ActivateOrgDeviceBody,
+  options?: RequestInit,
+): Promise<ActivateOrgDeviceResult> => {
+  return customFetch<ActivateOrgDeviceResult>(getActivateOrgDeviceUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(activateOrgDeviceBody),
+  });
+};
+
+export const getActivateOrgDeviceMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof activateOrgDevice>>,
+    TError,
+    { data: BodyType<ActivateOrgDeviceBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof activateOrgDevice>>,
+  TError,
+  { data: BodyType<ActivateOrgDeviceBody> },
+  TContext
+> => {
+  const mutationKey = ["activateOrgDevice"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof activateOrgDevice>>,
+    { data: BodyType<ActivateOrgDeviceBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return activateOrgDevice(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ActivateOrgDeviceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof activateOrgDevice>>
+>;
+export type ActivateOrgDeviceMutationBody = BodyType<ActivateOrgDeviceBody>;
+export type ActivateOrgDeviceMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Bind a device for the signed-in team member (up to 2)
+ */
+export const useActivateOrgDevice = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof activateOrgDevice>>,
+    TError,
+    { data: BodyType<ActivateOrgDeviceBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof activateOrgDevice>>,
+  TError,
+  { data: BodyType<ActivateOrgDeviceBody> },
+  TContext
+> => {
+  return useMutation(getActivateOrgDeviceMutationOptions(options));
+};
+
+/**
+ * @summary Deactivate a member's device (admin only)
+ */
+export const getDeactivateOrgDeviceUrl = () => {
+  return `/api/org/deactivate-device`;
+};
+
+export const deactivateOrgDevice = async (
+  deactivateOrgDeviceBody: DeactivateOrgDeviceBody,
+  options?: RequestInit,
+): Promise<OkResult> => {
+  return customFetch<OkResult>(getDeactivateOrgDeviceUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(deactivateOrgDeviceBody),
+  });
+};
+
+export const getDeactivateOrgDeviceMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deactivateOrgDevice>>,
+    TError,
+    { data: BodyType<DeactivateOrgDeviceBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deactivateOrgDevice>>,
+  TError,
+  { data: BodyType<DeactivateOrgDeviceBody> },
+  TContext
+> => {
+  const mutationKey = ["deactivateOrgDevice"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deactivateOrgDevice>>,
+    { data: BodyType<DeactivateOrgDeviceBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return deactivateOrgDevice(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeactivateOrgDeviceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deactivateOrgDevice>>
+>;
+export type DeactivateOrgDeviceMutationBody = BodyType<DeactivateOrgDeviceBody>;
+export type DeactivateOrgDeviceMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Deactivate a member's device (admin only)
+ */
+export const useDeactivateOrgDevice = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deactivateOrgDevice>>,
+    TError,
+    { data: BodyType<DeactivateOrgDeviceBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deactivateOrgDevice>>,
+  TError,
+  { data: BodyType<DeactivateOrgDeviceBody> },
+  TContext
+> => {
+  return useMutation(getDeactivateOrgDeviceMutationOptions(options));
+};

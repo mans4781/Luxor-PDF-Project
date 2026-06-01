@@ -21,6 +21,7 @@ import {
   type ProductPlan,
 } from "@workspace/license-keys";
 import { logger } from "./logger";
+import { getActiveOrgMembership } from "./org";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -419,13 +420,19 @@ export async function getLicenseStatus(
   const usage = await getTodayUsage(userId, now);
   const todayUsage = usage?.totalCount ?? 0;
   const activeLicense = await getActiveLicense(userId, now);
+  // Team members are licensed by an active org membership (seat) rather than a
+  // product key. An active membership in a currently-subscribed org grants
+  // paid access just like an individual license.
+  const orgMembership = activeLicense
+    ? null
+    : await getActiveOrgMembership(userId, now);
 
   const trialEnd = license.trialEndDate;
   const trialActive = trialEnd.getTime() > now.getTime();
   const trialDays = daysRemaining(trialEnd, now);
   const suspended = license.accountStatus === "suspended";
 
-  const isPaid = activeLicense !== null;
+  const isPaid = activeLicense !== null || orgMembership !== null;
   const dailyLimit = isPaid ? PAID_DAILY_LIMIT : TRIAL_DAILY_LIMIT;
   const overLimit = todayUsage >= dailyLimit;
 
@@ -447,6 +454,17 @@ export async function getLicenseStatus(
       now,
     );
     planName = activeLicense.planName;
+  } else if (orgMembership) {
+    // Team member — license window mirrors the org's subscription.
+    subscriptionActive = true;
+    subscriptionStartDate =
+      orgMembership.org.subscriptionStartDate.toISOString();
+    subscriptionEndDate = orgMembership.org.subscriptionEndDate.toISOString();
+    subscriptionDaysRemaining = daysRemaining(
+      orgMembership.org.subscriptionEndDate,
+      now,
+    );
+    planName = orgMembership.org.planName;
   } else {
     // No active license — but the user may have had one that lapsed.
     const latest = await getLatestLicense(userId);

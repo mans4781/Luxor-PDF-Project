@@ -595,10 +595,18 @@ activates the user's license.
  * @summary Create a Stripe Checkout session for the chosen plan
  */
 export const CreateCheckoutSessionBody = zod.object({
-  plan: zod
-    .enum(["monthly", "quarterly", "yearly", "lifetime"])
-    .describe("Subscription tier a product key unlocks."),
+  plan: zod.enum(["monthly", "quarterly", "yearly", "lifetime", "team"]),
   provider: zod.enum(["stripe", "razorpay", "paypal"]).optional(),
+  seats: zod
+    .number()
+    .nullish()
+    .describe(
+      "Seat count for a `team` plan (subscription quantity). Ignored for individual plans.",
+    ),
+  orgName: zod
+    .string()
+    .nullish()
+    .describe("Display name for the team\/organization (team plan only)."),
   successUrl: zod
     .string()
     .describe("Absolute URL Stripe redirects to on success."),
@@ -623,4 +631,125 @@ export const GetUsageTodayResponse = zod.object({
   secureCount: zod.number(),
   totalCount: zod.number(),
   dailyLimit: zod.number(),
+});
+
+/**
+ * @summary Get the team the caller administers (members, devices, invites, seats)
+ */
+export const GetOrgResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  planName: zod.string(),
+  status: zod.string(),
+  maxSeats: zod.number(),
+  seatsUsed: zod.number(),
+  seatsAvailable: zod.number(),
+  subscriptionStartDate: zod.coerce.date(),
+  subscriptionEndDate: zod.coerce.date(),
+  subscriptionActive: zod.boolean(),
+  isOwner: zod.boolean(),
+  members: zod.array(
+    zod.object({
+      userId: zod.string(),
+      email: zod.string().nullish(),
+      role: zod.string(),
+      status: zod.string(),
+      joinedAt: zod.coerce.date(),
+      devices: zod.array(
+        zod.object({
+          deviceId: zod.string(),
+          deviceName: zod.string().nullish(),
+          os: zod.string().nullish(),
+          firstActivatedAt: zod.coerce.date(),
+          lastSeenAt: zod.coerce.date(),
+        }),
+      ),
+    }),
+  ),
+  pendingInvites: zod.array(
+    zod.object({
+      id: zod.number(),
+      email: zod.string(),
+      role: zod.string(),
+      invitedBy: zod.string(),
+      createdAt: zod.coerce.date(),
+      expiresAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Invite an email address to the caller's team (admin only)
+ */
+export const InviteOrgMemberBody = zod.object({
+  email: zod.string().email(),
+  role: zod.enum(["admin", "member"]).optional(),
+});
+
+export const InviteOrgMemberResponse = zod.object({
+  email: zod.string(),
+  role: zod.string(),
+  expiresAt: zod.coerce.date(),
+  emailSent: zod.boolean(),
+});
+
+/**
+ * @summary Revoke a pending invite (admin only)
+ */
+export const RevokeOrgInviteBody = zod.object({
+  inviteId: zod.number(),
+});
+
+export const RevokeOrgInviteResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+/**
+ * @summary Accept a team invite as the signed-in user
+ */
+export const AcceptOrgInviteBody = zod.object({
+  token: zod.string(),
+});
+
+export const AcceptOrgInviteResponse = zod.object({
+  orgName: zod.string(),
+  role: zod.string(),
+});
+
+/**
+ * @summary Remove a member, freeing their seat (admin only)
+ */
+export const RemoveOrgMemberBody = zod.object({
+  userId: zod.string(),
+});
+
+export const RemoveOrgMemberResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+/**
+ * @summary Bind a device for the signed-in team member (up to 2)
+ */
+export const ActivateOrgDeviceBody = zod.object({
+  deviceId: zod.string(),
+  deviceName: zod.string().nullish(),
+  os: zod.string().nullish(),
+});
+
+export const ActivateOrgDeviceResponse = zod.object({
+  deviceId: zod.string(),
+  devicesUsed: zod.number(),
+  devicesAllowed: zod.number(),
+});
+
+/**
+ * @summary Deactivate a member's device (admin only)
+ */
+export const DeactivateOrgDeviceBody = zod.object({
+  userId: zod.string(),
+  deviceId: zod.string(),
+});
+
+export const DeactivateOrgDeviceResponse = zod.object({
+  ok: zod.boolean(),
 });

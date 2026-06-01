@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Undo2 } from "lucide-react";
+import { Undo2, Users } from "lucide-react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { UsageBadge, DailyLimitBanner } from "@/license/UsageBadge";
 import { basePath } from "@/lib/base-path";
@@ -44,6 +44,15 @@ export function Layout({ children }: { children: ReactNode }) {
               data-testid="header-online-tools-link"
             >
               <Undo2 className="w-4 h-4" strokeWidth={2.4} />
+            </a>
+            <a
+              href={`${basePath}/team`}
+              title="Team"
+              className="inline-flex items-center gap-1.5 h-9 px-3 text-sm font-semibold text-[#312E81] hover:text-[#1E1B4B] bg-[#312E81]/5 hover:bg-[#312E81]/10 border border-[#312E81]/15 rounded-full transition-colors"
+              data-testid="header-team-link"
+            >
+              <Users className="w-4 h-4" strokeWidth={2.2} />
+              <span className="hidden sm:inline">Team</span>
             </a>
             <UsageBadge />
             <AuthMenu

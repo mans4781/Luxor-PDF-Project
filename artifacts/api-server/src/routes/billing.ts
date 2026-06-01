@@ -13,12 +13,35 @@ import {
 import { isProductPlan, type ProductPlan } from "@workspace/license-keys";
 import {
   applyPaidPlan,
+  applyTeamPlan,
   claimBillingEvent,
   listProviders,
   stripePriceIdFor,
+  stripeTeamPriceId,
   type BillingProviderId,
 } from "../lib/billing";
 import { sendLicenseEmail } from "../lib/email";
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/** Resolve the Clerk user's primary email + display name (best-effort). */
+async function lookupClerkEmail(
+  userId: string,
+): Promise<{ email: string | null; name: string | null }> {
+  try {
+    const user = await clerkClient.users.getUser(userId);
+    const primaryId = user.primaryEmailAddressId;
+    const primary =
+      user.emailAddresses.find((e) => e.id === primaryId) ??
+      user.emailAddresses[0];
+    const first = user.firstName ?? "";
+    const last = user.lastName ?? "";
+    const composed = `${first} ${last}`.trim();
+    return { email: primary?.emailAddress ?? null, name: composed || null };
+  } catch {
+    return { email: null, name: null };
+  }
+}
 
 function buildInstallerDownloadUrl(req: Request): string {
   const host = req.get("host");
@@ -63,7 +86,7 @@ router.post(
       res.status(400).json({ error: "Invalid request body" });
       return;
     }
-    const { plan, successUrl, cancelUrl } = parsed.data;
+    const { plan, successUrl, cancelUrl, seats, orgName } = parsed.data;
     const provider: BillingProviderId = (parsed.data.provider ??
       "stripe") as BillingProviderId;
 
@@ -71,14 +94,63 @@ router.post(
       res.status(400).json({ error: `Provider not supported: ${provider}` });
       return;
     }
-    if (!isProductPlan(plan)) {
-      res.status(400).json({ error: `Unknown plan: ${plan}` });
-      return;
-    }
 
     const stripe = getStripe();
     if (!stripe) {
       res.status(503).json({ error: "Stripe not configured" });
+      return;
+    }
+
+    // ─── Team / Business plan (seat-based subscription) ──────────────────────
+    if (plan === "team") {
+      const teamPriceId = stripeTeamPriceId();
+      if (!teamPriceId) {
+        res.status(503).json({ error: "Stripe price for team not configured" });
+        return;
+      }
+      const seatCount = Math.max(1, Math.floor(seats ?? 1));
+      const teamName = (orgName ?? "").trim() || "My Team";
+      const teamMetadata: Record<string, string> = {
+        clerkUserId: auth.userId,
+        plan: "team",
+        seats: String(seatCount),
+        orgName: teamName,
+      };
+      try {
+        const session = await stripe.checkout.sessions.create({
+          mode: "subscription",
+          line_items: [{ price: teamPriceId, quantity: seatCount }],
+          client_reference_id: auth.userId,
+          metadata: teamMetadata,
+          subscription_data: { metadata: teamMetadata },
+          success_url: successUrl,
+          cancel_url: cancelUrl,
+        });
+        if (!session.url) {
+          res.status(500).json({ error: "Stripe did not return a URL" });
+          return;
+        }
+        req.log.info(
+          { userId: auth.userId, plan, seats: seatCount, sessionId: session.id },
+          "Stripe team checkout session created",
+        );
+        res.json({
+          provider: "stripe",
+          sessionId: session.id,
+          url: session.url,
+        });
+      } catch (err) {
+        req.log.error(
+          { err, userId: auth.userId, plan },
+          "Stripe team checkout failed",
+        );
+        res.status(500).json({ error: "Failed to create checkout session" });
+      }
+      return;
+    }
+
+    if (!isProductPlan(plan)) {
+      res.status(400).json({ error: `Unknown plan: ${plan}` });
       return;
     }
 
@@ -174,7 +246,7 @@ billingWebhookRouter.post(
           null;
         const plan = session.metadata?.["plan"] as string | undefined;
 
-        if (!userId || !plan || !isProductPlan(plan)) {
+        if (!userId || !plan || (plan !== "team" && !isProductPlan(plan))) {
           req.log.warn(
             { eventId: event.id, userId, plan },
             "Webhook missing userId or plan; ignoring",
@@ -196,6 +268,72 @@ billingWebhookRouter.post(
             "Stripe webhook already processed (idempotent replay)",
           );
           res.json({ received: true, processed: false });
+          return;
+        }
+
+        // ─── Team / Business: provision the organization ────────────────────
+        if (plan === "team") {
+          const now = new Date();
+          const seatCount = Math.max(
+            1,
+            parseInt(session.metadata?.["seats"] ?? "1", 10) || 1,
+          );
+          const teamName =
+            (session.metadata?.["orgName"] as string | undefined)?.trim() ||
+            "My Team";
+          const stripeSubId =
+            typeof session.subscription === "string"
+              ? session.subscription
+              : (session.subscription?.id ?? null);
+          const stripeCustId =
+            typeof session.customer === "string"
+              ? session.customer
+              : (session.customer?.id ?? null);
+
+          let subStart = now;
+          let subEnd = new Date(now.getTime() + 30 * MS_PER_DAY);
+          if (stripeSubId) {
+            try {
+              const sub = await stripe.subscriptions.retrieve(stripeSubId);
+              const period = sub as unknown as {
+                current_period_start?: number;
+                current_period_end?: number;
+              };
+              if (period.current_period_start) {
+                subStart = new Date(period.current_period_start * 1000);
+              }
+              if (period.current_period_end) {
+                subEnd = new Date(period.current_period_end * 1000);
+              }
+            } catch (subErr) {
+              req.log.warn(
+                { err: subErr, stripeSubId },
+                "Could not retrieve team subscription period; using 30-day fallback",
+              );
+            }
+          }
+
+          const ownerEmail =
+            session.customer_details?.email ??
+            (session.customer_email as string | null) ??
+            (await lookupClerkEmail(userId)).email;
+
+          const { orgId } = await applyTeamPlan({
+            ownerUserId: userId,
+            ownerEmail,
+            orgName: teamName,
+            seats: seatCount,
+            stripeCustomerId: stripeCustId,
+            stripeSubscriptionId: stripeSubId,
+            subscriptionStartDate: subStart,
+            subscriptionEndDate: subEnd,
+          });
+
+          req.log.info(
+            { userId, orgId, seats: seatCount, subEnd: subEnd.toISOString() },
+            "Team organization provisioned",
+          );
+          res.json({ received: true, processed: true });
           return;
         }
 

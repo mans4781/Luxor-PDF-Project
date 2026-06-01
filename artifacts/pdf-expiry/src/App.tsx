@@ -17,6 +17,8 @@ import SignInPage from "@/pages/sign-in";
 import SignUpPage from "@/pages/sign-up";
 import ActivateKeyPage from "@/pages/activate-key";
 import CheckoutPage from "@/pages/checkout";
+import TeamPage from "@/pages/team";
+import AcceptInvitePage from "@/pages/accept-invite";
 import { LicenseProvider } from "@/license/LicenseProvider";
 import { LockOverlay } from "@/license/LockOverlay";
 import { basePath } from "@/lib/base-path";
@@ -75,6 +77,8 @@ function Router() {
       <Route path="/sign-up/*?" component={SignUpPage} />
       <Route path="/activate-key" component={ActivateKeyPage} />
       <Route path="/checkout" component={CheckoutPage} />
+      <Route path="/team" component={TeamPage} />
+      <Route path="/accept-invite" component={AcceptInvitePage} />
       <Route component={NotFound} />
     </Switch>
   );

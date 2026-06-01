@@ -1,2 +1,2 @@
-- [Canvas iframe failed state](canvas-iframe-failed-state.md) — mockup iframe "not opening" = shape stuck state:failed/empty url; just update it back to live, don't rebuild.
-- [Luxor invoice template](luxor-invoice-template.md) — Bold Branded is the only invoice/receipt design for Luxor PDF, now data-driven: India (INR/GST) default + International (USD, no tax) variant.
+- [Teams licensing architecture](teams-licensing.md) — custom orgs/seats/invites layer (no Clerk org tenants); how Team access & device caps mirror the individual license flow.
+- [Stripe webhook patterns](stripe-webhook-patterns.md) — established idempotency + renewal-handling conventions in billing.ts; what is deliberately NOT handled.

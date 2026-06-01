@@ -6,11 +6,21 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { BillingProvider } from "./billingProvider";
-import type { ProductKeyPlan } from "./productKeyPlan";
+import type { CheckoutPlan } from "./checkoutPlan";
 
 export interface CreateCheckoutSessionBody {
-  plan: ProductKeyPlan;
+  plan: CheckoutPlan;
   provider?: BillingProvider;
+  /**
+   * Seat count for a `team` plan (subscription quantity). Ignored for individual plans.
+   * @nullable
+   */
+  seats?: number | null;
+  /**
+   * Display name for the team/organization (team plan only).
+   * @nullable
+   */
+  orgName?: string | null;
   /** Absolute URL Stripe redirects to on success. */
   successUrl: string;
   /** Absolute URL Stripe redirects to on cancel. */
