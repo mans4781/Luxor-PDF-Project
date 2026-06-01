@@ -7,7 +7,8 @@ const DOMAIN = "4170004a-1faf-4c15-ace7-247f51abd493-00-1ijqhn7q82s34.worf.repli
 const BASE = `https://${DOMAIN}/__mockup/preview/luxor-invoices`;
 
 const INVOICES: { name: string; comp: string }[] = [
-  { name: "Bold Branded", comp: "BoldBranded" },
+  { name: "Bold Branded — India (INR)", comp: "BoldBranded" },
+  { name: "Bold Branded — International (USD)", comp: "BoldBrandedUSD" },
 ];
 
 // A4 portrait, CSS px at 96 dpi.
