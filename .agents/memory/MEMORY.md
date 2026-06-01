@@ -1,0 +1,1 @@
+- [Canvas iframe failed state](canvas-iframe-failed-state.md) — mockup iframe "not opening" = shape stuck state:failed/empty url; just update it back to live, don't rebuild.
