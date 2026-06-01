@@ -95,7 +95,7 @@ export function BoldBranded() {
             </div>
             
             <div className="flex justify-between text-sm text-slate-600 font-medium">
-              <div><span className="text-slate-400">Seats:</span> 1 device</div>
+              <div><span className="text-slate-400">Seats:</span> 1 User / 2 Devices</div>
               <div><span className="text-slate-400">Valid:</span> 01 Jun 2026 — 01 Jun 2027</div>
             </div>
           </div>
