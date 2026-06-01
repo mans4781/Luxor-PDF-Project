@@ -7,13 +7,7 @@ const DOMAIN = "4170004a-1faf-4c15-ace7-247f51abd493-00-1ijqhn7q82s34.worf.repli
 const BASE = `https://${DOMAIN}/__mockup/preview/luxor-invoices`;
 
 const INVOICES: { name: string; comp: string }[] = [
-  { name: "1 - Minimal", comp: "Minimal" },
-  { name: "2 - Bold Branded", comp: "BoldBranded" },
-  { name: "3 - Classic Professional", comp: "ClassicProfessional" },
-  { name: "4 - Obsidian (Dark Luxury)", comp: "Obsidian" },
-  { name: "5 - Aurora (Gradient Glass)", comp: "Aurora" },
-  { name: "6 - Editorial (Ivory Luxe)", comp: "Editorial" },
-  { name: "7 - Midnight Royal (Fintech)", comp: "MidnightRoyal" },
+  { name: "Bold Branded", comp: "BoldBranded" },
 ];
 
 // A4 portrait, CSS px at 96 dpi.
