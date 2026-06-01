@@ -103,6 +103,14 @@ export const USA_INVOICE: InvoiceData = {
 
 export function InvoiceTemplate({ data = INDIA_INVOICE }: { data?: InvoiceData }) {
   const hasTaxRow = Boolean(data.totals.taxLabel && data.totals.taxAmount);
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopy = () => {
+    void navigator.clipboard?.writeText(data.licenseKey);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 py-12 px-4 flex justify-center antialiased">
       <style dangerouslySetInnerHTML={{
@@ -191,15 +199,24 @@ export function InvoiceTemplate({ data = INDIA_INVOICE }: { data?: InvoiceData }
               </code>
               <button
                 type="button"
-                aria-label="Copy license key"
-                title="Copy license key"
-                onClick={() => navigator.clipboard?.writeText(data.licenseKey)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-300 hover:text-indigo-400 transition-colors"
+                aria-label={copied ? "License key copied" : "Copy license key"}
+                title={copied ? "Copied" : "Copy license key"}
+                onClick={handleCopy}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 transition-colors ${copied ? "text-green-600" : "text-indigo-300 hover:text-indigo-400"}`}
               >
-                <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                  <rect x="9" y="9" width="11" height="11" rx="2" ry="2" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                </svg>
+                {copied ? (
+                  <>
+                    <span className="text-xs font-semibold">Copied</span>
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </>
+                ) : (
+                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <rect x="9" y="9" width="11" height="11" rx="2" ry="2" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                  </svg>
+                )}
               </button>
             </div>
 
