@@ -13,11 +13,13 @@ import {
 import { isProductPlan, type ProductPlan } from "@workspace/license-keys";
 import {
   applyPaidPlan,
+  applyBusinessPlan,
   applyTeamPlan,
   claimBillingEvent,
   listProviders,
   stripePriceIdFor,
   stripeTeamPriceId,
+  stripeBusinessPriceId,
   type BillingProviderId,
 } from "../lib/billing";
 import { sendLicenseEmail } from "../lib/email";
@@ -149,6 +151,48 @@ router.post(
       return;
     }
 
+    // ─── Business plan (flat recurring subscription, unlimited pool) ─────────
+    if (plan === "business") {
+      const businessPriceId = stripeBusinessPriceId();
+      if (!businessPriceId) {
+        res
+          .status(503)
+          .json({ error: "Stripe price for business not configured" });
+        return;
+      }
+      const businessMetadata: Record<string, string> = {
+        clerkUserId: auth.userId,
+        plan: "business",
+      };
+      try {
+        const session = await stripe.checkout.sessions.create({
+          mode: "subscription",
+          line_items: [{ price: businessPriceId, quantity: 1 }],
+          client_reference_id: auth.userId,
+          metadata: businessMetadata,
+          subscription_data: { metadata: businessMetadata },
+          success_url: successUrl,
+          cancel_url: cancelUrl,
+        });
+        if (!session.url) {
+          res.status(500).json({ error: "Stripe did not return a URL" });
+          return;
+        }
+        req.log.info(
+          { userId: auth.userId, plan, sessionId: session.id },
+          "Stripe business checkout session created",
+        );
+        res.json({ provider: "stripe", sessionId: session.id, url: session.url });
+      } catch (err) {
+        req.log.error(
+          { err, userId: auth.userId, plan },
+          "Stripe business checkout failed",
+        );
+        res.status(500).json({ error: "Failed to create checkout session" });
+      }
+      return;
+    }
+
     if (!isProductPlan(plan)) {
       res.status(400).json({ error: `Unknown plan: ${plan}` });
       return;
@@ -246,7 +290,11 @@ billingWebhookRouter.post(
           null;
         const plan = session.metadata?.["plan"] as string | undefined;
 
-        if (!userId || !plan || (plan !== "team" && !isProductPlan(plan))) {
+        if (
+          !userId ||
+          !plan ||
+          (plan !== "team" && plan !== "business" && !isProductPlan(plan))
+        ) {
           req.log.warn(
             { eventId: event.id, userId, plan },
             "Webhook missing userId or plan; ignoring",
@@ -333,6 +381,83 @@ billingWebhookRouter.post(
             { userId, orgId, seats: seatCount, subEnd: subEnd.toISOString() },
             "Team organization provisioned",
           );
+          res.json({ received: true, processed: true });
+          return;
+        }
+
+        // ─── Business: flat recurring subscription (unlimited pool) ─────────
+        if (plan === "business") {
+          const now = new Date();
+          const stripeSubId =
+            typeof session.subscription === "string"
+              ? session.subscription
+              : (session.subscription?.id ?? null);
+
+          let subEnd = new Date(now.getTime() + 30 * MS_PER_DAY);
+          if (stripeSubId) {
+            try {
+              const sub = await stripe.subscriptions.retrieve(stripeSubId);
+              const period = sub as unknown as {
+                current_period_end?: number;
+              };
+              if (period.current_period_end) {
+                subEnd = new Date(period.current_period_end * 1000);
+              }
+            } catch (subErr) {
+              req.log.warn(
+                { err: subErr, stripeSubId },
+                "Could not retrieve business subscription period; using 30-day fallback",
+              );
+            }
+          }
+
+          const bizOutcome = await applyBusinessPlan(
+            userId,
+            { provider: "stripe", eventId: event.id },
+            subEnd,
+            now,
+          );
+
+          req.log.info(
+            {
+              userId,
+              plan,
+              licenseId: bizOutcome.licenseId,
+              firstActivation: bizOutcome.isFirstActivation,
+              newEnd: bizOutcome.subscriptionEndDate.toISOString(),
+            },
+            "Stripe business payment applied",
+          );
+
+          // Best-effort license email (mirror of the individual-plan path).
+          try {
+            let recipient: string | null =
+              session.customer_details?.email ??
+              (session.customer_email as string | null) ??
+              null;
+            let recipientName: string | null =
+              session.customer_details?.name ?? null;
+            if (!recipient) {
+              const looked = await lookupClerkEmail(userId);
+              recipient = looked.email;
+            }
+            if (recipient) {
+              await sendLicenseEmail({
+                to: recipient,
+                customerName: recipientName,
+                productKey: bizOutcome.rawProductKey,
+                plan: "business",
+                subscriptionEndDate: bizOutcome.subscriptionEndDate.toISOString(),
+                downloadUrl: buildInstallerDownloadUrl(req),
+              });
+            }
+          } catch (emailErr) {
+            req.log.error(
+              { err: emailErr, userId, plan },
+              "Business license email pipeline failed",
+            );
+          }
+
           res.json({ received: true, processed: true });
           return;
         }

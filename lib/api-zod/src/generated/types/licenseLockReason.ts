@@ -16,8 +16,10 @@ export const LicenseLockReason = {
   none: "none",
   not_logged_in: "not_logged_in",
   trial_expired: "trial_expired",
+  subscription_required: "subscription_required",
   subscription_expired: "subscription_expired",
   daily_limit_reached: "daily_limit_reached",
+  monthly_limit_reached: "monthly_limit_reached",
   account_suspended: "account_suspended",
   premium_feature: "premium_feature",
 } as const;

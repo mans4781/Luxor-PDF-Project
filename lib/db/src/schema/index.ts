@@ -22,6 +22,7 @@ export * from "./pdf-otps";
 export * from "./visitors";
 export * from "./user-licenses";
 export * from "./daily-usage";
+export * from "./monthly-usage";
 export * from "./license-events";
 export * from "./product-keys";
 export * from "./licenses";

@@ -7,6 +7,7 @@
  */
 import type { LicenseLockReason } from "./licenseLockReason";
 import type { LicenseStatusValue } from "./licenseStatusValue";
+import type { MonthlyUsageSummary } from "./monthlyUsageSummary";
 
 /**
  * Single source of truth for whether the caller can use PDF tools.
@@ -46,6 +47,7 @@ export interface LicenseStatus {
   licenseStatus: LicenseStatusValue;
   canUsePdfTools: boolean;
   lockReason: LicenseLockReason;
+  monthlyUsage: MonthlyUsageSummary;
   /** Current server time at the moment this status was computed. */
   serverTime: Date;
 }

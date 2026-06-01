@@ -7,7 +7,7 @@ import multer from "multer";
 import { randomUUID, createHash, randomInt } from "crypto";
 import { getAuth } from "@clerk/express";
 import { logger } from "../../lib/logger";
-import { getLicenseStatus } from "../../lib/license";
+import { getLicenseStatus, recordUsage } from "../../lib/license";
 
 // ─── OTP config ────────────────────────────────────────────────────────────────
 
@@ -25,6 +25,32 @@ function generateOtpCode(): string {
 }
 
 const router: IRouter = Router();
+
+/**
+ * Compensating cleanup when a freshly-inserted upload must be undone (usage
+ * recording threw or was refused). Each step is attempted independently and
+ * non-throwing so one failure can't leave the other behind — a missing file
+ * (ENOENT) is treated as already-clean.
+ */
+async function cleanupUpload(
+  recordId: number,
+  filePath: string,
+  req: Request,
+): Promise<void> {
+  try {
+    await db.delete(pdfsTable).where(eq(pdfsTable.id, recordId));
+  } catch (err) {
+    req.log.error({ err, recordId }, "cleanupUpload: failed to delete row");
+  }
+  try {
+    await fs.promises.unlink(filePath);
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code !== "ENOENT") {
+      req.log.error({ err, filePath }, "cleanupUpload: failed to delete file");
+    }
+  }
+}
 
 const UPLOADS_DIR = path.resolve(process.cwd(), "uploads");
 
@@ -252,8 +278,19 @@ async function requirePaidForSecureUpload(
     if (!status.isPaid) {
       res.status(403).json({
         error:
-          "Password & Expiry protection is a paid feature and isn't available during the free trial. Activate a yearly license to continue.",
+          "Password & Expiry protection is a paid feature. Activate a license to continue.",
         lockReason: "premium_feature",
+      });
+      return;
+    }
+    // Early shared-pool check (read-only) so we don't write the file to disk
+    // when the monthly secure quota is already exhausted. The authoritative,
+    // atomic enforcement happens via recordUsage() in the handler below.
+    if (status.monthlyUsage.remaining === 0) {
+      res.status(403).json({
+        error:
+          "You've used all your secure actions for this billing month. Upgrade your plan for a higher monthly limit.",
+        lockReason: "monthly_limit_reached",
       });
       return;
     }
@@ -308,19 +345,71 @@ router.post(
 
     const action = expiryAction === "corrupt" ? "corrupt" : "revoke";
 
+    const auth = getAuth(req);
     const shareToken = randomUUID();
 
-    const [record] = await db
-      .insert(pdfsTable)
-      .values({
-        shareToken,
-        originalName: req.file.originalname,
-        storedPath: req.file.path,
-        fileSize: req.file.size,
-        expiryDate,
-        expiryAction: action,
-      })
-      .returning();
+    let record;
+    try {
+      [record] = await db
+        .insert(pdfsTable)
+        .values({
+          shareToken,
+          originalName: req.file.originalname,
+          storedPath: req.file.path,
+          fileSize: req.file.size,
+          expiryDate,
+          expiryAction: action,
+        })
+        .returning();
+    } catch (err) {
+      // Insert failed — the multer-written file would otherwise be orphaned
+      // on disk with no DB row, so remove it before surfacing the error.
+      try {
+        await fs.promises.unlink(req.file.path);
+      } catch (unlinkErr) {
+        const code = (unlinkErr as NodeJS.ErrnoException).code;
+        if (code !== "ENOENT") {
+          req.log.error(
+            { err: unlinkErr, filePath: req.file.path },
+            "upload: failed to unlink orphaned file after insert error",
+          );
+        }
+      }
+      throw err;
+    }
+
+    // Authoritative shared-pool enforcement: setting an expiry is a metered
+    // secure action. We record usage AFTER the row is persisted so a failed
+    // insert can never consume monthly quota. recordUsage() atomically
+    // increments the shared monthly pool and refuses when the user is over
+    // their limit, so a client cannot bypass the quota by hitting this
+    // endpoint directly. If recording fails or is refused, we compensate by
+    // removing the just-created row + file so no orphaned state remains.
+    if (auth.userId) {
+      let usage;
+      try {
+        usage = await recordUsage(auth.userId, "set_expiry", 1);
+      } catch (err) {
+        await cleanupUpload(record.id, req.file.path, req);
+        throw err;
+      }
+      if (!usage.recorded) {
+        await cleanupUpload(record.id, req.file.path, req);
+        res.status(403).json({
+          error:
+            usage.lockReason === "monthly_limit_reached"
+              ? "You've used all your secure actions for this billing month. Upgrade your plan for a higher monthly limit."
+              : "This secure action isn't available on your current plan.",
+          lockReason: usage.lockReason,
+          monthlyUsage: {
+            used: usage.monthlyUsed,
+            limit: usage.monthlyLimit,
+            remaining: usage.monthlyRemaining,
+          },
+        });
+        return;
+      }
+    }
 
     req.log.info({ id: record.id, name: record.originalName }, "PDF uploaded");
     res.status(201).json(formatPdfRecord(record, true));

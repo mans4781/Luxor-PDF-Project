@@ -1154,8 +1154,10 @@ components:
         - none
         - not_logged_in
         - trial_expired
+        - subscription_required
         - subscription_expired
         - daily_limit_reached
+        - monthly_limit_reached
         - account_suspended
         - premium_feature
 
@@ -1219,6 +1221,8 @@ components:
           type: boolean
         lockReason:
           $ref: "#/components/schemas/LicenseLockReason"
+        monthlyUsage:
+          $ref: "#/components/schemas/MonthlyUsageSummary"
         serverTime:
           type: string
           format: date-time
@@ -1242,7 +1246,47 @@ components:
         - licenseStatus
         - canUsePdfTools
         - lockReason
+        - monthlyUsage
         - serverTime
+
+    MonthlyUsageSummary:
+      type: object
+      description: >-
+        Shared monthly allowance for the metered secure features
+        (password protect, expiry/secure PDF, print/copy restriction).
+        `limit`/`remaining` are null when the plan grants unlimited usage.
+      properties:
+        periodStart:
+          type: string
+          format: date-time
+          description: Start of the caller's current billing month (ISO 8601).
+        periodEnd:
+          type: string
+          format: date-time
+          description: When the current billing month resets (ISO 8601).
+        used:
+          type: integer
+          description: Total metered secure actions used this billing month.
+        limit:
+          type: ["integer", "null"]
+          description: Shared monthly allowance; null when unlimited.
+        remaining:
+          type: ["integer", "null"]
+          description: Actions left this month; null when unlimited.
+        passwordProtectUsed:
+          type: integer
+          description: Password-protect actions used this month (breakdown).
+        securePdfUsed:
+          type: integer
+          description: Secure-PDF (expiry/restriction) actions used this month (breakdown).
+      required:
+        - periodStart
+        - periodEnd
+        - used
+        - limit
+        - remaining
+        - passwordProtectUsed
+        - securePdfUsed
 
     UsageCheckBody:
       type: object
@@ -1263,11 +1307,23 @@ components:
           type: integer
         dailyLimit:
           type: integer
+        monthlyUsed:
+          type: integer
+          description: Metered secure actions used this billing month.
+        monthlyLimit:
+          type: ["integer", "null"]
+          description: Shared monthly allowance; null when unlimited.
+        monthlyRemaining:
+          type: ["integer", "null"]
+          description: Actions left this month; null when unlimited.
       required:
         - allowed
         - lockReason
         - todayUsage
         - dailyLimit
+        - monthlyUsed
+        - monthlyLimit
+        - monthlyRemaining
 
     UsageRecordBody:
       type: object
@@ -1294,11 +1350,23 @@ components:
           type: integer
         dailyLimit:
           type: integer
+        monthlyUsed:
+          type: integer
+          description: Metered secure actions used this billing month (after this action).
+        monthlyLimit:
+          type: ["integer", "null"]
+          description: Shared monthly allowance; null when unlimited.
+        monthlyRemaining:
+          type: ["integer", "null"]
+          description: Actions left this month; null when unlimited.
       required:
         - recorded
         - lockReason
         - todayUsage
         - dailyLimit
+        - monthlyUsed
+        - monthlyLimit
+        - monthlyRemaining
 
     TodayUsage:
       type: object
@@ -1691,6 +1759,7 @@ components:
         - yearly
         - lifetime
         - team
+        - business
 
     OrgRole:
       type: string

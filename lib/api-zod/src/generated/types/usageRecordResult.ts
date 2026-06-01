@@ -13,4 +13,16 @@ export interface UsageRecordResult {
   lockReason: LicenseLockReason;
   todayUsage: number;
   dailyLimit: number;
+  /** Metered secure actions used this billing month (after this action). */
+  monthlyUsed: number;
+  /**
+   * Shared monthly allowance; null when unlimited.
+   * @nullable
+   */
+  monthlyLimit: number | null;
+  /**
+   * Actions left this month; null when unlimited.
+   * @nullable
+   */
+  monthlyRemaining: number | null;
 }

@@ -40,6 +40,7 @@ export * from "./inviteMemberResult";
 export * from "./licenseLockReason";
 export * from "./licenseStatus";
 export * from "./licenseStatusValue";
+export * from "./monthlyUsageSummary";
 export * from "./okResult";
 export * from "./orgDevice";
 export * from "./orgMember";

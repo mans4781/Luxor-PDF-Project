@@ -14,4 +14,5 @@ export const CheckoutPlan = {
   yearly: "yearly",
   lifetime: "lifetime",
   team: "team",
+  business: "business",
 } as const;

@@ -1,22 +1,32 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check, ArrowRight, Sparkles } from "lucide-react";
-import { Link } from "wouter";
 import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
-import { LoginModal } from "@/components/LoginModal";
 
 type Plan = {
   id: string;
   name: string;
   tagline: string;
-  monthlyPrice: number;
-  yearlyPrice: number;
+  /** Toggled plans expose monthly/yearly prices. */
+  monthlyPrice?: number;
+  yearlyPrice?: number;
+  /** Flat-rate plan (Business) — single price, not affected by the toggle. */
+  flatPrice?: number;
+  /** Non-priced plans (Enterprise) display this label instead of a number. */
+  priceLabel?: string;
   cta: string;
-  ctaHref: string;
-  /** When set, the Buy button initiates Stripe checkout for this plan. */
-  checkoutPlan?: { monthly: string; yearly: string };
+  /**
+   * When set, the Buy button initiates Stripe checkout for this plan via the
+   * pdf-expiry /checkout page. Either a single ?plan= value (team/business) or
+   * a monthly/yearly pair for toggled individual plans.
+   */
+  checkoutPlan?: string | { monthly: string; yearly: string };
+  /** Enterprise uses a contact link instead of online checkout. */
+  contactHref?: string;
   highlight?: boolean;
   badge?: string;
+  /** Headline monthly secure-action allowance for this tier. */
+  secureLimit: string;
   features: string[];
   limits: string;
 };
@@ -28,76 +38,94 @@ const CHECKOUT_BASE = "/pdf-expiry/checkout";
 
 const PLANS: Plan[] = [
   {
-    id: "free",
-    name: "Free",
-    tagline: "Try Luxor PDF Reader, forever free.",
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    cta: "Get started free",
-    ctaHref: "/web-app",
-    limits: "1 device · Personal use",
+    id: "individual",
+    name: "Individual",
+    tagline: "For solo professionals securing their own documents.",
+    monthlyPrice: 9,
+    yearlyPrice: 7,
+    cta: "Get Individual",
+    checkoutPlan: { monthly: "monthly", yearly: "yearly" },
+    secureLimit: "10 secure actions / month",
+    limits: "1 user · Commercial use",
     features: [
       "Luxor PDF Reader (full)",
-      "Open & view unlimited PDFs",
-      "Basic annotations & highlights",
-      "Up to 25 MB per file",
-      "Single device",
-      "Community support",
+      "Unlimited general tools (convert, merge, split)",
+      "Password protect, expiry, revoke, copy & print restriction",
+      "3 devices",
+      "Priority email support",
     ],
   },
   {
-    id: "pro",
-    name: "Pro",
-    tagline: "Everything an individual professional needs.",
-    monthlyPrice: 9,
-    yearlyPrice: 7,
-    cta: "Start 14-day trial",
-    ctaHref: "/web-app",
-    checkoutPlan: { monthly: "monthly", yearly: "yearly" },
+    id: "team",
+    name: "Team",
+    tagline: "For teams that share and protect documents together.",
+    monthlyPrice: 29,
+    yearlyPrice: 23,
+    cta: "Get Team",
+    checkoutPlan: "team",
     highlight: true,
     badge: "Most popular",
-    limits: "3 devices · Commercial use",
+    secureLimit: "50 secure actions / month",
+    limits: "Per seat · Commercial use",
     features: [
-      "Everything in Free, plus:",
-      "Unlimited file size",
-      "Tabs & multi-doc workflow",
-      "Smart search across files",
-      "Advanced annotations & redaction",
-      "LuxorSign — 25 documents/month",
-      "PDF Expiry — basic",
-      "Priority email support",
+      "Everything in Individual, plus:",
+      "Shared monthly secure pool across the team",
+      "Team licenses & admin console",
+      "Unlimited devices per user",
+      "SSO & audit logs",
+      "Priority support",
     ],
   },
   {
     id: "business",
     name: "Business",
-    tagline: "For teams that share, sign, and protect documents.",
-    monthlyPrice: 29,
-    yearlyPrice: 23,
-    cta: "Start trial",
-    ctaHref: "/contact",
-    limits: "Per user · Commercial use",
+    tagline: "Unlimited secure actions for high-volume orgs.",
+    flatPrice: 99,
+    cta: "Get Business",
+    checkoutPlan: "business",
+    secureLimit: "Unlimited secure actions",
+    limits: "Per org · Commercial use",
     features: [
-      "Everything in Pro, plus:",
-      "Unlimited devices per user",
-      "LuxorSign — Unlimited",
-      "PDF Expiry — full (remote revoke)",
-      "Team licenses & admin console",
-      "SSO & audit logs",
-      "Volume discounts (10+ seats)",
+      "Everything in Team, plus:",
+      "Unlimited secure actions every month",
+      "Unlimited devices",
+      "Advanced admin & usage analytics",
       "Dedicated success manager",
+      "Volume discounts",
+    ],
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    tagline: "Custom quotas, SSO, and procurement for large orgs.",
+    priceLabel: "Custom",
+    cta: "Contact sales",
+    contactHref: "mailto:sales@luxorpdf.com",
+    secureLimit: "Custom secure quota",
+    limits: "Custom terms",
+    features: [
+      "Everything in Business, plus:",
+      "Custom monthly secure quota",
+      "Custom contracts & invoicing",
+      "Dedicated SSO & SAML",
+      "On-prem / private deployment options",
+      "SLA & dedicated support",
     ],
   },
 ];
 
 const FAQS = [
   {
-    q: "How do license keys work?",
-    a: "When you subscribe, we issue a license key that activates Luxor PDF on your devices. Keys auto-renew yearly with your subscription — you'll get a fresh key every year. If you cancel, your existing key keeps working until the end of your billing period.",
+    q: "What counts as a secure action?",
+    a: "Secure actions are the metered premium operations: password-protecting a PDF, setting an expiry date, revoking access, and applying copy or print restrictions. They all draw from one shared monthly pool — Individual gets 10/month, Team 50/month, and Business is unlimited. General tools (convert, merge, split, view) are always unlimited on every paid plan.",
   },
   {
-    q: "Is the Free tier really free?",
-    a: "Yes. Free is free forever — no credit card, no time limit. You get the full Luxor PDF Reader for personal use on one device, with basic annotation tools.",
+    q: "When does my monthly quota reset?",
+    a: "Your secure-action pool resets every billing month, anchored to your subscription start date. You'll always see your remaining actions and the next reset date right inside your dashboard.",
+  },
+  {
+    q: "How do license keys work?",
+    a: "When you subscribe, we issue a license key that activates Luxor PDF on your devices. Keys auto-renew with your subscription. If you cancel, your existing key keeps working until the end of your billing period.",
   },
   {
     q: "Can I switch plans anytime?",
@@ -108,8 +136,8 @@ const FAQS = [
     a: "Nothing changes. All your PDFs, annotations, and signed documents stay on your device — Luxor is local-first. Your license key just stops working at the end of your billing cycle.",
   },
   {
-    q: "Do you offer team or volume discounts?",
-    a: "Yes. Business plan gets automatic volume discounts at 10+ seats. For larger orgs (100+ users), contact us for custom pricing and Enterprise SSO.",
+    q: "Do you offer Enterprise or custom quotas?",
+    a: "Yes. Business gives you unlimited secure actions out of the box. For custom monthly quotas, SSO/SAML, on-prem deployment, or procurement terms, contact our sales team for an Enterprise plan.",
   },
   {
     q: "Which platforms are supported?",
@@ -117,9 +145,16 @@ const FAQS = [
   },
 ];
 
+function checkoutHref(plan: Plan, yearly: boolean): string | null {
+  if (!plan.checkoutPlan) return null;
+  if (typeof plan.checkoutPlan === "string") {
+    return `${CHECKOUT_BASE}?plan=${plan.checkoutPlan}`;
+  }
+  return `${CHECKOUT_BASE}?plan=${yearly ? plan.checkoutPlan.yearly : plan.checkoutPlan.monthly}`;
+}
+
 export default function PricingPage() {
   const [yearly, setYearly] = useState(true);
-  const [authOpen, setAuthOpen] = useState(false);
 
   return (
     <ProductPageLayout>
@@ -137,10 +172,10 @@ export default function PricingPage() {
             </div>
             <h1 className="text-5xl md:text-7xl text-slate-900 mb-5 tracking-[-0.02em] leading-[1.05]">
               Simple, fair pricing.<br />
-              <span className="text-neutral-400 font-semibold">Start free.</span>
+              <span className="text-neutral-400 font-semibold">Pick your secure pool.</span>
             </h1>
             <p className="text-lg text-slate-600 max-w-xl mx-auto mb-10">
-              One subscription, all of Luxor. Reader is the core — add LuxorSign and PDF Expiry as your needs grow.
+              Every paid plan unlocks unlimited general tools. Your plan sets one shared monthly pool of secure actions — password protect, expiry, revoke, and copy/print restriction.
             </p>
 
             {/* Billing toggle */}
@@ -168,10 +203,16 @@ export default function PricingPage() {
       {/* Pricing cards */}
       <section className="pb-20 bg-white">
         <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {PLANS.map((plan, i) => {
-              const price = yearly ? plan.yearlyPrice : plan.monthlyPrice;
-              const isFree = plan.monthlyPrice === 0;
+              const href = checkoutHref(plan, yearly);
+              const isCustom = plan.priceLabel !== undefined;
+              const isFlat = plan.flatPrice !== undefined;
+              const price = isFlat
+                ? plan.flatPrice!
+                : yearly
+                  ? (plan.yearlyPrice ?? 0)
+                  : (plan.monthlyPrice ?? 0);
 
               return (
                 <motion.div
@@ -196,35 +237,50 @@ export default function PricingPage() {
                     <p className={`text-sm ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>{plan.tagline}</p>
                   </div>
 
-                  <div className="mb-6">
+                  <div className="mb-5">
                     <div className="flex items-baseline gap-1">
                       <span className={`text-5xl font-bold tracking-tight ${plan.highlight ? "text-white" : "text-slate-900"}`}>
-                        {isFree ? "$0" : `$${price}`}
+                        {isCustom ? plan.priceLabel : `$${price}`}
                       </span>
-                      <span className={`text-sm ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
-                        {isFree ? "" : "/mo"}
-                      </span>
+                      {!isCustom && (
+                        <span className={`text-sm ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
+                          /mo
+                        </span>
+                      )}
                     </div>
-                    {!isFree && yearly && (
+                    {isCustom ? (
+                      <p className={`text-xs mt-1 ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
+                        Tailored to your org
+                      </p>
+                    ) : isFlat ? (
+                      <p className={`text-xs mt-1 ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
+                        Billed monthly
+                      </p>
+                    ) : yearly ? (
                       <p className={`text-xs mt-1 ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
                         Billed ${price * 12}/year
                       </p>
-                    )}
-                    {!isFree && !yearly && (
+                    ) : (
                       <p className={`text-xs mt-1 ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
                         Billed monthly
                       </p>
                     )}
-                    {isFree && (
-                      <p className={`text-xs mt-1 ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
-                        Free forever
-                      </p>
-                    )}
                   </div>
 
-                  {plan.checkoutPlan ? (
+                  {/* Headline secure-pool allowance */}
+                  <div
+                    className={`mb-6 rounded-xl px-4 py-3 text-sm font-semibold ${
+                      plan.highlight
+                        ? "bg-white/10 text-white"
+                        : "bg-[#EAF2FB] text-[#312E81]"
+                    }`}
+                  >
+                    {plan.secureLimit}
+                  </div>
+
+                  {href ? (
                     <a
-                      href={`${CHECKOUT_BASE}?plan=${yearly ? plan.checkoutPlan.yearly : plan.checkoutPlan.monthly}`}
+                      href={href}
                       className={`w-full py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 mb-7 ${
                         plan.highlight
                           ? "bg-white text-[#312E81] hover:bg-neutral-100"
@@ -236,16 +292,18 @@ export default function PricingPage() {
                       <ArrowRight className="w-4 h-4" />
                     </a>
                   ) : (
-                    <Link href={plan.ctaHref}>
-                      <button className={`w-full py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 mb-7 ${
+                    <a
+                      href={plan.contactHref ?? "mailto:sales@luxorpdf.com"}
+                      className={`w-full py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 mb-7 ${
                         plan.highlight
                           ? "bg-white text-[#312E81] hover:bg-neutral-100"
                           : "bg-[#312E81] text-white hover:bg-[#3730A3]"
-                      }`}>
-                        {plan.cta}
-                        <ArrowRight className="w-4 h-4" />
-                      </button>
-                    </Link>
+                      }`}
+                      data-testid={`pricing-buy-${plan.id}`}
+                    >
+                      {plan.cta}
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
                   )}
 
                   <p className={`text-[11px] uppercase tracking-wider font-semibold mb-4 ${plan.highlight ? "text-neutral-400" : "text-slate-500"}`}>
@@ -270,7 +328,7 @@ export default function PricingPage() {
           </div>
 
           <p className="text-center text-slate-500 text-sm mt-10">
-            Need 100+ seats or custom Enterprise terms?{" "}
+            Need custom quotas or Enterprise terms?{" "}
             <a href="mailto:sales@luxorpdf.com" className="text-[#312E81] font-semibold hover:underline">
               Talk to sales →
             </a>
@@ -289,11 +347,11 @@ export default function PricingPage() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Privacy-first", sub: "Local processing" },
+              { label: "Unlimited tools", sub: "Convert, merge, split" },
               { label: "AES-256", sub: "Encryption built-in" },
               { label: "Free updates", sub: "For life of subscription" },
               { label: "Cancel anytime", sub: "No long contracts" },
-              { label: "License keys", sub: "Renewed yearly" },
+              { label: "License keys", sub: "Auto-renewed" },
               { label: "Web + Desktop", sub: "Same subscription" },
               { label: "GDPR ready", sub: "EU & India compliant" },
               { label: "30-day refund", sub: "If you're not happy" },
@@ -333,13 +391,13 @@ export default function PricingPage() {
           <h2 className="text-3xl md:text-5xl text-slate-900 mb-5 tracking-[-0.02em]">
             Ready to switch to Luxor?
           </h2>
-          <p className="text-slate-600 mb-6 text-lg">No credit card. No commitment. 14-day free trial included.</p>
+          <p className="text-slate-600 mb-6 text-lg">Pick a plan and start securing documents in minutes.</p>
           <ul className="flex flex-wrap gap-2 justify-center mb-8">
             {[
-              "14-day free trial",
-              "No payment required",
-              "Max 2 PDF actions/day",
-              "Password & expiry: paid only",
+              "Unlimited general tools",
+              "Shared monthly secure pool",
+              "Cancel anytime",
+              "30-day refund",
             ].map((t) => (
               <li
                 key={t}
@@ -351,20 +409,18 @@ export default function PricingPage() {
             ))}
           </ul>
           <div className="flex flex-wrap gap-3 justify-center">
-            <button
-              type="button"
-              onClick={() => setAuthOpen(true)}
+            <a
+              href={`${CHECKOUT_BASE}?plan=monthly`}
               className="px-7 py-3.5 rounded-lg bg-[#312E81] text-white font-semibold hover:bg-[#3730A3] transition-colors shadow-sm"
             >
-              Start free
-            </button>
+              Get started
+            </a>
             <a href="mailto:sales@luxorpdf.com" className="px-7 py-3.5 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-white transition-colors">
               Talk to sales
             </a>
           </div>
         </div>
       </section>
-      <LoginModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </ProductPageLayout>
   );
 }

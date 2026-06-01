@@ -215,12 +215,45 @@ export const GetLicenseStatusResponse = zod
         "none",
         "not_logged_in",
         "trial_expired",
+        "subscription_required",
         "subscription_expired",
         "daily_limit_reached",
+        "monthly_limit_reached",
         "account_suspended",
         "premium_feature",
       ])
       .describe("Why PDF tools are currently blocked, or `none` if allowed."),
+    monthlyUsage: zod
+      .object({
+        periodStart: zod.coerce
+          .date()
+          .describe("Start of the caller's current billing month (ISO 8601)."),
+        periodEnd: zod.coerce
+          .date()
+          .describe("When the current billing month resets (ISO 8601)."),
+        used: zod
+          .number()
+          .describe("Total metered secure actions used this billing month."),
+        limit: zod
+          .number()
+          .nullable()
+          .describe("Shared monthly allowance; null when unlimited."),
+        remaining: zod
+          .number()
+          .nullable()
+          .describe("Actions left this month; null when unlimited."),
+        passwordProtectUsed: zod
+          .number()
+          .describe("Password-protect actions used this month (breakdown)."),
+        securePdfUsed: zod
+          .number()
+          .describe(
+            "Secure-PDF (expiry\/restriction) actions used this month (breakdown).",
+          ),
+      })
+      .describe(
+        "Shared monthly allowance for the metered secure features (password protect, expiry\/secure PDF, print\/copy restriction). `limit`\/`remaining` are null when the plan grants unlimited usage.",
+      ),
     serverTime: zod.coerce
       .date()
       .describe("Current server time at the moment this status was computed."),
@@ -267,14 +300,27 @@ export const CheckUsageResponse = zod.object({
       "none",
       "not_logged_in",
       "trial_expired",
+      "subscription_required",
       "subscription_expired",
       "daily_limit_reached",
+      "monthly_limit_reached",
       "account_suspended",
       "premium_feature",
     ])
     .describe("Why PDF tools are currently blocked, or `none` if allowed."),
   todayUsage: zod.number(),
   dailyLimit: zod.number(),
+  monthlyUsed: zod
+    .number()
+    .describe("Metered secure actions used this billing month."),
+  monthlyLimit: zod
+    .number()
+    .nullable()
+    .describe("Shared monthly allowance; null when unlimited."),
+  monthlyRemaining: zod
+    .number()
+    .nullable()
+    .describe("Actions left this month; null when unlimited."),
 });
 
 /**
@@ -330,14 +376,29 @@ export const RecordUsageResponse = zod.object({
       "none",
       "not_logged_in",
       "trial_expired",
+      "subscription_required",
       "subscription_expired",
       "daily_limit_reached",
+      "monthly_limit_reached",
       "account_suspended",
       "premium_feature",
     ])
     .describe("Why PDF tools are currently blocked, or `none` if allowed."),
   todayUsage: zod.number(),
   dailyLimit: zod.number(),
+  monthlyUsed: zod
+    .number()
+    .describe(
+      "Metered secure actions used this billing month (after this action).",
+    ),
+  monthlyLimit: zod
+    .number()
+    .nullable()
+    .describe("Shared monthly allowance; null when unlimited."),
+  monthlyRemaining: zod
+    .number()
+    .nullable()
+    .describe("Actions left this month; null when unlimited."),
 });
 
 /**
@@ -598,7 +659,14 @@ activates the user's license.
  * @summary Create a Stripe Checkout session for the chosen plan
  */
 export const CreateCheckoutSessionBody = zod.object({
-  plan: zod.enum(["monthly", "quarterly", "yearly", "lifetime", "team"]),
+  plan: zod.enum([
+    "monthly",
+    "quarterly",
+    "yearly",
+    "lifetime",
+    "team",
+    "business",
+  ]),
   provider: zod.enum(["stripe", "razorpay", "paypal"]).optional(),
   seats: zod
     .number()

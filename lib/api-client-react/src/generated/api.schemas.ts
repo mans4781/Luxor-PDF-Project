@@ -111,8 +111,10 @@ export const LicenseLockReason = {
   none: "none",
   not_logged_in: "not_logged_in",
   trial_expired: "trial_expired",
+  subscription_required: "subscription_required",
   subscription_expired: "subscription_expired",
   daily_limit_reached: "daily_limit_reached",
+  monthly_limit_reached: "monthly_limit_reached",
   account_suspended: "account_suspended",
   premium_feature: "premium_feature",
 } as const;
@@ -128,6 +130,32 @@ export const LicenseStatusValue = {
   expired: "expired",
   suspended: "suspended",
 } as const;
+
+/**
+ * Shared monthly allowance for the metered secure features (password protect, expiry/secure PDF, print/copy restriction). `limit`/`remaining` are null when the plan grants unlimited usage.
+ */
+export interface MonthlyUsageSummary {
+  /** Start of the caller's current billing month (ISO 8601). */
+  periodStart: string;
+  /** When the current billing month resets (ISO 8601). */
+  periodEnd: string;
+  /** Total metered secure actions used this billing month. */
+  used: number;
+  /**
+   * Shared monthly allowance; null when unlimited.
+   * @nullable
+   */
+  limit: number | null;
+  /**
+   * Actions left this month; null when unlimited.
+   * @nullable
+   */
+  remaining: number | null;
+  /** Password-protect actions used this month (breakdown). */
+  passwordProtectUsed: number;
+  /** Secure-PDF (expiry/restriction) actions used this month (breakdown). */
+  securePdfUsed: number;
+}
 
 /**
  * Single source of truth for whether the caller can use PDF tools.
@@ -167,6 +195,7 @@ export interface LicenseStatus {
   licenseStatus: LicenseStatusValue;
   canUsePdfTools: boolean;
   lockReason: LicenseLockReason;
+  monthlyUsage: MonthlyUsageSummary;
   /** Current server time at the moment this status was computed. */
   serverTime: string;
 }
@@ -180,6 +209,18 @@ export interface UsageCheckResult {
   lockReason: LicenseLockReason;
   todayUsage: number;
   dailyLimit: number;
+  /** Metered secure actions used this billing month. */
+  monthlyUsed: number;
+  /**
+   * Shared monthly allowance; null when unlimited.
+   * @nullable
+   */
+  monthlyLimit: number | null;
+  /**
+   * Actions left this month; null when unlimited.
+   * @nullable
+   */
+  monthlyRemaining: number | null;
 }
 
 export interface UsageRecordBody {
@@ -197,6 +238,18 @@ export interface UsageRecordResult {
   lockReason: LicenseLockReason;
   todayUsage: number;
   dailyLimit: number;
+  /** Metered secure actions used this billing month (after this action). */
+  monthlyUsed: number;
+  /**
+   * Shared monthly allowance; null when unlimited.
+   * @nullable
+   */
+  monthlyLimit: number | null;
+  /**
+   * Actions left this month; null when unlimited.
+   * @nullable
+   */
+  monthlyRemaining: number | null;
 }
 
 export interface TodayUsage {
@@ -411,6 +464,7 @@ export const CheckoutPlan = {
   yearly: "yearly",
   lifetime: "lifetime",
   team: "team",
+  business: "business",
 } as const;
 
 export interface CreateCheckoutSessionBody {

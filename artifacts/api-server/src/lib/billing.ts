@@ -66,9 +66,14 @@ export function stripePriceIdFor(plan: ProductPlan): string | null {
   return process.env[envName] ?? null;
 }
 
-/** Per-seat recurring price for the Team/Business plan. */
+/** Per-seat recurring price for the Team plan. */
 export function stripeTeamPriceId(): string | null {
   return process.env["STRIPE_PRICE_TEAM"] ?? null;
+}
+
+/** Flat recurring price for the Business plan (unlimited secure pool). */
+export function stripeBusinessPriceId(): string | null {
+  return process.env["STRIPE_PRICE_BUSINESS"] ?? null;
 }
 
 export interface ApplyTeamPlanParams {
@@ -166,9 +171,36 @@ export async function applyPaidPlan(
   source: { provider: BillingProviderId; eventId: string },
   now: Date = new Date(),
 ): Promise<PaidRenewalOutcome> {
+  return applyPaidPlanInternal(userId, plan, PLAN_DURATION_DAYS[plan], source, now);
+}
+
+/**
+ * Applies the flat-rate Business plan (planName `"business"` → unlimited shared
+ * monthly secure pool). `subscriptionEndDate` comes from the Stripe billing
+ * period; we derive an equivalent `durationDays` so renewals extend correctly.
+ */
+export async function applyBusinessPlan(
+  userId: string,
+  source: { provider: BillingProviderId; eventId: string },
+  subscriptionEndDate: Date,
+  now: Date = new Date(),
+): Promise<PaidRenewalOutcome> {
+  const durationDays = Math.max(
+    1,
+    Math.round((subscriptionEndDate.getTime() - now.getTime()) / MS_PER_DAY),
+  );
+  return applyPaidPlanInternal(userId, "business", durationDays, source, now);
+}
+
+async function applyPaidPlanInternal(
+  userId: string,
+  plan: string,
+  durationDays: number,
+  source: { provider: BillingProviderId; eventId: string },
+  now: Date = new Date(),
+): Promise<PaidRenewalOutcome> {
   const rawKey = generateProductKey();
   const { hash, prefix } = hashProductKey(rawKey);
-  const durationDays = PLAN_DURATION_DAYS[plan];
 
   return db.transaction(async (tx) => {
     // 1. Mint the product key (single-use, server-attributed).

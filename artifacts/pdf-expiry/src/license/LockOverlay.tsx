@@ -40,14 +40,16 @@ export function LockOverlay() {
 
   // Server-driven blocking reasons.
   const reason = status?.lockReason;
-  const isTrial = reason === "trial_expired";
+  // Never-paid users (free trial removed) — needs a first-time purchase.
+  const isRequired =
+    reason === "subscription_required" || reason === "trial_expired";
   const isSub = reason === "subscription_expired";
   const isSuspended = reason === "account_suspended";
 
   const blocking =
     isOfflineTooLong ||
     isClockTampered ||
-    isTrial ||
+    isRequired ||
     isSub ||
     isSuspended;
   if (!blocking) return null;
@@ -101,7 +103,7 @@ export function LockOverlay() {
                 ? "Account suspended"
                 : isSub
                   ? "Subscription expired"
-                  : "Your free trial has ended"}
+                  : "Choose a plan to continue"}
         </h2>
         <p className="text-center text-sm text-slate-600 mt-1.5">
           {isClockTampered
@@ -112,7 +114,7 @@ export function LockOverlay() {
                 ? "Your account has been suspended. Please contact support to restore access."
                 : isSub
                   ? "Renew your subscription or activate a new product key to keep using Luxor PDF."
-                  : "Activate a yearly license to keep using all Luxor PDF tools."}
+                  : "A paid plan is required to use Luxor PDF tools. Choose a plan to get started."}
         </p>
 
         <div className="mt-5 space-y-2">
@@ -134,7 +136,7 @@ export function LockOverlay() {
                   data-testid="lock-action-pricing"
                 >
                   <Sparkles className="w-4 h-4" />
-                  Activate yearly license
+                  Choose a plan
                 </a>
               )}
               <Link

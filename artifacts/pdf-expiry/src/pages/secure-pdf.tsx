@@ -336,7 +336,7 @@ function ExpiryTab() {
 
           <Button
             className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md font-semibold`}
-            disabled={!file || uploadMutation.isPending} onClick={() => { void guard("set_expiry", handleUpload); }}
+            disabled={!file || uploadMutation.isPending} onClick={() => { void guard("set_expiry", handleUpload, { skipRecord: true }); }}
           >
             {uploadMutation.isPending
               ? <><span className="animate-spin mr-2">⏳</span>Securing…</>
@@ -1075,9 +1075,8 @@ function SecurePremiumGate() {
         </div>
         <h2 className="text-xl font-bold text-slate-900">A paid feature</h2>
         <p className="text-sm text-slate-600 mt-2 max-w-md mx-auto">
-          Password protection and expiry dates aren&apos;t part of the 14-day
-          free trial. Activate a yearly license to lock, expire, and control
-          your PDFs.
+          Password protection and expiry dates require a paid plan. Choose a
+          plan to lock, expire, and control your PDFs.
         </p>
         <div className="mt-6 flex flex-col sm:flex-row gap-2 justify-center">
           <a
@@ -1085,7 +1084,7 @@ function SecurePremiumGate() {
             className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-md px-5 py-2.5 shadow-md transition-all"
             data-testid="secure-gate-upgrade"
           >
-            <Sparkles className="w-4 h-4" /> Activate yearly license
+            <Sparkles className="w-4 h-4" /> Choose a plan
           </a>
           <a
             href={`${basePath}/activate-key`}
@@ -1096,8 +1095,8 @@ function SecurePremiumGate() {
           </a>
         </div>
         <p className="text-[11px] text-slate-400 mt-4">
-          Your free trial still includes edit &amp; convert tools — up to 2
-          actions per day.
+          Secure features draw from a shared monthly allowance that depends on
+          your plan.
         </p>
       </CardContent>
     </Card>

@@ -19,7 +19,26 @@ interface AdminStats {
   topCountries: { country: string; users: number; pct: number }[];
 }
 
-type Section = "overview" | "users" | "revenue" | "documents" | "geography" | "activity" | "settings";
+type Section = "overview" | "users" | "customers" | "revenue" | "documents" | "geography" | "activity" | "settings";
+
+interface AdminCustomer {
+  userId: string;
+  planName: string | null;
+  tier: string | null;
+  isPaid: boolean;
+  accountStatus: string;
+  lockReason: string | null;
+  subscriptionStartDate: string | null;
+  subscriptionEndDate: string | null;
+  quotaOverrideSecure: number | null;
+  monthlyUsed: number;
+  monthlyLimit: number | null;
+  monthlyRemaining: number | null;
+  passwordProtectUsed: number;
+  securePdfUsed: number;
+  resetDate: string | null;
+  createdAt: string;
+}
 
 // ── Theme ─────────────────────────────────────────────────────────────────────
 function makeTheme(dark: boolean) {
@@ -125,6 +144,7 @@ function ThemeToggle({ dark, onToggle }: { dark: boolean; onToggle: () => void }
 const NAV_ITEMS: { id: Section; label: string; icon: string; badge?: string }[] = [
   { id: "overview",   label: "Overview",   icon: "📊" },
   { id: "users",      label: "Users",      icon: "👥" },
+  { id: "customers",  label: "Customers",  icon: "🪪" },
   { id: "revenue",    label: "Revenue",    icon: "💰" },
   { id: "documents",  label: "Documents",  icon: "📄" },
   { id: "geography",  label: "Geography",  icon: "🌍" },
@@ -360,6 +380,180 @@ function UsersSection({ stats, t }: { stats: AdminStats; t: Theme }) {
             ))}
           </tbody>
         </table>
+      </Card>
+    </div>
+  );
+}
+
+// ── Section: Customers (plan, monthly quota, override) ────────────────────────
+function CustomersSection({ token, onLogout, t }: { token: string; onLogout: () => void; t: Theme }) {
+  const [customers, setCustomers] = useState<AdminCustomer[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/customers", { headers: { "x-admin-token": token } });
+      if (res.status === 401 || res.status === 403) { onLogout(); return; }
+      if (!res.ok) { setError("Failed to load customers."); setLoading(false); return; }
+      const data = (await res.json()) as { customers: AdminCustomer[] };
+      setCustomers(data.customers);
+      setLoading(false);
+    } catch {
+      setError("Failed to load customers.");
+      setLoading(false);
+    }
+  }, [token, onLogout]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const saveOverride = async (userId: string) => {
+    const raw = (drafts[userId] ?? "").trim();
+    let override: number | null;
+    if (raw === "" || raw.toLowerCase() === "default") {
+      override = null;
+    } else if (raw.toLowerCase() === "unlimited" || raw === "-1") {
+      override = -1;
+    } else {
+      const n = Number(raw);
+      if (!Number.isInteger(n) || n < -1) {
+        setError(`Invalid override "${raw}" — use a number, -1/unlimited, or blank for default.`);
+        return;
+      }
+      override = n;
+    }
+    setSavingId(userId);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/customers/quota-override", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-token": token },
+        body: JSON.stringify({ userId, override }),
+      });
+      if (res.status === 401 || res.status === 403) { onLogout(); return; }
+      if (!res.ok) {
+        const j = (await res.json().catch(() => ({}))) as { error?: string };
+        setError(j.error ?? "Failed to save override.");
+        return;
+      }
+      const data = (await res.json()) as { customer: AdminCustomer };
+      setCustomers(prev => prev ? prev.map(c => c.userId === userId ? data.customer : c) : prev);
+      setDrafts(prev => { const next = { ...prev }; delete next[userId]; return next; });
+    } catch {
+      setError("Failed to save override.");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const tierBadge = (tier: string | null, planName: string | null) => {
+    const label = planName ?? (tier ? tier : "No plan");
+    const c: Record<string, string> = {
+      individual: "#4f8ef7", team: "#10b981", business: "#a78bfa", enterprise: "#f59e0b",
+    };
+    const color = (tier && c[tier]) || "#6b7280";
+    return <span style={{ background: `${color}22`, color, borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600, textTransform: "capitalize" }}>{label}</span>;
+  };
+
+  const quotaCell = (c: AdminCustomer) => {
+    if (c.monthlyLimit === null) {
+      return <span style={{ color: "#10b981", fontWeight: 600 }}>∞ Unlimited</span>;
+    }
+    const used = c.monthlyUsed;
+    const remaining = c.monthlyRemaining ?? 0;
+    const low = remaining <= 0;
+    return (
+      <span style={{ color: low ? "#ef4444" : t.text, fontWeight: 600 }}>
+        {used} / {c.monthlyLimit}{" "}
+        <span style={{ color: t.textMuted, fontWeight: 400 }}>({remaining} left)</span>
+      </span>
+    );
+  };
+
+  const overrideLabel = (v: number | null) =>
+    v === null ? "tier default" : v === -1 ? "unlimited" : String(v);
+
+  const fmtDate = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+
+  const list = customers ?? [];
+  const paidCount = list.filter(c => c.isPaid).length;
+  const overrideCount = list.filter(c => c.quotaOverrideSecure !== null).length;
+  const atLimitCount = list.filter(c => c.monthlyLimit !== null && (c.monthlyRemaining ?? 0) <= 0).length;
+
+  return (
+    <div>
+      <SectionTitle title="Customers" sub="Per-customer plan, shared monthly secure-feature usage, and manual quota overrides" t={t} />
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 22 }}>
+        <StatCard label="Customers"     value={fmt(list.length)}    icon="🪪" t={t} />
+        <StatCard label="Paid"          value={fmt(paidCount)}      sub="active plans"     icon="💳" color="#10b981" t={t} />
+        <StatCard label="Overrides"     value={fmt(overrideCount)}  sub="manual quotas"    icon="🛠️" color="#a78bfa" t={t} />
+        <StatCard label="At Limit"      value={fmt(atLimitCount)}   sub="quota exhausted"  icon="⛔" color="#ef4444" t={t} />
+      </div>
+
+      <Card t={t}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div style={{ fontWeight: 600, fontSize: 14, color: t.text }}>All Customers</div>
+          <button onClick={() => { void load(); }} style={{ background: "rgba(79,142,247,0.12)", border: "1px solid rgba(79,142,247,0.25)", borderRadius: 8, color: "#4f8ef7", fontSize: 12, fontWeight: 600, padding: "6px 12px", cursor: "pointer" }}>↺ Refresh</button>
+        </div>
+
+        {error && <div style={{ color: "#ef4444", fontSize: 12, marginBottom: 10 }}>{error}</div>}
+
+        {loading ? (
+          <div style={{ color: "#4f8ef7", fontSize: 13, padding: "20px 0" }}>Loading customers…</div>
+        ) : list.length === 0 ? (
+          <div style={{ color: t.textMuted, fontSize: 13, padding: "20px 0" }}>No customers yet.</div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${t.divider}` }}>
+                  {["User", "Plan", "Secure usage (mo.)", "Pwd / Expiry", "Override", "Resets", "Set override"].map(h => (
+                    <th key={h} style={{ textAlign: "left", padding: "6px 10px 10px", color: t.textMuted, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {list.map((c, i) => (
+                  <tr key={c.userId} style={{ borderBottom: i < list.length - 1 ? `1px solid ${t.divider}` : "none" }}>
+                    <td style={{ padding: "10px", color: t.text, fontFamily: "monospace", fontSize: 12, maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={c.userId}>{c.userId}</td>
+                    <td style={{ padding: "10px" }}>{tierBadge(c.tier, c.planName)}</td>
+                    <td style={{ padding: "10px" }}>{quotaCell(c)}</td>
+                    <td style={{ padding: "10px", color: t.textMuted }}>{c.passwordProtectUsed} / {c.securePdfUsed}</td>
+                    <td style={{ padding: "10px", color: c.quotaOverrideSecure !== null ? "#a78bfa" : t.textMuted, fontWeight: c.quotaOverrideSecure !== null ? 600 : 400 }}>{overrideLabel(c.quotaOverrideSecure)}</td>
+                    <td style={{ padding: "10px", color: t.textMuted, whiteSpace: "nowrap" }}>{fmtDate(c.resetDate)}</td>
+                    <td style={{ padding: "10px" }}>
+                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                        <input
+                          value={drafts[c.userId] ?? ""}
+                          onChange={e => setDrafts(prev => ({ ...prev, [c.userId]: e.target.value }))}
+                          onKeyDown={e => { if (e.key === "Enter") void saveOverride(c.userId); }}
+                          placeholder={overrideLabel(c.quotaOverrideSecure)}
+                          style={{ width: 78, padding: "5px 8px", background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 6, color: t.text, fontSize: 12, outline: "none" }}
+                        />
+                        <button
+                          onClick={() => { void saveOverride(c.userId); }}
+                          disabled={savingId === c.userId}
+                          style={{ background: "#4f8ef7", border: "none", borderRadius: 6, color: "#fff", fontSize: 12, fontWeight: 600, padding: "5px 10px", cursor: savingId === c.userId ? "not-allowed" : "pointer", opacity: savingId === c.userId ? 0.6 : 1, whiteSpace: "nowrap" }}
+                        >
+                          {savingId === c.userId ? "…" : "Save"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div style={{ color: t.textFaint, fontSize: 11, marginTop: 12 }}>
+              Override accepts a number (monthly secure allowance), <strong>-1</strong> or <strong>unlimited</strong>, or blank/<strong>default</strong> to revert to the plan tier default.
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );
@@ -726,6 +920,7 @@ function Dashboard({ onLogout, dark, onToggleDark, token }: { onLogout: () => vo
             <>
               {section === "overview"  && <OverviewSection  stats={stats} t={t} />}
               {section === "users"     && <UsersSection     stats={stats} t={t} />}
+              {section === "customers" && <CustomersSection token={token} onLogout={onLogout} t={t} />}
               {section === "revenue"   && <RevenueSection   stats={stats} t={t} />}
               {section === "documents" && <DocumentsSection stats={stats} t={t} />}
               {section === "geography" && <GeographySection stats={stats} t={t} />}

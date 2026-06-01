@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer } from "drizzle-orm/pg-core";
 
 export const userLicensesTable = pgTable("user_licenses", {
   userId: text("user_id").primaryKey(),
@@ -9,6 +9,10 @@ export const userLicensesTable = pgTable("user_licenses", {
   isPaid: boolean("is_paid").notNull().default(false),
   planName: text("plan_name"),
   accountStatus: text("account_status").notNull().default("active"),
+  // Admin-set per-customer shared monthly quota override for the metered secure
+  // features. NULL = use the plan-tier default. Used for Enterprise custom
+  // contracts and one-off manual increases. A sentinel of -1 means "unlimited".
+  quotaOverrideSecure: integer("quota_override_secure"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

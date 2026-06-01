@@ -3,12 +3,14 @@ import {
   db,
   userLicensesTable,
   dailyUsageTable,
+  monthlyUsageTable,
   licenseEventsTable,
   productKeysTable,
   licensesTable,
   devicesTable,
   type UserLicense,
   type DailyUsage,
+  type MonthlyUsage,
   type License,
   type ProductKey,
 } from "@workspace/db";
@@ -33,6 +35,24 @@ export const PAID_DAILY_LIMIT = 1_000_000;
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+// ─── Metered secure-feature monthly quotas ────────────────────────────────────
+//
+// Two metered buckets reset every billing month:
+//   - "password": Password Protect (password_protect)
+//   - "secure":   Secure PDF / Expiry (set_expiry, revoke_expiry,
+//                 copy_restriction, print_restriction)
+//
+// `null` means unlimited. Quotas are chosen by the user's plan tier and can be
+// overridden per-customer by an admin (Enterprise custom contracts / one-off
+// increases). The admin override sentinel `-1` also means unlimited.
+export type PlanTier = "individual" | "team" | "business" | "enterprise";
+// Which monthly sub-counter a secure action increments. Both sub-counters
+// share ONE monthly pool (the limit is enforced against their sum); the split
+// only exists so the admin dashboard can show a per-feature breakdown.
+export type MeteredFeature = "password" | "secure";
+
+export const UNLIMITED_QUOTA_SENTINEL = -1;
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type LicenseStatusValue =
@@ -47,10 +67,36 @@ export type LicenseLockReason =
   | "none"
   | "not_logged_in"
   | "trial_expired"
+  | "subscription_required"
   | "subscription_expired"
   | "daily_limit_reached"
+  | "monthly_limit_reached"
   | "account_suspended"
   | "premium_feature";
+
+/**
+ * Per-billing-month usage summary for the shared secure-features pool. All
+ * secure actions (password protect + expiry + print/copy restriction) draw
+ * from ONE monthly allowance: `used` (= sum of the sub-counters) is enforced
+ * against `limit`. The `passwordProtectUsed` / `securePdfUsed` sub-counters are
+ * carried only so the admin dashboard can show a per-feature breakdown.
+ */
+export interface MonthlyUsageSummary {
+  /** ISO 8601 start of the current billing month; null if not signed in. */
+  periodStart: string | null;
+  /** ISO 8601 reset date (next billing-month anniversary); null if anonymous. */
+  periodEnd: string | null;
+  /** Shared-pool usage this billing month (passwordProtectUsed + securePdfUsed). */
+  used: number;
+  /** Shared monthly limit; null = unlimited. */
+  limit: number | null;
+  /** Remaining shared-pool actions; null = unlimited. */
+  remaining: number | null;
+  /** Breakdown: Password Protect actions this month. */
+  passwordProtectUsed: number;
+  /** Breakdown: Expiry / print-copy restriction actions this month. */
+  securePdfUsed: number;
+}
 
 export interface LicenseStatusResult {
   loggedIn: boolean;
@@ -71,6 +117,7 @@ export interface LicenseStatusResult {
   licenseStatus: LicenseStatusValue;
   canUsePdfTools: boolean;
   lockReason: LicenseLockReason;
+  monthlyUsage: MonthlyUsageSummary;
   serverTime: string;
 }
 
@@ -116,6 +163,29 @@ export async function runLicenseMigrations(): Promise<void> {
     `);
     await db.execute(sql`
       CREATE INDEX IF NOT EXISTS daily_usage_user_id_idx ON daily_usage(user_id)
+    `);
+
+    // Per-billing-month usage of the two metered secure features.
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS monthly_usage (
+        user_id TEXT NOT NULL,
+        period_start DATE NOT NULL,
+        password_protect_count INTEGER NOT NULL DEFAULT 0,
+        secure_pdf_count INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (user_id, period_start)
+      )
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS monthly_usage_user_id_idx ON monthly_usage(user_id)
+    `);
+
+    // Admin-set per-customer shared monthly quota override (Enterprise custom /
+    // one-off increases). NULL = use plan-tier default; -1 = unlimited.
+    await db.execute(sql`
+      ALTER TABLE user_licenses
+        ADD COLUMN IF NOT EXISTS quota_override_secure INTEGER
     `);
 
     await db.execute(sql`
@@ -242,6 +312,153 @@ export function categoryFor(actionType: PdfActionType): UsageCategory {
       return "edit";
     }
   }
+}
+
+/**
+ * Maps a secure action to its metered monthly bucket, or null for general
+ * (unlimited-for-paid) tools. Password Protect is its own bucket; expiry and
+ * print/copy restrictions all count against the "secure" bucket.
+ */
+export function meteredFeatureFor(
+  actionType: PdfActionType,
+): MeteredFeature | null {
+  switch (actionType) {
+    case "password_protect":
+      return "password";
+    case "set_expiry":
+    case "revoke_expiry":
+    case "copy_restriction":
+    case "print_restriction":
+      return "secure";
+    default:
+      return null;
+  }
+}
+
+/** Resolves a plan name to its tier. Unknown paid plans → individual. */
+export function planTier(planName: string | null): PlanTier | null {
+  if (!planName) return null;
+  const p = planName.trim().toLowerCase();
+  if (p === "team") return "team";
+  if (p === "business") return "business";
+  if (p === "enterprise") return "enterprise";
+  // monthly / quarterly / yearly / lifetime and any other paid plan.
+  return "individual";
+}
+
+/**
+ * Default SHARED monthly secure-pool limit per tier. null = unlimited.
+ * Individual = 10, Team = 50, Business = unlimited, Enterprise = custom
+ * (unlimited by default until an admin sets a concrete override).
+ */
+export function quotaForTier(tier: PlanTier | null): number | null {
+  switch (tier) {
+    case "team":
+      return 50;
+    case "business":
+    case "enterprise":
+      return null;
+    case "individual":
+    default:
+      return 10;
+  }
+}
+
+/**
+ * Resolves the effective monthly limit for a feature, applying an admin
+ * override when present. Override of -1 means unlimited; null means "use the
+ * tier default".
+ */
+export function effectiveLimit(
+  override: number | null,
+  tierDefault: number | null,
+): number | null {
+  if (override === null || override === undefined) return tierDefault;
+  if (override <= UNLIMITED_QUOTA_SENTINEL) return null;
+  return override;
+}
+
+function clampToMonthDay(year: number, monthIndex0: number, day: number): Date {
+  // Date.UTC normalizes out-of-range month indices, so callers can pass
+  // monthIndex0-1 or +1 safely. Day 0 of the next month gives this month's
+  // length, which we clamp to (handles 31-day anchors in shorter months).
+  const lastDay = new Date(Date.UTC(year, monthIndex0 + 1, 0)).getUTCDate();
+  const d = Math.min(Math.max(1, day), lastDay);
+  return new Date(Date.UTC(year, monthIndex0, d, 0, 0, 0, 0));
+}
+
+/**
+ * Computes the billing-month window containing `now`, anchored to the
+ * day-of-month of `anchor` (the subscription start). Falls back to the 1st of
+ * the calendar month when no anchor is available. `periodEnd` is the reset date
+ * (the next monthly anniversary).
+ */
+export function currentBillingPeriod(
+  anchor: Date | null,
+  now: Date = new Date(),
+): { periodStart: Date; periodEnd: Date } {
+  const anchorDay = anchor ? anchor.getUTCDate() : 1;
+  const y = now.getUTCFullYear();
+  const m = now.getUTCMonth();
+
+  let start = clampToMonthDay(y, m, anchorDay);
+  if (now.getTime() < start.getTime()) {
+    // Before this month's anchor — the active period began last month.
+    start = clampToMonthDay(y, m - 1, anchorDay);
+  }
+  const end = clampToMonthDay(
+    start.getUTCFullYear(),
+    start.getUTCMonth() + 1,
+    anchorDay,
+  );
+  return { periodStart: start, periodEnd: end };
+}
+
+/** YYYY-MM-DD key used for the monthly_usage primary key. */
+export function billingPeriodKey(periodStart: Date): string {
+  return periodStart.toISOString().slice(0, 10);
+}
+
+export async function getMonthlyUsage(
+  userId: string,
+  periodStart: Date,
+): Promise<MonthlyUsage | null> {
+  const [row] = await db
+    .select()
+    .from(monthlyUsageTable)
+    .where(
+      and(
+        eq(monthlyUsageTable.userId, userId),
+        eq(monthlyUsageTable.periodStart, billingPeriodKey(periodStart)),
+      ),
+    );
+  return row ?? null;
+}
+
+/**
+ * Builds the shared-pool monthly usage summary from the user's tier, admin
+ * override, the current monthly_usage row, and the billing period window.
+ */
+export function buildMonthlyUsageSummary(
+  tier: PlanTier | null,
+  override: number | null,
+  usage: MonthlyUsage | null,
+  period: { periodStart: Date; periodEnd: Date } | null,
+): MonthlyUsageSummary {
+  const passwordProtectUsed = usage?.passwordProtectCount ?? 0;
+  const securePdfUsed = usage?.securePdfCount ?? 0;
+  const used = passwordProtectUsed + securePdfUsed;
+  const limit = effectiveLimit(override, quotaForTier(tier));
+  const remaining = limit === null ? null : Math.max(0, limit - used);
+  return {
+    periodStart: period ? period.periodStart.toISOString() : null,
+    periodEnd: period ? period.periodEnd.toISOString() : null,
+    used,
+    limit,
+    remaining,
+    passwordProtectUsed,
+    securePdfUsed,
+  };
 }
 
 function daysRemaining(end: Date, now: Date): number {
@@ -383,6 +600,7 @@ export function buildAnonymousStatus(now: Date = new Date()): LicenseStatusResul
     licenseStatus: "anonymous",
     canUsePdfTools: false,
     lockReason: "not_logged_in",
+    monthlyUsage: buildMonthlyUsageSummary(null, null, null, null),
     serverTime: now.toISOString(),
   };
 }
@@ -429,8 +647,6 @@ export async function getLicenseStatus(
     : await getActiveOrgMembership(userId, now);
 
   const trialEnd = license.trialEndDate;
-  const trialActive = trialEnd.getTime() > now.getTime();
-  const trialDays = daysRemaining(trialEnd, now);
   const suspended = license.accountStatus === "suspended";
 
   const isPaid = activeLicense !== null || orgMembership !== null;
@@ -477,6 +693,26 @@ export async function getLicenseStatus(
     }
   }
 
+  // Shared-pool monthly usage. The billing month is anchored to the
+  // subscription start day-of-month (falls back to the calendar month for
+  // users with no subscription window). The monthly limit only gates secure
+  // actions and is enforced per-action in recordUsage()/usage check — it does
+  // NOT set canUsePdfTools, so a user who exhausts the pool can still use the
+  // general tools.
+  const tier = planTier(planName);
+  const override = license.quotaOverrideSecure ?? null;
+  const subscriptionAnchor = subscriptionStartDate
+    ? new Date(subscriptionStartDate)
+    : null;
+  const period = currentBillingPeriod(subscriptionAnchor, now);
+  const monthlyRow = await getMonthlyUsage(userId, period.periodStart);
+  const monthlyUsage = buildMonthlyUsageSummary(
+    tier,
+    override,
+    monthlyRow,
+    period,
+  );
+
   let licenseStatus: LicenseStatusValue;
   let lockReason: LicenseLockReason;
   let canUsePdfTools: boolean;
@@ -489,10 +725,6 @@ export async function getLicenseStatus(
     licenseStatus = "active";
     lockReason = overLimit ? "daily_limit_reached" : "none";
     canUsePdfTools = !overLimit;
-  } else if (trialActive) {
-    licenseStatus = "trial";
-    lockReason = overLimit ? "daily_limit_reached" : "none";
-    canUsePdfTools = !overLimit;
   } else if (subscriptionExpired) {
     // Had a paid sub that lapsed — distinct from never-paid users so the
     // UI can offer a renewal CTA instead of a "buy first" CTA.
@@ -500,18 +732,20 @@ export async function getLicenseStatus(
     lockReason = "subscription_expired";
     canUsePdfTools = false;
   } else {
-    licenseStatus = "trial_expired";
-    lockReason = "trial_expired";
+    // Logged in but never paid. The free trial has been removed — a paid plan
+    // is required to use any tools.
+    licenseStatus = "expired";
+    lockReason = "subscription_required";
     canUsePdfTools = false;
-    // Best-effort, deduplicated audit log of the trial lapsing.
-    void maybeLogTrialExpired(userId);
   }
 
   return {
     loggedIn: true,
-    trialActive: trialActive && !suspended,
-    trialDaysRemaining: trialDays,
-    trialExpired: !trialActive,
+    // The free trial has been removed suite-wide; these fields are retained for
+    // payload compatibility but always report "no trial".
+    trialActive: false,
+    trialDaysRemaining: 0,
+    trialExpired: true,
     trialStartDate: license.trialStartDate.toISOString(),
     trialEndDate: trialEnd.toISOString(),
     todayUsage,
@@ -526,6 +760,7 @@ export async function getLicenseStatus(
     licenseStatus,
     canUsePdfTools,
     lockReason,
+    monthlyUsage,
     serverTime: now.toISOString(),
   };
 }
@@ -537,6 +772,12 @@ export interface RecordUsageOutcome {
   lockReason: LicenseLockReason;
   todayUsage: number;
   dailyLimit: number;
+  /** Shared secure-pool usage this billing month after this action. */
+  monthlyUsed: number;
+  /** Shared monthly limit; null = unlimited. */
+  monthlyLimit: number | null;
+  /** Remaining shared-pool actions; null = unlimited. */
+  monthlyRemaining: number | null;
 }
 
 /**
@@ -552,9 +793,17 @@ export async function recordUsage(
 ): Promise<RecordUsageOutcome> {
   const status = await getLicenseStatus(userId, now);
 
-  // Hard blocks that don't depend on today's count — refuse without touching the row.
+  const monthlyLimit = status.monthlyUsage.limit;
+  let monthlyUsed = status.monthlyUsage.used;
+  const monthlyRemainingOf = (used: number): number | null =>
+    monthlyLimit === null ? null : Math.max(0, monthlyLimit - used);
+
+  // Hard blocks that don't depend on usage counts — refuse without touching any
+  // row. `subscription_required` covers never-paid users now that the free
+  // trial has been removed (a paid plan is required for all tools).
   if (
     status.lockReason === "trial_expired" ||
+    status.lockReason === "subscription_required" ||
     status.lockReason === "subscription_expired" ||
     status.lockReason === "account_suspended"
   ) {
@@ -563,98 +812,234 @@ export async function recordUsage(
       lockReason: status.lockReason,
       todayUsage: status.todayUsage,
       dailyLimit: status.dailyLimit,
+      monthlyUsed,
+      monthlyLimit,
+      monthlyRemaining: monthlyRemainingOf(monthlyUsed),
     };
   }
 
   const cat = categoryFor(actionType);
 
-  // Password & Expiry (the "secure" category) are not part of the free trial —
-  // they require a paid plan. Block them for any non-paid user before touching
-  // today's usage row.
+  // Secure actions require a paid plan (defense-in-depth; non-paid users are
+  // already hard-blocked above).
   if (cat === "secure" && !status.isPaid) {
     return {
       recorded: false,
       lockReason: "premium_feature",
       todayUsage: status.todayUsage,
       dailyLimit: status.dailyLimit,
+      monthlyUsed,
+      monthlyLimit,
+      monthlyRemaining: monthlyRemainingOf(monthlyUsed),
     };
   }
 
-  const today = todayUtcDate(now);
-  const editInc = cat === "edit" ? fileCount : 0;
-  const convertInc = cat === "convert" ? fileCount : 0;
-  const secureInc = cat === "secure" ? fileCount : 0;
+  // ── Shared monthly secure-pool enforcement (paid users) ──────────────────
+  // All secure actions draw from one monthly allowance. We always increment the
+  // correct sub-counter (so the admin dashboard sees usage even for unlimited
+  // tiers), but only block when a finite limit is exceeded — in which case we
+  // roll the increment back atomically.
+  // Tracks a successful monthly increment so a later daily-limit rejection can
+  // roll it back too (otherwise a blocked action would still burn monthly quota).
+  //
+  // All counter mutations run inside a single DB transaction so that a failure
+  // mid-flight (e.g. the daily upsert throwing after the monthly increment)
+  // rolls back every write atomically — usage can never be partially consumed.
+  // The intentional over-limit self-rollbacks below are ordinary updates that
+  // commit with the transaction, leaving the counters net-unchanged.
+  return await db.transaction(async (tx) => {
+    let monthlyComp:
+      | { periodKey: string; pwdInc: number; secInc: number }
+      | null = null;
 
-  // Atomic upsert with increment.
-  const [row] = await db
-    .insert(dailyUsageTable)
-    .values({
-      userId,
-      usageDate: today,
-      editCount: editInc,
-      convertCount: convertInc,
-      secureCount: secureInc,
-      totalCount: fileCount,
-    })
-    .onConflictDoUpdate({
-      target: [dailyUsageTable.userId, dailyUsageTable.usageDate],
-      set: {
-        editCount: sql`${dailyUsageTable.editCount} + ${editInc}`,
-        convertCount: sql`${dailyUsageTable.convertCount} + ${convertInc}`,
-        secureCount: sql`${dailyUsageTable.secureCount} + ${secureInc}`,
-        totalCount: sql`${dailyUsageTable.totalCount} + ${fileCount}`,
-        updatedAt: new Date(),
-      },
-    })
-    .returning();
+    if (cat === "secure" && status.isPaid) {
+      const metered = meteredFeatureFor(actionType);
+      if (metered) {
+        const anchor = status.subscriptionStartDate
+          ? new Date(status.subscriptionStartDate)
+          : null;
+        const period = currentBillingPeriod(anchor, now);
+        const periodKey = billingPeriodKey(period.periodStart);
+        const pwdInc = metered === "password" ? fileCount : 0;
+        const secInc = metered === "secure" ? fileCount : 0;
 
-  if (!row) {
-    // Defensive — returning() should always yield the upserted row.
-    throw new Error("recordUsage upsert returned no row");
-  }
+        const [mrow] = await tx
+          .insert(monthlyUsageTable)
+          .values({
+            userId,
+            periodStart: periodKey,
+            passwordProtectCount: pwdInc,
+            securePdfCount: secInc,
+          })
+          .onConflictDoUpdate({
+            target: [monthlyUsageTable.userId, monthlyUsageTable.periodStart],
+            set: {
+              passwordProtectCount: sql`${monthlyUsageTable.passwordProtectCount} + ${pwdInc}`,
+              securePdfCount: sql`${monthlyUsageTable.securePdfCount} + ${secInc}`,
+              updatedAt: new Date(),
+            },
+          })
+          .returning();
 
-  // If the post-increment total exceeds the cap, roll back.
-  if (row.totalCount > status.dailyLimit) {
-    await db
-      .update(dailyUsageTable)
-      .set({
-        editCount: sql`${dailyUsageTable.editCount} - ${editInc}`,
-        convertCount: sql`${dailyUsageTable.convertCount} - ${convertInc}`,
-        secureCount: sql`${dailyUsageTable.secureCount} - ${secureInc}`,
-        totalCount: sql`${dailyUsageTable.totalCount} - ${fileCount}`,
-        updatedAt: new Date(),
+        if (!mrow) {
+          throw new Error("recordUsage monthly upsert returned no row");
+        }
+
+        const totalUsed = mrow.passwordProtectCount + mrow.securePdfCount;
+
+        if (monthlyLimit !== null && totalUsed > monthlyLimit) {
+          // Over the shared monthly cap — roll back this action's increment.
+          await tx
+            .update(monthlyUsageTable)
+            .set({
+              passwordProtectCount: sql`${monthlyUsageTable.passwordProtectCount} - ${pwdInc}`,
+              securePdfCount: sql`${monthlyUsageTable.securePdfCount} - ${secInc}`,
+              updatedAt: new Date(),
+            })
+            .where(
+              and(
+                eq(monthlyUsageTable.userId, userId),
+                eq(monthlyUsageTable.periodStart, periodKey),
+              ),
+            );
+
+          const usedBefore = totalUsed - fileCount;
+          // Log the first time the monthly cap is hit this period.
+          if (usedBefore < monthlyLimit) {
+            await logEvent(
+              userId,
+              "monthly_limit_hit",
+              "Monthly secure-features limit reached",
+              {
+                attemptedAction: actionType,
+                fileCount,
+                monthlyLimit,
+                monthlyUsed: usedBefore,
+              },
+            );
+          }
+
+          return {
+            recorded: false,
+            lockReason: "monthly_limit_reached" as LicenseLockReason,
+            todayUsage: status.todayUsage,
+            dailyLimit: status.dailyLimit,
+            monthlyUsed: usedBefore,
+            monthlyLimit,
+            monthlyRemaining: monthlyRemainingOf(usedBefore),
+          };
+        }
+
+        monthlyUsed = totalUsed;
+        // Remember this increment so the daily-limit branch below can undo it.
+        monthlyComp = { periodKey, pwdInc, secInc };
+      }
+    }
+
+    const today = todayUtcDate(now);
+    const editInc = cat === "edit" ? fileCount : 0;
+    const convertInc = cat === "convert" ? fileCount : 0;
+    const secureInc = cat === "secure" ? fileCount : 0;
+
+    // Atomic upsert with increment.
+    const [row] = await tx
+      .insert(dailyUsageTable)
+      .values({
+        userId,
+        usageDate: today,
+        editCount: editInc,
+        convertCount: convertInc,
+        secureCount: secureInc,
+        totalCount: fileCount,
       })
-      .where(
-        and(
-          eq(dailyUsageTable.userId, userId),
-          eq(dailyUsageTable.usageDate, today),
-        ),
-      );
+      .onConflictDoUpdate({
+        target: [dailyUsageTable.userId, dailyUsageTable.usageDate],
+        set: {
+          editCount: sql`${dailyUsageTable.editCount} + ${editInc}`,
+          convertCount: sql`${dailyUsageTable.convertCount} + ${convertInc}`,
+          secureCount: sql`${dailyUsageTable.secureCount} + ${secureInc}`,
+          totalCount: sql`${dailyUsageTable.totalCount} + ${fileCount}`,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
 
-    // First time we hit the cap today — log it once.
-    if (status.todayUsage < status.dailyLimit) {
-      await logEvent(userId, "daily_limit_hit", "Daily usage limit reached", {
-        attemptedAction: actionType,
-        fileCount,
-        dailyLimit: status.dailyLimit,
+    if (!row) {
+      // Defensive — returning() should always yield the upserted row.
+      throw new Error("recordUsage upsert returned no row");
+    }
+
+    // If the post-increment total exceeds the cap, roll back.
+    if (row.totalCount > status.dailyLimit) {
+      await tx
+        .update(dailyUsageTable)
+        .set({
+          editCount: sql`${dailyUsageTable.editCount} - ${editInc}`,
+          convertCount: sql`${dailyUsageTable.convertCount} - ${convertInc}`,
+          secureCount: sql`${dailyUsageTable.secureCount} - ${secureInc}`,
+          totalCount: sql`${dailyUsageTable.totalCount} - ${fileCount}`,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(dailyUsageTable.userId, userId),
+            eq(dailyUsageTable.usageDate, today),
+          ),
+        );
+
+      // Also undo the shared monthly increment so a daily-limit rejection never
+      // burns monthly quota for an action that didn't actually go through.
+      if (monthlyComp) {
+        await tx
+          .update(monthlyUsageTable)
+          .set({
+            passwordProtectCount: sql`${monthlyUsageTable.passwordProtectCount} - ${monthlyComp.pwdInc}`,
+            securePdfCount: sql`${monthlyUsageTable.securePdfCount} - ${monthlyComp.secInc}`,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(monthlyUsageTable.userId, userId),
+              eq(monthlyUsageTable.periodStart, monthlyComp.periodKey),
+            ),
+          );
+        monthlyUsed = Math.max(
+          0,
+          monthlyUsed - monthlyComp.pwdInc - monthlyComp.secInc,
+        );
+      }
+
+      // First time we hit the cap today — log it once.
+      if (status.todayUsage < status.dailyLimit) {
+        await logEvent(userId, "daily_limit_hit", "Daily usage limit reached", {
+          attemptedAction: actionType,
+          fileCount,
+          dailyLimit: status.dailyLimit,
+          todayUsage: row.totalCount - fileCount,
+        });
+      }
+
+      return {
+        recorded: false,
+        lockReason: "daily_limit_reached" as LicenseLockReason,
         todayUsage: row.totalCount - fileCount,
-      });
+        dailyLimit: status.dailyLimit,
+        monthlyUsed,
+        monthlyLimit,
+        monthlyRemaining: monthlyRemainingOf(monthlyUsed),
+      };
     }
 
     return {
-      recorded: false,
-      lockReason: "daily_limit_reached",
-      todayUsage: row.totalCount - fileCount,
+      recorded: true,
+      lockReason: "none" as LicenseLockReason,
+      todayUsage: row.totalCount,
       dailyLimit: status.dailyLimit,
+      monthlyUsed,
+      monthlyLimit,
+      monthlyRemaining: monthlyRemainingOf(monthlyUsed),
     };
-  }
-
-  return {
-    recorded: true,
-    lockReason: "none",
-    todayUsage: row.totalCount,
-    dailyLimit: status.dailyLimit,
-  };
+  });
 }
 
 // ─── Events / audit log ───────────────────────────────────────────────────────
@@ -1311,4 +1696,110 @@ export async function adminExtendProductKey(
       durationDays: productKeysTable.durationDays,
     });
   return row ?? null;
+}
+
+// ─── Admin: customers & monthly quota ─────────────────────────────────────────
+
+export interface AdminCustomerRow {
+  userId: string;
+  planName: string | null;
+  tier: PlanTier | null;
+  isPaid: boolean;
+  accountStatus: string;
+  lockReason: LicenseLockReason;
+  subscriptionStartDate: string | null;
+  subscriptionEndDate: string | null;
+  /** Raw admin override on the shared monthly pool. null = tier default, -1 = unlimited. */
+  quotaOverrideSecure: number | null;
+  monthlyUsed: number;
+  monthlyLimit: number | null;
+  monthlyRemaining: number | null;
+  passwordProtectUsed: number;
+  securePdfUsed: number;
+  /** When the current billing month resets (ISO 8601). */
+  resetDate: string | null;
+  createdAt: string;
+}
+
+/**
+ * Lists every provisioned customer with their plan, shared monthly secure-pool
+ * usage/remaining/reset, and admin override. Reuses {@link getLicenseStatus}
+ * per user so the figures match exactly what each customer sees.
+ */
+export async function adminListCustomers(
+  now: Date = new Date(),
+): Promise<AdminCustomerRow[]> {
+  const licenses = await db
+    .select()
+    .from(userLicensesTable)
+    .orderBy(desc(userLicensesTable.createdAt))
+    .limit(1000);
+
+  const rows: AdminCustomerRow[] = [];
+  for (const lic of licenses) {
+    const status = await getLicenseStatus(lic.userId, now);
+    rows.push({
+      userId: lic.userId,
+      planName: status.planName,
+      tier: planTier(status.planName),
+      isPaid: status.isPaid,
+      accountStatus: lic.accountStatus,
+      lockReason: status.lockReason,
+      subscriptionStartDate: status.subscriptionStartDate,
+      subscriptionEndDate: status.subscriptionEndDate,
+      quotaOverrideSecure: lic.quotaOverrideSecure ?? null,
+      monthlyUsed: status.monthlyUsage.used,
+      monthlyLimit: status.monthlyUsage.limit,
+      monthlyRemaining: status.monthlyUsage.remaining,
+      passwordProtectUsed: status.monthlyUsage.passwordProtectUsed,
+      securePdfUsed: status.monthlyUsage.securePdfUsed,
+      resetDate: status.monthlyUsage.periodEnd,
+      createdAt: lic.createdAt.toISOString(),
+    });
+  }
+  return rows;
+}
+
+/**
+ * Sets (or clears) the admin override on a user's shared monthly secure pool.
+ * `override === null` clears it (falls back to the tier default). `-1` grants
+ * unlimited. Provisions the license row first if the user has none yet.
+ */
+export async function adminSetQuotaOverride(
+  userId: string,
+  override: number | null,
+  now: Date = new Date(),
+): Promise<AdminCustomerRow | null> {
+  await getOrCreateLicense(userId);
+  const [row] = await db
+    .update(userLicensesTable)
+    .set({ quotaOverrideSecure: override, updatedAt: now })
+    .where(eq(userLicensesTable.userId, userId))
+    .returning({ userId: userLicensesTable.userId });
+  if (!row) return null;
+
+  await logEvent(userId, "quota_override_set", "Admin set monthly quota override", {
+    quotaOverrideSecure: override,
+  });
+
+  const status = await getLicenseStatus(userId, now);
+  const lic = await getOrCreateLicense(userId);
+  return {
+    userId,
+    planName: status.planName,
+    tier: planTier(status.planName),
+    isPaid: status.isPaid,
+    accountStatus: lic.accountStatus,
+    lockReason: status.lockReason,
+    subscriptionStartDate: status.subscriptionStartDate,
+    subscriptionEndDate: status.subscriptionEndDate,
+    quotaOverrideSecure: lic.quotaOverrideSecure ?? null,
+    monthlyUsed: status.monthlyUsage.used,
+    monthlyLimit: status.monthlyUsage.limit,
+    monthlyRemaining: status.monthlyUsage.remaining,
+    passwordProtectUsed: status.monthlyUsage.passwordProtectUsed,
+    securePdfUsed: status.monthlyUsage.securePdfUsed,
+    resetDate: status.monthlyUsage.periodEnd,
+    createdAt: lic.createdAt.toISOString(),
+  };
 }

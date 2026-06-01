@@ -35,20 +35,27 @@ router.post("/usage/check", async (req: Request, res: Response): Promise<void> =
     const status = await getLicenseStatus(userId);
     let allowed = status.canUsePdfTools;
     let lockReason = status.lockReason;
-    // Password & Expiry (secure category) are paid-only — excluded from the trial.
-    if (
-      allowed &&
-      categoryFor(parsed.data.actionType) === "secure" &&
-      !status.isPaid
-    ) {
-      allowed = false;
-      lockReason = "premium_feature";
+    // Secure actions (password protect, expiry, print/copy restriction) draw
+    // from the shared monthly pool. They require a paid plan and are blocked
+    // once the monthly allowance is exhausted.
+    if (allowed && categoryFor(parsed.data.actionType) === "secure") {
+      const { limit, remaining } = status.monthlyUsage;
+      if (!status.isPaid) {
+        allowed = false;
+        lockReason = "premium_feature";
+      } else if (limit !== null && remaining !== null && remaining <= 0) {
+        allowed = false;
+        lockReason = "monthly_limit_reached";
+      }
     }
     res.json({
       allowed,
       lockReason,
       todayUsage: status.todayUsage,
       dailyLimit: status.dailyLimit,
+      monthlyUsed: status.monthlyUsage.used,
+      monthlyLimit: status.monthlyUsage.limit,
+      monthlyRemaining: status.monthlyUsage.remaining,
     });
   } catch (err) {
     req.log.error({ err, userId }, "usage/check failed");

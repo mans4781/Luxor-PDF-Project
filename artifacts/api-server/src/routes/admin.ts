@@ -15,6 +15,8 @@ import {
   adminListProductKeys,
   adminRevokeProductKey,
   adminExtendProductKey,
+  adminListCustomers,
+  adminSetQuotaOverride,
 } from "../lib/license";
 
 const router = Router();
@@ -308,6 +310,67 @@ router.post(
     } catch (err) {
       req.log.error({ err }, "admin/product-keys/extend failed");
       res.status(500).json({ error: "Failed to extend product key" });
+    }
+  },
+);
+
+// ─── Customer / monthly-quota admin endpoints ─────────────────────────────────
+
+router.get(
+  "/admin/customers",
+  async (req: Request, res: Response): Promise<void> => {
+    if (!checkAuth(req, res)) return;
+    try {
+      const customers = await adminListCustomers();
+      res.json({ customers });
+    } catch (err) {
+      req.log.error({ err }, "admin/customers list failed");
+      res.status(500).json({ error: "Failed to list customers" });
+    }
+  },
+);
+
+router.post(
+  "/admin/customers/quota-override",
+  async (req: Request, res: Response): Promise<void> => {
+    if (!checkAuth(req, res)) return;
+
+    const body = req.body as { userId?: unknown; override?: unknown };
+    const userId =
+      typeof body.userId === "string" ? body.userId.trim() : "";
+    if (!userId) {
+      res.status(400).json({ error: "userId is required" });
+      return;
+    }
+    // `override`: null clears it (tier default), -1 = unlimited, otherwise a
+    // non-negative integer monthly allowance.
+    let override: number | null;
+    if (body.override === null || body.override === undefined) {
+      override = null;
+    } else if (
+      typeof body.override === "number" &&
+      Number.isInteger(body.override) &&
+      body.override >= -1
+    ) {
+      override = body.override;
+    } else {
+      res
+        .status(400)
+        .json({ error: "override must be null, -1 (unlimited), or a non-negative integer" });
+      return;
+    }
+
+    try {
+      const customer = await adminSetQuotaOverride(userId, override);
+      if (!customer) {
+        res.status(404).json({ error: "Customer not found" });
+        return;
+      }
+      req.log.info({ userId, override }, "Admin set monthly quota override");
+      res.json({ customer });
+    } catch (err) {
+      req.log.error({ err, userId }, "admin/customers/quota-override failed");
+      res.status(500).json({ error: "Failed to set quota override" });
     }
   },
 );

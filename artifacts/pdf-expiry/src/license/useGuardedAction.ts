@@ -25,15 +25,21 @@ function reasonMessage(
       };
     case "trial_expired":
       return {
-        title: "Trial ended",
+        title: "Subscription required",
         description:
-          "Your 14-day free trial has ended. Activate a yearly license to keep using Luxor PDF.",
+          "A paid plan is required to use Luxor PDF. Choose a plan to get started.",
+      };
+    case "subscription_required":
+      return {
+        title: "Subscription required",
+        description:
+          "A paid plan is required to use Luxor PDF tools. Choose a plan to get started.",
       };
     case "premium_feature":
       return {
         title: "Paid feature",
         description:
-          "Password protection and expiry dates aren't part of the free trial. Activate a yearly license to use them.",
+          "Password protection and expiry require a paid plan. Choose a plan to use them.",
       };
     case "subscription_expired":
       return {
@@ -41,10 +47,16 @@ function reasonMessage(
         description:
           "Your subscription has expired. Renew or activate a new key to keep using Luxor PDF.",
       };
+    case "monthly_limit_reached":
+      return {
+        title: "Monthly limit reached",
+        description:
+          "You've used all your secure-feature actions for this month. Upgrade your plan for a higher limit, or wait until your quota resets.",
+      };
     case "daily_limit_reached":
       return {
         title: "Daily limit reached",
-        description: `You've used all ${dailyLimit ?? 2} free actions for today. Activate a yearly license for unlimited usage or come back tomorrow.`,
+        description: `You've used all ${dailyLimit ?? 0} actions for today. Upgrade your plan for unlimited usage or come back tomorrow.`,
       };
     case "account_suspended":
       return {
@@ -121,6 +133,7 @@ export function useGuardedAction() {
       const cachedReason = status?.lockReason;
       if (
         cachedReason === "subscription_expired" ||
+        cachedReason === "subscription_required" ||
         cachedReason === "trial_expired" ||
         cachedReason === "account_suspended"
       ) {
@@ -167,7 +180,10 @@ export function useGuardedAction() {
         throw err;
       }
 
-      // 3. Record usage (best-effort; do not block UI on failure)
+      // 3. Record usage (best-effort; do not block UI on failure).
+      // Some actions (e.g. set_expiry via /pdfs/upload) are recorded
+      // authoritatively server-side during the action itself; those pass
+      // skipRecord so we don't double-count the shared monthly pool.
       if (!opts.skipRecord) {
         try {
           await recordMut.mutateAsync({ data: { actionType } });
@@ -180,9 +196,11 @@ export function useGuardedAction() {
             variant: "destructive",
           });
         }
-        // 4. Refresh status so the usage badge updates.
-        void qc.invalidateQueries({ queryKey: getGetLicenseStatusQueryKey() });
       }
+
+      // 4. Refresh status so the usage badge / monthly pool updates, whether
+      // the count was recorded here or server-side during the action.
+      void qc.invalidateQueries({ queryKey: getGetLicenseStatusQueryKey() });
 
       return result;
     },
