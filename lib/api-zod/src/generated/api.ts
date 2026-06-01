@@ -183,7 +183,7 @@ export const GetLicenseStatusResponse = zod
     dailyLimit: zod
       .number()
       .describe(
-        "Maximum PDF actions allowed today. 5 during trial; effectively unlimited (a large number) for paid users.",
+        "Maximum PDF actions allowed today. 2 during trial; effectively unlimited (a large number) for paid users.",
       ),
     isPaid: zod
       .boolean()
@@ -218,6 +218,7 @@ export const GetLicenseStatusResponse = zod
         "subscription_expired",
         "daily_limit_reached",
         "account_suspended",
+        "premium_feature",
       ])
       .describe("Why PDF tools are currently blocked, or `none` if allowed."),
     serverTime: zod.coerce
@@ -269,6 +270,7 @@ export const CheckUsageResponse = zod.object({
       "subscription_expired",
       "daily_limit_reached",
       "account_suspended",
+      "premium_feature",
     ])
     .describe("Why PDF tools are currently blocked, or `none` if allowed."),
   todayUsage: zod.number(),
@@ -331,6 +333,7 @@ export const RecordUsageResponse = zod.object({
       "subscription_expired",
       "daily_limit_reached",
       "account_suspended",
+      "premium_feature",
     ])
     .describe("Why PDF tools are currently blocked, or `none` if allowed."),
   todayUsage: zod.number(),

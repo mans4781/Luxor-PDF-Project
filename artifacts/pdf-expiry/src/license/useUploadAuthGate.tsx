@@ -66,7 +66,7 @@ export function useUploadAuthGate() {
           </DialogTitle>
           <DialogDescription className="text-center">
             To upload and process files with Luxor PDF online tools you
-            need a free account. New accounts include 5 free actions
+            need a free account. New accounts include 2 free actions
             every 24 hours across the whole suite.
           </DialogDescription>
         </DialogHeader>

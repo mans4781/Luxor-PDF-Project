@@ -2,6 +2,7 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { getAuth } from "@clerk/express";
 import { CheckUsageBody, RecordUsageBody } from "@workspace/api-zod";
 import {
+  categoryFor,
   getLicenseStatus,
   getTodayUsage,
   recordUsage,
@@ -32,9 +33,20 @@ router.post("/usage/check", async (req: Request, res: Response): Promise<void> =
 
   try {
     const status = await getLicenseStatus(userId);
+    let allowed = status.canUsePdfTools;
+    let lockReason = status.lockReason;
+    // Password & Expiry (secure category) are paid-only — excluded from the trial.
+    if (
+      allowed &&
+      categoryFor(parsed.data.actionType) === "secure" &&
+      !status.isPaid
+    ) {
+      allowed = false;
+      lockReason = "premium_feature";
+    }
     res.json({
-      allowed: status.canUsePdfTools,
-      lockReason: status.lockReason,
+      allowed,
+      lockReason,
       todayUsage: status.todayUsage,
       dailyLimit: status.dailyLimit,
     });

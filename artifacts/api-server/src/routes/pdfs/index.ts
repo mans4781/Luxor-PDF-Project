@@ -5,7 +5,9 @@ import fs from "fs";
 import path from "path";
 import multer from "multer";
 import { randomUUID, createHash, randomInt } from "crypto";
+import { getAuth } from "@clerk/express";
 import { logger } from "../../lib/logger";
+import { getLicenseStatus } from "../../lib/license";
 
 // ─── OTP config ────────────────────────────────────────────────────────────────
 
@@ -231,6 +233,37 @@ router.get("/pdfs/stats", async (_req, res): Promise<void> => {
   res.json({ total: records.length, active, expired, totalSize });
 });
 
+// Server-side gate for the secure upload flow (Password & Expiry protection).
+// This is a paid-only feature excluded from the free trial. Enforced here —
+// before Multer writes anything to disk — so a malicious client cannot bypass
+// the advisory `/usage/check` call by hitting `/pdfs/upload` directly.
+async function requirePaidForSecureUpload(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  const auth = getAuth(req);
+  if (!auth.userId) {
+    res.status(401).json({ error: "Not signed in", lockReason: "premium_feature" });
+    return;
+  }
+  try {
+    const status = await getLicenseStatus(auth.userId);
+    if (!status.isPaid) {
+      res.status(403).json({
+        error:
+          "Password & Expiry protection is a paid feature and isn't available during the free trial. Activate a yearly license to continue.",
+        lockReason: "premium_feature",
+      });
+      return;
+    }
+    next();
+  } catch (err) {
+    req.log.error({ err, userId: auth.userId }, "upload license check failed");
+    res.status(500).json({ error: "Failed to verify license" });
+  }
+}
+
 router.post(
   "/pdfs/upload",
   // 1. Rate limit
@@ -242,9 +275,11 @@ router.post(
     }
     next();
   },
-  // 2. Storage quota check (runs before Multer writes to disk)
+  // 2. Require a signed-in, paid user (secure feature is paid-only).
+  requirePaidForSecureUpload,
+  // 3. Storage quota check (runs before Multer writes to disk)
   checkStorageQuota,
-  // 3. Multer — file size and type enforced
+  // 4. Multer — file size and type enforced
   upload.single("file"),
   async (req, res): Promise<void> => {
     if (!req.file) {

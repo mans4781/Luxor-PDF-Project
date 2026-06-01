@@ -114,6 +114,7 @@ export const LicenseLockReason = {
   subscription_expired: "subscription_expired",
   daily_limit_reached: "daily_limit_reached",
   account_suspended: "account_suspended",
+  premium_feature: "premium_feature",
 } as const;
 
 export type LicenseStatusValue =
@@ -146,7 +147,7 @@ export interface LicenseStatus {
   trialEndDate: string | null;
   /** Total PDF actions the caller has performed today (server UTC date). */
   todayUsage: number;
-  /** Maximum PDF actions allowed today. 5 during trial; effectively unlimited (a large number) for paid users. */
+  /** Maximum PDF actions allowed today. 2 during trial; effectively unlimited (a large number) for paid users. */
   dailyLimit: number;
   /** True when the caller has an active paid subscription. Always false at this stage. */
   isPaid: boolean;

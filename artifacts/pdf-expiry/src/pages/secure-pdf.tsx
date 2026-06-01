@@ -30,6 +30,8 @@ import type { LocalPdfEntry } from "@/components/pdf-list";
 import { formatBytes } from "@/lib/utils";
 import { useGuardedAction } from "@/license/useGuardedAction";
 import { useUploadAuthGate } from "@/license/useUploadAuthGate";
+import { useLicense } from "@/license/LicenseProvider";
+import { basePath } from "@/lib/base-path";
 import { format, addDays } from "date-fns";
 
 // ─── Drop zone (matches PDF Tool style) ───────────────────────────────────────
@@ -1062,6 +1064,46 @@ function RevokeExpiryTab() {
   );
 }
 
+// ─── Premium gate (Password & Expiry are paid-only) ─────────────────────────────
+
+function SecurePremiumGate() {
+  return (
+    <Card className="border-rose-100 shadow-sm">
+      <CardContent className="pt-8 pb-8 text-center">
+        <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E61E3C] to-[#C81934] flex items-center justify-center shadow-md mb-4">
+          <Lock className="w-7 h-7 text-white" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900">A paid feature</h2>
+        <p className="text-sm text-slate-600 mt-2 max-w-md mx-auto">
+          Password protection and expiry dates aren&apos;t part of the 14-day
+          free trial. Activate a yearly license to lock, expire, and control
+          your PDFs.
+        </p>
+        <div className="mt-6 flex flex-col sm:flex-row gap-2 justify-center">
+          <a
+            href={`${basePath}/checkout?plan=yearly`}
+            className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-md px-5 py-2.5 shadow-md transition-all"
+            data-testid="secure-gate-upgrade"
+          >
+            <Sparkles className="w-4 h-4" /> Activate yearly license
+          </a>
+          <a
+            href={`${basePath}/activate-key`}
+            className="inline-flex items-center justify-center gap-2 border border-indigo-200 bg-white hover:bg-indigo-50 text-indigo-700 font-semibold rounded-md px-5 py-2.5 transition-all"
+            data-testid="secure-gate-activate"
+          >
+            <KeyRound className="w-4 h-4" /> I already have a key
+          </a>
+        </div>
+        <p className="text-[11px] text-slate-400 mt-4">
+          Your free trial still includes edit &amp; convert tools — up to 2
+          actions per day.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export function SecurePdfContent() {
@@ -1074,6 +1116,8 @@ export function SecurePdfContent() {
 
 function SecurePdfContentInner() {
   const ab = useAccentInnerBanner();
+  const { status, isLoading } = useLicense();
+  const isPaid = !!status?.isPaid;
   return (
     <div className="max-w-2xl mx-auto space-y-6">
 
@@ -1096,7 +1140,12 @@ function SecurePdfContentInner() {
         </div>
       </div>
 
-      {/* Tabbed card */}
+      {/* Secure tools (Password, Expiry, etc.) require a paid plan */}
+      {isLoading ? (
+        <div className="text-center text-sm text-slate-400 py-12">Checking your plan…</div>
+      ) : !isPaid ? (
+        <SecurePremiumGate />
+      ) : (
       <Card className="border-rose-100 shadow-sm">
         <CardContent className="pt-6">
           <Tabs defaultValue="expiry">
@@ -1153,6 +1202,7 @@ function SecurePdfContentInner() {
           </Tabs>
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }

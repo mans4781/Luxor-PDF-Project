@@ -333,7 +333,23 @@ export default function PricingPage() {
           <h2 className="text-3xl md:text-5xl text-slate-900 mb-5 tracking-[-0.02em]">
             Ready to switch to Luxor?
           </h2>
-          <p className="text-slate-600 mb-8 text-lg">No credit card. No commitment. 14-day Pro trial included.</p>
+          <p className="text-slate-600 mb-6 text-lg">No credit card. No commitment. 14-day free trial included.</p>
+          <ul className="flex flex-wrap gap-2 justify-center mb-8">
+            {[
+              "14-day free trial",
+              "No payment required",
+              "Max 2 PDF actions/day",
+              "Password & expiry: paid only",
+            ].map((t) => (
+              <li
+                key={t}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-full px-3 py-1.5"
+              >
+                <Check className="w-3 h-3 text-emerald-600" strokeWidth={3} />
+                {t}
+              </li>
+            ))}
+          </ul>
           <div className="flex flex-wrap gap-3 justify-center">
             <button
               type="button"

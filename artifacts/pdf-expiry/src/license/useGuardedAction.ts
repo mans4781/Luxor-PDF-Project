@@ -10,7 +10,10 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useLicense } from "./LicenseProvider";
 
-function reasonMessage(reason: LicenseLockReason): {
+function reasonMessage(
+  reason: LicenseLockReason,
+  dailyLimit?: number,
+): {
   title: string;
   description: string;
 } {
@@ -24,7 +27,13 @@ function reasonMessage(reason: LicenseLockReason): {
       return {
         title: "Trial ended",
         description:
-          "Your 14-day free trial has ended. Activate a product key or pick a plan to keep going.",
+          "Your 14-day free trial has ended. Activate a yearly license to keep using Luxor PDF.",
+      };
+    case "premium_feature":
+      return {
+        title: "Paid feature",
+        description:
+          "Password protection and expiry dates aren't part of the free trial. Activate a yearly license to use them.",
       };
     case "subscription_expired":
       return {
@@ -35,8 +44,7 @@ function reasonMessage(reason: LicenseLockReason): {
     case "daily_limit_reached":
       return {
         title: "Daily limit reached",
-        description:
-          "You've used all 5 free actions for today. Upgrade for unlimited usage or come back tomorrow.",
+        description: `You've used all ${dailyLimit ?? 2} free actions for today. Activate a yearly license for unlimited usage or come back tomorrow.`,
       };
     case "account_suspended":
       return {
@@ -143,7 +151,7 @@ export function useGuardedAction() {
         return undefined;
       }
       if (!check.allowed) {
-        const msg = reasonMessage(check.lockReason);
+        const msg = reasonMessage(check.lockReason, check.dailyLimit);
         toast({ ...msg, variant: "destructive" });
         // Refresh status so any expiry / lock UI appears immediately.
         void qc.invalidateQueries({ queryKey: getGetLicenseStatusQueryKey() });

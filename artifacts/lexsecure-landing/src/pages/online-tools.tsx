@@ -115,7 +115,7 @@ export default function OnlineToolsPage() {
               Edit, convert and compress your PDFs straight from the web.
               Sign in to use any tool — your free account includes{" "}
               <span className="font-semibold text-[#1E1B4B]">
-                5 free actions every 24 hours
+                2 free actions every 24 hours
               </span>{" "}
               across the whole suite.
             </p>
@@ -182,7 +182,7 @@ export default function OnlineToolsPage() {
                   Why we ask you to sign in
                 </h2>
                 <p className="mt-2 text-white/80 leading-relaxed">
-                  Your account is what tracks the 5-action daily quota and
+                  Your account is what tracks the 2-action daily quota and
                   keeps your work history available across devices. New
                   here? Creating an account takes 30 seconds — no credit
                   card required.

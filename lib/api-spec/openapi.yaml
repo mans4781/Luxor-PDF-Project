@@ -1157,6 +1157,7 @@ components:
         - subscription_expired
         - daily_limit_reached
         - account_suspended
+        - premium_feature
 
     LicenseStatusValue:
       type: string
@@ -1193,7 +1194,7 @@ components:
           description: Total PDF actions the caller has performed today (server UTC date).
         dailyLimit:
           type: integer
-          description: Maximum PDF actions allowed today. 5 during trial; effectively unlimited (a large number) for paid users.
+          description: Maximum PDF actions allowed today. 2 during trial; effectively unlimited (a large number) for paid users.
         isPaid:
           type: boolean
           description: True when the caller has an active paid subscription. Always false at this stage.

@@ -19,4 +19,5 @@ export const LicenseLockReason = {
   subscription_expired: "subscription_expired",
   daily_limit_reached: "daily_limit_reached",
   account_suspended: "account_suspended",
+  premium_feature: "premium_feature",
 } as const;

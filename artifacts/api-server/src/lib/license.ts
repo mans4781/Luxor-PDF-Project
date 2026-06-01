@@ -26,7 +26,7 @@ import { getActiveOrgMembership } from "./org";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 export const TRIAL_DAYS = 14;
-export const TRIAL_DAILY_LIMIT = 5;
+export const TRIAL_DAILY_LIMIT = 2;
 // Effectively unlimited for paid users — using a large finite number so the
 // value serializes cleanly through JSON / zod number().
 export const PAID_DAILY_LIMIT = 1_000_000;
@@ -49,7 +49,8 @@ export type LicenseLockReason =
   | "trial_expired"
   | "subscription_expired"
   | "daily_limit_reached"
-  | "account_suspended";
+  | "account_suspended"
+  | "premium_feature";
 
 export interface LicenseStatusResult {
   loggedIn: boolean;
@@ -565,8 +566,21 @@ export async function recordUsage(
     };
   }
 
-  const today = todayUtcDate(now);
   const cat = categoryFor(actionType);
+
+  // Password & Expiry (the "secure" category) are not part of the free trial —
+  // they require a paid plan. Block them for any non-paid user before touching
+  // today's usage row.
+  if (cat === "secure" && !status.isPaid) {
+    return {
+      recorded: false,
+      lockReason: "premium_feature",
+      todayUsage: status.todayUsage,
+      dailyLimit: status.dailyLimit,
+    };
+  }
+
+  const today = todayUtcDate(now);
   const editInc = cat === "edit" ? fileCount : 0;
   const convertInc = cat === "convert" ? fileCount : 0;
   const secureInc = cat === "secure" ? fileCount : 0;

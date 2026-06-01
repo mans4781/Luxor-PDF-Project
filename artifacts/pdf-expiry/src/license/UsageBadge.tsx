@@ -160,7 +160,7 @@ export function UsagePanel() {
       label: "Free trial",
       primary: `${days} day${days === 1 ? "" : "s"} left`,
       secondary:
-        days <= 3 ? "Trial ends soon — secure a plan." : "Full access during your trial.",
+        days <= 3 ? "Trial ends soon — get a yearly license." : "Edit & convert tools, 2 actions/day.",
       testId: "usage-card-trial",
       cta: { label: "Plans", href: PRICING_URL },
     };
@@ -170,9 +170,9 @@ export function UsagePanel() {
       icon: <AlertTriangle className="w-5 h-5 text-white" />,
       label: "Trial",
       primary: "Trial ended",
-      secondary: "Activate a key or pick a plan to continue.",
+      secondary: "Activate a yearly license to continue.",
       testId: "usage-card-trial",
-      cta: { label: "Activate", href: `${basePath}/activate-key` },
+      cta: { label: "Get yearly", href: `${basePath}/checkout?plan=yearly` },
     };
   }
 

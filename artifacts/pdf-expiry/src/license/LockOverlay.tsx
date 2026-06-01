@@ -112,7 +112,7 @@ export function LockOverlay() {
                 ? "Your account has been suspended. Please contact support to restore access."
                 : isSub
                   ? "Renew your subscription or activate a new product key to keep using Luxor PDF."
-                  : "Pick a plan or activate a product key to keep using all Luxor PDF tools."}
+                  : "Activate a yearly license to keep using all Luxor PDF tools."}
         </p>
 
         <div className="mt-5 space-y-2">
@@ -129,12 +129,12 @@ export function LockOverlay() {
                 </a>
               ) : (
                 <a
-                  href={PRICING_URL}
+                  href={`${basePath}/checkout?plan=yearly`}
                   className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-md px-4 py-2.5 shadow-md transition-all"
                   data-testid="lock-action-pricing"
                 >
                   <Sparkles className="w-4 h-4" />
-                  View plans
+                  Activate yearly license
                 </a>
               )}
               <Link
