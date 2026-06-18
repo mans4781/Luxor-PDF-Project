@@ -14,6 +14,7 @@ import { hitTestAnnotation, type HitContext } from "@/lib/hitTest";
 import { watermarkAppliesTo, pageNoAppliesTo, formatPageLabel } from "@/lib/editTypes";
 import {
   HIGHLIGHT_COLORS as HIGHLIGHT_PALETTE,
+  QUICK_HIGHLIGHT_COLORS,
   DEFAULTS as COLOR_DEFAULTS,
   highlightOpacityFor,
 } from "@/lib/annotationColors";
@@ -785,6 +786,17 @@ export default function PDFPage({
   const [hlSubmenuOpen, setHlSubmenuOpen] = useState(false);
   const [commentInput, setCommentInput] = useState<{ open: boolean; text: string }>({ open: false, text: "" });
 
+  // Floating quick-highlight toolbar shown over a live text selection
+  // ("new" mode) or over an existing highlight that was clicked ("edit"
+  // mode). Coords are in page-CSS pixels (same space as `contextMenu`).
+  const [quickBar, setQuickBar] = useState<{
+    x: number; y: number;
+    mode: "new" | "edit";
+    annId?: string;
+    rects: Rect[];
+    text: string;
+  } | null>(null);
+
   // Right-click popup highlight swatches come from the central palette in
   // src/lib/annotationColors.ts. The hex `value` is stored on the
   // annotation and the renderer applies `opacity` via canvas globalAlpha.
@@ -1132,6 +1144,117 @@ export default function PDFPage({
       radiusNormY: ERASER_RADIUS_CSS / pageSize.h,
     };
   }, [pageSize]);
+
+  // ── Floating quick-highlight toolbar ─────────────────────────
+  // Return the top-most highlight on this page hit at the given CSS point.
+  const hitTestHighlightAt = useCallback(
+    (cssX: number, cssY: number): HighlightAnnotation | null => {
+      const ctx = buildHitContext(cssX, cssY);
+      if (!ctx) return null;
+      for (let i = annotations.length - 1; i >= 0; i--) {
+        const ann = annotations[i];
+        if (ann.type !== "highlight" || ann.page !== pageNum) continue;
+        if (hitTestAnnotation(ann, ctx)) return ann as HighlightAnnotation;
+      }
+      return null;
+    },
+    [annotations, pageNum, buildHitContext],
+  );
+
+  // Position the toolbar centered above a set of normalized rects (falls
+  // back to just below them when there isn't room above). Output is in
+  // page-CSS pixels, clamped within the page bounds.
+  const barPosForRects = useCallback(
+    (rects: Rect[]) => {
+      const BAR_W = 176;
+      const BAR_H = 40;
+      const GAP = 8;
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const r of rects) {
+        minX = Math.min(minX, r.x);
+        maxX = Math.max(maxX, r.x + r.width);
+        minY = Math.min(minY, r.y);
+        maxY = Math.max(maxY, r.y + r.height);
+      }
+      const centerX = ((minX + maxX) / 2) * pageSize.w;
+      let x = centerX - BAR_W / 2;
+      x = Math.max(4, Math.min(x, pageSize.w - BAR_W - 4));
+      let y = minY * pageSize.h - BAR_H - GAP;
+      if (y < 4) y = maxY * pageSize.h + GAP;
+      y = Math.max(4, Math.min(y, pageSize.h - BAR_H - 4));
+      return { x, y };
+    },
+    [pageSize],
+  );
+
+  const onWrapperPointerUp = useCallback(
+    (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+      // Only when text is selectable (hand / highlight, not draw tools).
+      if (isShapeTool(tool) || tool === "eraser" || tool === "edittext") return;
+      const wrapper = wrapperRef.current;
+      if (!wrapper || pageSize.w === 0) return;
+
+      // 1) Non-empty selection intersecting this page → "new" bar.
+      const sel = window.getSelection();
+      const text = sel?.toString().trim() ?? "";
+      if (sel && !sel.isCollapsed && text) {
+        let touches = false;
+        try {
+          touches = sel.rangeCount > 0 && sel.getRangeAt(0).intersectsNode(wrapper);
+        } catch {
+          touches = false;
+        }
+        if (touches) {
+          const result = getSelectionRects();
+          if (result && result.rects.length > 0) {
+            setQuickBar({ ...barPosForRects(result.rects), mode: "new", rects: result.rects, text: result.text });
+            return;
+          }
+        }
+      }
+
+      // 2) Collapsed click on an existing highlight → "edit" bar.
+      const clientX = "changedTouches" in e ? e.changedTouches[0]?.clientX : e.clientX;
+      const clientY = "changedTouches" in e ? e.changedTouches[0]?.clientY : e.clientY;
+      if (clientX == null || clientY == null) {
+        setQuickBar(null);
+        return;
+      }
+      const rect = wrapper.getBoundingClientRect();
+      const hit = hitTestHighlightAt(clientX - rect.left, clientY - rect.top);
+      if (hit) {
+        setQuickBar({ ...barPosForRects(hit.rects), mode: "edit", annId: hit.id, rects: hit.rects, text: hit.selectedText ?? "" });
+      } else {
+        setQuickBar(null);
+      }
+    },
+    [tool, pageSize, getSelectionRects, hitTestHighlightAt, barPosForRects],
+  );
+
+  // Dismiss the quick bar on outside mousedown, scroll, tool change, or
+  // when a "new"-mode selection is cleared.
+  useEffect(() => {
+    if (!quickBar) return;
+    const onDown = (e: MouseEvent) => {
+      if ((e.target as HTMLElement).closest("[data-quick-bar]")) return;
+      setQuickBar(null);
+    };
+    const onScroll = () => setQuickBar(null);
+    const onSelChange = () => {
+      const sel = window.getSelection();
+      if (quickBar.mode === "new" && (!sel || sel.isCollapsed)) setQuickBar(null);
+    };
+    document.addEventListener("mousedown", onDown, true);
+    window.addEventListener("scroll", onScroll, true);
+    document.addEventListener("selectionchange", onSelChange);
+    return () => {
+      document.removeEventListener("mousedown", onDown, true);
+      window.removeEventListener("scroll", onScroll, true);
+      document.removeEventListener("selectionchange", onSelChange);
+    };
+  }, [quickBar]);
+
+  useEffect(() => { setQuickBar(null); }, [tool, pageNum, zoom, rotation]);
 
   const eraseAt = useCallback((cssX: number, cssY: number) => {
     const ctx = buildHitContext(cssX, cssY);
@@ -1489,6 +1612,8 @@ export default function PDFPage({
       style={{ width: pageSize.w || "auto", height: pageSize.h || "auto", "--scale-factor": zoom } as React.CSSProperties}
       id={`page-${pageNum}`}
       data-edit-text-mode={tool === "edittext" ? "" : undefined}
+      onMouseUp={onWrapperPointerUp}
+      onTouchEnd={onWrapperPointerUp}
     >
       <canvas ref={pageCanvasRef} className="pdf-page-canvas" />
 
@@ -1676,6 +1801,82 @@ export default function PDFPage({
           zIndex: 100,
         }}>
           Copied!
+        </div>
+      )}
+
+      {quickBar && pageSize.w > 0 && (
+        <div
+          data-quick-bar
+          onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          style={{
+            position: "absolute",
+            left: quickBar.x,
+            top: quickBar.y,
+            zIndex: 201,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            background: "#2a2a2e",
+            borderRadius: 9,
+            padding: "6px 8px",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)",
+            pointerEvents: "all",
+            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          }}
+        >
+          {QUICK_HIGHLIGHT_COLORS.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              title={c.name}
+              onClick={() => {
+                if (quickBar.mode === "new") {
+                  const ann = createHighlightFromSelection({
+                    id: genId(),
+                    page: pageNum,
+                    selection: { text: quickBar.text, rects: quickBar.rects },
+                    color: c.value,
+                    opacity: c.opacity,
+                  });
+                  onAnnotationAdd(ann);
+                  window.getSelection()?.removeAllRanges();
+                } else if (quickBar.annId) {
+                  onAnnotationUpdate(quickBar.annId, { color: c.value, opacity: c.opacity } as Partial<Annotation>);
+                }
+                setQuickBar(null);
+              }}
+              style={{
+                width: 22, height: 22, borderRadius: "50%",
+                background: c.value, cursor: "pointer",
+                border: "2px solid rgba(255,255,255,0.35)",
+                boxSizing: "border-box", padding: 0,
+                transition: "transform 0.12s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.18)")}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            />
+          ))}
+          {quickBar.mode === "edit" && (
+            <>
+              <span style={{ width: 1, height: 20, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
+              <button
+                type="button"
+                title="Delete highlight"
+                onClick={() => {
+                  if (quickBar.annId) onAnnotationRemove(quickBar.annId);
+                  setQuickBar(null);
+                }}
+                style={{
+                  width: 26, height: 24, display: "flex",
+                  alignItems: "center", justifyContent: "center",
+                  background: "transparent", border: "none", cursor: "pointer",
+                  fontSize: 14, padding: 0, borderRadius: 6,
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >🗑️</button>
+            </>
+          )}
         </div>
       )}
 

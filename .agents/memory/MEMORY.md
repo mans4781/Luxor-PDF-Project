@@ -1,3 +1,4 @@
 - [Teams licensing architecture](teams-licensing.md) — custom orgs/seats/invites layer (no Clerk org tenants); how Team access & device caps mirror the individual license flow.
 - [Stripe webhook patterns](stripe-webhook-patterns.md) — established idempotency + renewal-handling conventions in billing.ts; what is deliberately NOT handled.
 - [Secure upload enforcement](secure-upload-enforcement.md) — secure/expiry (Password & Expiry) is paid-only; gate it on POST /api/pdfs/upload itself, not just the advisory usage endpoints.
+- [Luxor PDF highlight model](luxor-pdf-highlights.md) — highlights use normalized-rect model (not <mark>/offsets); per-doc localStorage persistence gated by hydratedKey so empty initial state can't overwrite storage.

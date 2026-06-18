@@ -7,7 +7,8 @@ import ThumbnailPanel from "@/components/ThumbnailPanel";
 import SearchBar from "@/components/SearchBar";
 import { useAnnotations } from "@/lib/useAnnotations";
 import { ToolType } from "@/lib/annotationTypes";
-import { DEFAULTS as COLOR_DEFAULTS, getSelectionPreview, HIGHLIGHT_COLORS } from "@/lib/annotationColors";
+import { DEFAULTS as COLOR_DEFAULTS, HIGHLIGHT_COLORS, SELECTION_BLUE } from "@/lib/annotationColors";
+import type { Annotation, HighlightAnnotation } from "@/lib/annotationTypes";
 import WatermarkModal from "@/components/WatermarkModal";
 import PageNumberModal from "@/components/PageNumberModal";
 import CompressModal from "@/components/CompressModal";
@@ -26,6 +27,9 @@ const LS_KEYS = {
   pageNo: "luxor-pdf:pageNo",
   theme: "luxor-pdf:theme",
 } as const;
+
+/** Per-document localStorage key under which highlights are persisted. */
+const highlightsKey = (docKey: string) => `luxor-pdf:highlights:${docKey}`;
 
 const THEME_KEYS = ["light", "sepia", "dark", "night"] as const;
 const isThemeKey = (v: string): v is ThemeKey =>
@@ -116,16 +120,11 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
 
   // Persist tool-color preferences to localStorage whenever they change.
   useEffect(() => { lsSet(LS_KEYS.highlight, highlightColor); }, [highlightColor]);
-  // Drive the soft text-selection preview color (--active-selection-color)
-  // from whichever highlight color is currently picked, so dragging to
-  // select text shows a ChatGPT-style translucent shade in the same hue
-  // family the user will commit when they release.
+  // The live text-selection overlay is always a fixed blue (matches the
+  // reference design) regardless of which highlight color is picked.
   useEffect(() => {
-    document.documentElement.style.setProperty(
-      "--active-selection-color",
-      getSelectionPreview(highlightColor),
-    );
-  }, [highlightColor]);
+    document.documentElement.style.setProperty("--active-selection-color", SELECTION_BLUE);
+  }, []);
   useEffect(() => { lsSet(LS_KEYS.text, textColor); }, [textColor]);
   useEffect(() => { lsSet(LS_KEYS.draw, drawColor); }, [drawColor]);
   useEffect(() => { lsSet(LS_KEYS.drawThickness, drawThickness); }, [drawThickness]);
@@ -146,7 +145,30 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const pageInputRef = useRef<HTMLInputElement>(null);
 
-  const { annotations, addAnnotation, updateAnnotation, removeAnnotation, clearHighlights, undo, getPageAnnotations } = useAnnotations();
+  const { annotations, addAnnotation, updateAnnotation, removeAnnotation, clearHighlights, undo, getPageAnnotations, replaceHighlights } = useAnnotations();
+
+  // Stable per-document key for persisting highlights across reloads.
+  const docKey = useMemo(
+    () => `${file.name}::${file.size}::${file.lastModified}`,
+    [file.name, file.size, file.lastModified],
+  );
+
+  // Hydrate persisted highlights when a document opens. `hydratedKey` gates
+  // the save effect below so the empty initial annotation state can never
+  // overwrite stored highlights before they've been restored.
+  const [hydratedKey, setHydratedKey] = useState<string | null>(null);
+  useEffect(() => {
+    const stored = lsGetJSON<HighlightAnnotation[]>(highlightsKey(docKey)) ?? [];
+    replaceHighlights(stored as Annotation[]);
+    setHydratedKey(docKey);
+  }, [docKey, replaceHighlights]);
+
+  // Persist highlights whenever they change (only after this doc is hydrated).
+  useEffect(() => {
+    if (hydratedKey !== docKey) return;
+    const highlights = annotations.filter((a): a is HighlightAnnotation => a.type === "highlight");
+    lsSetJSON(highlightsKey(docKey), highlights.length > 0 ? highlights : null);
+  }, [annotations, docKey, hydratedKey]);
 
   // Load PDF
   useEffect(() => {

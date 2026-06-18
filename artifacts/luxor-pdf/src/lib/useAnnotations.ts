@@ -44,5 +44,14 @@ export function useAnnotations() {
     return annotations.filter(a => a.page === page);
   }, [annotations]);
 
-  return { annotations, addAnnotation, updateAnnotation, removeAnnotation, clearHighlights, undo, getPageAnnotations };
+  /**
+   * Replace the stored highlights with `list` while leaving every other
+   * annotation type untouched. Used to hydrate persisted highlights when a
+   * document opens (does not push an undo step — restore is not undoable).
+   */
+  const replaceHighlights = useCallback((list: Annotation[]) => {
+    setAnnotations(prev => [...prev.filter(a => a.type !== "highlight"), ...list]);
+  }, []);
+
+  return { annotations, addAnnotation, updateAnnotation, removeAnnotation, clearHighlights, undo, getPageAnnotations, replaceHighlights };
 }

@@ -52,6 +52,24 @@ export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
 ];
 
 /**
+ * Quick-highlight palette shown in the floating toolbar that pops up over
+ * a live text selection (Yellow / Green / Blue / Pink, in that order — the
+ * set the user requested). Each swatch carries its own opacity so the
+ * committed highlight reads vibrant while leaving the text sharp.
+ */
+export const QUICK_HIGHLIGHT_COLORS: HighlightSwatch[] = [
+  { name: "Yellow", value: "#FFD600", opacity: 0.28 },
+  { name: "Green",  value: "#4CAF50", opacity: 0.24 },
+  { name: "Blue",   value: "#2196F3", opacity: 0.26 },
+  { name: "Pink",   value: "#EC407A", opacity: 0.24 },
+];
+
+/** Fixed blue tint used by the live text-selection overlay (matches the
+ *  reference design — selection is always blue regardless of the picked
+ *  highlight color). */
+export const SELECTION_BLUE = "rgba(37, 99, 235, 0.28)";
+
+/**
  * Soft, ChatGPT-style translucent shades used as the live text-selection
  * preview before the user commits the highlight. These are intentionally
  * lower-saturation than the final HIGHLIGHT_COLORS so the selected text
@@ -68,6 +86,8 @@ export const SELECTION_PREVIEW_BY_HIGHLIGHT: Record<string, string> = {
   "#F44336": "rgba(244, 67, 54, 0.22)",   // Red
   "#7E57C2": "rgba(126, 87, 194, 0.22)",  // Violet
   "#9E9E9E": "rgba(158, 158, 158, 0.22)", // Grey
+  "#2196F3": "rgba(33, 150, 243, 0.26)",  // Blue
+  "#EC407A": "rgba(236, 64, 122, 0.24)",  // Pink
 };
 
 /** Resolve a highlight hex to its soft selection-preview shade. */
