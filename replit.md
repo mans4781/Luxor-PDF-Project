@@ -24,7 +24,7 @@ PDF Expiry Tool — a web application for uploading PDFs, setting an exact expir
 - **api-server** (api) — Express backend at `/api` (port 8080)
 - **lexsecure-landing** (react-vite) — Luxor PDF marketing site at `/lexsecure-landing/`
 - **esign-app** (react-vite) — LexSign eSign app
-- **luxor-pdf** (react-vite) — Luxor PDF Reader
+- **luxor-pdf** (react-vite) — Luxor PDF Reader. Toolbar has a **Theme** menu (Light / Sepia / Dark / Night) that themes the reading area via CSS vars (`--viewer-bg`, `--page-bg`, `--page-filter`) and `data-theme` on `<html>`; Night inverts the page canvas. Choice persists in `localStorage["luxor-pdf:theme"]`.
 - **mockup-sandbox** (design) — Canvas component preview server
 - **luxor-desktop** (electron) — Windows desktop wrapper for `pdf-expiry`, packaged as the **Luxor PDF Secure** NSIS installer (no service, no Replit preview)
 

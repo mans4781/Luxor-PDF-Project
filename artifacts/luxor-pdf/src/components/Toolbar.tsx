@@ -253,9 +253,21 @@ interface ToolbarProps {
   onFileSaveAs: () => void;
   onFileSaveCopy: () => void;
   onFileClose: () => void;
+  // Theme menu
+  theme: ThemeKey;
+  onThemeChange: (t: ThemeKey) => void;
 }
 
-type PopoverType = "highlight" | "text" | "tools" | "edit" | "draw" | "file" | null;
+export type ThemeKey = "light" | "sepia" | "dark" | "night";
+
+const THEMES: { key: ThemeKey; label: string; swatch: string; ring: string }[] = [
+  { key: "light", label: "Light", swatch: "#ffffff", ring: "rgba(0,0,0,0.18)" },
+  { key: "sepia", label: "Sepia", swatch: "#f4ecd8", ring: "rgba(74,63,42,0.35)" },
+  { key: "dark",  label: "Dark",  swatch: "#2b2b2b", ring: "rgba(255,255,255,0.25)" },
+  { key: "night", label: "Night", swatch: "#0e0e0e", ring: "rgba(255,255,255,0.25)" },
+];
+
+type PopoverType = "highlight" | "text" | "tools" | "edit" | "draw" | "file" | "theme" | null;
 
 /**
  * Edit menu items. The dropdown UI is shipped now; the feature
@@ -358,6 +370,7 @@ export default function Toolbar({
   onClearWatermark, onClearPageNo,
   watermarkActive, pageNoActive,
   onFileSaveAs, onFileSaveCopy, onFileClose,
+  theme, onThemeChange,
 }: ToolbarProps) {
   const [popover, setPopover] = useState<PopoverType>(null);
   // Which Edit-menu feature modal is currently open (null = none).
@@ -546,6 +559,64 @@ export default function Toolbar({
                   }}>ON</span>
                 )}
               </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── 3. Theme menu (text word) ───────────────────────── */}
+      <div style={{ position: "relative" }}>
+        <button
+          className={`toolbar-menu-word ${popover === "theme" ? "active" : ""}`}
+          onClick={() => toggle("theme")}
+          title="Background theme"
+        >
+          Theme
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 5 }}>
+            <polyline points="5 8 10 13 15 8" />
+          </svg>
+        </button>
+
+        {popover === "theme" && (
+          <div
+            className="popover-panel edit-menu-panel"
+            style={{ minWidth: 200, left: 0, transform: "none", padding: "6px 6px" }}
+          >
+            {THEMES.map((t) => {
+              const isActive = theme === t.key;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => { setPopover(null); onThemeChange(t.key); }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    width: "100%", padding: "7px 10px", marginBottom: 1,
+                    background: "transparent",
+                    border: "none", borderRadius: 5,
+                    color: "#1a1a1a",
+                    cursor: "pointer", fontSize: 13, textAlign: "left",
+                    fontWeight: 400,
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(13,98,242,0.10)"; e.currentTarget.style.color = "#0D62F2"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#1a1a1a"; }}
+                >
+                  <span
+                    style={{
+                      display: "inline-block", width: 18, height: 18, borderRadius: "50%",
+                      background: t.swatch, border: `1px solid ${t.ring}`, flexShrink: 0,
+                    }}
+                  />
+                  <span style={{ flex: 1 }}>{t.label}</span>
+                  {isActive && (
+                    <span style={{
+                      fontSize: 9, fontWeight: 500, letterSpacing: 0.5,
+                      padding: "2px 6px", borderRadius: 999,
+                      background: "#0D62F2",
+                      color: "#fff",
+                    }}>ON</span>
+                  )}
+                </button>
               );
             })}
           </div>

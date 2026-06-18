@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/web/pdf_viewer.css";
-import Toolbar from "@/components/Toolbar";
+import Toolbar, { type ThemeKey } from "@/components/Toolbar";
 import PDFPage from "@/components/PDFPage";
 import ThumbnailPanel from "@/components/ThumbnailPanel";
 import SearchBar from "@/components/SearchBar";
@@ -24,7 +24,12 @@ const LS_KEYS = {
   shapeFill: "luxor-pdf:shapeFill",
   watermark: "luxor-pdf:watermark",
   pageNo: "luxor-pdf:pageNo",
+  theme: "luxor-pdf:theme",
 } as const;
+
+const THEME_KEYS = ["light", "sepia", "dark", "night"] as const;
+const isThemeKey = (v: string): v is ThemeKey =>
+  (THEME_KEYS as readonly string[]).includes(v);
 
 function lsGetJSON<T>(k: string): T | null {
   try { const v = localStorage.getItem(k); return v ? (JSON.parse(v) as T) : null; } catch { return null; }
@@ -93,6 +98,21 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   const [shapeFill, setShapeFill] = useState<boolean>(() => {
     try { return localStorage.getItem(LS_KEYS.shapeFill) === "1"; } catch { return false; }
   });
+  const [theme, setTheme] = useState<ThemeKey>(() => {
+    const stored = lsGet(LS_KEYS.theme, "light");
+    return isThemeKey(stored) ? stored : "light";
+  });
+
+  // Apply the reading theme via data-theme on <html> and persist it.
+  // Light is the default, so we remove the attribute for it to keep the
+  // base :root tokens in effect.
+  useEffect(() => {
+    const el = document.documentElement;
+    if (theme === "light") el.removeAttribute("data-theme");
+    else el.setAttribute("data-theme", theme);
+    lsSet(LS_KEYS.theme, theme);
+    return () => { el.removeAttribute("data-theme"); };
+  }, [theme]);
 
   // Persist tool-color preferences to localStorage whenever they change.
   useEffect(() => { lsSet(LS_KEYS.highlight, highlightColor); }, [highlightColor]);
@@ -580,6 +600,8 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         onFileSaveAs={handleFileSaveAs}
         onFileSaveCopy={handleFileSaveCopy}
         onFileClose={handleFileClose}
+        theme={theme}
+        onThemeChange={setTheme}
       />
 
       {/* Hidden file input for Edit → Add Image. */}
