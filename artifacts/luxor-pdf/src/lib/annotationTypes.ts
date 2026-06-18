@@ -59,6 +59,8 @@ export interface TextAnnotation {
   fontSize: number;
   color: string;
   letterSpacing?: number;
+  /** Font family key (see TEXT_FONTS); defaults to Times for back-compat. */
+  fontFamily?: string;
 }
 
 export interface CommentAnnotation {

@@ -153,6 +153,30 @@ export const PEN_COLORS: ColorSwatch[] = DRAW_PALETTE;
 /** Add-Text reuses the same palette for one consistent color system. */
 export const TEXT_COLORS: ColorSwatch[] = DRAW_PALETTE;
 
+/**
+ * Font family options for the Add-Text tool. The annotation stores the
+ * stable `key`; the renderer resolves it to a CSS font-family stack via
+ * `fontFamilyCss()`. Keys map cleanly onto the PDF base-14 families so the
+ * choice can later be honored when text is flattened into an exported PDF.
+ */
+export type FontSwatch = { key: string; label: string; css: string };
+
+export const TEXT_FONTS: FontSwatch[] = [
+  { key: "times",     label: "Times",     css: "'Times New Roman', Times, serif" },
+  { key: "helvetica", label: "Helvetica", css: "Helvetica, Arial, sans-serif" },
+  { key: "courier",   label: "Courier",   css: "'Courier New', Courier, monospace" },
+  { key: "georgia",   label: "Georgia",   css: "Georgia, 'Times New Roman', serif" },
+  { key: "verdana",   label: "Verdana",   css: "Verdana, Geneva, sans-serif" },
+];
+
+/** Default font key — Times, matching the legacy hardcoded look. */
+export const DEFAULT_FONT_KEY = "times";
+
+/** Resolve a font key to its CSS font-family stack (falls back to Times). */
+export function fontFamilyCss(key?: string): string {
+  return TEXT_FONTS.find((f) => f.key === key)?.css ?? TEXT_FONTS[0].css;
+}
+
 /** Thickness slider range for every drawing tool. */
 export const DRAW_THICKNESS = {
   min: 1,
@@ -171,6 +195,7 @@ export const DEFAULTS = {
   strikeColor: "#F21E1E",
   textColor: "#000000",
   textSize: 16,
+  textFont: "times",
 } as const;
 
 /** Look up the opacity that ships with a highlight swatch (fallback 0.5). */

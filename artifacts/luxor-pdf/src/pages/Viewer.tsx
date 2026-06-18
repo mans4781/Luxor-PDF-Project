@@ -22,6 +22,7 @@ const LS_KEYS = {
   draw: "luxor-pdf:drawColor",
   drawThickness: "luxor-pdf:drawThickness",
   textSize: "luxor-pdf:textSize",
+  textFont: "luxor-pdf:textFont",
   shapeFill: "luxor-pdf:shapeFill",
   watermark: "luxor-pdf:watermark",
   pageNo: "luxor-pdf:pageNo",
@@ -97,6 +98,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   });
   const [textColor, setTextColor] = useState(() => lsGet(LS_KEYS.text, COLOR_DEFAULTS.textColor));
   const [textSize, setTextSize] = useState(() => lsGetNum(LS_KEYS.textSize, COLOR_DEFAULTS.textSize));
+  const [textFont, setTextFont] = useState(() => lsGet(LS_KEYS.textFont, COLOR_DEFAULTS.textFont));
   const [drawColor, setDrawColor] = useState(() => lsGet(LS_KEYS.draw, COLOR_DEFAULTS.penColor));
   const [drawThickness, setDrawThickness] = useState(() => lsGetNum(LS_KEYS.drawThickness, COLOR_DEFAULTS.penWidth));
   const [shapeFill, setShapeFill] = useState<boolean>(() => {
@@ -129,6 +131,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   useEffect(() => { lsSet(LS_KEYS.draw, drawColor); }, [drawColor]);
   useEffect(() => { lsSet(LS_KEYS.drawThickness, drawThickness); }, [drawThickness]);
   useEffect(() => { lsSet(LS_KEYS.textSize, textSize); }, [textSize]);
+  useEffect(() => { lsSet(LS_KEYS.textFont, textFont); }, [textFont]);
   useEffect(() => { lsSet(LS_KEYS.shapeFill, shapeFill ? "1" : "0"); }, [shapeFill]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [splitView, setSplitView] = useState(false);
@@ -589,6 +592,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         highlightColor={highlightColor}
         textColor={textColor}
         textSize={textSize}
+        textFont={textFont}
         isSpeaking={isSpeaking}
         showContents={showContents}
         searchOpen={searchOpen}
@@ -600,6 +604,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         onHighlightColorChange={setHighlightColor}
         onTextColorChange={setTextColor}
         onTextSizeChange={setTextSize}
+        onTextFontChange={setTextFont}
         drawColor={drawColor}
         drawThickness={drawThickness}
         shapeFill={shapeFill}
@@ -884,7 +889,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
                     pdfDocument={pdfDoc} pageNum={left} zoom={zoom} rotation={rotation}
                     searchTerm={searchQuery.trim()} tool={tool}
                     annotations={getPageAnnotations(left)}
-                    highlightColor={highlightColor} textColor={textColor} textSize={textSize}
+                    highlightColor={highlightColor} textColor={textColor} textSize={textSize} textFont={textFont}
                     drawColor={drawColor} drawThickness={drawThickness}
                     shapeFill={shapeFill}
                     onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
@@ -899,7 +904,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
                       pdfDocument={pdfDoc} pageNum={right} zoom={zoom} rotation={rotation}
                       searchTerm={searchQuery.trim()} tool={tool}
                       annotations={getPageAnnotations(right)}
-                      highlightColor={highlightColor} textColor={textColor} textSize={textSize}
+                      highlightColor={highlightColor} textColor={textColor} textSize={textSize} textFont={textFont}
                       drawColor={drawColor} drawThickness={drawThickness}
                       shapeFill={shapeFill}
                       onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
@@ -920,7 +925,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
                 pdfDocument={pdfDoc} pageNum={pageNum} zoom={zoom} rotation={rotation}
                 searchTerm={searchQuery.trim()} tool={tool}
                 annotations={getPageAnnotations(pageNum)}
-                highlightColor={highlightColor} textColor={textColor} textSize={textSize}
+                highlightColor={highlightColor} textColor={textColor} textSize={textSize} textFont={textFont}
                 drawColor={drawColor} drawThickness={drawThickness}
                 shapeFill={shapeFill}
                 onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}

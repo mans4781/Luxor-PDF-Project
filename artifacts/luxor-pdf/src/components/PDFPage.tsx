@@ -17,6 +17,8 @@ import {
   QUICK_HIGHLIGHT_COLORS,
   DEFAULTS as COLOR_DEFAULTS,
   highlightOpacityFor,
+  TEXT_FONTS,
+  fontFamilyCss,
 } from "@/lib/annotationColors";
 
 const SHAPE_TOOLS: ToolType[] = ["freehand", "line", "arrow", "oval", "rectangle", "redact"];
@@ -35,6 +37,7 @@ interface PDFPageProps {
   highlightColor: string;
   textColor: string;
   textSize: number;
+  textFont: string;
   drawThickness: number;
   drawColor: string;
   /** When true, oval/rectangle shapes are also filled with `drawColor`. */
@@ -389,6 +392,24 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
 
             <div style={{ width: 1, height: 18, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
 
+            <select
+              value={ann.fontFamily ?? "times"}
+              title="Font"
+              onMouseDown={e => e.stopPropagation()}
+              onChange={e => { e.stopPropagation(); onUpdate({ fontFamily: e.target.value }); }}
+              style={{
+                background: "rgba(255,255,255,0.08)", color: "#ddd",
+                border: "1px solid rgba(255,255,255,0.18)", borderRadius: 3,
+                fontSize: 12, padding: "2px 4px", cursor: "pointer", maxWidth: 96,
+              }}
+            >
+              {TEXT_FONTS.map(f => (
+                <option key={f.key} value={f.key} style={{ color: "#000" }}>{f.label}</option>
+              ))}
+            </select>
+
+            <div style={{ width: 1, height: 18, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
+
             <button
               style={tbtnStyle} title="Color"
               onMouseDown={e => e.stopPropagation()}
@@ -466,7 +487,7 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
         ref={measureRef}
         style={{
           position: "absolute", visibility: "hidden", whiteSpace: "pre",
-          fontSize: ann.fontSize, fontFamily: "Times New Roman, serif",
+          fontSize: ann.fontSize, fontFamily: fontFamilyCss(ann.fontFamily),
           letterSpacing: ls, padding: "0 5px",
         }}
         aria-hidden="true"
@@ -481,7 +502,7 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
           style={{
             fontSize: ann.fontSize,
             color: ann.color,
-            fontFamily: "Times New Roman, serif",
+            fontFamily: fontFamilyCss(ann.fontFamily),
             letterSpacing: ls,
             background: "rgba(255,255,255,0.97)",
             border: "2.5px dashed #4169E1",
@@ -523,7 +544,7 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
           style={{
             fontSize: ann.fontSize,
             color: ann.color,
-            fontFamily: "Times New Roman, serif",
+            fontFamily: fontFamilyCss(ann.fontFamily),
             letterSpacing: ls,
             lineHeight: `${lineH}px`,
             minHeight: lineH,
@@ -547,10 +568,11 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
   );
 }
 
-function ActiveTextInput({ editingText, textSize, textColor, pageWidth, onCommit, onCancel }: {
+function ActiveTextInput({ editingText, textSize, textColor, textFont, pageWidth, onCommit, onCancel }: {
   editingText: { id: string; x: number; y: number };
   textSize: number;
   textColor: string;
+  textFont: string;
   pageWidth: number;
   onCommit: (id: string, content: string, x: number, y: number) => void;
   onCancel: () => void;
@@ -578,7 +600,7 @@ function ActiveTextInput({ editingText, textSize, textColor, pageWidth, onCommit
         ref={measureRef}
         style={{
           position: "absolute", visibility: "hidden", whiteSpace: "pre",
-          fontSize: textSize, fontFamily: "Times New Roman, serif", padding: "0 4px",
+          fontSize: textSize, fontFamily: fontFamilyCss(textFont), padding: "0 4px",
         }}
         aria-hidden="true"
       />
@@ -589,7 +611,7 @@ function ActiveTextInput({ editingText, textSize, textColor, pageWidth, onCommit
           position: "absolute",
           left: editingText.x, top: editingText.y,
           fontSize: textSize, color: textColor,
-          fontFamily: "Times New Roman, serif",
+          fontFamily: fontFamilyCss(textFont),
           background: "rgba(255,255,255,0.97)",
           border: "2.5px dashed #4169E1",
           outline: "none",
@@ -730,7 +752,7 @@ function drawShapeOnCtx(ctx: CanvasRenderingContext2D, ann: ShapeAnnotation) {
 
 export default function PDFPage({
   pdfDocument, pageNum, zoom, rotation, searchTerm, tool, annotations,
-  highlightColor, textColor, textSize, drawThickness, drawColor,
+  highlightColor, textColor, textSize, textFont, drawThickness, drawColor,
   shapeFill, shapeFillOpacity,
   onAnnotationAdd, onAnnotationUpdate, onAnnotationRemove,
   onVisible, onSearchTermChange,
@@ -1501,7 +1523,7 @@ export default function PDFPage({
     if (content.trim()) {
       const ann: TextAnnotation = {
         id, type: "text", page: pageNum,
-        x, y, content: content.trim(), fontSize: textSize, color: textColor, letterSpacing: 0,
+        x, y, content: content.trim(), fontSize: textSize, color: textColor, letterSpacing: 0, fontFamily: textFont,
       };
       onAnnotationAdd(ann);
     }
@@ -2331,6 +2353,7 @@ export default function PDFPage({
         editingText={editingText}
         textSize={textSize}
         textColor={textColor}
+        textFont={textFont}
         pageWidth={pageSize.w}
         onCommit={(id, content, x, y) => handleTextCommit(id, content, x, y)}
         onCancel={() => setEditingText(null)}

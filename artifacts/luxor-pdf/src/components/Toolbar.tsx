@@ -4,6 +4,7 @@ import { ToolType } from "@/lib/annotationTypes";
 import {
   DRAW_PALETTE as PALETTE_DRAW,
   DRAW_THICKNESS,
+  TEXT_FONTS,
 } from "@/lib/annotationColors";
 
 // Toolbar swatches are derived from the central palette in
@@ -148,6 +149,7 @@ interface ToolbarProps {
   highlightColor: string;
   textColor: string;
   textSize: number;
+  textFont: string;
   drawColor: string;
   drawThickness: number;
   shapeFill: boolean;
@@ -162,6 +164,7 @@ interface ToolbarProps {
   onHighlightColorChange: (c: string) => void;
   onTextColorChange: (c: string) => void;
   onTextSizeChange: (s: number) => void;
+  onTextFontChange: (f: string) => void;
   onDrawColorChange: (c: string) => void;
   onDrawThicknessChange: (t: number) => void;
   onShapeFillChange: (v: boolean) => void;
@@ -289,11 +292,11 @@ const isShapeTool = (t: ToolType) => ["freehand", "line", "arrow", "oval", "rect
 
 export default function Toolbar({
   fileName, tool,
-  highlightColor, textColor, textSize, drawColor, drawThickness, shapeFill, isSpeaking,
+  highlightColor, textColor, textSize, textFont, drawColor, drawThickness, shapeFill, isSpeaking,
   showContents, searchOpen, splitView,
   onToggleContents, onToggleSearch, onToggleSplit,
   onToolChange,
-  onHighlightColorChange, onTextColorChange, onTextSizeChange, onDrawColorChange, onDrawThicknessChange, onShapeFillChange,
+  onHighlightColorChange, onTextColorChange, onTextSizeChange, onTextFontChange, onDrawColorChange, onDrawThicknessChange, onShapeFillChange,
   onEraseAll, onReadAloud, onOpenFile, onDownload, onPrint,
   onOpenWatermark, onOpenPageNo, onAddImage, onOpenCompress,
   onClearWatermark, onClearPageNo,
@@ -754,6 +757,20 @@ export default function Toolbar({
 
         {popover === "text" && (
           <div className="popover-panel" style={{ minWidth: 170 }}>
+            <div className="popover-label">Font</div>
+            <select
+              value={textFont}
+              onChange={(e) => onTextFontChange(e.target.value)}
+              style={{
+                width: "100%", padding: "5px 8px", marginBottom: 10,
+                border: "1px solid rgba(0,0,0,0.15)", borderRadius: 4,
+                background: "#fff", color: "#222", fontSize: 12, cursor: "pointer",
+              }}
+            >
+              {TEXT_FONTS.map((f) => (
+                <option key={f.key} value={f.key} style={{ fontFamily: f.css }}>{f.label}</option>
+              ))}
+            </select>
             <div className="popover-label">Font Size</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
               <button
