@@ -2,7 +2,6 @@ import { useRef, useState, useCallback, useEffect, type ReactNode } from "react"
 import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { ToolType } from "@/lib/annotationTypes";
 import {
-  HIGHLIGHT_COLORS as PALETTE_HIGHLIGHT,
   DRAW_PALETTE as PALETTE_DRAW,
   DRAW_THICKNESS,
 } from "@/lib/annotationColors";
@@ -11,76 +10,6 @@ import {
 // src/lib/annotationColors.ts. The 30-color DRAW_PALETTE is shared by
 // the pen, all shape tools, and the Add-Text color picker so every
 // drawing-related surface uses one consistent color system.
-/**
- * Highlight icon — vertical chisel-tip marker actively highlighting a
- * short stroke beneath it. The marker stands almost upright with the
- * focus on the nib / ferrule area (no bulky body), Microsoft Edge style.
- * The color dot is embedded in the SVG with a white ring so it stays
- * aligned at any size and pops on light or dark toolbars. The dot fill
- * uses the `--highlight-color` CSS variable (set inline on the svg from
- * the `color` prop) with a yellow fallback per spec.
- */
-function HighlightIcon({ color, size = 20 }: { color: string; size?: number }) {
-  return (
-    <svg
-      width={size} height={size} viewBox="0 0 24 24"
-      fill="none" stroke="currentColor" strokeWidth="1.6"
-      strokeLinecap="round" strokeLinejoin="round"
-      style={{ ["--highlight-color" as string]: color }}
-    >
-      {/* Marker body (top) — fills viewBox horizontally so it reads at
-          the same visual weight as the eraser glyph beside it. */}
-      <rect x="6" y="1.5" width="12" height="11" rx="1.5" />
-      {/* Ferrule band between body and nib */}
-      <line x1="6" y1="9" x2="18" y2="9" />
-      {/* Chisel nib tapering down to the page */}
-      <path d="M6 12.5 L9 17 L15 17 L18 12.5 Z" />
-      {/* Active highlight stroke directly under the nib */}
-      <line x1="3" y1="21" x2="16" y2="21" strokeWidth="2.4" />
-      {/* Color indicator dot, lower-right, with white ring */}
-      <circle
-        cx="20.5" cy="20" r="2.6"
-        fill="var(--highlight-color, #FFD600)"
-        stroke="#fff" strokeWidth="1.2"
-      />
-    </svg>
-  );
-}
-
-/**
- * Draw icon — vertical Apple Pencil-style stylus tip touching the page,
- * with a tiny contact stroke under the tip suggesting freehand input.
- * Cylindrical body up top, conical tip pointing down, integrated color
- * dot at the lower right via `--draw-color` (red fallback per spec).
- */
-function DrawIcon({ color, size = 20 }: { color: string; size?: number }) {
-  return (
-    <svg
-      width={size} height={size} viewBox="0 0 24 24"
-      fill="none" stroke="currentColor" strokeWidth="1.6"
-      strokeLinecap="round" strokeLinejoin="round"
-      style={{ ["--draw-color" as string]: color }}
-    >
-      {/* Stylus body (cylindrical, vertical) — filled out to match the
-          visual weight of the eraser glyph. */}
-      <path d="M8 2 h8 a0.6 0.6 0 0 1 0.6 0.6 v11.4 h-9.2 v-11.4 a0.6 0.6 0 0 1 0.6 -0.6 z" />
-      {/* Collar line near the tip */}
-      <line x1="7.4" y1="11" x2="16.6" y2="11" />
-      {/* Conical tip pointing down */}
-      <path d="M7.4 14 L12 20 L16.6 14 Z" fill="currentColor" />
-      {/* Tiny contact stroke under the tip */}
-      <line x1="6" y1="22.5" x2="14" y2="22.5" strokeWidth="1.3" />
-      {/* Color indicator dot, lower-right, with white ring */}
-      <circle
-        cx="20.5" cy="20.5" r="2.6"
-        fill="var(--draw-color, #E53935)"
-        stroke="#fff" strokeWidth="1.2"
-      />
-    </svg>
-  );
-}
-
-const HIGHLIGHT_COLORS = PALETTE_HIGHLIGHT.map((c) => ({ label: c.name, value: c.value }));
 const TEXT_COLORS = PALETTE_DRAW.map((c) => ({ label: c.name, value: c.value }));
 const DRAW_COLORS = PALETTE_DRAW.map((c) => ({ label: c.name, value: c.value }));
 
@@ -770,57 +699,6 @@ export default function Toolbar({
       </div>
 
       <div className="toolbar-sep" />
-
-      {/* ── 4. Highlighter icon ─────────────────────────────── */}
-      <div style={{ position: "relative" }}>
-        <button
-          className={`toolbar-btn annot-btn ${tool === "highlight" ? "active" : ""}`}
-          onClick={() => { onToolChange(tool === "highlight" ? "hand" : "highlight"); toggle("highlight"); }}
-          title="Highlight"
-        >
-          <span className="toolbar-tip">Highlight</span>
-          <HighlightIcon color={highlightColor || "#FFD600"} />
-        </button>
-
-        {popover === "highlight" && (
-          <div className="popover-panel">
-            <div className="popover-label">Highlight Color</div>
-            <div style={{ display: "flex", gap: 7 }}>
-              {HIGHLIGHT_COLORS.map(c => (
-                <button
-                  key={c.value}
-                  className={`color-dot ${highlightColor === c.value ? "sel" : ""}`}
-                  style={{ background: c.value }}
-                  title={c.label}
-                  onClick={() => { onHighlightColorChange(c.value); }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ── 4b. Draw / Pen icon ─────────────────────────────── */}
-      <div style={{ position: "relative" }}>
-        <button
-          className={`toolbar-btn annot-btn ${tool === "freehand" ? "active" : ""}`}
-          onClick={() => { onToolChange(tool === "freehand" ? "hand" : "freehand"); toggle("draw"); }}
-          title="Draw"
-        >
-          <span className="toolbar-tip">Draw</span>
-          <DrawIcon color={drawColor || "#E53935"} />
-        </button>
-
-        {popover === "draw" && (
-          <DrawStylePanel
-            color={drawColor}
-            thickness={drawThickness}
-            onColorChange={onDrawColorChange}
-            onThicknessChange={onDrawThicknessChange}
-            standalone
-          />
-        )}
-      </div>
 
       {/* ── 5. Eraser icon ──────────────────────────────────── */}
       <div style={{ position: "relative" }}>
