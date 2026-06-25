@@ -21,7 +21,7 @@ import {
   Calendar,
   ShieldAlert,
   Minimize2,
-  Lightbulb,
+  Shield,
   Sparkles,
 } from "lucide-react";
 import { PdfToolContent } from "./pdf-tool";
@@ -58,10 +58,10 @@ const TOOLS: ToolItem[] = [
     label: "Edit Your PDF",
     description: "Merge, split & extract pages",
     icon: Wrench,
-    accent: "#312E81",
-    iconBg: "bg-[#7254F6] group-hover:bg-[#5E43D4]",
+    accent: "#DC2626",
+    iconBg: "bg-[#E61E3C] group-hover:bg-[#C81934]",
     iconText: "text-white",
-    activeRing: "ring-indigo-500/40 border-indigo-500",
+    activeRing: "ring-rose-500/40 border-rose-500",
   },
   {
     key: "convert-from",
@@ -715,8 +715,18 @@ export default function Dashboard() {
   })();
   const [active, setActive] = useState<ToolKey | null>(initial);
 
+  const [query, setQuery] = useState("");
+  const normalizedQuery = query.trim().toLowerCase();
+  const visibleTools = normalizedQuery
+    ? TOOLS.filter(
+        (t) =>
+          t.label.toLowerCase().includes(normalizedQuery) ||
+          t.description.toLowerCase().includes(normalizedQuery),
+      )
+    : TOOLS;
+
   return (
-    <Layout>
+    <Layout showSearch searchQuery={query} onSearchChange={setQuery}>
       <div className="mb-5">
         <UsagePanel />
       </div>
@@ -725,19 +735,23 @@ export default function Dashboard() {
         {/* ── Left: tool list ── */}
         <aside className="flex flex-col gap-2.5">
           <div className="mb-1">
-            <h2 className="text-[18px] font-extrabold tracking-tight text-slate-900">
-              Your{" "}
-              <span className="bg-gradient-to-r from-[#1e3a8a] to-[#DC2626] bg-clip-text text-transparent">
-                PDF Secure
-              </span>{" "}
-              Toolkit
-            </h2>
-            <p className="mt-1 text-[13.2px] text-slate-500 leading-relaxed">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
+              Your PDF Toolkit
+            </p>
+            <p className="mt-1.5 text-[13.2px] text-slate-500 leading-relaxed">
               Edit, convert and secure documents — everything runs locally in
               your browser for complete privacy.
             </p>
           </div>
-          {TOOLS.map((item) => {
+          {visibleTools.length === 0 && (
+            <div className="px-4 py-6 rounded-xl bg-slate-50 border border-dashed border-slate-200 text-center">
+              <p className="text-sm text-slate-500">
+                No tools match{" "}
+                <span className="font-semibold text-slate-700">“{query}”</span>.
+              </p>
+            </div>
+          )}
+          {visibleTools.map((item) => {
             const Icon = item.icon;
             const isActive = active === item.key;
             return (
@@ -789,26 +803,22 @@ export default function Dashboard() {
             );
           })}
 
-          {/* Footer note in sidebar */}
-          <div className="mt-2 px-4 py-3 rounded-xl bg-slate-100/70 border border-slate-200">
-            <p className="text-[11px] text-slate-500 leading-relaxed flex items-start gap-2">
-              <span
-                aria-hidden="true"
-                className="relative inline-flex shrink-0 mt-[1px]"
-              >
-                <span className="absolute inset-0 rounded-full bg-amber-400/40 blur-[6px] animate-pulse" />
-                <Lightbulb
-                  className="relative w-3.5 h-3.5 text-amber-500 drop-shadow-[0_0_4px_rgba(251,191,36,0.85)]"
-                  strokeWidth={2.25}
-                  fill="currentColor"
-                  fillOpacity={0.25}
-                />
+          {/* Quick tip — privacy reassurance */}
+          <div className="mt-2 px-4 py-3.5 rounded-xl bg-gradient-to-br from-rose-50 to-red-50/60 border border-rose-100">
+            <div className="flex items-start gap-3">
+              <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#E61E3C] to-[#C81934] flex items-center justify-center shadow-sm shrink-0">
+                <Shield className="w-4 h-4 text-white" strokeWidth={2.25} />
               </span>
-              <span>
-                <span className="font-semibold text-slate-700">Tip:</span> Click
-                an active tool again to collapse it back to this overview.
-              </span>
-            </p>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#C81934]">
+                  Quick tip
+                </p>
+                <p className="mt-0.5 text-[12px] text-slate-600 leading-relaxed">
+                  All tools run locally in your browser. Your files never leave
+                  your device.
+                </p>
+              </div>
+            </div>
           </div>
         </aside>
 

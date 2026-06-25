@@ -4,11 +4,100 @@ import {
   ShieldCheck,
   AlertTriangle,
   Infinity as InfinityIcon,
+  ShieldAlert,
 } from "lucide-react";
 import { useLicense } from "./LicenseProvider";
 
 import { basePath } from "@/lib/base-path";
 const PRICING_URL = `/pricing`;
+
+/**
+ * Compact header pill summarizing the caller's plan/trial state. Driven
+ * entirely by real license data (no hard-coded countdowns):
+ *   - Paid + finite subscription → "{plan} · N days left"
+ *   - Paid + lifetime/unbounded  → "{plan}" (or "Lifetime")
+ *   - Active trial               → "Trial: N days left"
+ *   - Lapsed trial, no plan      → "Trial expired" (links to plans)
+ *   - Signed in, never paid       → "Free plan" (links to plans)
+ */
+export function PlanBadge() {
+  const { status, signedIn, isLoading } = useLicense();
+
+  if (!signedIn || isLoading || !status) return null;
+
+  const base =
+    "hidden md:inline-flex items-center gap-2 text-xs font-semibold rounded-full px-3 py-1.5 border whitespace-nowrap";
+
+  if (status.isPaid && status.subscriptionActive) {
+    const plan = status.planName ?? "Pro";
+    const days = status.subscriptionDaysRemaining;
+    const isLifetime = status.planName === "lifetime" || days == null;
+    const low = !isLifetime && days != null && days <= 7;
+    return (
+      <span
+        className={`${base} capitalize ${
+          low
+            ? "text-amber-700 bg-amber-50 border-amber-200"
+            : "text-emerald-700 bg-emerald-50 border-emerald-200"
+        }`}
+        title="Your active subscription"
+        data-testid="plan-badge"
+      >
+        {isLifetime ? (
+          <InfinityIcon className="w-3.5 h-3.5" strokeWidth={2.25} />
+        ) : (
+          <ShieldCheck className="w-3.5 h-3.5" strokeWidth={2.25} />
+        )}
+        {isLifetime ? plan : `${plan} · ${days} day${days === 1 ? "" : "s"} left`}
+      </span>
+    );
+  }
+
+  if (status.trialActive) {
+    const days = status.trialDaysRemaining;
+    const low = days <= 3;
+    return (
+      <span
+        className={`${base} ${
+          low
+            ? "text-rose-700 bg-rose-50 border-rose-200"
+            : "text-[#C81934] bg-rose-50 border-rose-200"
+        }`}
+        title="Free trial period"
+        data-testid="plan-badge"
+      >
+        <ShieldCheck className="w-3.5 h-3.5" strokeWidth={2.25} />
+        Trial: {days} day{days === 1 ? "" : "s"} left
+      </span>
+    );
+  }
+
+  if (status.trialExpired) {
+    return (
+      <a
+        href={PRICING_URL}
+        className={`${base} text-rose-700 bg-rose-50 border-rose-200 hover:bg-rose-100 transition-colors`}
+        title="Your trial has ended"
+        data-testid="plan-badge"
+      >
+        <ShieldAlert className="w-3.5 h-3.5" strokeWidth={2.25} />
+        Trial expired
+      </a>
+    );
+  }
+
+  return (
+    <a
+      href={PRICING_URL}
+      className={`${base} text-slate-600 bg-slate-50 border-slate-200 hover:bg-slate-100 transition-colors`}
+      title="Choose a plan"
+      data-testid="plan-badge"
+    >
+      <Sparkles className="w-3.5 h-3.5" strokeWidth={2.25} />
+      Free plan
+    </a>
+  );
+}
 
 /** Formats an ISO date as e.g. "Jul 3" for compact reset labels. */
 function formatResetDate(iso: string | null | undefined): string | null {

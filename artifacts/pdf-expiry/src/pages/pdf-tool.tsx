@@ -9,7 +9,7 @@ import { PDFDocument } from "pdf-lib";
 import { formatBytes } from "@/lib/utils";
 import { saveFile } from "@/lib/save-file";
 import { scheduleAutoRefresh } from "@/lib/auto-refresh";
-import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Wrench, Trash2, FilePlus } from "lucide-react";
+import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Trash2, FilePlus, Shield, ShieldCheck, CloudOff, Zap, FileLock2 } from "lucide-react";
 import { AccentProvider, useAccentBtn, useAccentInnerBanner, useAccentDrop } from "@/lib/accent";
 import { useGuardedAction } from "@/license/useGuardedAction";
 import { useUploadAuthGate } from "@/license/useUploadAuthGate";
@@ -1170,40 +1170,102 @@ function AddTab() {
 
 export function PdfToolContent() {
   return (
-    <AccentProvider value="purple">
+    <AccentProvider value="red">
       <PdfToolContentInner />
     </AccentProvider>
   );
 }
 
+type EditTab = "merge" | "split" | "extract" | "delete" | "add";
+
+const HERO_ACTIONS: { value: EditTab; label: string; icon: typeof Merge }[] = [
+  { value: "merge", label: "Merge PDFs", icon: Merge },
+  { value: "split", label: "Split Pages", icon: Scissors },
+  { value: "extract", label: "Extract Pages", icon: FileOutput },
+  { value: "delete", label: "Delete Pages", icon: Trash2 },
+  { value: "add", label: "Insert Pages", icon: FilePlus },
+];
+
+const FEATURE_STRIP: { label: string; icon: typeof Merge }[] = [
+  { label: "100% Local Processing", icon: ShieldCheck },
+  { label: "No Server Upload", icon: CloudOff },
+  { label: "Fast Browser-Based Tools", icon: Zap },
+  { label: "Private Documents", icon: FileLock2 },
+];
+
 function PdfToolContentInner() {
   const ab = useAccentInnerBanner();
+  const [tab, setTab] = useState<EditTab>("merge");
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-5">
 
-        {/* ── Vibrant header banner ── */}
-        <div className="bg-gradient-to-br from-[#7254F6] via-[#6549E0] to-[#5E43D4] rounded-2xl p-6 text-white shadow-lg">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm">
-              <Wrench className="w-7 h-7 text-white" strokeWidth={1.75} />
+        {/* ── Red hero banner with quick-action buttons ── */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#E61E3C] via-[#D71B37] to-[#C81934] rounded-2xl p-6 sm:p-7 text-white shadow-lg">
+          {/* Shield illustration */}
+          <Shield
+            className="pointer-events-none absolute -right-6 -bottom-8 w-44 h-44 text-white/10"
+            strokeWidth={1.25}
+            aria-hidden="true"
+          />
+          <div className="relative flex items-center gap-4">
+            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm shrink-0">
+              <Shield className="w-7 h-7 text-white" strokeWidth={1.9} />
             </div>
             <div>
               <h1 className="text-2xl font-bold">Edit Your PDF</h1>
-              <p className="text-white/85 text-sm mt-0.5">Merge, split, extract, delete &amp; insert pages — all processed in your browser</p>
+              <p className="text-white/85 text-sm mt-0.5">
+                Merge, split, extract, delete &amp; insert pages — all processed
+                in your browser
+              </p>
             </div>
           </div>
-          <div className="flex gap-2 mt-5 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Merge className="w-3 h-3" />Merge PDFs</span>
-            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Scissors className="w-3 h-3" />Split by Range</span>
-            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FileOutput className="w-3 h-3" />Extract Pages</span>
-            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><Trash2 className="w-3 h-3" />Delete Pages</span>
-            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full font-medium"><FilePlus className="w-3 h-3" />Insert Pages</span>
+          <div className="relative flex gap-2 mt-5 flex-wrap">
+            {HERO_ACTIONS.map((a) => {
+              const Icon = a.icon;
+              const isActive = tab === a.value;
+              return (
+                <button
+                  key={a.value}
+                  type="button"
+                  onClick={() => setTab(a.value)}
+                  className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium transition-all outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${
+                    isActive
+                      ? "bg-white text-[#C81934] shadow-sm"
+                      : "bg-white/15 text-white hover:bg-white/25"
+                  }`}
+                  data-testid={`hero-action-${a.value}`}
+                >
+                  <Icon className="w-3 h-3" />
+                  {a.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <Card className="border-violet-100 shadow-sm">
+        {/* ── Feature strip ── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+          {FEATURE_STRIP.map((f) => {
+            const Icon = f.icon;
+            return (
+              <div
+                key={f.label}
+                className="flex items-center gap-2.5 rounded-xl bg-white border border-slate-200 px-3 py-2.5"
+              >
+                <span className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
+                  <Icon className="w-4 h-4 text-[#C81934]" strokeWidth={2} />
+                </span>
+                <span className="text-[12px] font-semibold text-slate-700 leading-tight">
+                  {f.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        <Card className="border-rose-100 shadow-sm">
           <CardContent className="pt-6">
-            <Tabs defaultValue="merge">
+            <Tabs value={tab} onValueChange={(v) => setTab(v as EditTab)}>
               <TabsList className={`grid w-full grid-cols-3 sm:grid-cols-5 gap-1 mb-6 ${ab?.tabsListBg ?? "bg-violet-50 border border-violet-100"} p-1 rounded-xl h-auto`}>
                 <TabsTrigger
                   value="merge"
