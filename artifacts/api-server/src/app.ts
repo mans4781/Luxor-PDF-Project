@@ -9,7 +9,7 @@ import {
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
 import router from "./routes";
-import { billingWebhookRouter } from "./routes/billing";
+import { billingWebhookRouter, razorpayWebhookRouter } from "./routes/billing";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -43,6 +43,9 @@ app.use(cors({ credentials: true, origin: true }));
 // mount it BEFORE the JSON body parser. The router itself attaches
 // express.raw() to its handler.
 app.use("/api/billing/webhook", billingWebhookRouter);
+// Razorpay webhook also needs raw bytes for HMAC signature verification.
+// Mounted on a distinct path (not a sub-path of the Stripe webhook).
+app.use("/api/billing/razorpay/webhook", razorpayWebhookRouter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

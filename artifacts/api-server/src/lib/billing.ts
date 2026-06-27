@@ -37,8 +37,8 @@ export const PROVIDER_REGISTRY: Record<BillingProviderId, () => BillingProviderI
   razorpay: () => ({
     id: "razorpay",
     displayName: "Razorpay",
-    available: false,
-    comingSoon: true,
+    available: razorpayConfigured(),
+    comingSoon: !razorpayConfigured(),
   }),
   paypal: () => ({
     id: "paypal",
@@ -74,6 +74,47 @@ export function stripeTeamPriceId(): string | null {
 /** Flat recurring price for the Business plan (unlimited secure pool). */
 export function stripeBusinessPriceId(): string | null {
   return process.env["STRIPE_PRICE_BUSINESS"] ?? null;
+}
+
+// ─── Razorpay ─────────────────────────────────────────────────────────────────
+
+/** True when Razorpay API credentials are present in the environment. */
+export function razorpayConfigured(): boolean {
+  return !!process.env["RAZORPAY_KEY_ID"] && !!process.env["RAZORPAY_KEY_SECRET"];
+}
+
+/** Razorpay API credentials, or null when not configured. */
+export function razorpayCredentials(): {
+  keyId: string;
+  keySecret: string;
+} | null {
+  const keyId = process.env["RAZORPAY_KEY_ID"];
+  const keySecret = process.env["RAZORPAY_KEY_SECRET"];
+  if (!keyId || !keySecret) return null;
+  return { keyId, keySecret };
+}
+
+const RAZORPAY_PRICE_ENV: Record<ProductPlan, string> = {
+  monthly: "RAZORPAY_PRICE_MONTHLY",
+  quarterly: "RAZORPAY_PRICE_QUARTERLY",
+  yearly: "RAZORPAY_PRICE_YEARLY",
+  lifetime: "RAZORPAY_PRICE_LIFETIME",
+};
+
+/**
+ * Per-plan Razorpay amount in the smallest currency unit (paise for INR),
+ * configured via `RAZORPAY_PRICE_<PLAN>` so amounts change without a code edit.
+ */
+export function razorpayAmountFor(plan: ProductPlan): number | null {
+  const raw = process.env[RAZORPAY_PRICE_ENV[plan]];
+  if (!raw) return null;
+  const n = Number.parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/** ISO currency code Razorpay charges in (defaults to INR). */
+export function razorpayCurrency(): string {
+  return process.env["RAZORPAY_CURRENCY"]?.trim() || "INR";
 }
 
 export interface ApplyTeamPlanParams {

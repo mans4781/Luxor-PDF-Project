@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/react";
 import { Loader2, AlertTriangle } from "lucide-react";
-import { useCreateCheckoutSession } from "@workspace/api-client-react";
+import {
+  useCreateCheckoutSession,
+  useListBillingProviders,
+} from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 
 import { basePath } from "@/lib/base-path";
@@ -17,6 +20,7 @@ export default function CheckoutPage() {
   const { isLoaded, isSignedIn } = useUser();
   const [error, setError] = useState<string | null>(null);
   const checkout = useCreateCheckoutSession();
+  const providersQuery = useListBillingProviders();
 
   const params =
     typeof window !== "undefined"
@@ -24,6 +28,18 @@ export default function CheckoutPage() {
       : new URLSearchParams();
   const planParam = params.get("plan");
   const plan: Plan = isPlan(planParam) ? planParam : "monthly";
+
+  // Pick the provider to use: an explicit ?provider= override when it's
+  // actually configured, otherwise the first available provider, falling
+  // back to "stripe" (which will surface a clear "not configured" error).
+  const requestedProvider = params.get("provider");
+  const available = (providersQuery.data?.providers ?? []).filter(
+    (p) => p.available,
+  );
+  const resolvedProvider =
+    available.find((p) => p.id === requestedProvider)?.id ??
+    available[0]?.id ??
+    "stripe";
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -35,6 +51,9 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Wait until we know which providers are configured before redirecting.
+    if (providersQuery.isLoading) return;
+
     if (checkout.isPending || checkout.isSuccess) return;
 
     const origin = window.location.origin;
@@ -42,7 +61,7 @@ export default function CheckoutPage() {
       {
         data: {
           plan,
-          provider: "stripe",
+          provider: resolvedProvider,
           successUrl: `${origin}${basePath}/?checkout_success=1`,
           cancelUrl: `${origin}${basePath}/?checkout_cancelled=1`,
         },
@@ -63,7 +82,7 @@ export default function CheckoutPage() {
       },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, isSignedIn, plan]);
+  }, [isLoaded, isSignedIn, plan, providersQuery.isLoading, resolvedProvider]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">

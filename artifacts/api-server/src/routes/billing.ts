@@ -20,8 +20,12 @@ import {
   stripePriceIdFor,
   stripeTeamPriceId,
   stripeBusinessPriceId,
+  razorpayConfigured,
+  razorpayAmountFor,
+  razorpayCurrency,
   type BillingProviderId,
 } from "../lib/billing";
+import { createPaymentLink, verifyRazorpaySignature } from "../lib/razorpay";
 import { sendLicenseEmail } from "../lib/email";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -91,6 +95,55 @@ router.post(
     const { plan, successUrl, cancelUrl, seats, orgName } = parsed.data;
     const provider: BillingProviderId = (parsed.data.provider ??
       "stripe") as BillingProviderId;
+
+    // ─── Razorpay (one-time payment links; individual plans only) ────────────
+    if (provider === "razorpay") {
+      if (!razorpayConfigured()) {
+        res.status(503).json({ error: "Razorpay not configured" });
+        return;
+      }
+      if (plan === "team" || plan === "business" || !isProductPlan(plan)) {
+        res.status(400).json({
+          error: `Razorpay supports individual plans only, not: ${plan}`,
+        });
+        return;
+      }
+      const amount = razorpayAmountFor(plan as ProductPlan);
+      if (!amount) {
+        res
+          .status(503)
+          .json({ error: `Razorpay price for ${plan} not configured` });
+        return;
+      }
+      try {
+        const { email, name } = await lookupClerkEmail(auth.userId);
+        const link = await createPaymentLink({
+          amount,
+          currency: razorpayCurrency(),
+          description: `Luxor PDF — ${plan} plan`,
+          referenceId: `luxor_${auth.userId}_${plan}_${Date.now()}`,
+          customer: { email, name },
+          notes: { clerkUserId: auth.userId, plan },
+          callbackUrl: successUrl,
+        });
+        req.log.info(
+          { userId: auth.userId, plan, paymentLinkId: link.id },
+          "Razorpay payment link created",
+        );
+        res.json({
+          provider: "razorpay",
+          sessionId: link.id,
+          url: link.shortUrl,
+        });
+      } catch (err) {
+        req.log.error(
+          { err, userId: auth.userId, plan },
+          "Razorpay checkout failed",
+        );
+        res.status(500).json({ error: "Failed to create checkout session" });
+      }
+      return;
+    }
 
     if (provider !== "stripe") {
       res.status(400).json({ error: `Provider not supported: ${provider}` });
@@ -551,6 +604,166 @@ billingWebhookRouter.post(
       res.json({ received: true, processed: true });
     } catch (err) {
       req.log.error({ err, eventId: event.id }, "Stripe webhook handler failed");
+      res.status(500).json({ error: "Webhook handler failed" });
+    }
+  },
+);
+
+// ─── Razorpay webhook (mounted on app BEFORE express.json) ────────────────────
+
+interface RazorpayWebhookPayload {
+  event?: string;
+  payload?: {
+    payment_link?: {
+      entity?: {
+        id?: string;
+        notes?: Record<string, string | undefined>;
+        customer?: { email?: string | null; name?: string | null } | null;
+      };
+    };
+    payment?: {
+      entity?: { id?: string; email?: string | null };
+    };
+  };
+}
+
+export const razorpayWebhookRouter: IRouter = Router();
+
+razorpayWebhookRouter.post(
+  "/",
+  raw({ type: "application/json" }),
+  async (req: Request, res: Response): Promise<void> => {
+    const secret = process.env["RAZORPAY_WEBHOOK_SECRET"];
+    if (!secret) {
+      res.status(503).json({ error: "Razorpay webhook not configured" });
+      return;
+    }
+
+    const sig = req.headers["x-razorpay-signature"];
+    if (!sig || typeof sig !== "string") {
+      res.status(400).json({ error: "Missing x-razorpay-signature header" });
+      return;
+    }
+
+    const rawBody = req.body as Buffer;
+    if (!verifyRazorpaySignature(rawBody, sig, secret)) {
+      req.log.warn("Razorpay webhook signature verification failed");
+      res.status(400).json({ error: "Invalid signature" });
+      return;
+    }
+
+    let payload: RazorpayWebhookPayload;
+    try {
+      payload = JSON.parse(rawBody.toString("utf8")) as RazorpayWebhookPayload;
+    } catch {
+      res.status(400).json({ error: "Invalid JSON body" });
+      return;
+    }
+
+    const eventType = payload.event ?? "";
+    const linkEntity = payload.payload?.payment_link?.entity;
+    const paymentEntity = payload.payload?.payment?.entity;
+    const eventId =
+      (req.headers["x-razorpay-event-id"] as string | undefined) ??
+      linkEntity?.id ??
+      paymentEntity?.id ??
+      null;
+
+    try {
+      if (eventType === "payment_link.paid") {
+        const notes = linkEntity?.notes ?? {};
+        const userId = notes["clerkUserId"] ?? null;
+        const plan = notes["plan"] ?? null;
+
+        if (!userId || !plan || !isProductPlan(plan)) {
+          req.log.warn(
+            { eventId, userId, plan },
+            "Razorpay webhook missing userId/plan; ignoring",
+          );
+          res.json({ received: true, processed: false });
+          return;
+        }
+        if (!eventId) {
+          req.log.warn("Razorpay webhook missing event id; ignoring");
+          res.json({ received: true, processed: false });
+          return;
+        }
+
+        const isFresh = await claimBillingEvent(
+          "razorpay",
+          eventId,
+          eventType,
+          userId,
+        );
+        if (!isFresh) {
+          req.log.info(
+            { eventId },
+            "Razorpay webhook already processed (idempotent replay)",
+          );
+          res.json({ received: true, processed: false });
+          return;
+        }
+
+        const outcome = await applyPaidPlan(userId, plan, {
+          provider: "razorpay",
+          eventId,
+        });
+
+        req.log.info(
+          {
+            userId,
+            plan,
+            licenseId: outcome.licenseId,
+            firstActivation: outcome.isFirstActivation,
+            newEnd: outcome.subscriptionEndDate.toISOString(),
+          },
+          "Razorpay payment applied",
+        );
+
+        // Best-effort license email (mirror of the Stripe path).
+        try {
+          let recipient: string | null =
+            linkEntity?.customer?.email ?? paymentEntity?.email ?? null;
+          let recipientName: string | null =
+            linkEntity?.customer?.name ?? null;
+          if (!recipient) {
+            const looked = await lookupClerkEmail(userId);
+            recipient = looked.email;
+            recipientName = recipientName ?? looked.name;
+          }
+          if (recipient) {
+            await sendLicenseEmail({
+              to: recipient,
+              customerName: recipientName,
+              productKey: outcome.rawProductKey,
+              plan,
+              subscriptionEndDate: outcome.subscriptionEndDate.toISOString(),
+              downloadUrl: buildInstallerDownloadUrl(req),
+            });
+          } else {
+            req.log.warn(
+              { userId, plan },
+              "No email available — skipping Razorpay license email",
+            );
+          }
+        } catch (emailErr) {
+          req.log.error(
+            { err: emailErr, userId, plan },
+            "Razorpay license email pipeline failed",
+          );
+        }
+
+        res.json({ received: true, processed: true });
+        return;
+      }
+
+      req.log.debug(
+        { eventType, eventId },
+        "Razorpay webhook ignored (unhandled type)",
+      );
+      res.json({ received: true, processed: true });
+    } catch (err) {
+      req.log.error({ err, eventId }, "Razorpay webhook handler failed");
       res.status(500).json({ error: "Webhook handler failed" });
     }
   },
