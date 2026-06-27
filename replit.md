@@ -28,9 +28,17 @@ PDF Expiry Tool — a web application for uploading PDFs, setting an exact expir
 - **mockup-sandbox** (design) — Canvas component preview server
 - **luxor-desktop** (electron) — Windows desktop wrapper for `pdf-expiry`, packaged as the **Luxor PDF Secure** NSIS installer (no service, no Replit preview)
 
-## Billing (Stripe)
+## Billing (Stripe + Razorpay)
 
-- Provider registry lives in `artifacts/api-server/src/lib/billing.ts`. Stripe is "available" iff `STRIPE_SECRET_KEY` is set; Razorpay/PayPal are stubs (`comingSoon: true`) for the providers endpoint.
+- Provider registry lives in `artifacts/api-server/src/lib/billing.ts`. Stripe is "available" iff `STRIPE_SECRET_KEY` is set; Razorpay is "available" iff `RAZORPAY_KEY_ID`+`RAZORPAY_KEY_SECRET` are set (else it falls back to `comingSoon`); PayPal is still a stub (`comingSoon: true`).
+
+### Razorpay (one-time Payment Links)
+- `artifacts/api-server/src/lib/razorpay.ts`: `createPaymentLink()` (REST `POST /v1/payment_links`, Basic auth) returns the hosted `short_url`; `verifyRazorpaySignature()` is a timing-safe HMAC-SHA256 check of the raw webhook body.
+- Razorpay is a **one-time payment** flow and supports **individual plans only** (monthly/quarterly/yearly/lifetime). The checkout-session branch rejects `team`/`business` for Razorpay — those remain Stripe-only.
+- Prices read per plan from `RAZORPAY_PRICE_MONTHLY|QUARTERLY|YEARLY|LIFETIME` in **paise** (the smallest currency unit). Currency defaults to INR, overridable via `RAZORPAY_CURRENCY`.
+- `clerkUserId` + `plan` are stored in the link's `notes` and echoed back on the `payment_link.paid` webhook. Webhook mounted at `POST /api/billing/razorpay/webhook` (distinct path, BEFORE `express.json()` so raw bytes survive for the HMAC check). It reuses the shared `claimBillingEvent("razorpay", eventId)` idempotency → `applyPaidPlan()` → `sendLicenseEmail()` pipeline. The idempotency key is **derived from the signed body only** (the payment_link entity id, falling back to the payment entity id) — deliberately NOT the unsigned `x-razorpay-event-id` header, since the HMAC signature covers only the body and a varied header would otherwise allow replay/license-extension abuse.
+- Frontend `pdf-expiry/src/pages/checkout.tsx` is **provider-aware**: it reads `/billing/providers`, then uses `?provider=` when that provider is available, else the first available provider, else `"stripe"`. So with only Razorpay configured, checkout automatically routes to Razorpay.
+- Required secrets: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`. The webhook URL to register in the Razorpay dashboard is `<your-domain>/api/billing/razorpay/webhook` with event `payment_link.paid`.
 - Endpoints: `GET /api/billing/providers`, `POST /api/billing/checkout-session` (Clerk-authed), and `POST /api/billing/webhook` (raw body, mounted on the Express app BEFORE `express.json()` so Stripe signature verification works).
 - Per-plan price IDs read from `STRIPE_PRICE_MONTHLY|QUARTERLY|YEARLY|LIFETIME`. Lifetime is `mode: "payment"`, others `mode: "subscription"`.
 - Webhook idempotency: `billing_events (provider, event_id)` PK created at startup by `runBillingMigrations()`. `claimBillingEvent()` does INSERT…ON CONFLICT DO NOTHING; duplicates short-circuit before `applyPaidPlan()`.

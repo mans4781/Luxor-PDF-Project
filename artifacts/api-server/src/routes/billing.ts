@@ -663,11 +663,13 @@ razorpayWebhookRouter.post(
     const eventType = payload.event ?? "";
     const linkEntity = payload.payload?.payment_link?.entity;
     const paymentEntity = payload.payload?.payment?.entity;
-    const eventId =
-      (req.headers["x-razorpay-event-id"] as string | undefined) ??
-      linkEntity?.id ??
-      paymentEntity?.id ??
-      null;
+    // Idempotency key MUST be derived from the signed body only. The HMAC
+    // signature covers the request body, NOT headers — trusting
+    // `x-razorpay-event-id` would let an attacker replay one valid signed
+    // payload with a varied header to dodge dedupe and re-trigger
+    // applyPaidPlan (license-extension abuse). The payment_link id is stable
+    // across Razorpay's own legitimate retries, so dedupe still holds.
+    const eventId = linkEntity?.id ?? paymentEntity?.id ?? null;
 
     try {
       if (eventType === "payment_link.paid") {
