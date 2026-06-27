@@ -16,6 +16,20 @@ function isPlan(v: string | null): v is Plan {
   return !!v && (VALID_PLANS as readonly string[]).includes(v);
 }
 
+/**
+ * Razorpay charges INR for India and USD everywhere else. We detect the buyer's
+ * region from the browser timezone (India reports "Asia/Kolkata"/"Asia/Calcutta")
+ * and default to USD when detection is unavailable. Ignored by Stripe.
+ */
+function detectCurrency(): "INR" | "USD" {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "";
+    return tz === "Asia/Kolkata" || tz === "Asia/Calcutta" ? "INR" : "USD";
+  } catch {
+    return "USD";
+  }
+}
+
 export default function CheckoutPage() {
   const { isLoaded, isSignedIn } = useUser();
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +76,7 @@ export default function CheckoutPage() {
         data: {
           plan,
           provider: resolvedProvider,
+          currency: detectCurrency(),
           successUrl: `${origin}${basePath}/?checkout_success=1`,
           cancelUrl: `${origin}${basePath}/?checkout_cancelled=1`,
         },

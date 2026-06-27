@@ -456,6 +456,17 @@ export interface BillingProviders {
   providers: BillingProviderInfo[];
 }
 
+/**
+ * Buyer currency for Razorpay (INR for India, USD otherwise), typically detected client-side. Ignored by Stripe.
+ */
+export type CreateCheckoutSessionBodyCurrency =
+  (typeof CreateCheckoutSessionBodyCurrency)[keyof typeof CreateCheckoutSessionBodyCurrency];
+
+export const CreateCheckoutSessionBodyCurrency = {
+  INR: "INR",
+  USD: "USD",
+} as const;
+
 export type CheckoutPlan = (typeof CheckoutPlan)[keyof typeof CheckoutPlan];
 
 export const CheckoutPlan = {
@@ -484,6 +495,8 @@ export interface CreateCheckoutSessionBody {
   successUrl: string;
   /** Absolute URL Stripe redirects to on cancel. */
   cancelUrl: string;
+  /** Buyer currency for Razorpay (INR for India, USD otherwise), typically detected client-side. Ignored by Stripe. */
+  currency?: CreateCheckoutSessionBodyCurrency;
 }
 
 export interface CreateCheckoutSessionResult {

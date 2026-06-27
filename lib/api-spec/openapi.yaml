@@ -1722,6 +1722,12 @@ components:
         cancelUrl:
           type: string
           description: Absolute URL Stripe redirects to on cancel.
+        currency:
+          type: string
+          enum: [INR, USD]
+          description: >-
+            Buyer currency for Razorpay (INR for India, USD otherwise),
+            typically detected client-side. Ignored by Stripe.
       required:
         - plan
         - successUrl

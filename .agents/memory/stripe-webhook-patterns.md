@@ -32,9 +32,9 @@ fallback if retrieval fails). Needs `STRIPE_PRICE_TEAM` env var to be set.
 Razorpay reuses the SAME license plumbing as Stripe: `claimBillingEvent("razorpay", …)`
 for idempotency → `applyPaidPlan()` → `sendLicenseEmail()`. **Why one-time, not
 subscriptions:** Razorpay was added as a one-time Payment Link flow (REST POST
-`/v1/payment_links`, Basic auth), so it covers individual product plans only
-(monthly/quarterly/yearly/lifetime). **Team/Business stay Stripe-only** — the checkout
-branch rejects them for Razorpay. clerkUserId + plan ride in the link's `notes` and
+`/v1/payment_links`, Basic auth), so it covers **monthly and yearly only**
+(`isRazorpayPlan`) — the checkout branch rejects every other plan
+(quarterly/lifetime/team/business) for Razorpay. clerkUserId + plan ride in the link's `notes` and
 come back on the `payment_link.paid` webhook. **Idempotency key is body-derived only**
 (payment_link entity id, fallback payment entity id) — NOT the `x-razorpay-event-id`
 header. **Why:** the HMAC signature covers only the body, so an unsigned header could be
@@ -43,7 +43,10 @@ abuse). The payment_link id is stable across Razorpay's legitimate retries so de
 still holds. Webhook is HMAC-SHA256 of
 the raw body (`verifyRazorpaySignature`, timing-safe) and is mounted at
 `/api/billing/razorpay/webhook` (distinct path, BEFORE `express.json`, raw parser).
-Prices come from `RAZORPAY_PRICE_<PLAN>` in **paise** (smallest unit); currency
-defaults to INR via `RAZORPAY_CURRENCY`. Provider is "available" iff
+Pricing is **region-based**: currency detected client-side from the browser timezone
+(Asia/Kolkata/Asia/Calcutta → INR, else USD), sent as a `currency` field on the
+checkout request and re-validated server-side (`normalizeRazorpayCurrency`, default INR).
+Prices come from `RAZORPAY_PRICE_<PLAN>_<CURRENCY>` (e.g. `RAZORPAY_PRICE_MONTHLY_INR`)
+in the smallest unit (paise for INR, cents for USD). Provider is "available" iff
 `RAZORPAY_KEY_ID`+`RAZORPAY_KEY_SECRET` set. Frontend `checkout.tsx` is provider-aware:
 picks `?provider=` if available, else first available provider, else stripe.

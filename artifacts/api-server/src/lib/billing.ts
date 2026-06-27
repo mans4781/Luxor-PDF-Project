@@ -94,27 +94,38 @@ export function razorpayCredentials(): {
   return { keyId, keySecret };
 }
 
-const RAZORPAY_PRICE_ENV: Record<ProductPlan, string> = {
-  monthly: "RAZORPAY_PRICE_MONTHLY",
-  quarterly: "RAZORPAY_PRICE_QUARTERLY",
-  yearly: "RAZORPAY_PRICE_YEARLY",
-  lifetime: "RAZORPAY_PRICE_LIFETIME",
-};
+/** Currencies Razorpay charges in: INR for India, USD for everyone else. */
+export type RazorpayCurrency = "INR" | "USD";
+
+/** Razorpay sells only these plans (one-time monthly or yearly access). */
+export type RazorpayPlan = "monthly" | "yearly";
+
+/** Narrowing guard: only monthly/yearly are purchasable via Razorpay. */
+export function isRazorpayPlan(plan: string): plan is RazorpayPlan {
+  return plan === "monthly" || plan === "yearly";
+}
+
+/** Coerce arbitrary input to a supported currency, defaulting to INR. */
+export function normalizeRazorpayCurrency(
+  input?: string | null,
+): RazorpayCurrency {
+  return input?.toUpperCase() === "USD" ? "USD" : "INR";
+}
 
 /**
- * Per-plan Razorpay amount in the smallest currency unit (paise for INR),
- * configured via `RAZORPAY_PRICE_<PLAN>` so amounts change without a code edit.
+ * Per-plan, per-currency Razorpay amount in the smallest currency unit
+ * (paise for INR, cents for USD). Configured via
+ * `RAZORPAY_PRICE_<PLAN>_<CURRENCY>` (e.g. `RAZORPAY_PRICE_MONTHLY_INR`) so
+ * amounts change without a code edit.
  */
-export function razorpayAmountFor(plan: ProductPlan): number | null {
-  const raw = process.env[RAZORPAY_PRICE_ENV[plan]];
+export function razorpayAmountFor(
+  plan: RazorpayPlan,
+  currency: RazorpayCurrency,
+): number | null {
+  const raw = process.env[`RAZORPAY_PRICE_${plan.toUpperCase()}_${currency}`];
   if (!raw) return null;
   const n = Number.parseInt(raw, 10);
   return Number.isFinite(n) && n > 0 ? n : null;
-}
-
-/** ISO currency code Razorpay charges in (defaults to INR). */
-export function razorpayCurrency(): string {
-  return process.env["RAZORPAY_CURRENCY"]?.trim() || "INR";
 }
 
 export interface ApplyTeamPlanParams {

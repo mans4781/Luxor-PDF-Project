@@ -684,6 +684,12 @@ export const CreateCheckoutSessionBody = zod.object({
   cancelUrl: zod
     .string()
     .describe("Absolute URL Stripe redirects to on cancel."),
+  currency: zod
+    .enum(["INR", "USD"])
+    .optional()
+    .describe(
+      "Buyer currency for Razorpay (INR for India, USD otherwise), typically detected client-side. Ignored by Stripe.",
+    ),
 });
 
 export const CreateCheckoutSessionResponse = zod.object({

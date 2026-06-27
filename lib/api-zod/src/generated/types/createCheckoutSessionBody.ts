@@ -7,6 +7,7 @@
  */
 import type { BillingProvider } from "./billingProvider";
 import type { CheckoutPlan } from "./checkoutPlan";
+import type { CreateCheckoutSessionBodyCurrency } from "./createCheckoutSessionBodyCurrency";
 
 export interface CreateCheckoutSessionBody {
   plan: CheckoutPlan;
@@ -25,4 +26,6 @@ export interface CreateCheckoutSessionBody {
   successUrl: string;
   /** Absolute URL Stripe redirects to on cancel. */
   cancelUrl: string;
+  /** Buyer currency for Razorpay (INR for India, USD otherwise), typically detected client-side. Ignored by Stripe. */
+  currency?: CreateCheckoutSessionBodyCurrency;
 }

@@ -26,6 +26,7 @@ export * from "./billingProviderInfo";
 export * from "./billingProviders";
 export * from "./checkoutPlan";
 export * from "./createCheckoutSessionBody";
+export * from "./createCheckoutSessionBodyCurrency";
 export * from "./createCheckoutSessionResult";
 export * from "./deactivateDeviceBody";
 export * from "./deactivateDeviceResult";

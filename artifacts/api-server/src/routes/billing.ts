@@ -22,7 +22,8 @@ import {
   stripeBusinessPriceId,
   razorpayConfigured,
   razorpayAmountFor,
-  razorpayCurrency,
+  isRazorpayPlan,
+  normalizeRazorpayCurrency,
   type BillingProviderId,
 } from "../lib/billing";
 import { createPaymentLink, verifyRazorpaySignature } from "../lib/razorpay";
@@ -96,30 +97,31 @@ router.post(
     const provider: BillingProviderId = (parsed.data.provider ??
       "stripe") as BillingProviderId;
 
-    // ─── Razorpay (one-time payment links; individual plans only) ────────────
+    // ─── Razorpay (one-time payment links; monthly/yearly, INR or USD) ───────
     if (provider === "razorpay") {
       if (!razorpayConfigured()) {
         res.status(503).json({ error: "Razorpay not configured" });
         return;
       }
-      if (plan === "team" || plan === "business" || !isProductPlan(plan)) {
+      if (!isRazorpayPlan(plan)) {
         res.status(400).json({
-          error: `Razorpay supports individual plans only, not: ${plan}`,
+          error: `Razorpay supports only the monthly and yearly plans, not: ${plan}`,
         });
         return;
       }
-      const amount = razorpayAmountFor(plan as ProductPlan);
+      const currency = normalizeRazorpayCurrency(parsed.data.currency);
+      const amount = razorpayAmountFor(plan, currency);
       if (!amount) {
-        res
-          .status(503)
-          .json({ error: `Razorpay price for ${plan} not configured` });
+        res.status(503).json({
+          error: `Razorpay price for ${plan} (${currency}) not configured`,
+        });
         return;
       }
       try {
         const { email, name } = await lookupClerkEmail(auth.userId);
         const link = await createPaymentLink({
           amount,
-          currency: razorpayCurrency(),
+          currency,
           description: `Luxor PDF — ${plan} plan`,
           referenceId: `luxor_${auth.userId}_${plan}_${Date.now()}`,
           customer: { email, name },
@@ -127,7 +129,7 @@ router.post(
           callbackUrl: successUrl,
         });
         req.log.info(
-          { userId: auth.userId, plan, paymentLinkId: link.id },
+          { userId: auth.userId, plan, currency, paymentLinkId: link.id },
           "Razorpay payment link created",
         );
         res.json({
@@ -137,7 +139,7 @@ router.post(
         });
       } catch (err) {
         req.log.error(
-          { err, userId: auth.userId, plan },
+          { err, userId: auth.userId, plan, currency },
           "Razorpay checkout failed",
         );
         res.status(500).json({ error: "Failed to create checkout session" });
@@ -677,10 +679,13 @@ razorpayWebhookRouter.post(
         const userId = notes["clerkUserId"] ?? null;
         const plan = notes["plan"] ?? null;
 
-        if (!userId || !plan || !isProductPlan(plan)) {
+        // Enforce the monthly/yearly-only policy at the fulfillment boundary
+        // too: a signed event for any other plan (old links, dashboard-created
+        // links) must be acknowledged but never fulfilled.
+        if (!userId || !plan || !isRazorpayPlan(plan)) {
           req.log.warn(
             { eventId, userId, plan },
-            "Razorpay webhook missing userId/plan; ignoring",
+            "Razorpay webhook missing userId or unsupported plan; ignoring",
           );
           res.json({ received: true, processed: false });
           return;
