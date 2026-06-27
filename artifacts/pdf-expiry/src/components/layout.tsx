@@ -43,7 +43,7 @@ export function Layout({
             {/* Brand lockup */}
             <div className="flex items-center gap-3 shrink-0">
               <img
-                src={`${baseUrl}brand/luxor-icon.png`}
+                src={`${baseUrl}brand/luxor-icon.png?v=20260627`}
                 alt=""
                 aria-hidden="true"
                 className="h-[48px] w-[48px] select-none rounded-[15%] border border-[#DC2626]/40 bg-white shadow-sm"

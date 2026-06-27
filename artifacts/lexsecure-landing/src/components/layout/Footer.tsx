@@ -116,7 +116,7 @@ export function Footer() {
             >
               <span className="flex h-[53px] w-[53px] items-center justify-center rounded-xl bg-red-50 shadow-sm ring-1 ring-red-300 transition-transform duration-300 group-hover:scale-105">
                 <img
-                  src={`${import.meta.env.BASE_URL}brand/luxor-icon.png`}
+                  src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260627`}
                   alt=""
                   className="h-[39px] w-[39px] select-none"
                   draggable={false}

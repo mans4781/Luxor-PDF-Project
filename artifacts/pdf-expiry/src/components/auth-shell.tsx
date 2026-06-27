@@ -57,7 +57,7 @@ export function AuthShell({ children, variant }: AuthShellProps) {
         <div className="relative flex items-center">
           <div className="flex items-center gap-3">
             <img
-              src={`${baseUrl}brand/luxor-icon.png`}
+              src={`${baseUrl}brand/luxor-icon.png?v=20260627`}
               alt=""
               aria-hidden="true"
               width={56}
@@ -144,7 +144,7 @@ export function AuthShell({ children, variant }: AuthShellProps) {
           {/* Brand row above the Clerk card */}
           <div className="flex items-center justify-center gap-3 mb-6">
             <img
-              src={`${baseUrl}brand/luxor-icon.png`}
+              src={`${baseUrl}brand/luxor-icon.png?v=20260627`}
               alt=""
               aria-hidden="true"
               width={48}
