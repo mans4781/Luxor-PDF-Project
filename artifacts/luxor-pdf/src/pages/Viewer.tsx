@@ -12,6 +12,7 @@ import type { Annotation, HighlightAnnotation } from "@/lib/annotationTypes";
 import WatermarkModal from "@/components/WatermarkModal";
 import PageNumberModal from "@/components/PageNumberModal";
 import CompressModal from "@/components/CompressModal";
+import ScreenshotOverlay from "@/components/ScreenshotOverlay";
 import type { WatermarkConfig, PageNoConfig } from "@/lib/editTypes";
 import { exportPdfWithEdits } from "@/lib/pdfExport";
 
@@ -140,6 +141,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   const [watermarkOpen, setWatermarkOpen] = useState(false);
   const [pageNoOpen, setPageNoOpen] = useState(false);
   const [compressOpen, setCompressOpen] = useState(false);
+  const [screenshotActive, setScreenshotActive] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [closeIntent, setCloseIntent] = useState<CloseIntent>(null);
   useEffect(() => { lsSetJSON(LS_KEYS.watermark, watermarkCfg); }, [watermarkCfg]);
@@ -620,6 +622,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         onOpenPageNo={() => setPageNoOpen(true)}
         onAddImage={handleAddImage}
         onOpenCompress={() => setCompressOpen(true)}
+        onScreenshot={() => setScreenshotActive(true)}
         onClearWatermark={() => setWatermarkCfg(null)}
         onClearPageNo={() => setPageNoCfg(null)}
         watermarkActive={!!watermarkCfg}
@@ -663,6 +666,14 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         <CompressModal
           file={file}
           onClose={() => setCompressOpen(false)}
+        />
+      )}
+
+      {screenshotActive && (
+        <ScreenshotOverlay
+          fileName={file.name}
+          currentPage={currentPage}
+          onClose={() => setScreenshotActive(false)}
         />
       )}
 

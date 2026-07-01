@@ -177,6 +177,7 @@ interface ToolbarProps {
   onOpenPageNo: () => void;
   onAddImage: () => void;
   onOpenCompress: () => void;
+  onScreenshot: () => void;
   onClearWatermark: () => void;
   onClearPageNo: () => void;
   watermarkActive: boolean;
@@ -209,7 +210,7 @@ type PopoverType = "highlight" | "text" | "tools" | "edit" | "draw" | "file" | "
  * one needs pdf-lib integration and its own dedicated modal/tool.
  * Clicking any item opens a "Coming soon" stub modal.
  */
-type EditFeatureKey = "redact" | "image" | "watermark" | "pageno" | "edittext" | "compress";
+type EditFeatureKey = "redact" | "image" | "watermark" | "pageno" | "edittext" | "compress" | "screenshot";
 
 interface EditFeatureDef {
   key: EditFeatureKey;
@@ -286,6 +287,20 @@ const EDIT_FEATURES: EditFeatureDef[] = [
       </svg>
     ),
   },
+  {
+    key: "screenshot",
+    label: "Screenshot",
+    desc: "Drag to capture any area of the current page as a PNG image.",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 8V6a2 2 0 0 1 2-2h2"/>
+        <path d="M16 4h2a2 2 0 0 1 2 2v2"/>
+        <path d="M20 16v2a2 2 0 0 1-2 2h-2"/>
+        <path d="M8 20H6a2 2 0 0 1-2-2v-2"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+    ),
+  },
 ];
 
 const isShapeTool = (t: ToolType) => ["freehand", "line", "arrow", "oval", "rectangle"].includes(t);
@@ -298,7 +313,7 @@ export default function Toolbar({
   onToolChange,
   onHighlightColorChange, onTextColorChange, onTextSizeChange, onTextFontChange, onDrawColorChange, onDrawThicknessChange, onShapeFillChange,
   onEraseAll, onReadAloud, onOpenFile, onDownload, onPrint,
-  onOpenWatermark, onOpenPageNo, onAddImage, onOpenCompress,
+  onOpenWatermark, onOpenPageNo, onAddImage, onOpenCompress, onScreenshot,
   onClearWatermark, onClearPageNo,
   watermarkActive, pageNoActive,
   onFileSaveAs, onFileSaveCopy, onFileClose,
@@ -447,7 +462,7 @@ export default function Toolbar({
             style={{ minWidth: 230, left: 0, transform: "none", padding: "6px 6px" }}
           >
             {EDIT_FEATURES.map((f) => {
-              const isLive = f.key === "watermark" || f.key === "pageno" || f.key === "redact" || f.key === "image" || f.key === "edittext" || f.key === "compress";
+              const isLive = f.key === "watermark" || f.key === "pageno" || f.key === "redact" || f.key === "image" || f.key === "edittext" || f.key === "compress" || f.key === "screenshot";
               const isActive =
                 (f.key === "watermark" && watermarkActive) ||
                 (f.key === "pageno" && pageNoActive) ||
@@ -466,6 +481,7 @@ export default function Toolbar({
                   else if (f.key === "image") onAddImage();
                   else if (f.key === "edittext") onToolChange(tool === "edittext" ? "hand" : "edittext");
                   else if (f.key === "compress") onOpenCompress();
+                  else if (f.key === "screenshot") onScreenshot();
                   else setEditStub(f.key);
                 }}
                 style={{
