@@ -10,7 +10,7 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$base = 'https://github.com/luxor-pdf/luxor-reader-desktop/releases/latest/download'
+$base = 'https://github.com/mans4781/luxor-reader-desktop/releases/latest/download'
 
 Write-Output 'Looking up the latest version...'
 $yml = (Invoke-WebRequest -UseBasicParsing "$base/latest.yml").Content

@@ -95,7 +95,7 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "luxor-pdf",
+        "owner": "mans4781",
         "repo": "luxor-reader-desktop",
         "releaseType": "release"
       }
