@@ -8,11 +8,14 @@ interface SearchBarProps {
   onPrev: () => void;
   onNext: () => void;
   onClose: () => void;
+  /** True when the document appears to be scanned (no text layer). */
+  unsearchable?: boolean;
 }
 
 export default function SearchBar({
   query, matchIndex, totalMatches,
   onQueryChange, onPrev, onNext, onClose,
+  unsearchable = false,
 }: SearchBarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -42,7 +45,9 @@ export default function SearchBar({
 
       {query && (
         <span className="search-bar-count">
-          {totalMatches === 0 ? "No matches" : `${matchIndex + 1} of ${totalMatches}`}
+          {totalMatches === 0
+            ? (unsearchable ? "Scanned document — no searchable text" : "No matches")
+            : `${matchIndex + 1} of ${totalMatches}`}
         </span>
       )}
 

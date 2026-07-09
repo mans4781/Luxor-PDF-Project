@@ -16,6 +16,24 @@ import ScreenshotOverlay from "@/components/ScreenshotOverlay";
 import type { WatermarkConfig, PageNoConfig } from "@/lib/editTypes";
 import { exportPdfWithEdits } from "@/lib/pdfExport";
 import { useAuthGate } from "@/components/AuthGate";
+import PasswordModal from "@/components/PasswordModal";
+import ErrorScreen from "@/components/ErrorScreen";
+import HeavyFileBanner from "@/components/HeavyFileBanner";
+import DocInfoPanel from "@/components/DocInfoPanel";
+import NavPanel from "@/components/NavPanel";
+import OCRPanel from "@/components/OCRPanel";
+import AIToolsPanel from "@/components/AIToolsPanel";
+import FormsPanel from "@/components/FormsPanel";
+import SettingsModal from "@/components/SettingsModal";
+import { loadSettings, saveSettings, ReaderSettings } from "@/lib/settings";
+import { addRecent } from "@/lib/recentFiles";
+import { detectScanned, detectHeavyFile } from "@/lib/docFeatures";
+
+/** Right-hand side panels — only one can be open at a time. */
+export type PanelKey = "info" | "nav" | "ocr" | "ai" | "forms";
+
+/** Per-document localStorage key for the last-viewed page. */
+const lastPageKey = (docKey: string) => `luxor-pdf:lastpage:${docKey}`;
 
 // Friendly labels for the sign-in prompt when a gated tool is activated.
 const TOOL_LABELS: Record<Exclude<ToolType, "hand">, string> = {
@@ -162,6 +180,27 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   const [screenshotActive, setScreenshotActive] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [closeIntent, setCloseIntent] = useState<CloseIntent>(null);
+
+  // ── New commercial-reader state ─────────────────────────────
+  const [settings, setSettings] = useState<ReaderSettings>(() => loadSettings());
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [activePanel, setActivePanel] = useState<PanelKey | null>(null);
+  const [loadError, setLoadError] = useState<{ title: string; message: string } | null>(null);
+  const [needsPassword, setNeedsPassword] = useState(false);
+  const [wrongPassword, setWrongPassword] = useState(false);
+  const passwordCbRef = useRef<((pw: string) => void) | null>(null);
+  const loadingTaskRef = useRef<any>(null);
+  const [passwordProtected, setPasswordProtected] = useState(false);
+  const [isScanned, setIsScanned] = useState<boolean | null>(null);
+  const [heavyReasons, setHeavyReasons] = useState<string[]>([]);
+  const [heavyDismissed, setHeavyDismissed] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const viewerRef = useRef<HTMLDivElement>(null);
+
+  const handleSettingsChange = useCallback((next: ReaderSettings) => {
+    setSettings(next);
+    saveSettings(next);
+  }, []);
   useEffect(() => { lsSetJSON(LS_KEYS.watermark, watermarkCfg); }, [watermarkCfg]);
   useEffect(() => { lsSetJSON(LS_KEYS.pageNo, pageNoCfg); }, [pageNoCfg]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -217,12 +256,40 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   // document instantly even for very large PDFs.
   const [basePageSize, setBasePageSize] = useState<{ w: number; h: number } | null>(null);
 
-  // Load PDF
+  // Load PDF — with password support, friendly error handling, and
+  // post-load feature detection (scanned pages / heavy files / recents).
   useEffect(() => {
     if (!file) return;
+    let cancelled = false;
+    let resumeTimer: ReturnType<typeof setTimeout> | undefined;
     setLoading(true);
+    setLoadError(null);
+    setNeedsPassword(false);
+    setWrongPassword(false);
+    setPasswordProtected(false);
+    setIsScanned(null);
+    setHeavyReasons([]);
+    setHeavyDismissed(false);
+    setActivePanel(null);
     const url = URL.createObjectURL(file);
-    pdfjsLib.getDocument({ url }).promise.then(async doc => {
+    const task = pdfjsLib.getDocument({ url });
+    loadingTaskRef.current = task;
+
+    // pdf.js invokes this for encrypted PDFs. reason 1 = needs password,
+    // reason 2 = previous attempt was wrong. We stash the callback and
+    // show our modal; cancelling destroys the task → friendly error.
+    task.onPassword = (cb: (pw: string) => void, reason: number) => {
+      if (cancelled) return;
+      passwordCbRef.current = cb;
+      setPasswordProtected(true);
+      setWrongPassword(reason === 2);
+      setNeedsPassword(true);
+      setLoading(false);
+    };
+
+    task.promise.then(async (doc: any) => {
+      if (cancelled) return;
+      setNeedsPassword(false);
       try {
         const p1 = await doc.getPage(1);
         const vp = p1.getViewport({ scale: 1, rotation: p1.rotate ?? 0 });
@@ -232,14 +299,82 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
       }
       setPdfDoc(doc);
       setTotalPages(doc.numPages);
-      setCurrentPage(1);
+
+      // Apply user preferences for a freshly-opened document.
+      const prefs = loadSettings();
+      setZoom(Math.min(5, Math.max(0.25, ZOOM_BASE * (prefs.defaultZoomPct / 100))));
+      setSplitView(prefs.defaultView === "double");
+      setShowContents(prefs.showThumbnails);
+
+      // Resume at the last-viewed page (if enabled and still valid).
+      const dk = `${file.name}::${file.size}::${file.lastModified}`;
+      let startPage = 1;
+      if (prefs.resumeLastPage) {
+        const saved = parseInt(lsGet(lastPageKey(dk), "1"), 10);
+        if (!isNaN(saved) && saved > 1 && saved <= doc.numPages) startPage = saved;
+      }
+      setCurrentPage(startPage);
       setLoading(false);
-    }).catch(err => {
+      if (startPage > 1) {
+        // Wait a tick for pages to mount, then jump (instant — smooth
+        // scrolling across hundreds of pages would look broken).
+        resumeTimer = setTimeout(() => {
+          if (cancelled) return;
+          document.getElementById(`page-${startPage}`)?.scrollIntoView({ behavior: "auto", block: "start" });
+        }, 80);
+      }
+
+      // Record in recents (metadata only) unless disabled.
+      if (prefs.enableRecents) {
+        addRecent({ name: file.name, size: file.size, lastModified: file.lastModified, pages: doc.numPages });
+      }
+
+      // Detect scanned pages + heavy files in the background.
+      detectScanned(doc).then((scanned) => {
+        if (cancelled) return;
+        setIsScanned(scanned);
+        const heavy = detectHeavyFile(file.size, doc.numPages, scanned);
+        if (heavy.isHeavy) setHeavyReasons(heavy.reasons);
+      });
+    }).catch((err: any) => {
+      if (cancelled) return;
       console.error("PDF load error:", err);
+      setNeedsPassword(false);
       setLoading(false);
+      const name = err?.name ?? "";
+      if (name === "PasswordException") {
+        setLoadError({
+          title: "Password required",
+          message: "This PDF can't be opened without its password.",
+        });
+      } else if (name === "InvalidPDFException") {
+        setLoadError({
+          title: "This file can't be opened",
+          message: "The file appears to be corrupted or isn't a valid PDF document.",
+        });
+      } else {
+        setLoadError({
+          title: "Something went wrong",
+          message: "The document couldn't be loaded. It may be damaged, incomplete, or in an unsupported format.",
+        });
+      }
     });
-    return () => URL.revokeObjectURL(url);
+    return () => {
+      cancelled = true;
+      if (resumeTimer !== undefined) clearTimeout(resumeTimer);
+      passwordCbRef.current = null;
+      if (loadingTaskRef.current === task) loadingTaskRef.current = null;
+      // Abort any in-flight parsing/fetching for the old document.
+      task.destroy().catch(() => {});
+      URL.revokeObjectURL(url);
+    };
   }, [file]);
+
+  // Persist the current page per document so reading can resume later.
+  useEffect(() => {
+    if (!pdfDoc || loading) return;
+    lsSet(lastPageKey(docKey), currentPage);
+  }, [currentPage, docKey, pdfDoc, loading]);
 
   // Placeholder CSS size at the current zoom (swapped when the viewer
   // rotation turns pages sideways). Real sizes replace this per page as
@@ -364,8 +499,66 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
-    document.getElementById(`page-${page}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById(`page-${page}`)?.scrollIntoView({ behavior: settings.smoothScroll ? "smooth" : "auto", block: "start" });
+  }, [settings.smoothScroll]);
+
+  // ── Fit to width / fit to page ─────────────────────────────
+  // Compute a zoom from the visible viewer area and the page-1 base size.
+  const applyFit = useCallback((mode: "width" | "page") => {
+    const container = viewerRef.current;
+    if (!container || !basePageSize) return;
+    const sideways = rotation % 180 !== 0;
+    const baseW = sideways ? basePageSize.h : basePageSize.w;
+    const baseH = sideways ? basePageSize.w : basePageSize.h;
+    // Horizontal padding: 24px each side + scrollbar allowance.
+    const availW = container.clientWidth - 64;
+    const availH = container.clientHeight - 48;
+    if (availW <= 0 || availH <= 0 || baseW <= 0 || baseH <= 0) return;
+    const zW = availW / baseW;
+    const z = mode === "width" ? zW : Math.min(zW, availH / baseH);
+    setZoom(Math.min(5, Math.max(0.25, parseFloat(z.toFixed(3)))));
+  }, [basePageSize, rotation]);
+
+  const handleFitWidth = useCallback(() => applyFit("width"), [applyFit]);
+  const handleFitPage = useCallback(() => applyFit("page"), [applyFit]);
+
+  // ── Full screen ────────────────────────────────────────────
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
   }, []);
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  // ── Password modal actions ─────────────────────────────────
+  const handlePasswordSubmit = useCallback((pw: string) => {
+    const cb = passwordCbRef.current;
+    if (!cb) return;
+    setNeedsPassword(false);
+    setLoading(true);
+    cb(pw); // wrong passwords re-trigger onPassword with reason 2
+  }, []);
+  const handlePasswordCancel = useCallback(() => {
+    setNeedsPassword(false);
+    passwordCbRef.current = null;
+    try { loadingTaskRef.current?.destroy(); } catch { /* already gone */ }
+    setLoadError({
+      title: "Password required",
+      message: "This PDF can't be opened without its password.",
+    });
+  }, []);
+
+  // Open a right-hand panel (AI tools are sign-in gated).
+  const handleOpenPanel = useCallback((panel: PanelKey) => {
+    if (panel === "ai" && !requireAuth("AI tools")) return;
+    setActivePanel(p => (p === panel ? null : panel));
+  }, [requireAuth]);
 
   const handlePageVisible = useCallback((page: number) => setCurrentPage(page), []);
 
@@ -499,6 +692,13 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   // issues from the main shortcuts effect higher up the file.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // F11 — toggle full screen (browser default also works, but this
+      // keeps the state chip in the View menu in sync).
+      if (e.key === "F11") {
+        e.preventDefault();
+        toggleFullscreen();
+        return;
+      }
       if (!(e.ctrlKey || e.metaKey)) return;
       const k = e.key.toLowerCase();
       if (k === "s" && e.shiftKey && !e.altKey) {
@@ -515,7 +715,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isDirty, handleFileSaveAs, handleFileSaveCopy, handleFileClose]);
+  }, [isDirty, handleFileSaveAs, handleFileSaveCopy, handleFileClose, toggleFullscreen]);
 
   // Edit → Add Image. Opens a hidden <input type=file>, decodes the
   // chosen image to a data URL, normalizes WebP → PNG via canvas (pdf-lib
@@ -688,6 +888,19 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   }, [file]);
   useEffect(() => () => { printFrameRef.current?.remove(); }, []);
 
+  // Ctrl+P — print via the same hidden-iframe path as the toolbar button.
+  // Registered here (after handlePrint is declared) to avoid TDZ issues.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        handlePrint();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [handlePrint]);
+
   const handlePageInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       const val = parseInt((e.target as HTMLInputElement).value, 10);
@@ -697,6 +910,28 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   };
 
   const allPageNums = useMemo(() => Array.from({ length: totalPages }, (_, i) => i + 1), [totalPages]);
+
+  if (needsPassword) {
+    return (
+      <PasswordModal
+        fileName={file.name}
+        wrongPassword={wrongPassword}
+        onSubmit={handlePasswordSubmit}
+        onCancel={handlePasswordCancel}
+      />
+    );
+  }
+
+  if (loadError) {
+    return (
+      <ErrorScreen
+        title={loadError.title}
+        message={loadError.message}
+        fileName={file.name}
+        onClose={onClose}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -753,6 +988,15 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         onFileClose={handleFileClose}
         theme={theme}
         onThemeChange={setTheme}
+        onFitWidth={handleFitWidth}
+        onFitPage={handleFitPage}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={toggleFullscreen}
+        activePanel={activePanel}
+        onOpenPanel={handleOpenPanel}
+        onOpenSettings={() => setSettingsOpen(true)}
+        showOCR={settings.enableOCR}
+        showAI={settings.enableAI}
       />
 
       {/* Hidden file input for Edit → Add Image. */}
@@ -795,6 +1039,64 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
           fileName={file.name}
           currentPage={currentPage}
           onClose={() => setScreenshotActive(false)}
+        />
+      )}
+
+      {settingsOpen && (
+        <SettingsModal
+          settings={settings}
+          onChange={handleSettingsChange}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
+
+      {heavyReasons.length > 0 && !heavyDismissed && (
+        <HeavyFileBanner reasons={heavyReasons} onDismiss={() => setHeavyDismissed(true)} />
+      )}
+
+      {/* ── Right-hand side panels (one at a time) ─────────── */}
+      {activePanel === "info" && pdfDoc && (
+        <DocInfoPanel
+          pdfDoc={pdfDoc}
+          fileName={file.name}
+          fileSize={file.size}
+          totalPages={totalPages}
+          passwordProtected={passwordProtected}
+          onClose={() => setActivePanel(null)}
+        />
+      )}
+      {activePanel === "nav" && pdfDoc && (
+        <NavPanel
+          pdfDoc={pdfDoc}
+          docKey={docKey}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          annotations={annotations}
+          onGoToPage={handlePageChange}
+          onRemoveAnnotation={removeAnnotation}
+          onClose={() => setActivePanel(null)}
+        />
+      )}
+      {activePanel === "ocr" && (
+        <OCRPanel
+          isScanned={isScanned}
+          totalPages={totalPages}
+          onClose={() => setActivePanel(null)}
+        />
+      )}
+      {activePanel === "ai" && (
+        <AIToolsPanel
+          fileName={file.name}
+          totalPages={totalPages}
+          onClose={() => setActivePanel(null)}
+        />
+      )}
+      {activePanel === "forms" && pdfDoc && (
+        <FormsPanel
+          pdfDoc={pdfDoc}
+          onClose={() => setActivePanel(null)}
+          onSelectTool={handleToolChange}
+          onAddImage={() => { if (requireAuth("Add Image")) handleAddImage(); }}
         />
       )}
 
@@ -872,6 +1174,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
           onNext={handleSearchNext}
           onPrev={handleSearchPrev}
           onClose={handleSearchClose}
+          unsearchable={isScanned === true}
         />
       )}
 
@@ -953,6 +1256,13 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
                 title="Go to page"
               />
               <span className="sidebar-page-total">/ {totalPages}</span>
+              <span
+                className="sidebar-page-total"
+                title="Reading progress"
+                style={{ fontSize: 9.5, opacity: 0.8 }}
+              >
+                {Math.round((currentPage / Math.max(1, totalPages)) * 100)}%
+              </span>
             </div>
 
             <button
@@ -996,20 +1306,40 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
 
         <div className="sidebar-sep" />
 
-        {/* Fit to width */}
-        <button
-          className="sidebar-btn"
-          title="Reset zoom (100%)"
-          onClick={() => setZoom(ZOOM_BASE)}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-          </svg>
-        </button>
+        {/* Fit controls */}
+        <div className="sidebar-group">
+          <button
+            className="sidebar-btn"
+            title="Fit to width"
+            onClick={handleFitWidth}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="7 8 3 12 7 16"/><polyline points="17 8 21 12 17 16"/><line x1="3" y1="12" x2="21" y2="12"/>
+            </svg>
+          </button>
+          <button
+            className="sidebar-btn"
+            title="Fit to page"
+            onClick={handleFitPage}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+          </button>
+          <button
+            className="sidebar-btn"
+            title="Reset zoom (100%)"
+            onClick={() => setZoom(ZOOM_BASE)}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
+        </div>
 
       </div>
 
-      <div className={`luxor-viewer${showContents ? " viewer-with-panel" : ""}`}>
+      <div ref={viewerRef} className={`luxor-viewer${showContents ? " viewer-with-panel" : ""}`}>
         {pdfDoc && (splitView
           /* ── Two-page spread: render pairs side by side ── */
           ? Array.from({ length: Math.ceil(totalPages / 2) }, (_, i) => {

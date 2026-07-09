@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, useEffect, type ReactNode } from "react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { ToolType } from "@/lib/annotationTypes";
+import type { PanelKey } from "@/pages/Viewer";
 import {
   DRAW_PALETTE as PALETTE_DRAW,
   DRAW_THICKNESS,
@@ -189,6 +190,16 @@ interface ToolbarProps {
   // Theme menu
   theme: ThemeKey;
   onThemeChange: (t: ThemeKey) => void;
+  // View menu
+  onFitWidth: () => void;
+  onFitPage: () => void;
+  isFullscreen: boolean;
+  onToggleFullscreen: () => void;
+  activePanel: PanelKey | null;
+  onOpenPanel: (p: PanelKey) => void;
+  onOpenSettings: () => void;
+  showOCR: boolean;
+  showAI: boolean;
 }
 
 export type ThemeKey = "light" | "sepia" | "dark" | "night";
@@ -200,7 +211,7 @@ const THEMES: { key: ThemeKey; label: string; swatch: string; ring: string }[] =
   { key: "night", label: "Night", swatch: "#0e0e0e", ring: "rgba(255,255,255,0.25)" },
 ];
 
-type PopoverType = "highlight" | "text" | "tools" | "edit" | "draw" | "file" | "theme" | null;
+type PopoverType = "highlight" | "text" | "tools" | "edit" | "draw" | "file" | "theme" | "view" | null;
 
 /**
  * Edit menu items. The dropdown UI is shipped now; the feature
@@ -318,6 +329,8 @@ export default function Toolbar({
   watermarkActive, pageNoActive,
   onFileSaveAs, onFileSaveCopy, onFileClose,
   theme, onThemeChange,
+  onFitWidth, onFitPage, isFullscreen, onToggleFullscreen,
+  activePanel, onOpenPanel, onOpenSettings, showOCR, showAI,
 }: ToolbarProps) {
   const [popover, setPopover] = useState<PopoverType>(null);
   // Which Edit-menu feature modal is currently open (null = none).
@@ -567,6 +580,102 @@ export default function Toolbar({
                 </button>
               );
             })}
+          </div>
+        )}
+      </div>
+
+      {/* ── 3b. View menu (text word) ───────────────────────── */}
+      <div style={{ position: "relative" }}>
+        <button
+          className={`toolbar-menu-word ${popover === "view" ? "active" : ""}`}
+          onClick={() => toggle("view")}
+          title="View"
+        >
+          View
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 5 }}>
+            <polyline points="5 8 10 13 15 8" />
+          </svg>
+        </button>
+
+        {popover === "view" && (
+          <div
+            className="popover-panel edit-menu-panel"
+            style={{
+              left: 0, transform: "none",
+              minWidth: 250, padding: "8px 6px",
+              background: "#FFFFFF", color: "#1a1a1a",
+              border: "1px solid rgba(0,0,0,0.10)",
+              boxShadow: "0 8px 28px rgba(0,0,0,0.18)",
+            }}
+          >
+            {([
+              { key: "fitwidth", label: "Fit to Width", shortcut: "", sep: false, on: false, icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="7 8 3 12 7 16"/><polyline points="17 8 21 12 17 16"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+              ) },
+              { key: "fitpage", label: "Fit to Page", shortcut: "", sep: false, on: false, icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+              ) },
+              { key: "fullscreen", label: isFullscreen ? "Exit Full Screen" : "Full Screen", shortcut: "F11", sep: false, on: isFullscreen, icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+              ) },
+              { key: "info", label: "Document Info", shortcut: "", sep: true, on: activePanel === "info", icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              ) },
+              { key: "nav", label: "Navigation", shortcut: "", sep: false, on: activePanel === "nav", icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+              ) },
+              { key: "forms", label: "Forms & Sign", shortcut: "", sep: false, on: activePanel === "forms", icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              ) },
+              ...(showOCR ? [{ key: "ocr", label: "OCR (Text Recognition)", shortcut: "", sep: false, on: activePanel === "ocr", icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7V5a1 1 0 0 1 1-1h2"/><path d="M17 4h2a1 1 0 0 1 1 1v2"/><path d="M20 17v2a1 1 0 0 1-1 1h-2"/><path d="M7 20H5a1 1 0 0 1-1-1v-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              ) }] : []),
+              ...(showAI ? [{ key: "ai", label: "AI Tools", shortcut: "", sep: false, on: activePanel === "ai", icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"/></svg>
+              ) }] : []),
+              { key: "settings", label: "Settings", shortcut: "", sep: true, on: false, icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              ) },
+            ]).map((item) => (
+              <div key={item.key}>
+                {item.sep && <div style={{ height: 1, background: "rgba(0,0,0,0.08)", margin: "4px 4px" }} />}
+                <button
+                  onClick={() => {
+                    setPopover(null);
+                    if (item.key === "fitwidth") onFitWidth();
+                    else if (item.key === "fitpage") onFitPage();
+                    else if (item.key === "fullscreen") onToggleFullscreen();
+                    else if (item.key === "settings") onOpenSettings();
+                    else onOpenPanel(item.key as PanelKey);
+                  }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    width: "100%", padding: "7px 10px", marginBottom: 1,
+                    background: "transparent",
+                    border: "none", borderRadius: 5,
+                    color: "#1a1a1a",
+                    cursor: "pointer", fontSize: 13, textAlign: "left",
+                    fontWeight: 400,
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(13,98,242,0.10)"; e.currentTarget.style.color = "#0D62F2"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#1a1a1a"; }}
+                >
+                  <span style={{ display: "inline-flex", width: 18, justifyContent: "center" }}>{item.icon}</span>
+                  <span style={{ flex: 1 }}>{item.label}</span>
+                  {item.on && (
+                    <span style={{
+                      fontSize: 9, fontWeight: 500, letterSpacing: 0.5,
+                      padding: "2px 6px", borderRadius: 999,
+                      background: "#0D62F2",
+                      color: "#fff",
+                    }}>ON</span>
+                  )}
+                  {item.shortcut && (
+                    <span style={{ fontSize: 11, color: "#888", letterSpacing: 0.3 }}>{item.shortcut}</span>
+                  )}
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>

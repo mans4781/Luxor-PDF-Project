@@ -1,0 +1,382 @@
+You are working on an existing, already functional PDF Reader application.
+
+Do not rebuild the whole app from scratch. First analyze the current codebase, understand the existing structure, and preserve all working features. Your task is to check whether the required PDF Reader features are already available. If any feature is missing, incomplete, broken, or only partially implemented, add or improve it carefully.
+
+Application name: **Luxor PDF Reader**
+
+Main goal:
+Improve the existing PDF Reader into a professional, commercial-quality PDF Reader while keeping the current design, layout, and working PDF opening/rendering functionality intact.
+
+## Important Instructions
+
+1. Do not delete or rewrite the entire existing project.
+2. Do not break the current PDF opening and viewing functionality.
+3. First inspect the codebase and identify existing components, libraries, and PDF rendering logic.
+4. Reuse the existing PDF.js or current PDF rendering setup if already implemented.
+5. Add missing features in a clean, modular way.
+6. Keep the current brand style, colors, logo, and layout unless improvement is necessary.
+7. Make sure the application runs without errors after the changes.
+8. If any advanced feature cannot be fully implemented immediately, create a professional UI-ready mock workflow with clear comments for future integration.
+
+## Step 1: Audit Existing PDF Reader Features
+
+Check whether the app already has the following features:
+
+### Core PDF Reader Features
+
+* Open local PDF file
+* Drag and drop PDF upload
+* Display PDF pages correctly
+* Previous page / next page navigation
+* Jump to page number
+* Current page and total page count
+* Zoom in
+* Zoom out
+* Fit to page
+* Fit to width
+* Rotate page
+* Smooth scrolling
+* Single-page view
+* Continuous scroll view
+* Full-screen mode
+* Print PDF
+* Save/download PDF copy
+* Recent files list
+
+### Navigation Features
+
+* Page thumbnails sidebar
+* Bookmarks panel
+* Add bookmark
+* Remove bookmark
+* Continue reading from last page
+* Document outline/table of contents if available
+* Reading progress percentage
+
+### Search Features
+
+* Search text inside PDF
+* Highlight search results
+* Next search result
+* Previous search result
+* Show total number of matches
+* Show message if PDF is scanned and text is not searchable
+
+### Annotation Features
+
+* Highlight text
+* Underline text
+* Strike-through text
+* Add comment
+* Sticky note
+* Freehand pen
+* Rectangle shape
+* Circle shape
+* Arrow
+* Line
+* Text box
+* Eraser
+* Annotation list with page number and timestamp
+
+If full annotation saving inside the PDF is not currently possible, implement visual annotations in the UI and save annotation metadata in local storage.
+
+### Document Information Features
+
+* File name
+* File size
+* Total pages
+* PDF version if available
+* Title metadata if available
+* Author metadata if available
+* Created date if available
+* Modified date if available
+* Security status
+* Password protected status
+
+### Heavy File Handling
+
+Check and add a heavy PDF detection system.
+
+It should detect:
+
+* Large file size
+* High page count
+* Image-heavy or scanned PDF
+* Slow rendering risk
+* Password-protected PDF
+* Corrupted or unsupported PDF
+
+If a heavy file is detected, show this message:
+
+“This PDF appears to be large or complex. Luxor PDF Reader will load it using optimized viewing mode.”
+
+Add optimized loading behavior where possible:
+
+* Lazy page rendering
+* Render only visible pages in continuous mode
+* Show loading spinner
+* Avoid freezing the browser
+* Show friendly error if memory issue occurs
+
+### Security Features
+
+Check and add:
+
+* Password-protected PDF opening
+* Password input modal
+* Invalid password message
+* Permission status panel
+* Printing allowed status
+* Copying allowed status
+* Editing allowed status
+* Warning for embedded JavaScript or attachments if detectable
+
+Create a panel titled:
+
+**Document Security Status**
+
+### Form and Signature Features
+
+Check and add UI support for:
+
+* Detecting PDF form fields where possible
+* Text field filling
+* Checkbox fields
+* Radio button fields
+* Signature placeholder
+* Draw signature option
+* Upload signature image option
+
+If real PDF form saving is not possible yet, create a polished mock workflow and clearly mark the integration points in code comments.
+
+### OCR Features
+
+Check and add an OCR panel for scanned PDFs.
+
+Features:
+
+* Detect scanned PDF
+* Show OCR required message
+* OCR button
+* OCR progress bar
+* Extract text placeholder
+* Search scanned pages placeholder
+* Copy OCR text placeholder
+
+Use this message:
+
+“OCR helps convert scanned pages into searchable and selectable text.”
+
+If OCR is not integrated yet, create the structure so Tesseract.js or server-side OCR can be added later.
+
+### AI PDF Tools
+
+Check and add a premium AI tools panel.
+
+Include:
+
+* Summarize PDF
+* Ask questions from PDF
+* Extract key points
+* Generate study notes
+* Translate selected text
+* Explain selected text
+* Create quiz from PDF
+
+For now, these tools may use mock responses, but design them professionally and structure the code so an AI API can be connected later.
+
+### Theme and Reading Comfort
+
+Check and add:
+
+* Light mode
+* Dark mode
+* Sepia mode
+* Eye comfort mode
+* Adjustable reading background
+* Remember selected theme in local storage
+
+### Settings
+
+Check and add a settings modal with:
+
+* Theme selection
+* Default zoom
+* Default view mode
+* Enable/disable thumbnails
+* Enable/disable recent files
+* Enable/disable AI tools
+* Enable/disable OCR tools
+* Smooth scrolling toggle
+* Keyboard shortcuts list
+
+### Keyboard Shortcuts
+
+Check and add:
+
+* Ctrl + O = Open PDF
+* Ctrl + F = Search
+* Ctrl + P = Print
+* Ctrl + Plus = Zoom in
+* Ctrl + Minus = Zoom out
+* Arrow Right = Next page
+* Arrow Left = Previous page
+* F11 = Full screen
+* Esc = Exit full screen
+
+### Error Handling
+
+Check and add professional error handling for:
+
+* Invalid file type
+* PDF cannot open
+* Corrupted PDF
+* Password required
+* Wrong password
+* File too large
+* Unsupported PDF feature
+* Browser memory issue
+
+Use this friendly error message where suitable:
+
+“Luxor PDF Reader could not open this file. The PDF may be corrupted, encrypted, or too large for your current device.”
+
+Show helpful suggestions:
+
+* Try optimized mode
+* Try compressing the PDF
+* Try repairing the PDF
+* Try removing password protection if you have permission
+* Try opening on a device with more memory
+
+## Step 2: Add Missing Features Only
+
+After auditing, add only the missing or incomplete features.
+
+Use clean component-based development.
+
+Recommended components if not already present:
+
+* PDFViewer
+* Toolbar
+* Sidebar
+* ThumbnailPanel
+* BookmarkPanel
+* SearchPanel
+* AnnotationToolbar
+* AnnotationList
+* DocumentInfoPanel
+* SecurityPanel
+* OCRPanel
+* AIToolsPanel
+* SettingsModal
+* PasswordModal
+* ErrorScreen
+* HeavyFileWarning
+* RecentFilesPanel
+
+If similar components already exist, update them instead of creating duplicate components.
+
+## Step 3: Preserve Current Working Features
+
+Before making changes:
+
+* Identify how PDF files are currently opened
+* Identify how pages are rendered
+* Identify how zoom and navigation currently work
+* Identify existing state management
+* Identify existing styling system
+* Preserve all current working logic
+
+Do not remove working code unless replacing it with a better compatible implementation.
+
+## Step 4: Local Storage Requirements
+
+Use local storage for:
+
+* Recent files metadata
+* Last opened page
+* Bookmarks
+* Theme preference
+* Default zoom
+* Default view mode
+* Annotation metadata
+* User settings
+
+Do not store the actual PDF file in local storage if it may be too large. Store only safe metadata unless the current app already has a better storage system.
+
+## Step 5: UI Quality Requirements
+
+Make the reader look premium and professional.
+
+The interface should have:
+
+* Clean toolbar
+* Organized sidebar
+* Smooth right-side tools panel
+* Clear icons
+* Modern buttons
+* Loading states
+* Empty states
+* Toast notifications
+* Responsive layout
+* Good spacing
+* Consistent typography
+* Light and dark theme support
+
+Avoid a basic or unfinished look.
+
+## Step 6: Testing
+
+After adding features, test the following:
+
+1. App starts without errors.
+2. Existing PDF opening still works.
+3. Page navigation works.
+4. Zoom works.
+5. Search works if text is available.
+6. Thumbnails work if implemented.
+7. Bookmarks save and load.
+8. Recent files appear.
+9. Dark mode works.
+10. Heavy file warning appears for large PDFs.
+11. Password modal appears for encrypted PDFs if supported.
+12. Error messages appear cleanly.
+13. No duplicate toolbars or duplicate sidebars are created.
+14. Layout does not break on smaller screens.
+
+## Step 7: Final Developer Notes
+
+At the end, provide a short summary inside the project or console comments explaining:
+
+* Which features were already available
+* Which features were added
+* Which advanced features are mock/UI-ready
+* Where OCR integration can be connected
+* Where AI API integration can be connected
+* Any limitations that remain
+
+## Expected Final Result
+
+The final application should remain the existing working PDF Reader, but upgraded with missing professional features.
+
+The app should include:
+
+* Strong PDF reading experience
+* Heavy file handling
+* Search
+* Navigation
+* Thumbnails
+* Bookmarks
+* Recent files
+* Document information
+* Security panel
+* Annotation tools
+* OCR panel
+* AI tools panel
+* Settings modal
+* Theme modes
+* Keyboard shortcuts
+* Professional error handling
+
+Make sure everything is clean, stable, modular, and ready for future conversion into a desktop application using Electron or Tauri.
