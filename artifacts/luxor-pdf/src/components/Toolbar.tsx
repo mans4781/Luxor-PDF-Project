@@ -146,6 +146,8 @@ const SHAPE_TOOLS: { id: ToolType; label: string }[] = [
 
 interface ToolbarProps {
   fileName: string;
+  /** Zoom / page-nav / rotate / fit control cluster rendered inline in the header. */
+  viewControls?: ReactNode;
   tool: ToolType;
   highlightColor: string;
   textColor: string;
@@ -317,7 +319,7 @@ const EDIT_FEATURES: EditFeatureDef[] = [
 const isShapeTool = (t: ToolType) => ["freehand", "line", "arrow", "oval", "rectangle"].includes(t);
 
 export default function Toolbar({
-  fileName, tool,
+  fileName, viewControls, tool,
   highlightColor, textColor, textSize, textFont, drawColor, drawThickness, shapeFill, isSpeaking,
   showContents, searchOpen, splitView,
   onToggleContents, onToggleSearch, onToggleSplit,
@@ -940,8 +942,12 @@ export default function Toolbar({
 
       <div style={{ flex: 1 }} />
 
+      {viewControls}
+
+      <div style={{ flex: 1 }} />
+
       {fileName && (
-        <span className="toolbar-label" style={{ maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={fileName}>
+        <span className="toolbar-label" style={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={fileName}>
           {fileName}
         </span>
       )}

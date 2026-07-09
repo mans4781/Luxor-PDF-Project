@@ -12,7 +12,6 @@
   --toolbar-active-fg: #0D62F2;
   --toolbar-sep: rgba(0,0,0,0.18);
   --toolbar-height: 50px;
-  --viewbar-height: 40px;
   --accent: #4f8ef7;
   --accent-hover: #3a74e0;
 
@@ -207,7 +206,7 @@ html, body, #root {
 
 .luxor-viewer {
   position: fixed;
-  top: calc(var(--toolbar-height) + var(--viewbar-height)); bottom: 0;
+  top: var(--toolbar-height); bottom: 0;
   left: 0; right: 0;
   overflow-y: auto; overflow-x: auto;
   background: var(--viewer-bg, #E6E6E6);
@@ -221,7 +220,7 @@ html, body, #root {
 
 .search-bar {
   position: fixed;
-  top: calc(var(--toolbar-height) + var(--viewbar-height) + 6px);
+  top: calc(var(--toolbar-height) + 6px);
   right: 16px;
   z-index: 110;
   display: flex;
@@ -304,7 +303,7 @@ mark.search-hl {
 
 .thumb-panel {
   position: fixed;
-  top: calc(var(--toolbar-height) + var(--viewbar-height)); bottom: 0; left: 0;
+  top: var(--toolbar-height); bottom: 0; left: 0;
   width: 164px;
   background: #1e1e1e;
   border-right: 1px solid rgba(255,255,255,0.07);
@@ -396,62 +395,58 @@ mark.search-hl {
 /* Viewer shifts right when contents panel is open */
 .viewer-with-panel { left: 164px !important; }
 
-/* ── View bar (horizontal tool strip under the toolbar) ─────────────────── */
+/* ── View controls cluster (inline in the top toolbar/header) ───────────── */
 
 .view-bar {
-  position: fixed;
-  top: var(--toolbar-height); left: 0; right: 0;
-  height: var(--viewbar-height);
-  background: #C5C6C6;
-  border-bottom: 1px solid rgba(0,0,0,0.10);
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
-  padding: 0 12px;
-  gap: 2px;
-  z-index: 90;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  gap: 1px;
+  flex-shrink: 0;
 }
 
 .sidebar-group {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 2px;
-  padding: 0 4px;
+  gap: 1px;
+  padding: 0 2px;
 }
 
 .sidebar-btn {
-  width: 34px; height: 30px;
+  width: 30px; height: 30px;
   border-radius: 6px;
   border: none;
   background: transparent;
-  color: #2a2a2a;
+  color: var(--toolbar-fg-muted);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: background 0.12s, color 0.12s;
   flex-shrink: 0;
 }
 
-/* Force sidebar SVGs to 18px — standard Adobe/Edge size */
-.sidebar-btn svg { width: 18px !important; height: 18px !important; }
+.sidebar-btn svg { width: 16px !important; height: 16px !important; }
 
-.sidebar-btn:hover { background: rgba(0,0,0,0.10); color: #000; }
+.sidebar-btn:hover { background: var(--toolbar-hover); color: var(--toolbar-fg); }
 .sidebar-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
 .sidebar-zoom-select {
-  background: rgba(255,255,255,0.55);
-  border: 1px solid rgba(0,0,0,0.15);
+  background: transparent;
+  border: 1px solid var(--toolbar-sep);
   border-radius: 5px;
-  color: #2a2a2a;
+  color: var(--toolbar-fg);
   font-size: 11px;
   padding: 3px 2px;
-  width: 46px;
+  width: 52px;
   text-align: center;
   outline: none;
   cursor: pointer;
   text-align-last: center;
+}
+
+.sidebar-zoom-select option {
+  background: var(--toolbar-bg);
+  color: var(--toolbar-fg);
 }
 
 .sidebar-page-indicator {
@@ -462,10 +457,10 @@ mark.search-hl {
 }
 
 .sidebar-page-input {
-  background: rgba(255,255,255,0.55);
-  border: 1px solid rgba(0,0,0,0.15);
+  background: transparent;
+  border: 1px solid var(--toolbar-sep);
   border-radius: 5px;
-  color: #1a1a1a;
+  color: var(--toolbar-fg);
   font-size: 12px;
   font-weight: 600;
   padding: 3px 3px;
@@ -481,15 +476,16 @@ mark.search-hl {
 .sidebar-page-input { -moz-appearance: textfield; }
 
 .sidebar-page-total {
-  color: #4a4a4a;
+  color: var(--toolbar-fg-muted);
   font-size: 10px;
+  white-space: nowrap;
 }
 
 .sidebar-sep {
   width: 1px;
   height: 22px;
-  background: rgba(0,0,0,0.15);
-  margin: 0 6px;
+  background: var(--toolbar-sep);
+  margin: 0 4px;
   flex-shrink: 0;
 }
 

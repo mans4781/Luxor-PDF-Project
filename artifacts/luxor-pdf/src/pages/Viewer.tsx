@@ -935,10 +935,162 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
     );
   }
 
+  /* ── View controls (zoom / page nav / rotate / fits) — rendered
+     inside the top toolbar via the `viewControls` prop ── */
+  const viewControls = (
+    <div className="view-bar">
+      {/* Zoom controls */}
+      <div className="sidebar-group">
+        <button
+          className="sidebar-btn"
+          title="Zoom in"
+          onClick={() => setZoom(z => Math.min(5, parseFloat((z + 0.25).toFixed(2))))}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+        </button>
+
+        <select
+          className="sidebar-zoom-select"
+          value={ZOOM_PRESETS.includes(zoom) ? zoom : "custom"}
+          onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setZoom(v); }}
+          title="Zoom level"
+        >
+          {ZOOM_PRESETS.map(z => <option key={z} value={z}>{zoomLabel(z)}</option>)}
+          {!ZOOM_PRESETS.includes(zoom) && <option value="custom">{zoomLabel(zoom)}</option>}
+        </select>
+
+        <button
+          className="sidebar-btn"
+          title="Zoom out"
+          onClick={() => setZoom(z => Math.max(0.25, parseFloat((z - 0.25).toFixed(2))))}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+        </button>
+      </div>
+
+      <div className="sidebar-sep" />
+
+      {/* Page navigation */}
+      {totalPages > 0 && (
+        <div className="sidebar-group">
+          <button
+            className="sidebar-btn"
+            title="Previous page"
+            disabled={currentPage <= 1}
+            onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="18 15 12 9 6 15"/>
+            </svg>
+          </button>
+
+          <div className="sidebar-page-indicator">
+            <input
+              ref={pageInputRef}
+              type="number"
+              className="sidebar-page-input"
+              defaultValue={currentPage}
+              key={currentPage}
+              min={1}
+              max={totalPages}
+              onKeyDown={handlePageInput}
+              title="Go to page"
+            />
+            <span className="sidebar-page-total">/ {totalPages}</span>
+            <span
+              className="sidebar-page-total"
+              title="Reading progress"
+              style={{ fontSize: 9.5, opacity: 0.8 }}
+            >
+              {Math.round((currentPage / Math.max(1, totalPages)) * 100)}%
+            </span>
+          </div>
+
+          <button
+            className="sidebar-btn"
+            title="Next page"
+            disabled={currentPage >= totalPages}
+            onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
+      )}
+
+      <div className="sidebar-sep" />
+
+      {/* Rotate */}
+      <div className="sidebar-group">
+        <button
+          className="sidebar-btn"
+          title="Rotate clockwise (90°)"
+          onClick={() => setRotation(r => (r + 90) % 360)}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 2v6h-6"/>
+            <path d="M21 8C19.6 5 16.8 3 13.5 3 8.8 3 5 6.8 5 11.5S8.8 20 13.5 20c3.3 0 6.2-2 7.6-5"/>
+          </svg>
+        </button>
+        <button
+          className="sidebar-btn"
+          title="Rotate counter-clockwise (90°)"
+          onClick={() => setRotation(r => (r + 270) % 360)}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 2v6h6"/>
+            <path d="M3 8c1.4-3 4.2-5 7.5-5C15.2 3 19 6.8 19 11.5S15.2 20 10.5 20c-3.3 0-6.2-2-7.6-5"/>
+          </svg>
+        </button>
+      </div>
+
+      <div className="sidebar-sep" />
+
+      {/* Fit controls */}
+      <div className="sidebar-group">
+        <button
+          className="sidebar-btn"
+          title="Fit to width"
+          onClick={handleFitWidth}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="7 8 3 12 7 16"/><polyline points="17 8 21 12 17 16"/><line x1="3" y1="12" x2="21" y2="12"/>
+          </svg>
+        </button>
+        <button
+          className="sidebar-btn"
+          title="Fit to page"
+          onClick={handleFitPage}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+        </button>
+        <button
+          className="sidebar-btn"
+          title="Reset zoom (100%)"
+          onClick={() => setZoom(ZOOM_BASE)}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <Toolbar
         fileName={file.name}
+        viewControls={viewControls}
         tool={tool}
         highlightColor={highlightColor}
         textColor={textColor}
@@ -1177,156 +1329,6 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
           onPageChange={handlePageChange}
         />
       )}
-
-      {/* ── View bar (under toolbar): zoom + page navigation + rotate + fits ── */}
-      <div className="view-bar">
-
-        {/* Zoom controls */}
-        <div className="sidebar-group">
-          <button
-            className="sidebar-btn"
-            title="Zoom in"
-            onClick={() => setZoom(z => Math.min(5, parseFloat((z + 0.25).toFixed(2))))}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
-            </svg>
-          </button>
-
-          <select
-            className="sidebar-zoom-select"
-            value={ZOOM_PRESETS.includes(zoom) ? zoom : "custom"}
-            onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setZoom(v); }}
-            title="Zoom level"
-          >
-            {ZOOM_PRESETS.map(z => <option key={z} value={z}>{zoomLabel(z)}</option>)}
-            {!ZOOM_PRESETS.includes(zoom) && <option value="custom">{zoomLabel(zoom)}</option>}
-          </select>
-
-          <button
-            className="sidebar-btn"
-            title="Zoom out"
-            onClick={() => setZoom(z => Math.max(0.25, parseFloat((z - 0.25).toFixed(2))))}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              <line x1="8" y1="11" x2="14" y2="11"/>
-            </svg>
-          </button>
-        </div>
-
-        <div className="sidebar-sep" />
-
-        {/* Page navigation */}
-        {totalPages > 0 && (
-          <div className="sidebar-group">
-            <button
-              className="sidebar-btn"
-              title="Previous page"
-              disabled={currentPage <= 1}
-              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="18 15 12 9 6 15"/>
-              </svg>
-            </button>
-
-            <div className="sidebar-page-indicator">
-              <input
-                ref={pageInputRef}
-                type="number"
-                className="sidebar-page-input"
-                defaultValue={currentPage}
-                key={currentPage}
-                min={1}
-                max={totalPages}
-                onKeyDown={handlePageInput}
-                title="Go to page"
-              />
-              <span className="sidebar-page-total">/ {totalPages}</span>
-              <span
-                className="sidebar-page-total"
-                title="Reading progress"
-                style={{ fontSize: 9.5, opacity: 0.8 }}
-              >
-                {Math.round((currentPage / Math.max(1, totalPages)) * 100)}%
-              </span>
-            </div>
-
-            <button
-              className="sidebar-btn"
-              title="Next page"
-              disabled={currentPage >= totalPages}
-              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </button>
-          </div>
-        )}
-
-        <div className="sidebar-sep" />
-
-        {/* Rotate */}
-        <div className="sidebar-group">
-          <button
-            className="sidebar-btn"
-            title="Rotate clockwise (90°)"
-            onClick={() => setRotation(r => (r + 90) % 360)}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 2v6h-6"/>
-              <path d="M21 8C19.6 5 16.8 3 13.5 3 8.8 3 5 6.8 5 11.5S8.8 20 13.5 20c3.3 0 6.2-2 7.6-5"/>
-            </svg>
-          </button>
-          <button
-            className="sidebar-btn"
-            title="Rotate counter-clockwise (90°)"
-            onClick={() => setRotation(r => (r + 270) % 360)}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 2v6h6"/>
-              <path d="M3 8c1.4-3 4.2-5 7.5-5C15.2 3 19 6.8 19 11.5S15.2 20 10.5 20c-3.3 0-6.2-2-7.6-5"/>
-            </svg>
-          </button>
-        </div>
-
-        <div className="sidebar-sep" />
-
-        {/* Fit controls */}
-        <div className="sidebar-group">
-          <button
-            className="sidebar-btn"
-            title="Fit to width"
-            onClick={handleFitWidth}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="7 8 3 12 7 16"/><polyline points="17 8 21 12 17 16"/><line x1="3" y1="12" x2="21" y2="12"/>
-            </svg>
-          </button>
-          <button
-            className="sidebar-btn"
-            title="Fit to page"
-            onClick={handleFitPage}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-            </svg>
-          </button>
-          <button
-            className="sidebar-btn"
-            title="Reset zoom (100%)"
-            onClick={() => setZoom(ZOOM_BASE)}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-          </button>
-        </div>
-
-      </div>
 
       <div ref={viewerRef} className={`luxor-viewer${showContents ? " viewer-with-panel" : ""}`}>
         {pdfDoc && (splitView
