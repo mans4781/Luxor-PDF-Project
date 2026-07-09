@@ -41,7 +41,8 @@ jobs:
       # installing (CI-only change; the lockfile is re-resolved here).
       - name: Allow Windows platform binaries
         shell: bash
-        run: sed -i '/: "-"$/d' pnpm-workspace.yaml
+        run: |
+          sed -i '/: "-"$/d' pnpm-workspace.yaml
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
