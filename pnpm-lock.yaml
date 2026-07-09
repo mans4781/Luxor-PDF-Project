@@ -886,6 +886,28 @@ importers:
         specifier: 'catalog:'
         version: 3.25.76
 
+  artifacts/luxor-reader-desktop:
+    dependencies:
+      electron-log:
+        specifier: ^5.4.3
+        version: 5.4.3
+      electron-updater:
+        specifier: ^6.8.3
+        version: 6.8.3
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.3.5
+      electron:
+        specifier: ^33.2.1
+        version: 33.4.11
+      electron-builder:
+        specifier: ^25.1.8
+        version: 25.1.8
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
   artifacts/mockup-sandbox:
     devDependencies:
       '@hookform/resolvers':

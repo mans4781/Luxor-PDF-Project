@@ -2,6 +2,7 @@ import { useState } from "react";
 import Home from "@/pages/Home";
 import Viewer from "@/pages/Viewer";
 import IconGallery from "@/pages/IconGallery";
+import { AuthGateProvider } from "@/components/AuthGate";
 
 function shouldShowIconGallery(): boolean {
   if (typeof window === "undefined") return false;
@@ -17,9 +18,13 @@ export default function App() {
     return <IconGallery />;
   }
 
-  if (file) {
-    return <Viewer file={file} onClose={() => setFile(null)} onFileLoad={setFile} />;
-  }
-
-  return <Home onFileLoad={setFile} />;
+  return (
+    <AuthGateProvider>
+      {file ? (
+        <Viewer file={file} onClose={() => setFile(null)} onFileLoad={setFile} />
+      ) : (
+        <Home onFileLoad={setFile} />
+      )}
+    </AuthGateProvider>
+  );
 }

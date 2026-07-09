@@ -1,0 +1,68 @@
+name: Luxor PDF Reader — Windows installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish to GitHub Releases (requires GH_RELEASES_TOKEN secret)"
+        type: boolean
+        default: false
+  push:
+    tags:
+      - "reader-v*"
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      # electron-builder reads GH_TOKEN when publishing to GitHub Releases.
+      # Use a PAT with repo scope on the release repo configured in
+      # artifacts/luxor-reader-desktop/package.json (publish.owner/repo).
+      GH_TOKEN: ${{ secrets.GH_RELEASES_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Compile Electron main & preload
+        run: pnpm --filter @workspace/luxor-reader-desktop run build
+
+      - name: Build offline web bundle (luxor-pdf)
+        run: pnpm --filter @workspace/luxor-reader-desktop run build:web-bundle
+
+      - name: Decide publish mode
+        id: mode
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/reader-v* || "${{ inputs.publish }}" == "true" ]]; then
+            echo "flag=always" >> "$GITHUB_OUTPUT"
+          else
+            echo "flag=never" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build NSIS installer
+        run: pnpm --filter @workspace/luxor-reader-desktop exec electron-builder --win --x64 --publish ${{ steps.mode.outputs.flag }}
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: luxor-pdf-reader-windows-installer
+          path: |
+            artifacts/luxor-reader-desktop/dist/*.exe
+            artifacts/luxor-reader-desktop/dist/*.blockmap
+            artifacts/luxor-reader-desktop/dist/latest.yml
+          if-no-files-found: error
+          retention-days: 30

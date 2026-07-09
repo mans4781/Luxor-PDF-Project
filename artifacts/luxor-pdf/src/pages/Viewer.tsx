@@ -15,6 +15,22 @@ import CompressModal from "@/components/CompressModal";
 import ScreenshotOverlay from "@/components/ScreenshotOverlay";
 import type { WatermarkConfig, PageNoConfig } from "@/lib/editTypes";
 import { exportPdfWithEdits } from "@/lib/pdfExport";
+import { useAuthGate } from "@/components/AuthGate";
+
+// Friendly labels for the sign-in prompt when a gated tool is activated.
+const TOOL_LABELS: Record<Exclude<ToolType, "hand">, string> = {
+  highlight: "Highlighting",
+  eraser: "the Eraser",
+  text: "Text notes",
+  freehand: "Pen drawing",
+  line: "Shapes",
+  arrow: "Shapes",
+  oval: "Shapes",
+  rectangle: "Shapes",
+  redact: "Redaction",
+  image: "Add Image",
+  edittext: "Edit Text",
+};
 
 // localStorage keys for persisting tool-color preferences across sessions.
 const LS_KEYS = {
@@ -151,6 +167,25 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   const pageInputRef = useRef<HTMLInputElement>(null);
 
   const { annotations, addAnnotation, updateAnnotation, removeAnnotation, clearHighlights, undo, getPageAnnotations, replaceHighlights } = useAnnotations();
+
+  // Sign-in gate: reading stays free; annotation/edit/export features
+  // require a signed-in user (requireAuth shows the prompt when not).
+  const { requireAuth, isLoaded: authLoaded, isSignedIn } = useAuthGate();
+
+  const handleToolChange = useCallback((t: ToolType) => {
+    if (t !== "hand" && !requireAuth(TOOL_LABELS[t])) return;
+    setTool(t);
+  }, [requireAuth]);
+
+  // Signed-out users must not carry premium edit configs hydrated from
+  // localStorage — otherwise the free download path would happily burn a
+  // previously-saved watermark / page numbers into the exported PDF.
+  useEffect(() => {
+    if (authLoaded && !isSignedIn) {
+      setWatermarkCfg(null);
+      setPageNoCfg(null);
+    }
+  }, [authLoaded, isSignedIn]);
 
   // Stable per-document key for persisting highlights across reloads.
   const docKey = useMemo(
@@ -354,11 +389,13 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
     // Browsers can't truly "save as" — handleDownload already prompts a
     // save dialog on Windows when downloads.always_ask is enabled and
     // exports the PDF with all current edits burned in.
+    if (!requireAuth("Save As")) return;
     if (!file) { alert("No PDF is currently open."); return; }
     handleDownload();
-  }, [file]);
+  }, [file, requireAuth]);
 
   const handleFileSaveCopy = useCallback(async () => {
+    if (!requireAuth("Save a Copy")) return;
     if (!file) { alert("No PDF is currently open."); return; }
     if (downloading) return;
     const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
@@ -391,7 +428,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
     } finally {
       setDownloading(false);
     }
-  }, [file, downloading, annotations, watermarkCfg, pageNoCfg, currentPage]);
+  }, [file, downloading, annotations, watermarkCfg, pageNoCfg, currentPage, requireAuth]);
 
   const handleFileClose = useCallback(() => {
     if (!file) { alert("No PDF is currently open."); return; }
@@ -413,12 +450,23 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
       setCloseIntent(null);
     };
     if (choice === "save") {
+      // Saving with edits burned in is a signed-in feature. Gate BEFORE
+      // proceeding so a signed-out user isn't left with their edits
+      // silently discarded after the sign-in prompt appears.
+      const hasExportEdits =
+        watermarkCfg !== null ||
+        pageNoCfg !== null ||
+        annotations.some((a) => a.type === "redact" || a.type === "image" || a.type === "edittext");
+      if (hasExportEdits && !requireAuth("saving edited PDFs")) {
+        setCloseIntent(null);
+        return;
+      }
       // Trigger save first, then proceed regardless of result.
       handleDownload().finally(proceed);
     } else {
       proceed();
     }
-  }, [closeIntent, onClose, onFileLoad]);
+  }, [closeIntent, onClose, onFileLoad, watermarkCfg, pageNoCfg, annotations, requireAuth]);
 
   // File-menu keyboard shortcuts. Placed in its own effect so it can
   // depend on the handlers (which are defined just above) without TDZ
@@ -541,6 +589,10 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
       return;
     }
+    // Downloading the untouched original (above) is always free, but
+    // exporting with edits burned in requires a signed-in user — this also
+    // covers indirect callers (Save As shortcut, unsaved-changes dialog).
+    if (!requireAuth("exporting edited PDFs")) return;
     setDownloading(true);
     try {
       const blob = await exportPdfWithEdits(file, {
@@ -602,7 +654,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         onToggleContents={() => setShowContents(s => !s)}
         onToggleSearch={() => { setSearchOpen(s => !s); if (searchOpen) { setSearchQuery(""); setSearchMatchList([]); } }}
         onToggleSplit={() => setSplitView(s => !s)}
-        onToolChange={setTool}
+        onToolChange={handleToolChange}
         onHighlightColorChange={setHighlightColor}
         onTextColorChange={setTextColor}
         onTextSizeChange={setTextSize}
@@ -613,18 +665,18 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         onDrawColorChange={setDrawColor}
         onDrawThicknessChange={setDrawThickness}
         onShapeFillChange={setShapeFill}
-        onEraseAll={clearHighlights}
+        onEraseAll={() => { if (requireAuth("Erase All")) clearHighlights(); }}
         onReadAloud={handleReadAloud}
         onOpenFile={handleOpenFile}
         onDownload={handleDownload}
         onPrint={() => window.print()}
-        onOpenWatermark={() => setWatermarkOpen(true)}
-        onOpenPageNo={() => setPageNoOpen(true)}
-        onAddImage={handleAddImage}
-        onOpenCompress={() => setCompressOpen(true)}
-        onScreenshot={() => setScreenshotActive(true)}
-        onClearWatermark={() => setWatermarkCfg(null)}
-        onClearPageNo={() => setPageNoCfg(null)}
+        onOpenWatermark={() => { if (requireAuth("Watermark")) setWatermarkOpen(true); }}
+        onOpenPageNo={() => { if (requireAuth("Page Numbers")) setPageNoOpen(true); }}
+        onAddImage={() => { if (requireAuth("Add Image")) handleAddImage(); }}
+        onOpenCompress={() => { if (requireAuth("Compress")) setCompressOpen(true); }}
+        onScreenshot={() => { if (requireAuth("Screenshot")) setScreenshotActive(true); }}
+        onClearWatermark={() => { if (requireAuth("Watermark")) setWatermarkCfg(null); }}
+        onClearPageNo={() => { if (requireAuth("Page Numbers")) setPageNoCfg(null); }}
         watermarkActive={!!watermarkCfg}
         pageNoActive={!!pageNoCfg}
         onFileSaveAs={handleFileSaveAs}
