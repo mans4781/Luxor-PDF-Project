@@ -34,8 +34,17 @@ jobs:
           node-version: 24
           cache: pnpm
 
+      # The Replit workspace template blocks all non-Linux platform binaries
+      # (rollup, tailwind oxide, esbuild, etc.) via `"pkg>dep": "-"` overrides
+      # in pnpm-workspace.yaml to keep Linux installs slim. On the Windows
+      # runner those binaries are required, so strip the blocks before
+      # installing (CI-only change; the lockfile is re-resolved here).
+      - name: Allow Windows platform binaries
+        shell: bash
+        run: sed -i '/: "-"$/d' pnpm-workspace.yaml
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Compile Electron main & preload
         run: pnpm --filter @workspace/luxor-reader-desktop run build
