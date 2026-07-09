@@ -43,6 +43,9 @@ jobs:
         shell: bash
         run: |
           sed -i '/: "-"$/d' pnpm-workspace.yaml
+          # The template also pins brace-expansion to ^2, which breaks
+          # electron-builder (expects the newer named `expand` export).
+          sed -i '/"brace-expansion"/d' pnpm-workspace.yaml
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
