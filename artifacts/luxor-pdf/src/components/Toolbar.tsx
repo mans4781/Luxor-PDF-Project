@@ -999,7 +999,7 @@ export default function Toolbar({
       </button>
 
       <div style={{ marginLeft: 8, display: "flex", alignItems: "center" }}>
-        <AuthMenu variant="dark" />
+        <AuthMenu iconOnly variant={theme === "dark" || theme === "night" ? "dark" : "light"} />
       </div>
     </div>
   );

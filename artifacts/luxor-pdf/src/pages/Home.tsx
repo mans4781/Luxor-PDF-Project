@@ -73,7 +73,7 @@ export default function Home({ onFileLoad }: HomeProps) {
           gap: 8,
         }}
       >
-        <AuthMenu />
+        <AuthMenu iconOnly variant="dark" />
       </div>
       <div className="home-logo-area">
         <div className="home-logo">L</div>
