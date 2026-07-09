@@ -63,7 +63,7 @@
         }
       ],
       "icon": "build/icon.ico",
-      "artifactName": "Luxor PDF Setup ${version}.${ext}",
+      "artifactName": "Luxor PDF Installer ${version}.${ext}",
       "publisherName": "Luxor PDF",
       "certificateFile": "${env.WIN_CSC_LINK}",
       "certificatePassword": "${env.WIN_CSC_KEY_PASSWORD}",
