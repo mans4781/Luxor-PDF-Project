@@ -1,5 +1,9 @@
 # Workspace
 
+## User preferences
+
+- **Originality / no-copy requirement (all Luxor products, especially Luxor PDF Reader)**: never copy, clone, or imitate the UI, layout, icons, graphics, colors, wording, workflows, branding, or design system of Adobe Acrobat, Foxit, PDF-XChange, Nitro, Smallpdf, iLovePDF, DocuSign, or any other existing PDF software. Those products may be referenced only for understanding user expectations. All layouts, toolbar/sidebar/panel/modal designs, empty states, loading states, UI copy, labels, error messages, and mock AI/OCR/security/signature workflows must be newly written and original to Luxor PDF. Use only properly licensed open-source libraries (PDF.js, React, TypeScript, Tailwind, Lucide icons, etc.). No copyrighted assets, scraped images, copied SVGs, or copied CSS. Keep the Luxor identity: red document/shield accent, clean white interface, modern dark mode, premium business-software feel.
+
 ## Overview
 
 PDF Expiry Tool — a web application for uploading PDFs, setting an exact expiry date+time, and making them inaccessible afterwards. At upload time the user picks one of two post-expiry behaviors via a popup: **corrupt** (the file is replaced with random bytes so PDF readers can't open it) or **revoke** (the file is deleted and the download endpoint returns 410 Gone).
