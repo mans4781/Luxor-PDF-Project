@@ -9,16 +9,16 @@ interface SidePanelProps {
 
 /**
  * Shared right-hand slide-in panel shell (Document Info, Outline,
- * Annotations, OCR, AI Tools, Forms). Sits left of the 60px right
- * sidebar, matching the dark thumbnail-panel styling.
+ * Annotations, OCR, AI Tools, Forms). Slides in below the toolbar +
+ * view bar, matching the dark thumbnail-panel styling.
  */
 export default function SidePanel({ title, onClose, children, width = 320 }: SidePanelProps) {
   return (
     <div
       style={{
         position: "fixed",
-        top: "var(--toolbar-height)", bottom: 0, right: 60,
-        width, maxWidth: "calc(100vw - 120px)",
+        top: "calc(var(--toolbar-height) + var(--viewbar-height))", bottom: 0, right: 0,
+        width, maxWidth: "calc(100vw - 48px)",
         background: "#1e1e1e",
         borderLeft: "1px solid rgba(255,255,255,0.07)",
         display: "flex", flexDirection: "column",

@@ -1178,8 +1178,8 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         />
       )}
 
-      {/* ── Right sidebar: zoom + page navigation ── */}
-      <div className="right-sidebar">
+      {/* ── View bar (under toolbar): zoom + page navigation + rotate + fits ── */}
+      <div className="view-bar">
 
         {/* Zoom controls */}
         <div className="sidebar-group">
