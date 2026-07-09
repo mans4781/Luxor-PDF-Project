@@ -44,6 +44,15 @@
         ]
       }
     ],
+    "fileAssociations": [
+      {
+        "ext": "pdf",
+        "name": "PDF Document",
+        "description": "PDF Document",
+        "icon": "build/icon.ico",
+        "role": "Viewer"
+      }
+    ],
     "win": {
       "target": [
         {

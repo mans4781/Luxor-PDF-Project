@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Home from "@/pages/Home";
 import Viewer from "@/pages/Viewer";
 import IconGallery from "@/pages/IconGallery";
 import { AuthGateProvider } from "@/components/AuthGate";
+import { initDesktopFileOpen } from "@/lib/desktopBridge";
 
 function shouldShowIconGallery(): boolean {
   if (typeof window === "undefined") return false;
@@ -13,6 +14,11 @@ function shouldShowIconGallery(): boolean {
 
 export default function App() {
   const [file, setFile] = useState<File | null>(null);
+
+  // Desktop shell: open PDFs double-clicked in Windows (file association).
+  useEffect(() => {
+    initDesktopFileOpen(setFile);
+  }, []);
 
   if (shouldShowIconGallery()) {
     return <IconGallery />;

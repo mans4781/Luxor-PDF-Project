@@ -91,6 +91,52 @@ function registerBundledProtocol(): void {
 
 let mainWindow: BrowserWindow | null = null;
 
+// ─── "Open with" / default-app file handling ─────────────────────────────────
+//
+// When Windows launches the app with a PDF path (double-click after the
+// installer registered the .pdf file association), the path arrives in
+// process.argv (first launch) or in the second-instance argv (app already
+// running). The file bytes are read here in the main process and handed to
+// the renderer over IPC — the sandboxed renderer never touches the
+// filesystem directly.
+
+const MAX_OPEN_FILE_BYTES = 512 * 1024 * 1024; // 512 MB safety cap
+
+function extractPdfPath(argv: string[]): string | null {
+  // Skip the executable (and the script path when unpackaged), ignore flags.
+  const args = argv.slice(app.isPackaged ? 1 : 2);
+  for (const arg of args) {
+    if (arg.startsWith("-")) continue;
+    if (arg.toLowerCase().endsWith(".pdf")) return arg;
+  }
+  return null;
+}
+
+interface OpenedFile {
+  name: string;
+  data: Uint8Array;
+}
+
+async function readPdfForRenderer(filePath: string): Promise<OpenedFile | null> {
+  try {
+    const stat = await fs.stat(filePath);
+    if (!stat.isFile() || stat.size > MAX_OPEN_FILE_BYTES) return null;
+    const data = await fs.readFile(filePath);
+    return { name: path.basename(filePath), data };
+  } catch (err) {
+    log.error("[open-file] failed to read", filePath, err);
+    return null;
+  }
+}
+
+let pendingPdfPath: string | null = extractPdfPath(process.argv);
+
+// True once the renderer has proven it is mounted and pulling files (it
+// calls `luxor:get-pending-file` on startup). Until then, files opened via
+// `second-instance` are queued in `pendingPdfPath` instead of being pushed
+// with fire-and-forget `webContents.send`, which would silently drop them.
+let rendererReady = false;
+
 // ─── Persistent device id ─────────────────────────────────────────────────────
 
 const DEVICE_ID_FILE = "device-id.txt";
@@ -239,7 +285,35 @@ function setupAutoUpdater(): void {
   });
 }
 
+// Single-instance: double-clicking a PDF while the app is running should
+// open it in the existing window instead of spawning a second process.
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
+  app.quit();
+}
+
+app.on("second-instance", (_event, argv) => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
+  const pdfPath = extractPdfPath(argv);
+  if (!pdfPath) return;
+  if (mainWindow && rendererReady) {
+    void readPdfForRenderer(pdfPath).then((file) => {
+      if (file && mainWindow) {
+        mainWindow.webContents.send("luxor:open-file", file);
+      }
+    });
+  } else {
+    // Window or renderer not ready yet — queue it; the renderer pulls it
+    // via `luxor:get-pending-file` as soon as it mounts.
+    pendingPdfPath = pdfPath;
+  }
+});
+
 void app.whenReady().then(async () => {
+  if (!gotSingleInstanceLock) return;
   await getDeviceId();
 
   // The bundled protocol is registered in every mode — "auto" needs it
@@ -279,6 +353,30 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-ipcMain.handle("luxor:get-device-id", async () => {
+// Only the app's own origins (deployed site or bundled offline copy) may
+// call the privileged IPC handlers — defense in depth on top of the
+// will-navigate origin lock.
+function isTrustedIpcSender(event: Electron.IpcMainInvokeEvent): boolean {
+  try {
+    const origin = new URL(event.senderFrame?.url ?? "").origin;
+    return origin === REMOTE_ORIGIN || origin === BUNDLED_ORIGIN;
+  } catch {
+    return false;
+  }
+}
+
+ipcMain.handle("luxor:get-device-id", async (event) => {
+  if (!isTrustedIpcSender(event)) return null;
   return getDeviceId();
+});
+
+// One-shot: the renderer asks for the file it was launched with (if any).
+// Also serves as the renderer-ready signal for the push path.
+ipcMain.handle("luxor:get-pending-file", async (event) => {
+  if (!isTrustedIpcSender(event)) return null;
+  rendererReady = true;
+  if (!pendingPdfPath) return null;
+  const filePath = pendingPdfPath;
+  pendingPdfPath = null;
+  return readPdfForRenderer(filePath);
 });
