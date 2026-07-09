@@ -14,7 +14,7 @@ const { version } = JSON.parse(readFileSync(join(pkgDir, "package.json"), "utf8"
 mkdirSync(join(pkgDir, "dist"), { recursive: true });
 
 execFileSync(
-  "makensis",
+  process.platform === "win32" ? "makensis.exe" : "makensis",
   [`-DPRODUCT_VERSION=${version}`, "-V2", join(pkgDir, "web-installer", "web-setup.nsi")],
   { stdio: "inherit" },
 );

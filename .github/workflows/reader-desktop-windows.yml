@@ -77,7 +77,8 @@ jobs:
         shell: bash
         run: |
           choco install nsis -y --no-progress
-          echo "/c/Program Files (x86)/NSIS" >> "$GITHUB_PATH"
+          # GITHUB_PATH needs a native Windows path, not an MSYS-style one.
+          echo 'C:\Program Files (x86)\NSIS' >> "$GITHUB_PATH"
 
       - name: Build web-installer stub
         run: pnpm --filter @workspace/luxor-reader-desktop run dist:web-stub
