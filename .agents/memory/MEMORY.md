@@ -5,3 +5,10 @@
 - [Luxor PDF text annotations](luxor-pdf-text-annotations.md) — Add-Text overlays are display-only (not flattened on export); only edittext/watermark/etc are burned into the PDF.
 - [Reader feature gating](reader-feature-gating.md) — gate premium reader features at the execution point, not the UI trigger; clear persisted premium configs on sign-out.
 - [Luxor PDF virtualization & pdfjs compat](luxor-pdf-virtualization.md) — pages render only near viewport; canvas reads/print must respect that; pdfjs ≥5.6 needs upsert polyfill in main + worker.
+- [Luxor PDF Reader details](luxor-pdf-reader.md) — reader settings/recents/doc-features, load flow, toolbar/panels layout, theming, sign-in gating specifics.
+- [Desktop wrappers](desktop-wrappers.md) — luxor-reader-desktop & luxor-desktop Electron shells: load modes, IPC hardening, icons, web-installer stub, GitHub Releases.
+- [Windows CI vs pnpm template](windows-ci-pnpm.md) — template's Linux-only overrides + brace-expansion pin break Windows runners; strip them in CI before install.
+- [Billing details](billing-details.md) — Stripe/Razorpay provider registry, Razorpay payment-link flow + signed-body idempotency, applyPaidPlan pipeline, checkout wiring.
+- [Clerk suite SSO](clerk-suite-sso.md) — shared session across the 3 apps, pdf-expiry as auth host, luxor-auth-ui lib exports, CSS layer gotchas.
+- [License enforcement](license-enforcement.md) — server-primary gate, LockOverlay, 7-day offline grace, clock-tamper defense.
+- [Landing brand & layout](landing-brand.md) — palette, section order, and component specifics of lexsecure-landing.
