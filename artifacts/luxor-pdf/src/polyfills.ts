@@ -33,4 +33,40 @@ for (const ctor of [Map, WeakMap] as any[]) {
   }
 }
 
+/**
+ * Polyfills for `Uint8Array.prototype.toBase64` / `Uint8Array.fromBase64`
+ * (TC39 base64 proposal, Chrome 140+). pdfjs-dist ≥5.6 calls `toBase64()`
+ * unguarded when embedding fonts, so older browsers (and older Electron
+ * shells) would fail to open any PDF with embedded fonts.
+ */
+const u8proto = Uint8Array.prototype as any;
+if (typeof u8proto.toBase64 !== "function") {
+  Object.defineProperty(u8proto, "toBase64", {
+    value: function toBase64(this: Uint8Array) {
+      let binary = "";
+      const chunk = 0x8000;
+      for (let i = 0; i < this.length; i += chunk) {
+        binary += String.fromCharCode(...this.subarray(i, i + chunk));
+      }
+      return btoa(binary);
+    },
+    writable: true,
+    configurable: true,
+    enumerable: false,
+  });
+}
+if (typeof (Uint8Array as any).fromBase64 !== "function") {
+  Object.defineProperty(Uint8Array, "fromBase64", {
+    value: function fromBase64(str: string) {
+      const binary = atob(str);
+      const out = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
+      return out;
+    },
+    writable: true,
+    configurable: true,
+    enumerable: false,
+  });
+}
+
 export {};

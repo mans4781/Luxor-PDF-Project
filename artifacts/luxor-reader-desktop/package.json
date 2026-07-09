@@ -1,6 +1,6 @@
 {
   "name": "@workspace/luxor-reader-desktop",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "Luxor PDF Reader \u2014 Windows desktop wrapper for the luxor-pdf web app.",
   "main": "out/main.js",
@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "electron": "^33.2.1",
+    "electron": "^43.1.0",
     "electron-builder": "^25.1.8",
     "typescript": "^5.9.0"
   },
