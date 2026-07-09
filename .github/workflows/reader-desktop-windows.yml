@@ -67,7 +67,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GH_RELEASES_TOKEN }}
-          REPO: mans4781/luxor-reader-desktop
+          REPO: mans4781/Luxor-PDF-Project
         run: |
           VERSION=$(node -p "require('./artifacts/luxor-reader-desktop/package.json').version")
           # electron-builder publishes the release under tag v<version> by
