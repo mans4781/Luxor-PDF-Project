@@ -56,6 +56,40 @@ jobs:
       - name: Build NSIS installer
         run: pnpm --filter @workspace/luxor-reader-desktop exec electron-builder --win --x64 --publish ${{ steps.mode.outputs.flag }}
 
+      # Small (~200 KB) online installer that downloads the full setup from
+      # GitHub Releases when run. Built with makensis (preinstalled on
+      # windows-latest runners).
+      - name: Build web-installer stub
+        run: pnpm --filter @workspace/luxor-reader-desktop run dist:web-stub
+
+      - name: Attach web-installer stub to the release
+        if: steps.mode.outputs.flag == 'always'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GH_RELEASES_TOKEN }}
+          REPO: luxor-pdf/luxor-reader-desktop
+        run: |
+          VERSION=$(node -p "require('./artifacts/luxor-reader-desktop/package.json').version")
+          # electron-builder publishes the release under tag v<version> by
+          # default; the CI trigger tag (reader-v*) is unrelated. Resolve
+          # whichever release actually exists, failing early with a clear
+          # message otherwise.
+          TAG=""
+          for CANDIDATE in "v${VERSION}" "${GITHUB_REF_NAME}"; do
+            if [ -n "$CANDIDATE" ] && gh release view "$CANDIDATE" --repo "$REPO" >/dev/null 2>&1; then
+              TAG="$CANDIDATE"
+              break
+            fi
+          done
+          if [ -z "$TAG" ]; then
+            echo "::error::No GitHub release found for v${VERSION} or ${GITHUB_REF_NAME} on $REPO — cannot attach web-installer stub."
+            exit 1
+          fi
+          echo "Uploading stub to release $TAG"
+          gh release upload "$TAG" \
+            "artifacts/luxor-reader-desktop/dist/Luxor PDF Reader Web Setup.exe" \
+            --repo "$REPO" --clobber
+
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:

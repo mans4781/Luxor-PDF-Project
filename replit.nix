@@ -1,5 +1,6 @@
 {pkgs}: {
   deps = [
+    pkgs.nsis
     pkgs.udev
     pkgs.xorg.libxshmfence
     pkgs.xorg.libXtst

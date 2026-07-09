@@ -257,3 +257,9 @@ id = "osusogByVM29DrrmSXqTf"
 uri = "file://scripts/dist/luxor-invoices-A4.pdf"
 type = "pdf"
 title = "Luxor Invoices — India (INR) + International (USD)"
+
+[[outputs]]
+id = "vu9dCocdlItuFwdOQIT2G"
+uri = "file://artifacts/luxor-reader-desktop/dist/luxor-pdf-reader-web-setup.zip"
+type = "unspecified"
+title = "Luxor PDF Reader Web Setup (194 KB stub)"
