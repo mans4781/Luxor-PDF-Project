@@ -6,12 +6,8 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
-const src =
-  process.argv[2] ??
-  path.resolve(
-    root,
-    "../lexsecure-landing/public/brand/luxor-icon.png",
-  );
+// Default source: the checked-in Luxor shield logo (transparent background).
+const src = process.argv[2] ?? path.join(root, "build", "icon-source.png");
 const out = path.join(root, "build", "icon.ico");
 
 const args = [
