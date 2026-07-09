@@ -107,7 +107,7 @@ jobs:
           fi
           echo "Uploading stub to release $TAG"
           gh release upload "$TAG" \
-            "artifacts/luxor-reader-desktop/dist/Luxor PDF Reader Web Setup.exe" \
+            "artifacts/luxor-reader-desktop/dist/Luxor PDF Web Setup.exe" \
             --repo "$REPO" --clobber
 
       - name: Upload installer artifact

@@ -178,7 +178,7 @@ function createWindow(): void {
     minWidth: 880,
     minHeight: 600,
     icon: iconPath,
-    title: "Luxor PDF Reader",
+    title: "Luxor PDF",
     backgroundColor: "#111827",
     autoHideMenuBar: true,
     webPreferences: {
@@ -237,7 +237,7 @@ function createWindow(): void {
 
 // ─── App lifecycle ────────────────────────────────────────────────────────────
 
-app.setName("Luxor PDF Reader");
+app.setName("Luxor PDF");
 if (process.platform === "win32") {
   app.setAppUserModelId("com.luxor.pdfreader");
 }

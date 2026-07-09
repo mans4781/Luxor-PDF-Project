@@ -1,8 +1,8 @@
 {
   "name": "@workspace/luxor-reader-desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
-  "description": "Luxor PDF Reader — Windows desktop wrapper for the luxor-pdf web app.",
+  "description": "Luxor PDF Reader \u2014 Windows desktop wrapper for the luxor-pdf web app.",
   "main": "out/main.js",
   "scripts": {
     "build": "tsc -p tsconfig.json && node ./scripts/copy-assets.mjs",
@@ -22,8 +22,8 @@
   },
   "build": {
     "appId": "com.luxor.pdfreader",
-    "productName": "Luxor PDF Reader",
-    "copyright": "Copyright © 2026 Luxor PDF",
+    "productName": "Luxor PDF",
+    "copyright": "Copyright \u00a9 2026 Luxor PDF",
     "asar": true,
     "directories": {
       "buildResources": "build",
@@ -63,7 +63,7 @@
         }
       ],
       "icon": "build/icon.ico",
-      "artifactName": "Luxor PDF Reader Setup ${version}.${ext}",
+      "artifactName": "Luxor PDF Setup ${version}.${ext}",
       "publisherName": "Luxor PDF",
       "certificateFile": "${env.WIN_CSC_LINK}",
       "certificatePassword": "${env.WIN_CSC_KEY_PASSWORD}",
@@ -84,12 +84,12 @@
       "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Luxor PDF Reader",
+      "shortcutName": "Luxor PDF",
       "menuCategory": "Luxor",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
       "installerHeaderIcon": "build/icon.ico",
-      "uninstallDisplayName": "Luxor PDF Reader",
+      "uninstallDisplayName": "Luxor PDF",
       "deleteAppDataOnUninstall": false
     },
     "publish": [

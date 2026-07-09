@@ -7,13 +7,13 @@ Unicode true
 SetCompressor /SOLID lzma
 RequestExecutionLevel user
 
-!define PRODUCT_NAME "Luxor PDF Reader"
+!define PRODUCT_NAME "Luxor PDF"
 !ifndef PRODUCT_VERSION
   !define PRODUCT_VERSION "0.0.0"
 !endif
 
 Name "${PRODUCT_NAME}"
-OutFile "..\dist\Luxor PDF Reader Web Setup.exe"
+OutFile "..\dist\Luxor PDF Web Setup.exe"
 BrandingText "Luxor PDF"
 
 VIProductVersion "${PRODUCT_VERSION}.0"

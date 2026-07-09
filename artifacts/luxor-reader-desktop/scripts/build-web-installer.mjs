@@ -1,5 +1,5 @@
 // Compiles the NSIS web-installer stub (web-installer/web-setup.nsi) into
-// dist/"Luxor PDF Reader Web Setup.exe". Works on Linux/macOS/Windows as
+// dist/"Luxor PDF Web Setup.exe". Works on Linux/macOS/Windows as
 // long as `makensis` is on PATH. The stub's version is taken from
 // package.json so the exe's version resource tracks releases.
 import { execFileSync } from "node:child_process";
@@ -19,6 +19,6 @@ execFileSync(
   { stdio: "inherit" },
 );
 
-const out = join(pkgDir, "dist", "Luxor PDF Reader Web Setup.exe");
+const out = join(pkgDir, "dist", "Luxor PDF Web Setup.exe");
 const kb = Math.round(statSync(out).size / 1024);
 console.log(`\nWeb installer stub built: ${out} (${kb} KB)`);
