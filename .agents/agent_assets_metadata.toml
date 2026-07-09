@@ -168,6 +168,30 @@ uri = "file://attached_assets/generated_images/logo_sentinel_shield_v3.png"
 type = "image"
 title = "Sentinel Shield full red"
 
+[[generated]]
+id = "TRO0RFEUaLYJ24DuIxezg"
+uri = "file://attached_assets/generated_images/luxor_file_icon_v1.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "v7sb2DV56jDYs4x2is83i"
+uri = "file://attached_assets/generated_images/luxor_file_icon_v2.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "noOSkK490ijsv-C_Q09GG"
+uri = "file://attached_assets/generated_images/luxor_file_icon_v3.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "rLlH71b1cAKX0QurSiuIe"
+uri = "file://attached_assets/generated_images/luxor_file_icon_v4.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
