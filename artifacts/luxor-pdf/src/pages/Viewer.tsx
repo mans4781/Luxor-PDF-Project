@@ -18,7 +18,6 @@ import { exportPdfWithEdits } from "@/lib/pdfExport";
 import { useAuthGate } from "@/components/AuthGate";
 import PasswordModal from "@/components/PasswordModal";
 import ErrorScreen from "@/components/ErrorScreen";
-import HeavyFileBanner from "@/components/HeavyFileBanner";
 import DocInfoPanel from "@/components/DocInfoPanel";
 import NavPanel from "@/components/NavPanel";
 import OCRPanel from "@/components/OCRPanel";
@@ -27,7 +26,7 @@ import FormsPanel from "@/components/FormsPanel";
 import SettingsModal from "@/components/SettingsModal";
 import { loadSettings, saveSettings, ReaderSettings } from "@/lib/settings";
 import { addRecent } from "@/lib/recentFiles";
-import { detectScanned, detectHeavyFile } from "@/lib/docFeatures";
+import { detectScanned } from "@/lib/docFeatures";
 
 /** Right-hand side panels — only one can be open at a time. */
 export type PanelKey = "info" | "nav" | "ocr" | "ai" | "forms";
@@ -192,8 +191,6 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   const loadingTaskRef = useRef<any>(null);
   const [passwordProtected, setPasswordProtected] = useState(false);
   const [isScanned, setIsScanned] = useState<boolean | null>(null);
-  const [heavyReasons, setHeavyReasons] = useState<string[]>([]);
-  const [heavyDismissed, setHeavyDismissed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const viewerRef = useRef<HTMLDivElement>(null);
 
@@ -268,8 +265,6 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
     setWrongPassword(false);
     setPasswordProtected(false);
     setIsScanned(null);
-    setHeavyReasons([]);
-    setHeavyDismissed(false);
     setActivePanel(null);
     const url = URL.createObjectURL(file);
     const task = pdfjsLib.getDocument({ url });
@@ -329,12 +324,10 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         addRecent({ name: file.name, size: file.size, lastModified: file.lastModified, pages: doc.numPages });
       }
 
-      // Detect scanned pages + heavy files in the background.
+      // Detect scanned pages in the background (used by the search UI).
       detectScanned(doc).then((scanned) => {
         if (cancelled) return;
         setIsScanned(scanned);
-        const heavy = detectHeavyFile(file.size, doc.numPages, scanned);
-        if (heavy.isHeavy) setHeavyReasons(heavy.reasons);
       });
     }).catch((err: any) => {
       if (cancelled) return;
@@ -1048,10 +1041,6 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
           onChange={handleSettingsChange}
           onClose={() => setSettingsOpen(false)}
         />
-      )}
-
-      {heavyReasons.length > 0 && !heavyDismissed && (
-        <HeavyFileBanner reasons={heavyReasons} onDismiss={() => setHeavyDismissed(true)} />
       )}
 
       {/* ── Right-hand side panels (one at a time) ─────────── */}

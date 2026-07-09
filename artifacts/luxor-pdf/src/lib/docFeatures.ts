@@ -121,19 +121,3 @@ export async function detectScanned(pdfDoc: any, samplePages = 5): Promise<boole
     return false;
   }
 }
-
-export interface HeavyFileInfo {
-  isHeavy: boolean;
-  reasons: string[];
-}
-
-const HEAVY_SIZE_BYTES = 30 * 1024 * 1024; // 30 MB
-const HEAVY_PAGE_COUNT = 150;
-
-export function detectHeavyFile(fileSize: number, pageCount: number, isScanned: boolean): HeavyFileInfo {
-  const reasons: string[] = [];
-  if (fileSize > HEAVY_SIZE_BYTES) reasons.push("large file size");
-  if (pageCount > HEAVY_PAGE_COUNT) reasons.push("high page count");
-  if (isScanned) reasons.push("scanned / image-heavy pages");
-  return { isHeavy: reasons.length > 0, reasons };
-}
