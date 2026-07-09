@@ -1,6 +1,6 @@
 {
   "name": "@workspace/luxor-reader-desktop",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Luxor PDF Reader \u2014 Windows desktop wrapper for the luxor-pdf web app.",
   "main": "out/main.js",
@@ -78,9 +78,8 @@
       "sign": "./scripts/sign-windows.cjs"
     },
     "nsis": {
-      "oneClick": false,
+      "oneClick": true,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": true,
       "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
@@ -90,7 +89,8 @@
       "uninstallerIcon": "build/icon.ico",
       "installerHeaderIcon": "build/icon.ico",
       "uninstallDisplayName": "Luxor PDF",
-      "deleteAppDataOnUninstall": false
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true
     },
     "publish": [
       {

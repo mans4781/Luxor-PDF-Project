@@ -3,6 +3,7 @@ import Home from "@/pages/Home";
 import Viewer from "@/pages/Viewer";
 import IconGallery from "@/pages/IconGallery";
 import { AuthGateProvider } from "@/components/AuthGate";
+import BrandSplash, { shouldShowBrandSplash } from "@/components/BrandSplash";
 import { initDesktopFileOpen } from "@/lib/desktopBridge";
 
 function shouldShowIconGallery(): boolean {
@@ -14,6 +15,7 @@ function shouldShowIconGallery(): boolean {
 
 export default function App() {
   const [file, setFile] = useState<File | null>(null);
+  const [showSplash, setShowSplash] = useState(shouldShowBrandSplash);
 
   // Desktop shell: open PDFs double-clicked in Windows (file association).
   useEffect(() => {
@@ -26,6 +28,7 @@ export default function App() {
 
   return (
     <AuthGateProvider>
+      {showSplash && <BrandSplash onDone={() => setShowSplash(false)} />}
       {file ? (
         <Viewer file={file} onClose={() => setFile(null)} onFileLoad={setFile} />
       ) : (
