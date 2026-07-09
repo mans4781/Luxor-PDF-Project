@@ -70,8 +70,15 @@ jobs:
         run: pnpm --filter @workspace/luxor-reader-desktop exec electron-builder --win --x64 --publish ${{ steps.mode.outputs.flag }}
 
       # Small (~200 KB) online installer that downloads the full setup from
-      # GitHub Releases when run. Built with makensis (preinstalled on
-      # windows-latest runners).
+      # GitHub Releases when run.
+      # makensis is not on PATH on windows-latest; install via choco and
+      # expose it so the stub build can spawn it.
+      - name: Install NSIS for stub build
+        shell: bash
+        run: |
+          choco install nsis -y --no-progress
+          echo "/c/Program Files (x86)/NSIS" >> "$GITHUB_PATH"
+
       - name: Build web-installer stub
         run: pnpm --filter @workspace/luxor-reader-desktop run dist:web-stub
 
