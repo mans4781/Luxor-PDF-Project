@@ -36,6 +36,10 @@ interface AuthGateContextValue {
 
 const AuthGateContext = createContext<AuthGateContextValue | null>(null);
 
+// Dev-preview bypass: in development builds every feature is unlocked and
+// the sign-in prompt never shows. Production builds keep full gating.
+const DEV_BYPASS = import.meta.env.DEV;
+
 export function useAuthGate(): AuthGateContextValue {
   const ctx = useContext(AuthGateContext);
   if (!ctx) throw new Error("useAuthGate must be used inside <AuthGateProvider>");
@@ -57,6 +61,7 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
   authRef.current = { isLoaded, isSignedIn };
 
   const requireAuth = useCallback((label: string): boolean => {
+    if (DEV_BYPASS) return true;
     const { isLoaded: loaded, isSignedIn: signedIn } = authRef.current;
     if (loaded && signedIn) return true;
     setPromptLabel(label);
@@ -64,7 +69,11 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ requireAuth, isLoaded, isSignedIn: isSignedIn === true }),
+    () => ({
+      requireAuth,
+      isLoaded: DEV_BYPASS || isLoaded,
+      isSignedIn: DEV_BYPASS || isSignedIn === true,
+    }),
     [requireAuth, isLoaded, isSignedIn],
   );
 
