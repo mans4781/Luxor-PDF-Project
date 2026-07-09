@@ -72,10 +72,12 @@ const lsSet = (k: string, v: string | number) => {
   try { localStorage.setItem(k, String(v)); } catch { /* ignore quota */ }
 };
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
-).href;
+// Use a custom worker entry (polyfills + pdf.js worker) via workerPort so
+// the upsert polyfills are active inside the worker's global scope too.
+pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(
+  new URL("../pdf-worker.ts", import.meta.url),
+  { type: "module" }
+);
 
 // Actual zoom values where 1.5 = "100%" (the new baseline)
 const ZOOM_BASE = 1.5;
@@ -210,12 +212,24 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
     lsSetJSON(highlightsKey(docKey), highlights.length > 0 ? highlights : null);
   }, [annotations, docKey, hydratedKey]);
 
+  // Base (scale-1) size of page 1 — used to size placeholders for pages
+  // that haven't rendered yet, so the scrollbar reflects the whole
+  // document instantly even for very large PDFs.
+  const [basePageSize, setBasePageSize] = useState<{ w: number; h: number } | null>(null);
+
   // Load PDF
   useEffect(() => {
     if (!file) return;
     setLoading(true);
     const url = URL.createObjectURL(file);
-    pdfjsLib.getDocument({ url }).promise.then(doc => {
+    pdfjsLib.getDocument({ url }).promise.then(async doc => {
+      try {
+        const p1 = await doc.getPage(1);
+        const vp = p1.getViewport({ scale: 1, rotation: p1.rotate ?? 0 });
+        setBasePageSize({ w: vp.width, h: vp.height });
+      } catch {
+        setBasePageSize(null);
+      }
       setPdfDoc(doc);
       setTotalPages(doc.numPages);
       setCurrentPage(1);
@@ -226,6 +240,18 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
     });
     return () => URL.revokeObjectURL(url);
   }, [file]);
+
+  // Placeholder CSS size at the current zoom (swapped when the viewer
+  // rotation turns pages sideways). Real sizes replace this per page as
+  // soon as that page actually renders.
+  const defaultPageSize = useMemo(() => {
+    if (!basePageSize) return null;
+    const sideways = rotation % 180 !== 0;
+    return {
+      w: (sideways ? basePageSize.h : basePageSize.w) * zoom,
+      h: (sideways ? basePageSize.w : basePageSize.h) * zoom,
+    };
+  }, [basePageSize, zoom, rotation]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -619,6 +645,49 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
     }
   };
 
+  // Print via a hidden iframe holding the original PDF so the browser's
+  // native PDF printing handles every page. (Printing the DOM would only
+  // print the handful of pages the virtualized viewer has rendered.)
+  const printFrameRef = useRef<HTMLIFrameElement | null>(null);
+  const handlePrint = useCallback(() => {
+    try {
+      if (printFrameRef.current) {
+        printFrameRef.current.remove();
+        printFrameRef.current = null;
+      }
+      const url = URL.createObjectURL(file);
+      const frame = document.createElement("iframe");
+      frame.style.position = "fixed";
+      frame.style.right = "0";
+      frame.style.bottom = "0";
+      frame.style.width = "0";
+      frame.style.height = "0";
+      frame.style.border = "0";
+      frame.src = url;
+      let printed = false;
+      const doPrint = () => {
+        if (printed) return;
+        printed = true;
+        try {
+          frame.contentWindow?.focus();
+          frame.contentWindow?.print();
+        } catch {
+          window.print();
+        }
+      };
+      frame.onload = () => setTimeout(doPrint, 150);
+      // Some browsers never fire onload for PDF frames — fall back.
+      setTimeout(doPrint, 2000);
+      printFrameRef.current = frame;
+      document.body.appendChild(frame);
+      // Keep the blob URL alive long enough for the print dialog.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch {
+      window.print();
+    }
+  }, [file]);
+  useEffect(() => () => { printFrameRef.current?.remove(); }, []);
+
   const handlePageInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       const val = parseInt((e.target as HTMLInputElement).value, 10);
@@ -669,7 +738,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         onReadAloud={handleReadAloud}
         onOpenFile={handleOpenFile}
         onDownload={handleDownload}
-        onPrint={() => window.print()}
+        onPrint={handlePrint}
         onOpenWatermark={() => { if (requireAuth("Watermark")) setWatermarkOpen(true); }}
         onOpenPageNo={() => { if (requireAuth("Page Numbers")) setPageNoOpen(true); }}
         onAddImage={() => { if (requireAuth("Add Image")) handleAddImage(); }}
@@ -961,6 +1030,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
                     onSearchTermChange={handleSearchFromContext}
                     watermark={watermarkCfg} pageNo={pageNoCfg}
                     totalPages={totalPages} currentPage={currentPage}
+                    defaultPageSize={defaultPageSize}
                   />
                   {right <= totalPages && (
                     <PDFPage
@@ -976,6 +1046,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
                       onSearchTermChange={handleSearchFromContext}
                       watermark={watermarkCfg} pageNo={pageNoCfg}
                       totalPages={totalPages} currentPage={currentPage}
+                      defaultPageSize={defaultPageSize}
                     />
                   )}
                 </div>
@@ -997,6 +1068,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
                 onSearchTermChange={handleSearchFromContext}
                 watermark={watermarkCfg} pageNo={pageNoCfg}
                 totalPages={totalPages} currentPage={currentPage}
+                defaultPageSize={defaultPageSize}
               />
             ))
         )}

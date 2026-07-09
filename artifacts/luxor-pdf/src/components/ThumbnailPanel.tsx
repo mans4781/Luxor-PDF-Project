@@ -21,12 +21,29 @@ function PageThumb({
   isActive: boolean;
   onClick: () => void;
 }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [rendered, setRendered] = useState(false);
   const taskRef = useRef<any>(null);
 
+  // Lazy render: only paint the thumbnail once it scrolls near the
+  // visible part of the panel. With hundreds of pages, rendering every
+  // thumbnail eagerly would compete with the main page renders and hang
+  // the UI on open.
+  const [inView, setInView] = useState(pageNum <= 12);
   useEffect(() => {
-    if (!pdfDoc || !canvasRef.current) return;
+    const el = wrapRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      entries => { if (entries[0].isIntersecting) setInView(true); },
+      { rootMargin: "600px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!pdfDoc || !canvasRef.current || !inView) return;
     let cancelled = false;
 
     (async () => {
@@ -56,10 +73,11 @@ function PageThumb({
       cancelled = true;
       taskRef.current?.cancel?.();
     };
-  }, [pdfDoc, pageNum, rotation]);
+  }, [pdfDoc, pageNum, rotation, inView]);
 
   return (
     <div
+      ref={wrapRef}
       className={`thumb-item${isActive ? " thumb-active" : ""}`}
       onClick={onClick}
       title={`Page ${pageNum}`}

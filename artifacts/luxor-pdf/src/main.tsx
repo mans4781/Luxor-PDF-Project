@@ -1,3 +1,4 @@
+import "./polyfills";
 import { createRoot } from "react-dom/client";
 import { LuxorClerkProvider } from "@workspace/luxor-auth-ui";
 import { publishableKeyFromHost } from "@clerk/react/internal";

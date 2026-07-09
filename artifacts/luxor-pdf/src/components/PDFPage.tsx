@@ -53,7 +53,22 @@ interface PDFPageProps {
   pageNo?: import("@/lib/editTypes").PageNoConfig | null;
   totalPages?: number;
   currentPage?: number;
+  /** Approximate CSS size (page-1 size at the current zoom) used to size
+   *  the placeholder before this page has actually rendered, so the
+   *  scrollbar and page positions stay stable under virtualization. */
+  defaultPageSize?: { w: number; h: number } | null;
 }
+
+/** Pages whose wrapper is within this margin of the viewport get (and
+ *  keep) a live canvas + text layer; everything further away is released
+ *  so huge documents don't hold hundreds of canvases in memory. */
+const RENDER_MARGIN = "1250px";
+
+/** Cap on physical canvas pixels per page (~16 MP ≈ 64 MB RGBA). Above
+ *  this the render scale is reduced — the page stays sharp enough while
+ *  extreme zoom × DPR combinations can no longer allocate gigantic
+ *  canvases that freeze the tab. */
+const MAX_CANVAS_PIXELS = 16_000_000;
 
 function genId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -757,6 +772,7 @@ export default function PDFPage({
   onAnnotationAdd, onAnnotationUpdate, onAnnotationRemove,
   onVisible, onSearchTermChange,
   watermark, pageNo, totalPages, currentPage,
+  defaultPageSize,
 }: PDFPageProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const pageCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -887,20 +903,64 @@ export default function PDFPage({
     return () => obs.disconnect();
   }, [pageNum, onVisible]);
 
+  // ── Render virtualization ─────────────────────────────────────
+  // Only pages near the viewport get a live canvas + text layer. This is
+  // what lets arbitrarily large PDFs open instantly: instead of painting
+  // every page up front, we paint the first couple immediately and the
+  // rest on demand as the user scrolls near them. Pages that scroll far
+  // away release their canvas bitmaps (dimensions kept, so layout and
+  // scroll position never jump).
+  const [nearView, setNearView] = useState(pageNum <= 2);
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      entries => setNearView(entries[0].isIntersecting),
+      { rootMargin: `${RENDER_MARGIN} 0px` }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   useEffect(() => {
     if (!pdfDocument || !pageCanvasRef.current) return;
+
+    if (!nearView) {
+      // Scrolled far away — cancel any in-flight work and free the
+      // canvas bitmaps. CSS sizes stay in place so the page keeps its
+      // footprint in the scroll layout.
+      if (renderTaskRef.current) { renderTaskRef.current.cancel(); renderTaskRef.current = null; }
+      if (textLayerTaskRef.current) { textLayerTaskRef.current.cancel?.(); textLayerTaskRef.current = null; }
+      const canvas = pageCanvasRef.current;
+      if (canvas && canvas.width > 0) { canvas.width = 0; canvas.height = 0; }
+      if (drawCanvasRef.current && drawCanvasRef.current.width > 0) {
+        drawCanvasRef.current.width = 0;
+        drawCanvasRef.current.height = 0;
+      }
+      if (textLayerRef.current) textLayerRef.current.innerHTML = "";
+      return;
+    }
+
     let cancelled = false;
 
     (async () => {
       try {
         if (renderTaskRef.current) { renderTaskRef.current.cancel(); renderTaskRef.current = null; }
         const page = await pdfDocument.getPage(pageNum);
-        const dpr = Math.max(2, window.devicePixelRatio || 1);
+        const dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
         const totalRotation = ((page.rotate ?? 0) + rotation) % 360;
         pageNativeRotationRef.current = page.rotate ?? 0;
-        const viewport = page.getViewport({ scale: zoom * dpr, rotation: totalRotation });
-        const cssW = viewport.width / dpr;
-        const cssH = viewport.height / dpr;
+        // CSS size always tracks the zoom exactly; the physical canvas
+        // scale is capped so a huge page × high zoom × retina DPR can't
+        // allocate a tab-freezing multi-hundred-MB canvas.
+        const baseVp = page.getViewport({ scale: 1, rotation: totalRotation });
+        let renderScale = zoom * dpr;
+        if (baseVp.width * baseVp.height * renderScale * renderScale > MAX_CANVAS_PIXELS) {
+          renderScale = Math.sqrt(MAX_CANVAS_PIXELS / (baseVp.width * baseVp.height));
+        }
+        const viewport = page.getViewport({ scale: renderScale, rotation: totalRotation });
+        const cssW = baseVp.width * zoom;
+        const cssH = baseVp.height * zoom;
 
         const canvas = pageCanvasRef.current!;
         if (cancelled) return;
@@ -954,7 +1014,7 @@ export default function PDFPage({
       cancelled = true;
       textLayerTaskRef.current?.cancel?.();
     };
-  }, [pdfDocument, pageNum, zoom, rotation]);
+  }, [pdfDocument, pageNum, zoom, rotation, nearView]);
 
   useEffect(() => { redrawAnnotations(); }, [annotations, pageSize]);
 
@@ -1631,7 +1691,11 @@ export default function PDFPage({
     <div
       ref={wrapperRef}
       className={`pdf-page-wrapper${tool === "edittext" ? " edit-text-mode" : ""}`}
-      style={{ width: pageSize.w || "auto", height: pageSize.h || "auto", "--scale-factor": zoom } as React.CSSProperties}
+      style={{
+        width: pageSize.w || defaultPageSize?.w || "auto",
+        height: pageSize.h || defaultPageSize?.h || "auto",
+        "--scale-factor": zoom,
+      } as React.CSSProperties}
       id={`page-${pageNum}`}
       data-edit-text-mode={tool === "edittext" ? "" : undefined}
       onMouseUp={onWrapperPointerUp}
