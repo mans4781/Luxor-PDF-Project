@@ -35,6 +35,24 @@ export const PAID_DAILY_LIMIT = 1_000_000;
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+// ─── Development-only license bypass ─────────────────────────────────────────
+//
+// In the local dev workspace, every signed-in user is treated as fully
+// licensed so developers can exercise paid features without minting keys.
+//
+// SAFETY: this must NEVER activate in production. `REPLIT_DEPLOYMENT` is set
+// on published Replit deployments, and we additionally require NODE_ENV to
+// not be "production". The NODE_ENV check alone is NOT sufficient because
+// deployments may run without NODE_ENV=production — hence the double gate.
+export const DEV_LICENSE_BYPASS =
+  !process.env.REPLIT_DEPLOYMENT && process.env.NODE_ENV !== "production";
+
+if (DEV_LICENSE_BYPASS) {
+  logger.warn(
+    "DEV license bypass ACTIVE — all signed-in users are treated as fully licensed. This never runs on published deployments.",
+  );
+}
+
 // ─── Metered secure-feature monthly quotas ────────────────────────────────────
 //
 // Two metered buckets reset every billing month:
@@ -119,6 +137,8 @@ export interface LicenseStatusResult {
   lockReason: LicenseLockReason;
   monthlyUsage: MonthlyUsageSummary;
   serverTime: string;
+  /** True only when the dev-workspace license bypass is active. */
+  devBypass?: boolean;
 }
 
 export type UsageCategory = "edit" | "convert" | "secure";
@@ -649,7 +669,8 @@ export async function getLicenseStatus(
   const trialEnd = license.trialEndDate;
   const suspended = license.accountStatus === "suspended";
 
-  const isPaid = activeLicense !== null || orgMembership !== null;
+  const isPaid =
+    activeLicense !== null || orgMembership !== null || DEV_LICENSE_BYPASS;
   const dailyLimit = isPaid ? PAID_DAILY_LIMIT : TRIAL_DAILY_LIMIT;
   const overLimit = todayUsage >= dailyLimit;
 
@@ -712,6 +733,11 @@ export async function getLicenseStatus(
     monthlyRow,
     period,
   );
+  if (DEV_LICENSE_BYPASS) {
+    // Dev workspace: no monthly secure-pool cap for developers.
+    monthlyUsage.limit = null;
+    monthlyUsage.remaining = null;
+  }
 
   let licenseStatus: LicenseStatusValue;
   let lockReason: LicenseLockReason;
@@ -762,6 +788,7 @@ export async function getLicenseStatus(
     lockReason,
     monthlyUsage,
     serverTime: now.toISOString(),
+    devBypass: DEV_LICENSE_BYPASS,
   };
 }
 

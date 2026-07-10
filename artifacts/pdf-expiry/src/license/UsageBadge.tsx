@@ -28,6 +28,19 @@ export function PlanBadge() {
   const base =
     "hidden md:inline-flex items-center gap-2 text-xs font-semibold rounded-full px-3 py-1.5 border whitespace-nowrap";
 
+  if (status.devBypass && !status.subscriptionActive) {
+    return (
+      <span
+        className={`${base} text-sky-700 bg-sky-50 border-sky-200`}
+        title="Development workspace — license checks bypassed"
+        data-testid="plan-badge"
+      >
+        <ShieldCheck className="w-3.5 h-3.5" strokeWidth={2.25} />
+        Dev mode
+      </span>
+    );
+  }
+
   if (status.isPaid && status.subscriptionActive) {
     const plan = status.planName ?? "Pro";
     const days = status.subscriptionDaysRemaining;
@@ -112,8 +125,9 @@ export function UsageBadge() {
 
   if (!signedIn || isLoading || !status) return null;
 
-  if (status.isPaid && status.subscriptionActive) {
-    const plan = status.planName ? status.planName : "Pro";
+  const devMode = status.devBypass === true && !status.subscriptionActive;
+  if ((status.isPaid && status.subscriptionActive) || devMode) {
+    const plan = status.planName ? status.planName : devMode ? "Dev" : "Pro";
     const { limit, remaining } = status.monthlyUsage;
 
     // Unlimited secure pool (Business / Enterprise / unlimited override).
@@ -231,7 +245,8 @@ export function UsagePanel() {
 
   if (!signedIn || isLoading || !status) return null;
 
-  const isPaid = status.isPaid && status.subscriptionActive;
+  const devMode = status.devBypass === true && !status.subscriptionActive;
+  const isPaid = (status.isPaid && status.subscriptionActive) || devMode;
   const used = status.todayUsage;
   const reset = formatResetDate(status.monthlyUsage.periodEnd);
 
@@ -304,7 +319,16 @@ export function UsagePanel() {
 
   // ── Card 3: Subscription ────────────────────────────────────────
   let subCard: CardProps;
-  if (isPaid) {
+  if (devMode) {
+    subCard = {
+      variant: "ok",
+      icon: <Sparkles className="w-5 h-5 text-white" />,
+      label: "Subscription",
+      primary: "Dev mode",
+      secondary: "License checks bypassed in development.",
+      testId: "usage-card-subscription",
+    };
+  } else if (isPaid) {
     const days = status.subscriptionDaysRemaining;
     const isLifetime = status.planName === "lifetime" || days == null;
     subCard = {

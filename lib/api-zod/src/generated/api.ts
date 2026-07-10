@@ -294,6 +294,12 @@ export const GetLicenseStatusResponse = zod
     serverTime: zod.coerce
       .date()
       .describe("Current server time at the moment this status was computed."),
+    devBypass: zod
+      .boolean()
+      .optional()
+      .describe(
+        "True only in the local development workspace, where all signed-in users are treated as fully licensed. Never true on published deployments.",
+      ),
   })
   .describe("Single source of truth for whether the caller can use PDF tools.");
 

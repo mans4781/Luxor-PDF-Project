@@ -50,4 +50,6 @@ export interface LicenseStatus {
   monthlyUsage: MonthlyUsageSummary;
   /** Current server time at the moment this status was computed. */
   serverTime: Date;
+  /** True only in the local development workspace, where all signed-in users are treated as fully licensed. Never true on published deployments. */
+  devBypass?: boolean;
 }
