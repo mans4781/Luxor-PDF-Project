@@ -5,6 +5,7 @@ import {
   session,
   protocol,
   net,
+  screen,
 } from "electron";
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
@@ -136,11 +137,18 @@ async function getDeviceId(): Promise<string> {
 function createWindow(): void {
   const iconPath = path.join(__dirname, "..", "build", "icon.ico");
 
+  // Open at ~60% of the screen's work area (never full screen), centered.
+  const { width: screenW, height: screenH } =
+    screen.getPrimaryDisplay().workAreaSize;
+  const winWidth = Math.max(880, Math.round(screenW * 0.6));
+  const winHeight = Math.max(600, Math.round(screenH * 0.6));
+
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 820,
+    width: winWidth,
+    height: winHeight,
     minWidth: 880,
     minHeight: 600,
+    center: true,
     icon: iconPath,
     title: "Luxor PDF Secure",
     backgroundColor: "#0F172A",
