@@ -269,7 +269,9 @@ function ReaderToolButton({
     <div
       className={[
         "w-7 h-7 rounded-md flex items-center justify-center",
-        active ? "bg-red-600 text-white shadow-sm" : "bg-white/5 text-slate-300",
+        active
+          ? "bg-red-600 text-white shadow-sm"
+          : "bg-slate-100 border border-slate-200 text-slate-500",
       ].join(" ")}
     >
       {icon}
@@ -280,29 +282,29 @@ function ReaderToolButton({
 /** Coded mockup of the Luxor PDF Reader desktop app. */
 function ReaderAppMockup() {
   return (
-    <div className="bg-slate-900 text-slate-200">
+    <div className="bg-white text-slate-700">
       {/* App header */}
-      <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/10">
+      <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100">
         <div className="flex items-center gap-3">
           <img
             src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260627`}
             alt=""
-            className="w-9 h-9 rounded-lg object-contain bg-white"
+            className="w-9 h-9 rounded-lg object-contain"
             draggable={false}
           />
           <div className="leading-tight">
             <div className="text-base font-semibold">
-              <span className="text-white">Luxor </span>
-              <span className="text-red-400">PDF </span>
-              <span className="text-slate-300">Reader</span>
+              <span className="text-slate-900">Luxor </span>
+              <span className="text-red-600">PDF </span>
+              <span className="text-slate-500">Reader</span>
             </div>
-            <div className="text-[9px] tracking-[0.18em] text-slate-500 font-semibold">
+            <div className="text-[9px] tracking-[0.18em] text-slate-400 font-semibold">
               FAST · PRIVATE · OFFLINE
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="hidden md:flex items-center gap-2 bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-[12px] text-slate-400">
+          <div className="hidden md:flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-[12px] text-slate-400">
             <Search className="w-3.5 h-3.5" />
             Search document…
           </div>
@@ -313,7 +315,7 @@ function ReaderAppMockup() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-6 py-2 border-b border-white/10 bg-slate-950/50">
+      <div className="flex items-center justify-between px-6 py-2 border-b border-slate-100 bg-slate-50/70">
         <div className="flex items-center gap-1.5">
           <ReaderToolButton icon={<PanelLeft className="w-3.5 h-3.5" />} active />
           <ReaderToolButton icon={<Highlighter className="w-3.5 h-3.5" />} />
@@ -321,12 +323,12 @@ function ReaderAppMockup() {
           <ReaderToolButton icon={<Bookmark className="w-3.5 h-3.5" />} />
           <ReaderToolButton icon={<Moon className="w-3.5 h-3.5" />} />
         </div>
-        <div className="flex items-center gap-2 text-[12px] text-slate-400">
+        <div className="flex items-center gap-2 text-[12px] text-slate-500">
           <ReaderToolButton icon={<ZoomOut className="w-3.5 h-3.5" />} />
-          <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300 font-medium">120%</span>
+          <span className="px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-medium">120%</span>
           <ReaderToolButton icon={<ZoomIn className="w-3.5 h-3.5" />} />
           <span className="ml-2 hidden sm:inline-flex items-center gap-1">
-            Page <span className="text-white font-semibold">4</span> / 128
+            Page <span className="text-slate-900 font-semibold">4</span> / 128
             <ChevronDown className="w-3 h-3" />
           </span>
         </div>
@@ -335,29 +337,29 @@ function ReaderAppMockup() {
       {/* Body */}
       <div className="grid grid-cols-12 gap-0">
         {/* Thumbnail rail */}
-        <aside className="col-span-2 border-r border-white/10 bg-slate-950/40 px-3 py-4 space-y-3">
+        <aside className="col-span-2 border-r border-slate-100 bg-slate-50/60 px-3 py-4 space-y-3">
           {[3, 4, 5].map((n) => (
             <div key={n} className="text-center">
               <div
                 className={[
-                  "rounded-md bg-white/90 aspect-[3/4] p-1.5 space-y-1",
-                  n === 4 ? "ring-2 ring-red-500" : "opacity-60",
+                  "rounded-md bg-white aspect-[3/4] p-1.5 space-y-1 border",
+                  n === 4 ? "ring-2 ring-red-500 border-red-200" : "border-slate-200 opacity-70",
                 ].join(" ")}
               >
-                <div className="h-1.5 w-2/3 rounded-sm bg-slate-700/70" />
-                <div className="h-1 w-full rounded-sm bg-slate-300" />
-                <div className="h-1 w-11/12 rounded-sm bg-slate-300" />
-                <div className="h-1 w-full rounded-sm bg-slate-300" />
-                <div className="h-1 w-3/4 rounded-sm bg-slate-300" />
+                <div className="h-1.5 w-2/3 rounded-sm bg-slate-600/70" />
+                <div className="h-1 w-full rounded-sm bg-slate-200" />
+                <div className="h-1 w-11/12 rounded-sm bg-slate-200" />
+                <div className="h-1 w-full rounded-sm bg-slate-200" />
+                <div className="h-1 w-3/4 rounded-sm bg-slate-200" />
               </div>
-              <div className={`mt-1 text-[10px] ${n === 4 ? "text-red-400 font-semibold" : "text-slate-500"}`}>{n}</div>
+              <div className={`mt-1 text-[10px] ${n === 4 ? "text-red-600 font-semibold" : "text-slate-400"}`}>{n}</div>
             </div>
           ))}
         </aside>
 
         {/* Page canvas */}
-        <main className="col-span-7 bg-slate-800/60 px-6 py-6 flex items-start justify-center">
-          <div className="w-full max-w-md bg-white rounded-md shadow-2xl p-6 space-y-2.5">
+        <main className="col-span-7 bg-slate-100/80 px-6 py-6 flex items-start justify-center">
+          <div className="w-full max-w-md bg-white rounded-md shadow-lg border border-slate-200/70 p-6 space-y-2.5">
             <div className="h-3.5 w-2/3 rounded bg-slate-800" />
             <div className="h-2 w-full rounded bg-slate-200" />
             <div className="h-2 w-11/12 rounded bg-slate-200" />
@@ -380,29 +382,29 @@ function ReaderAppMockup() {
         </main>
 
         {/* Right panel */}
-        <aside className="col-span-3 border-l border-white/10 bg-slate-950/40 px-4 py-4">
-          <div className="flex items-center gap-2 text-[12px] font-semibold text-white mb-3">
-            <BookOpen className="w-3.5 h-3.5 text-red-400" />
+        <aside className="col-span-3 border-l border-slate-100 bg-slate-50/60 px-4 py-4">
+          <div className="flex items-center gap-2 text-[12px] font-semibold text-slate-900 mb-3">
+            <BookOpen className="w-3.5 h-3.5 text-red-600" />
             Outline
           </div>
           <div className="space-y-2 text-[11px]">
-            <div className="text-slate-400">1 · Introduction</div>
-            <div className="text-slate-400">2 · Getting started</div>
-            <div className="flex items-center gap-1.5 text-white font-medium">
+            <div className="text-slate-500">1 · Introduction</div>
+            <div className="text-slate-500">2 · Getting started</div>
+            <div className="flex items-center gap-1.5 text-slate-900 font-medium">
               <span className="w-1 h-3.5 rounded-full bg-red-500" />
               3 · Reading modes
             </div>
-            <div className="pl-3 text-slate-500">3.1 · Continuous scroll</div>
-            <div className="pl-3 text-slate-500">3.2 · Two-page spread</div>
-            <div className="text-slate-400">4 · Annotations</div>
-            <div className="text-slate-400">5 · Themes &amp; dark mode</div>
+            <div className="pl-3 text-slate-400">3.1 · Continuous scroll</div>
+            <div className="pl-3 text-slate-400">3.2 · Two-page spread</div>
+            <div className="text-slate-500">4 · Annotations</div>
+            <div className="text-slate-500">5 · Themes &amp; dark mode</div>
           </div>
-          <div className="mt-4 rounded-lg bg-white/5 border border-white/10 p-3">
-            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-white mb-1.5">
-              <Bookmark className="w-3 h-3 text-red-400" />
+          <div className="mt-4 rounded-lg bg-white border border-slate-200 p-3">
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-900 mb-1.5">
+              <Bookmark className="w-3 h-3 text-red-600" />
               Bookmarks
             </div>
-            <div className="text-[10px] text-slate-400 leading-relaxed">
+            <div className="text-[10px] text-slate-500 leading-relaxed">
               Page 4 · Reading modes<br />
               Page 57 · Keyboard shortcuts
             </div>
