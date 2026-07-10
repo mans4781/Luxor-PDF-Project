@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { ShieldCheck, Lock, Globe2, Sparkles } from "lucide-react";
+import { ShieldCheck, Lock, Globe2, Sparkles, Undo2 } from "lucide-react";
 
 const baseUrl = import.meta.env.BASE_URL;
 
@@ -139,7 +139,16 @@ export function AuthShell({ children, variant }: AuthShellProps) {
       </aside>
 
       {/* ── Right: Clerk form ───────────────────────────────────────────── */}
-      <main className="flex-1 flex items-center justify-center px-4 py-10 lg:py-14">
+      <main className="relative flex-1 flex items-center justify-center px-4 py-10 lg:py-14">
+        {/* Back to home */}
+        <a
+          href="/"
+          className="absolute top-5 left-5 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
+          data-testid="link-back-home"
+        >
+          <Undo2 className="w-4 h-4" strokeWidth={2} />
+          Back to Home
+        </a>
         <div className="w-full max-w-md">
           {/* Brand row above the Clerk card */}
           <div className="flex items-center justify-center gap-3 mb-6">
