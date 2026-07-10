@@ -785,6 +785,24 @@ export default function Toolbar({
         {popover === "tools" && (
           <div className="popover-panel" style={{ minWidth: 200, left: 0 }}>
             <div className="popover-label">Drawing Tool</div>
+            <button
+              onClick={() => { onToolChange("hand"); setPopover(null); }}
+              title="Exit drawing mode — back to the normal pointer"
+              style={{
+                display: "flex", alignItems: "center", gap: 8,
+                width: "100%", padding: "5px 8px", marginBottom: 2,
+                background: tool === "hand" ? "rgba(13,98,242,0.12)" : "transparent",
+                border: "none", borderRadius: 4,
+                color: tool === "hand" ? "#0D62F2" : "#222",
+                cursor: "pointer", fontSize: 12, textAlign: "left",
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 3.5l12 9.2-5.4.9 3 6-2.5 1.2-3-6L6 18.5z"/>
+              </svg>
+              Pointer (no tool)
+            </button>
+            <div style={{ height: 1, background: "rgba(0,0,0,0.08)", margin: "4px 2px 6px" }} />
             {SHAPE_TOOLS.map(st => (
               <button
                 key={st.id}
