@@ -58,10 +58,10 @@ const TOOLS: ToolItem[] = [
     label: "Secure your PDF",
     description: "Expiry, password & print controls",
     icon: ShieldCheck,
-    accent: "#DC2626",
-    iconBg: "bg-[#E61E3C] group-hover:bg-[#C81934]",
+    accent: "#2563EB",
+    iconBg: "bg-[#1754F4] group-hover:bg-[#1447D0]",
     iconText: "text-white",
-    activeRing: "ring-rose-500/40 border-rose-500",
+    activeRing: "ring-blue-500/40 border-blue-500",
     badge: "Signature",
   },
   {
@@ -69,10 +69,10 @@ const TOOLS: ToolItem[] = [
     label: "Edit Your PDF",
     description: "Merge, split & extract pages",
     icon: Wrench,
-    accent: "#DC2626",
-    iconBg: "bg-[#E61E3C] group-hover:bg-[#C81934]",
+    accent: "#2563EB",
+    iconBg: "bg-[#1754F4] group-hover:bg-[#1447D0]",
     iconText: "text-white",
-    activeRing: "ring-rose-500/40 border-rose-500",
+    activeRing: "ring-blue-500/40 border-blue-500",
   },
   {
     key: "convert-from",
@@ -577,7 +577,7 @@ function WelcomePanel() {
 
       {/* ── Background: soft brand-colored gradient orbs (matches sidebar tools) ── */}
       <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-[#7254F6]/25 blur-3xl pointer-events-none" />
-      <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-[#E61E3C]/25 blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-[#1754F4]/25 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-[#2563EB]/25 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-[#F37311]/25 blur-3xl pointer-events-none" />
 
@@ -589,7 +589,7 @@ function WelcomePanel() {
         <div className="h-1 w-11 bg-slate-200 rounded-full mt-1.5 ml-3" />
       </div>
       <div className="absolute top-16 right-10 w-20 h-24 rounded-lg bg-white border border-slate-200 shadow-sm rotate-[14deg] opacity-70 pointer-events-none">
-        <div className="h-1.5 w-10 rounded-full mt-3 ml-3 bg-[#E61E3C]/60" />
+        <div className="h-1.5 w-10 rounded-full mt-3 ml-3 bg-[#1754F4]/60" />
         <div className="h-1 w-12 bg-slate-200 rounded-full mt-2 ml-3" />
         <div className="h-1 w-9 bg-slate-200 rounded-full mt-1.5 ml-3" />
         <div className="h-1 w-7 bg-slate-200 rounded-full mt-1.5 ml-3" />
@@ -612,7 +612,7 @@ function WelcomePanel() {
         {/* Hero composition: stacked document + shield badge */}
         <div className="relative w-32 h-32 mx-auto mb-6">
           {/* Back document (offset) — Secure red */}
-          <div className="absolute top-2 left-1 w-20 h-24 rounded-xl bg-gradient-to-br from-[#FFF1F3] to-[#FDD9DF] border border-[#E61E3C]/30 rotate-[-8deg] shadow-sm" />
+          <div className="absolute top-2 left-1 w-20 h-24 rounded-xl bg-gradient-to-br from-[#EFF6FF] to-[#DBEAFE] border border-[#1754F4]/30 rotate-[-8deg] shadow-sm" />
           {/* Middle document — User-Guide yellow */}
           <div className="absolute top-1 left-5 w-20 h-24 rounded-xl bg-gradient-to-br from-[#FFF7DC] to-[#FCE7A2] border border-[#F4B711]/40 rotate-[4deg] shadow-sm" />
           {/* Front document — Edit purple accent */}
@@ -624,7 +624,7 @@ function WelcomePanel() {
             <div className="h-1 w-8 bg-slate-200 rounded-full" />
           </div>
           {/* Shield badge — full brand gradient */}
-          <div className="absolute -bottom-1 -right-1 w-12 h-12 rounded-2xl bg-gradient-to-br from-[#7254F6] via-[#E61E3C] to-[#F37311] flex items-center justify-center shadow-lg ring-4 ring-white">
+          <div className="absolute -bottom-1 -right-1 w-12 h-12 rounded-2xl bg-gradient-to-br from-[#7254F6] via-[#1754F4] to-[#F37311] flex items-center justify-center shadow-lg ring-4 ring-white">
             <ShieldCheck
               className="w-6 h-6 text-white"
               strokeWidth={2}
@@ -657,7 +657,7 @@ function WelcomePanel() {
           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#2563EB]/10 border border-[#2563EB]/30 text-[11px] font-medium text-[#1D4ED8]">
             <FileOutput className="w-3 h-3" /> Convert
           </span>
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#E61E3C]/10 border border-[#E61E3C]/30 text-[11px] font-medium text-[#C81934]">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#1754F4]/10 border border-[#1754F4]/30 text-[11px] font-medium text-[#1447D0]">
             <ShieldCheck className="w-3 h-3" /> Secure
           </span>
           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#F37311]/10 border border-[#F37311]/30 text-[11px] font-medium text-[#D4640C]">
@@ -782,7 +782,7 @@ export default function Dashboard() {
                         {item.label}
                       </p>
                       {item.badge && (
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded leading-none">
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded leading-none">
                           {item.badge}
                         </span>
                       )}
@@ -804,13 +804,13 @@ export default function Dashboard() {
           })}
 
           {/* Quick tip — privacy reassurance */}
-          <div className="mt-2 px-4 py-3.5 rounded-xl bg-gradient-to-br from-rose-50 to-red-50/60 border border-rose-100">
+          <div className="mt-2 px-4 py-3.5 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/60 border border-blue-100">
             <div className="flex items-start gap-3">
-              <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#E61E3C] to-[#C81934] flex items-center justify-center shadow-sm shrink-0">
+              <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1754F4] to-[#1447D0] flex items-center justify-center shadow-sm shrink-0">
                 <Shield className="w-4 h-4 text-white" strokeWidth={2.25} />
               </span>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#C81934]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#1447D0]">
                   Quick tip
                 </p>
                 <p className="mt-0.5 text-[12px] text-slate-600 leading-relaxed">

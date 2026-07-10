@@ -42,10 +42,10 @@ const dropColors: Record<DropColorScheme, {
   drag: string; idle: string; iconBg: string; label: string; hint: string;
 }> = {
   rose: {
-    drag: "border-rose-400 bg-rose-50 scale-[1.01]",
-    idle: "border-rose-200 hover:border-rose-400 hover:bg-rose-50/60 bg-gradient-to-br from-rose-50/50 to-red-50/30",
-    iconBg: "bg-gradient-to-br from-rose-500 to-red-600",
-    label: "text-rose-700", hint: "text-rose-400",
+    drag: "border-blue-400 bg-blue-50 scale-[1.01]",
+    idle: "border-blue-200 hover:border-blue-400 hover:bg-blue-50/60 bg-gradient-to-br from-blue-50/50 to-indigo-50/30",
+    iconBg: "bg-gradient-to-br from-blue-500 to-indigo-600",
+    label: "text-blue-700", hint: "text-blue-400",
   },
   indigo: {
     drag: "border-indigo-400 bg-indigo-50 scale-[1.01]",
@@ -264,7 +264,7 @@ function SuccessCard({ label, downloadId, shareToken, fileName, onReset, accentB
 // ─── Expiry Tab ────────────────────────────────────────────────────────────────
 
 function ExpiryTab() {
-  const accentBtn = useAccentBtn("from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700");
+  const accentBtn = useAccentBtn("from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700");
   const ab = useAccentInnerBanner();
   const guard = useGuardedAction();
   const [file, setFile] = useState<File | null>(null);
@@ -298,13 +298,13 @@ function ExpiryTab() {
 
   return (
     <div className="space-y-4">
-      <div className={`${ab?.wrap ?? "bg-gradient-to-r from-rose-50 to-red-50 border border-rose-100"} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
-        <div className={`w-9 h-9 ${ab?.iconWrap ?? "bg-gradient-to-br from-rose-500 to-red-600"} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
+      <div className={`${ab?.wrap ?? "bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100"} rounded-xl px-4 py-3 mb-5 flex items-center gap-3`}>
+        <div className={`w-9 h-9 ${ab?.iconWrap ?? "bg-gradient-to-br from-blue-500 to-indigo-600"} rounded-lg flex items-center justify-center shadow-sm shrink-0`}>
           <Calendar className="w-4 h-4 text-white" />
         </div>
         <div>
-          <h2 className={`font-semibold ${ab?.titleClass ?? "text-rose-900"}`}>Set Expiry Date</h2>
-          <p className={`text-xs ${ab?.descClass ?? "text-rose-600"}`}>The PDF auto-locks after this date — no views or downloads.</p>
+          <h2 className={`font-semibold ${ab?.titleClass ?? "text-blue-900"}`}>Set Expiry Date</h2>
+          <p className={`text-xs ${ab?.descClass ?? "text-blue-600"}`}>The PDF auto-locks after this date — no views or downloads.</p>
         </div>
       </div>
 
@@ -312,7 +312,7 @@ function ExpiryTab() {
         <SuccessCard
           label={`Expires on ${format(new Date(expiryDate), "MMMM d, yyyy 'at' h:mm a")}`}
           downloadId={uploadedId} shareToken={uploadedShareToken} fileName={uploadedName} onReset={reset}
-          accentBtn="border-rose-200 text-[#C81934] hover:bg-rose-50"
+          accentBtn="border-blue-200 text-[#1447D0] hover:bg-blue-50"
         />
       ) : (
         <>
@@ -324,14 +324,14 @@ function ExpiryTab() {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="expiryDate" className="text-rose-700 font-semibold text-sm flex items-center gap-1.5">
+            <Label htmlFor="expiryDate" className="text-blue-700 font-semibold text-sm flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5" /> Expiry Date &amp; Time
             </Label>
             <Input id="expiryDate" type="datetime-local" value={expiryDate}
               min={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
               onChange={(e) => setExpiryDate(e.target.value)}
-              className="border-rose-200 focus:border-rose-400 focus:ring-rose-400/20" />
-            <p className="text-xs text-rose-400">Recipients will be unable to open or download the file after this exact moment.</p>
+              className="border-blue-200 focus:border-blue-400 focus:ring-blue-400/20" />
+            <p className="text-xs text-blue-400">Recipients will be unable to open or download the file after this exact moment.</p>
           </div>
 
           <Button
@@ -433,7 +433,7 @@ function PasswordTab() {
         <SuccessCard
           label="Password protection applied"
           downloadId={uploadedId} shareToken={uploadedShareToken} fileName={uploadedName} onReset={reset}
-          accentBtn="border-rose-200 text-[#C81934] hover:bg-rose-50"
+          accentBtn="border-blue-200 text-[#1447D0] hover:bg-blue-50"
         />
       ) : (
         <>
@@ -712,7 +712,7 @@ function PrintControlTab() {
         <SuccessCard
           label={`Printing ${restrictPrint ? "restricted" : "allowed"} · Copying ${restrictCopy ? "restricted" : "allowed"}`}
           downloadId={uploadedId} shareToken={uploadedShareToken} fileName={uploadedName} onReset={reset}
-          accentBtn="border-rose-200 text-[#C81934] hover:bg-rose-50"
+          accentBtn="border-blue-200 text-[#1447D0] hover:bg-blue-50"
         />
       ) : (
         <>
@@ -895,7 +895,7 @@ function RevokeExpiryTab() {
           shareToken={restoredToken}
           fileName={restoredName || `pdf-${restoredId}.pdf`}
           onReset={reset}
-          accentBtn="border-rose-200 text-[#C81934] hover:bg-rose-50"
+          accentBtn="border-blue-200 text-[#1447D0] hover:bg-blue-50"
         />
       </div>
     );
@@ -1068,9 +1068,9 @@ function RevokeExpiryTab() {
 
 function SecurePremiumGate() {
   return (
-    <Card className="border-rose-100 shadow-sm">
+    <Card className="border-blue-100 shadow-sm">
       <CardContent className="pt-8 pb-8 text-center">
-        <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E61E3C] to-[#C81934] flex items-center justify-center shadow-md mb-4">
+        <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1754F4] to-[#1447D0] flex items-center justify-center shadow-md mb-4">
           <Lock className="w-7 h-7 text-white" />
         </div>
         <h2 className="text-xl font-bold text-slate-900">A paid feature</h2>
@@ -1121,7 +1121,7 @@ function SecurePdfContentInner() {
     <div className="max-w-2xl mx-auto space-y-6">
 
       {/* Header banner */}
-      <div className="bg-gradient-to-br from-[#E61E3C] via-[#D71B37] to-[#C81934] rounded-2xl p-6 text-white shadow-lg">
+      <div className="bg-gradient-to-br from-[#1754F4] via-[#1651E4] to-[#1447D0] rounded-2xl p-6 text-white shadow-lg">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm">
             <ShieldCheck className="w-7 h-7 text-white" strokeWidth={1.75} />
@@ -1145,14 +1145,14 @@ function SecurePdfContentInner() {
       ) : !isPaid ? (
         <SecurePremiumGate />
       ) : (
-      <Card className="border-rose-100 shadow-sm">
+      <Card className="border-blue-100 shadow-sm">
         <CardContent className="pt-6">
           <Tabs defaultValue="expiry">
-            <TabsList className={`grid w-full grid-cols-2 sm:grid-cols-4 gap-1 mb-6 ${ab?.tabsListBg ?? "bg-rose-50 border border-rose-100"} p-1 rounded-xl h-auto`}>
+            <TabsList className={`grid w-full grid-cols-2 sm:grid-cols-4 gap-1 mb-6 ${ab?.tabsListBg ?? "bg-blue-50 border border-blue-100"} p-1 rounded-xl h-auto`}>
               <TabsTrigger
                 value="expiry"
                 data-testid="tab-expiry"
-                className={`flex items-center gap-1.5 rounded-lg ${ab?.trigger ?? "data-[state=active]:bg-rose-600"} data-[state=active]:text-white data-[state=active]:shadow-sm transition-all`}
+                className={`flex items-center gap-1.5 rounded-lg ${ab?.trigger ?? "data-[state=active]:bg-blue-600"} data-[state=active]:text-white data-[state=active]:shadow-sm transition-all`}
               >
                 <Calendar className="w-4 h-4" />
                 Expiry Date

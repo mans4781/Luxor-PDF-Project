@@ -66,7 +66,7 @@ export function Layout({
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search PDF tools..."
-                    className="w-full h-10 pl-10 pr-12 rounded-full bg-slate-50 border border-slate-200 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition-colors focus:border-[#DC2626]/40 focus:bg-white focus:ring-2 focus:ring-[#DC2626]/15"
+                    className="w-full h-10 pl-10 pr-12 rounded-full bg-slate-50 border border-slate-200 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition-colors focus:border-[#1754F4]/40 focus:bg-white focus:ring-2 focus:ring-[#1754F4]/15"
                     data-testid="header-tool-search"
                   />
                   <Kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">

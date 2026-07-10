@@ -1200,7 +1200,7 @@ function PdfToolContentInner() {
     <div className="max-w-4xl mx-auto space-y-5">
 
         {/* ── Red hero banner with quick-action buttons ── */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#E61E3C] via-[#D71B37] to-[#C81934] rounded-2xl p-6 sm:p-7 text-white shadow-lg">
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#1754F4] via-[#1651E4] to-[#1447D0] rounded-2xl p-6 sm:p-7 text-white shadow-lg">
           {/* Shield illustration */}
           <Shield
             className="pointer-events-none absolute -right-6 -bottom-8 w-44 h-44 text-white/10"
@@ -1230,7 +1230,7 @@ function PdfToolContentInner() {
                   onClick={() => setTab(a.value)}
                   className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium transition-all outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${
                     isActive
-                      ? "bg-white text-[#C81934] shadow-sm"
+                      ? "bg-white text-[#1447D0] shadow-sm"
                       : "bg-white/15 text-white hover:bg-white/25"
                   }`}
                   data-testid={`hero-action-${a.value}`}
@@ -1253,7 +1253,7 @@ function PdfToolContentInner() {
                 className="flex items-center gap-2.5 rounded-xl bg-white border border-slate-200 px-3 py-2.5"
               >
                 <span className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
-                  <Icon className="w-4 h-4 text-[#C81934]" strokeWidth={2} />
+                  <Icon className="w-4 h-4 text-[#1447D0]" strokeWidth={2} />
                 </span>
                 <span className="text-[12px] font-semibold text-slate-700 leading-tight">
                   {f.label}
