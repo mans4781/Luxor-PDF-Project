@@ -159,6 +159,19 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
     if (DEV_BYPASS) return true;
     const { isLoaded: loaded, isSignedIn: signedIn } = authRef.current;
     if (loaded && signedIn) return true;
+    const offlineNow = typeof navigator !== "undefined" && !navigator.onLine;
+    if (!isDesktopShell()) {
+      if (!loaded || offlineNow) {
+        // Auth state still resolving, or no connectivity — the dialog can
+        // explain instead of navigating to a page that would fail.
+        setPromptLabel(label);
+        return false;
+      }
+      // Web: go straight to the suite sign-in page — no blocking dialog.
+      window.location.assign(suiteAuthUrl("sign-in"));
+      return false;
+    }
+    // Desktop: the dialog hosts the browser-handoff flow, so keep it.
     setPromptLabel(label);
     return false;
   }, []);
