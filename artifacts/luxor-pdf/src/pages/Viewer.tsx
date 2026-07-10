@@ -92,10 +92,21 @@ const lsSet = (k: string, v: string | number) => {
 
 // Use a custom worker entry (polyfills + pdf.js worker) via workerPort so
 // the upsert polyfills are active inside the worker's global scope too.
+// This global port serves one-off getDocument calls (e.g. compression);
+// each Viewer creates its OWN dedicated worker below, because pdf.js
+// destroys a worker together with its owning loading task — with multiple
+// document tabs mounted at once, a shared worker would be torn down by
+// whichever tab closes or swaps its file first.
 pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(
   new URL("../pdf-worker.ts", import.meta.url),
   { type: "module" }
 );
+
+const createDedicatedPdfWorker = () => {
+  const port = new Worker(new URL("../pdf-worker.ts", import.meta.url), { type: "module" });
+  const worker = pdfjsLib.PDFWorker.create({ port });
+  return { port, worker };
+};
 
 // Actual zoom values where 1.5 = "100%" (the new baseline)
 const ZOOM_BASE = 1.5;
@@ -106,11 +117,17 @@ interface ViewerProps {
   file: File;
   onClose: () => void;
   onFileLoad: (f: File) => void;
+  /** False when this document sits in a background tab. Global listeners
+   *  (keyboard shortcuts, ctrl+wheel zoom, theme) only run when active. */
+  active?: boolean;
+  /** Incremented by the tab strip to request this viewer close itself
+   *  through its own unsaved-changes flow. */
+  closeSignal?: number;
 }
 
 type CloseIntent = null | "close" | "open" | { kind: "swap"; file: File };
 
-export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
+export default function Viewer({ file, onClose, onFileLoad, active = true, closeSignal = 0 }: ViewerProps) {
   const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -150,12 +167,13 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   // Light is the default, so we remove the attribute for it to keep the
   // base :root tokens in effect.
   useEffect(() => {
+    if (!active) return;
     const el = document.documentElement;
     if (theme === "light") el.removeAttribute("data-theme");
     else el.setAttribute("data-theme", theme);
     lsSet(LS_KEYS.theme, theme);
     return () => { el.removeAttribute("data-theme"); };
-  }, [theme]);
+  }, [theme, active]);
 
   // Persist tool-color preferences to localStorage whenever they change.
   useEffect(() => { lsSet(LS_KEYS.highlight, highlightColor); }, [highlightColor]);
@@ -274,7 +292,8 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
     setIsScanned(null);
     setActivePanel(null);
     const url = URL.createObjectURL(file);
-    const task = pdfjsLib.getDocument({ url });
+    const { port, worker } = createDedicatedPdfWorker();
+    const task = pdfjsLib.getDocument({ url, worker });
     loadingTaskRef.current = task;
 
     // pdf.js invokes this for encrypted PDFs. reason 1 = needs password,
@@ -364,8 +383,13 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
       if (resumeTimer !== undefined) clearTimeout(resumeTimer);
       passwordCbRef.current = null;
       if (loadingTaskRef.current === task) loadingTaskRef.current = null;
-      // Abort any in-flight parsing/fetching for the old document.
-      task.destroy().catch(() => {});
+      // Abort any in-flight parsing/fetching for the old document, then
+      // tear down this document's dedicated worker (pdf.js does not
+      // terminate an externally-provided port itself).
+      task.destroy().catch(() => {}).finally(() => {
+        try { worker.destroy(); } catch { /* already destroyed */ }
+        port.terminate();
+      });
       URL.revokeObjectURL(url);
     };
   }, [file]);
@@ -413,9 +437,10 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         setTool("hand"); speechSynthesis.cancel(); setIsSpeaking(false);
       }
     };
+    if (!active) return;
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [totalPages, searchOpen, undo]);
+  }, [totalPages, searchOpen, undo, active]);
 
   // Ctrl+Scroll → zoom PDF, not the browser
   useEffect(() => {
@@ -425,9 +450,10 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
       const delta = e.deltaY < 0 ? 0.1 : -0.1;
       setZoom(z => Math.min(5, Math.max(0.25, parseFloat((z + delta).toFixed(2)))));
     };
+    if (!active) return;
     window.addEventListener("wheel", handler, { passive: false });
     return () => window.removeEventListener("wheel", handler);
-  }, []);
+  }, [active]);
 
   // Stop speech on unmount
   useEffect(() => () => speechSynthesis.cancel(), []);
@@ -736,6 +762,15 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
     }
   }, [closeIntent, onClose, onFileLoad, watermarkCfg, pageNoCfg, annotations, requireAuth]);
 
+  // Tab-strip close button → run the same close flow (with the
+  // unsaved-changes confirmation) as File → Close. A ref keeps the
+  // latest handler without re-triggering on unrelated re-renders.
+  const handleFileCloseRef = useRef(handleFileClose);
+  useEffect(() => { handleFileCloseRef.current = handleFileClose; });
+  useEffect(() => {
+    if (closeSignal > 0) handleFileCloseRef.current();
+  }, [closeSignal]);
+
   // File-menu keyboard shortcuts. Placed in its own effect so it can
   // depend on the handlers (which are defined just above) without TDZ
   // issues from the main shortcuts effect higher up the file.
@@ -762,9 +797,10 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         e.preventDefault(); handleFileClose();
       }
     };
+    if (!active) return;
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isDirty, handleFileSaveAs, handleFileSaveCopy, handleFileClose, toggleFullscreen]);
+  }, [isDirty, handleFileSaveAs, handleFileSaveCopy, handleFileClose, toggleFullscreen, active]);
 
   // Edit → Add Image. Opens a hidden <input type=file>, decodes the
   // chosen image to a data URL, normalizes WebP → PNG via canvas (pdf-lib
@@ -946,9 +982,10 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         handlePrint();
       }
     };
+    if (!active) return;
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [handlePrint]);
+  }, [handlePrint, active]);
 
   const handlePageInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {

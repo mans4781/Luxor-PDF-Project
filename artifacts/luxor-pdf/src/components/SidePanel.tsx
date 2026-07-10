@@ -17,7 +17,7 @@ export default function SidePanel({ title, onClose, children, width = 320 }: Sid
     <div
       style={{
         position: "fixed",
-        top: "var(--toolbar-height)", bottom: 0, right: 0,
+        top: "calc(var(--tabbar-height, 0px) + var(--toolbar-height))", bottom: 0, right: 0,
         width, maxWidth: "calc(100vw - 48px)",
         background: "#1e1e1e",
         borderLeft: "1px solid rgba(255,255,255,0.07)",
