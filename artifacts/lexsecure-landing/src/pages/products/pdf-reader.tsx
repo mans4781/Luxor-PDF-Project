@@ -1,5 +1,5 @@
 import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
-import { BookOpen, Zap, Monitor, Smartphone, Search, ZoomIn, Bookmark, SlidersHorizontal, CheckCircle2 } from "lucide-react";
+import { BookOpen, Zap, Monitor, Smartphone, Search, ZoomIn, Bookmark, SlidersHorizontal, CheckCircle2, Download, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 
 const features = [
@@ -10,6 +10,10 @@ const features = [
   { icon: SlidersHorizontal, title: "Reading Modes",       desc: "Switch between single page, continuous scroll, two-page spread, and presentation mode at a click." },
   { icon: Monitor,         title: "Dark Mode & Theming",   desc: "Eye-comfort modes including Sepia, Night, and High Contrast — perfect for long reading sessions." },
 ];
+
+const READER_RELEASES_BASE = "https://github.com/mans4781/Luxor-PDF-Project/releases/latest/download";
+const READER_WEB_INSTALLER_URL = `${READER_RELEASES_BASE}/Luxor.PDF.Web.Setup.exe`;
+const READER_FULL_INSTALLER_URL = "https://github.com/mans4781/Luxor-PDF-Project/releases/latest";
 
 const specs = ["Windows 10/11 (64-bit)", "Android 9+", "macOS 12+", "Less than 12 MB install", "No internet required", "Free tier available"];
 
@@ -170,6 +174,39 @@ export default function PdfReaderPage() {
                 <p className="text-xs text-slate-500 font-medium">Mobile</p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Download */}
+      <section id="download" className="py-20 bg-white">
+        <div className="container mx-auto px-6 max-w-3xl text-center">
+          <h2 className="text-3xl font-bold text-slate-900 mb-3">Download Luxor PDF Reader</h2>
+          <p className="text-slate-500 mb-8 max-w-xl mx-auto">
+            Free for personal use. The installer downloads the latest version, sets itself up in seconds, and opens automatically.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a
+              href={READER_WEB_INSTALLER_URL}
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold transition-colors shadow-xl shadow-sky-500/25"
+              data-testid="download-reader-button"
+            >
+              <Download className="w-5 h-5" />
+              Download for Windows
+              <span className="text-xs font-normal text-white/70">· Free</span>
+            </a>
+            <a
+              href={READER_FULL_INSTALLER_URL}
+              className="text-sm text-slate-500 hover:text-slate-700 underline underline-offset-4"
+              data-testid="download-reader-offline-button"
+            >
+              Offline installer (~100 MB)
+            </a>
+          </div>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-500">
+            <span className="inline-flex items-center gap-1.5"><Monitor className="w-3.5 h-3.5" /> Windows 10/11 · 64-bit</span>
+            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> Automatic updates built in</span>
+            <span className="inline-flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" /> Tiny download, installs in seconds</span>
           </div>
         </div>
       </section>
