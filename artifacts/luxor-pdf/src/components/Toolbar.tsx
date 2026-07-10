@@ -138,7 +138,6 @@ function DrawStylePanel({
 }
 
 const SHAPE_TOOLS: { id: ToolType; label: string }[] = [
-  { id: "freehand",  label: "Freehand" },
   { id: "line",      label: "Straight Line" },
   { id: "arrow",     label: "Line with Arrow" },
   { id: "oval",      label: "Oval (Shift = Circle)" },
@@ -316,7 +315,7 @@ const EDIT_FEATURES: EditFeatureDef[] = [
   },
 ];
 
-const isShapeTool = (t: ToolType) => ["freehand", "line", "arrow", "oval", "rectangle"].includes(t);
+const isShapeTool = (t: ToolType) => ["line", "arrow", "oval", "rectangle"].includes(t);
 
 export default function Toolbar({
   fileName, viewControls, tool,
@@ -769,11 +768,6 @@ export default function Toolbar({
                   cursor: "pointer", fontSize: 12, textAlign: "left",
                 }}
               >
-                {st.id === "freehand" && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                    <path d="M3 17c3-4 6-12 9-12s3 8 6 8 3-4 3-4"/>
-                  </svg>
-                )}
                 {st.id === "line" && (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                     <line x1="4" y1="20" x2="20" y2="4"/>
@@ -830,6 +824,20 @@ export default function Toolbar({
       </div>
 
       <div className="toolbar-sep" />
+
+      {/* ── 4b. Freehand pen (free for everyone) ────────────── */}
+      <div style={{ position: "relative" }}>
+        <button
+          className={`toolbar-btn annot-btn ${tool === "freehand" ? "active" : ""}`}
+          onClick={() => onToolChange(tool === "freehand" ? "hand" : "freehand")}
+          title="Freehand pen — draw anywhere on the page"
+        >
+          <span className="toolbar-tip">Freehand</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+            <path d="M3 17c3-4 6-12 9-12s3 8 6 8 3-4 3-4"/>
+          </svg>
+        </button>
+      </div>
 
       {/* ── 5. Eraser icon ──────────────────────────────────── */}
       <div style={{ position: "relative" }}>

@@ -211,7 +211,9 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   const { requireAuth, isLoaded: authLoaded, isSignedIn } = useAuthGate();
 
   const handleToolChange = useCallback((t: ToolType) => {
-    if (t !== "hand" && !requireAuth(TOOL_LABELS[t])) return;
+    // Freehand pen drawing is free for everyone; other annotation tools
+    // require sign-in. (Exports with edits stay gated at the export point.)
+    if (t !== "hand" && t !== "freehand" && !requireAuth(TOOL_LABELS[t])) return;
     setTool(t);
   }, [requireAuth]);
 
