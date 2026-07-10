@@ -35,10 +35,10 @@ export function Layout({
             {/* Brand lockup */}
             <div className="flex items-center gap-3 shrink-0">
               <img
-                src={`${baseUrl}brand/luxor-icon.png?v=20260627`}
+                src={`${baseUrl}brand/luxor-secure-icon.png?v=20260710`}
                 alt=""
                 aria-hidden="true"
-                className="h-[48px] w-[48px] select-none rounded-[15%] border border-[#DC2626]/40 bg-white shadow-sm"
+                className="h-[52px] w-[52px] select-none drop-shadow-sm"
                 draggable={false}
               />
               <div className="hidden sm:flex flex-col leading-none">
