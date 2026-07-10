@@ -27,35 +27,35 @@ function HeroMockup() {
     <svg viewBox="0 0 560 360" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full drop-shadow-2xl">
       <defs>
         <linearGradient id="heroBg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#1c0a09" />
-          <stop offset="1" stopColor="#3f0a0a" />
+          <stop offset="0" stopColor="#0a1628" />
+          <stop offset="1" stopColor="#0a2e52" />
         </linearGradient>
         <linearGradient id="shareCard" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fff7f7" />
-          <stop offset="1" stopColor="#fee2e2" />
+          <stop offset="0" stopColor="#f5faff" />
+          <stop offset="1" stopColor="#dbeafe" />
         </linearGradient>
       </defs>
 
       {/* Window */}
       <rect width="560" height="360" rx="14" fill="url(#heroBg)" />
-      <rect x="0" y="0" width="560" height="34" rx="14" fill="#0b0405" />
+      <rect x="0" y="0" width="560" height="34" rx="14" fill="#050d1a" />
       <circle cx="18" cy="17" r="5" fill="#ef4444" />
       <circle cx="34" cy="17" r="5" fill="#f59e0b" />
       <circle cx="50" cy="17" r="5" fill="#22c55e" />
-      <rect x="200" y="10" width="160" height="14" rx="7" fill="#1c0a09" />
-      <text x="280" y="20" textAnchor="middle" fill="#fca5a5" fontSize="8" fontWeight="600">luxorpdf.com / secure</text>
+      <rect x="200" y="10" width="160" height="14" rx="7" fill="#0a1628" />
+      <text x="280" y="20" textAnchor="middle" fill="#93c5fd" fontSize="8" fontWeight="600">luxorpdf.com / secure</text>
 
       {/* App header */}
-      <rect x="20" y="50" width="520" height="46" rx="10" fill="#7f1d1d" />
-      <circle cx="42" cy="73" r="13" fill="#fee2e2" />
-      <text x="42" y="78" textAnchor="middle" fill="#b91c1c" fontSize="14" fontWeight="bold">L</text>
+      <rect x="20" y="50" width="520" height="46" rx="10" fill="#1e3a8a" />
+      <circle cx="42" cy="73" r="13" fill="#dbeafe" />
+      <text x="42" y="78" textAnchor="middle" fill="#1d4ed8" fontSize="14" fontWeight="bold">L</text>
       <text x="64" y="70" fill="white" fontSize="11" fontWeight="bold">Secure Your PDF</text>
-      <text x="64" y="83" fill="#fca5a5" fontSize="8">Four protection modes · Encrypted in your browser</text>
-      <rect x="448" y="62" width="78" height="22" rx="6" fill="#0b0405" />
-      <text x="487" y="76" textAnchor="middle" fill="#fca5a5" fontSize="8" fontWeight="bold">● Online</text>
+      <text x="64" y="83" fill="#93c5fd" fontSize="8">Four protection modes · Encrypted in your browser</text>
+      <rect x="448" y="62" width="78" height="22" rx="6" fill="#050d1a" />
+      <text x="487" y="76" textAnchor="middle" fill="#93c5fd" fontSize="8" fontWeight="bold">● Online</text>
 
       {/* Tab bar */}
-      <rect x="20" y="106" width="520" height="36" rx="10" fill="#fff7f7" />
+      <rect x="20" y="106" width="520" height="36" rx="10" fill="#f5faff" />
       {/* Active tab — Expiry (rose) */}
       <rect x="26" y="111" width="123" height="26" rx="7" fill="#e11d48" />
       <text x="87" y="128" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold">📅  Expiry Date</text>
@@ -67,40 +67,40 @@ function HeroMockup() {
       <text x="465" y="128" textAnchor="middle" fill="#065f46" fontSize="9" fontWeight="600">⛔  Revoke</text>
 
       {/* Card body */}
-      <rect x="20" y="152" width="520" height="190" rx="12" fill="#1c0a09" stroke="#7f1d1d" strokeWidth="1" />
+      <rect x="20" y="152" width="520" height="190" rx="12" fill="#0a1628" stroke="#1e3a8a" strokeWidth="1" />
 
       {/* File row */}
-      <rect x="36" y="166" width="488" height="40" rx="8" fill="#450a0a" />
-      <rect x="46" y="174" width="24" height="24" rx="4" fill="#b91c1c" />
+      <rect x="36" y="166" width="488" height="40" rx="8" fill="#172554" />
+      <rect x="46" y="174" width="24" height="24" rx="4" fill="#1d4ed8" />
       <text x="58" y="190" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold">PDF</text>
-      <text x="80" y="184" fill="#fee2e2" fontSize="9" fontWeight="bold">Quarterly_Financials_Q4.pdf</text>
-      <text x="80" y="196" fill="#fca5a5" fontSize="7">2.4 MB · Ready to protect</text>
-      <circle cx="500" cy="186" r="9" fill="#7f1d1d" />
-      <text x="500" y="190" textAnchor="middle" fill="#fee2e2" fontSize="10" fontWeight="bold">×</text>
+      <text x="80" y="184" fill="#dbeafe" fontSize="9" fontWeight="bold">Quarterly_Financials_Q4.pdf</text>
+      <text x="80" y="196" fill="#93c5fd" fontSize="7">2.4 MB · Ready to protect</text>
+      <circle cx="500" cy="186" r="9" fill="#1e3a8a" />
+      <text x="500" y="190" textAnchor="middle" fill="#dbeafe" fontSize="10" fontWeight="bold">×</text>
 
       {/* Date picker */}
-      <text x="36" y="226" fill="#fca5a5" fontSize="8" fontWeight="bold">EXPIRES ON</text>
-      <rect x="36" y="232" width="244" height="42" rx="8" fill="#450a0a" stroke="#7f1d1d" />
-      <rect x="46" y="240" width="24" height="26" rx="4" fill="#7f1d1d" />
-      <text x="58" y="257" textAnchor="middle" fill="#fee2e2" fontSize="11">📅</text>
-      <text x="80" y="252" fill="#fee2e2" fontSize="10" fontWeight="bold">31 Dec 2026</text>
-      <text x="80" y="265" fill="#fca5a5" fontSize="7">23:59 · Document locks at this moment</text>
+      <text x="36" y="226" fill="#93c5fd" fontSize="8" fontWeight="bold">EXPIRES ON</text>
+      <rect x="36" y="232" width="244" height="42" rx="8" fill="#172554" stroke="#1e3a8a" />
+      <rect x="46" y="240" width="24" height="26" rx="4" fill="#1e3a8a" />
+      <text x="58" y="257" textAnchor="middle" fill="#dbeafe" fontSize="11">📅</text>
+      <text x="80" y="252" fill="#dbeafe" fontSize="10" fontWeight="bold">31 Dec 2026</text>
+      <text x="80" y="265" fill="#93c5fd" fontSize="7">23:59 · Document locks at this moment</text>
 
       {/* Countdown badge (animated pulse) */}
-      <rect x="296" y="232" width="228" height="42" rx="8" fill="#0b0405" stroke="#b91c1c" />
-      <text x="306" y="248" fill="#fca5a5" fontSize="7" fontWeight="bold">EXPIRES IN</text>
-      <text x="306" y="265" fill="#fda4af" fontSize="14" fontWeight="bold">06d : 14h : 22m : 18s</text>
+      <rect x="296" y="232" width="228" height="42" rx="8" fill="#050d1a" stroke="#1d4ed8" />
+      <text x="306" y="248" fill="#93c5fd" fontSize="7" fontWeight="bold">EXPIRES IN</text>
+      <text x="306" y="265" fill="#bfdbfe" fontSize="14" fontWeight="bold">06d : 14h : 22m : 18s</text>
       <circle cx="513" cy="245" r="4" fill="#ef4444">
         <animate attributeName="opacity" values="1;0.2;1" dur="1.4s" repeatCount="indefinite" />
       </circle>
 
       {/* Share link card */}
       <rect x="36" y="288" width="488" height="42" rx="8" fill="url(#shareCard)" />
-      <rect x="44" y="296" width="22" height="26" rx="4" fill="#fecaca" />
-      <text x="55" y="313" textAnchor="middle" fill="#be123c" fontSize="11">🔗</text>
-      <text x="74" y="306" fill="#7f1d1d" fontSize="7" fontWeight="bold">SECURE SHARE LINK</text>
-      <text x="74" y="320" fill="#1c0a09" fontSize="9" fontFamily="monospace">luxorpdf.com/v/x9f2a-q1n8?token=••••••</text>
-      <rect x="430" y="298" width="84" height="22" rx="6" fill="#e11d48" />
+      <rect x="44" y="296" width="22" height="26" rx="4" fill="#bfdbfe" />
+      <text x="55" y="313" textAnchor="middle" fill="#1d4ed8" fontSize="11">🔗</text>
+      <text x="74" y="306" fill="#1e3a8a" fontSize="7" fontWeight="bold">SECURE SHARE LINK</text>
+      <text x="74" y="320" fill="#0a1628" fontSize="9" fontFamily="monospace">luxorpdf.com/v/x9f2a-q1n8?token=••••••</text>
+      <rect x="430" y="298" width="84" height="22" rx="6" fill="#2563eb" />
       <text x="472" y="313" textAnchor="middle" fill="white" fontSize="8" fontWeight="bold">📋  Copy link</text>
     </svg>
   );
@@ -168,7 +168,7 @@ function RevokeModeMockup() {
       <text x="110" y="30" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold">⛔  Revoke Access</text>
       <rect x="14" y="46" width="192" height="32" rx="6" fill="white" stroke="#a7f3d0" />
       <text x="22" y="60" fill="#047857" fontSize="7" fontWeight="bold">SHARED LINK</text>
-      <text x="22" y="73" fill="#1c0a09" fontSize="8" fontFamily="monospace">luxorpdf.com/v/x9f2a</text>
+      <text x="22" y="73" fill="#0a1628" fontSize="8" fontFamily="monospace">luxorpdf.com/v/x9f2a</text>
       <line x1="22" y1="73" x2="158" y2="73" stroke="#dc2626" strokeWidth="1.2" />
       <rect x="14" y="86" width="192" height="32" rx="6" fill="#065f46" />
       <text x="110" y="106" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold">✓ Revoked instantly</text>
@@ -180,29 +180,29 @@ function RevokeModeMockup() {
 function ViewerActiveMockup() {
   return (
     <svg viewBox="0 0 320 220" className="w-full drop-shadow-xl">
-      <rect width="320" height="220" rx="10" fill="#0b0405" />
-      <rect x="0" y="0" width="320" height="22" rx="10" fill="#1c0a09" />
+      <rect width="320" height="220" rx="10" fill="#050d1a" />
+      <rect x="0" y="0" width="320" height="22" rx="10" fill="#0a1628" />
       <circle cx="14" cy="11" r="3" fill="#ef4444" />
       <circle cx="26" cy="11" r="3" fill="#f59e0b" />
       <circle cx="38" cy="11" r="3" fill="#22c55e" />
-      <text x="160" y="14" textAnchor="middle" fill="#fca5a5" fontSize="6">luxorpdf.com/v/x9f2a</text>
+      <text x="160" y="14" textAnchor="middle" fill="#93c5fd" fontSize="6">luxorpdf.com/v/x9f2a</text>
       {/* PDF page */}
       <rect x="20" y="34" width="280" height="170" rx="6" fill="white" />
-      <rect x="36" y="50" width="160" height="10" rx="2" fill="#1c0a09" />
+      <rect x="36" y="50" width="160" height="10" rx="2" fill="#0a1628" />
       <rect x="36" y="68" width="248" height="3" rx="1" fill="#e2e8f0" />
       <rect x="36" y="76" width="240" height="3" rx="1" fill="#e2e8f0" />
       <rect x="36" y="84" width="252" height="3" rx="1" fill="#e2e8f0" />
       <rect x="36" y="92" width="220" height="3" rx="1" fill="#e2e8f0" />
       <rect x="36" y="106" width="248" height="3" rx="1" fill="#e2e8f0" />
       <rect x="36" y="114" width="200" height="3" rx="1" fill="#e2e8f0" />
-      <rect x="36" y="128" width="160" height="40" rx="4" fill="#fef2f2" />
-      <text x="46" y="144" fill="#9f1239" fontSize="7" fontWeight="bold">CONFIDENTIAL</text>
-      <rect x="46" y="148" width="120" height="3" rx="1" fill="#fecaca" />
-      <rect x="46" y="155" width="100" height="3" rx="1" fill="#fecaca" />
+      <rect x="36" y="128" width="160" height="40" rx="4" fill="#eff6ff" />
+      <text x="46" y="144" fill="#1e40af" fontSize="7" fontWeight="bold">CONFIDENTIAL</text>
+      <rect x="46" y="148" width="120" height="3" rx="1" fill="#bfdbfe" />
+      <rect x="46" y="155" width="100" height="3" rx="1" fill="#bfdbfe" />
       {/* Floating timer */}
-      <rect x="200" y="42" width="92" height="36" rx="8" fill="#0b0405" stroke="#e11d48" strokeWidth="1.2" />
-      <text x="246" y="55" textAnchor="middle" fill="#fca5a5" fontSize="6" fontWeight="bold">EXPIRES IN</text>
-      <text x="246" y="71" textAnchor="middle" fill="#fda4af" fontSize="11" fontFamily="monospace" fontWeight="bold">00:14:32</text>
+      <rect x="200" y="42" width="92" height="36" rx="8" fill="#050d1a" stroke="#2563eb" strokeWidth="1.2" />
+      <text x="246" y="55" textAnchor="middle" fill="#93c5fd" fontSize="6" fontWeight="bold">EXPIRES IN</text>
+      <text x="246" y="71" textAnchor="middle" fill="#bfdbfe" fontSize="11" fontFamily="monospace" fontWeight="bold">00:14:32</text>
       <circle cx="287" cy="50" r="3" fill="#ef4444">
         <animate attributeName="opacity" values="1;0.15;1" dur="1s" repeatCount="indefinite" />
       </circle>
@@ -213,22 +213,22 @@ function ViewerActiveMockup() {
 function ViewerExpiredMockup() {
   return (
     <svg viewBox="0 0 320 220" className="w-full drop-shadow-xl">
-      <rect width="320" height="220" rx="10" fill="#0b0405" />
-      <rect x="0" y="0" width="320" height="22" rx="10" fill="#1c0a09" />
+      <rect width="320" height="220" rx="10" fill="#050d1a" />
+      <rect x="0" y="0" width="320" height="22" rx="10" fill="#0a1628" />
       <circle cx="14" cy="11" r="3" fill="#ef4444" />
       <circle cx="26" cy="11" r="3" fill="#f59e0b" />
       <circle cx="38" cy="11" r="3" fill="#22c55e" />
-      <text x="160" y="14" textAnchor="middle" fill="#7f1d1d" fontSize="6">luxorpdf.com/v/x9f2a</text>
+      <text x="160" y="14" textAnchor="middle" fill="#1e3a8a" fontSize="6">luxorpdf.com/v/x9f2a</text>
       {/* Expired card */}
-      <rect x="20" y="34" width="280" height="170" rx="6" fill="#1c0a09" stroke="#7f1d1d" />
-      <circle cx="160" cy="92" r="32" fill="#7f1d1d" opacity="0.4" />
-      <circle cx="160" cy="92" r="22" fill="#b91c1c" />
+      <rect x="20" y="34" width="280" height="170" rx="6" fill="#0a1628" stroke="#1e3a8a" />
+      <circle cx="160" cy="92" r="32" fill="#1e3a8a" opacity="0.4" />
+      <circle cx="160" cy="92" r="22" fill="#1d4ed8" />
       <text x="160" y="99" textAnchor="middle" fill="white" fontSize="22">🔒</text>
-      <text x="160" y="142" textAnchor="middle" fill="#fee2e2" fontSize="12" fontWeight="bold">Document expired</text>
-      <text x="160" y="158" textAnchor="middle" fill="#fca5a5" fontSize="8">This shared link is no longer valid.</text>
-      <text x="160" y="170" textAnchor="middle" fill="#fca5a5" fontSize="8">The document was removed from your view.</text>
-      <rect x="120" y="180" width="80" height="16" rx="6" fill="#7f1d1d" />
-      <text x="160" y="191" textAnchor="middle" fill="#fee2e2" fontSize="7" fontWeight="bold">CONTACT SENDER</text>
+      <text x="160" y="142" textAnchor="middle" fill="#dbeafe" fontSize="12" fontWeight="bold">Document expired</text>
+      <text x="160" y="158" textAnchor="middle" fill="#93c5fd" fontSize="8">This shared link is no longer valid.</text>
+      <text x="160" y="170" textAnchor="middle" fill="#93c5fd" fontSize="8">The document was removed from your view.</text>
+      <rect x="120" y="180" width="80" height="16" rx="6" fill="#1e3a8a" />
+      <text x="160" y="191" textAnchor="middle" fill="#dbeafe" fontSize="7" fontWeight="bold">CONTACT SENDER</text>
     </svg>
   );
 }
@@ -299,23 +299,23 @@ export default function PdfSecurityPage() {
   return (
     <ProductPageLayout>
       {/* === Hero === */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-rose-950 via-red-900 to-orange-900 text-white py-24">
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-950 via-blue-900 to-sky-900 text-white py-24">
         {/* Animated background blobs */}
         <motion.div
           aria-hidden="true"
-          className="absolute top-0 right-0 w-[28rem] h-[28rem] bg-rose-500/25 rounded-full blur-3xl -translate-y-1/3 translate-x-1/4"
+          className="absolute top-0 right-0 w-[28rem] h-[28rem] bg-blue-500/25 rounded-full blur-3xl -translate-y-1/3 translate-x-1/4"
           animate={{ y: [0, 24, 0], opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           aria-hidden="true"
-          className="absolute bottom-0 left-0 w-80 h-80 bg-orange-400/15 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4"
+          className="absolute bottom-0 left-0 w-80 h-80 bg-sky-400/15 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4"
           animate={{ y: [0, -18, 0], opacity: [0.5, 0.85, 0.5] }}
           transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           aria-hidden="true"
-          className="absolute top-1/2 left-1/3 w-64 h-64 bg-rose-300/10 rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/3 w-64 h-64 bg-sky-300/10 rounded-full blur-3xl"
           animate={{ scale: [1, 1.15, 1] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -323,20 +323,20 @@ export default function PdfSecurityPage() {
         <div className="container mx-auto px-6 relative">
           <div className="grid lg:grid-cols-[5fr_6fr] gap-14 items-center">
             <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }}>
-              <div className="inline-flex items-center gap-2 bg-rose-500/20 border border-rose-400/30 rounded-full px-4 py-1.5 text-rose-200 text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 bg-blue-500/20 border border-blue-400/30 rounded-full px-4 py-1.5 text-blue-200 text-sm font-medium mb-6">
                 <Sparkles className="w-4 h-4" strokeWidth={2.2} />
                 Newly revised · Four protection modes
               </div>
               <h1 className="text-5xl lg:text-6xl font-bold leading-[1.05] mb-6 text-white">
-                Share PDFs that <span className="bg-gradient-to-r from-rose-300 via-orange-200 to-amber-200 bg-clip-text text-transparent">lock themselves</span>
+                Share PDFs that <span className="bg-gradient-to-r from-sky-300 via-sky-200 to-blue-200 bg-clip-text text-transparent">lock themselves</span>
               </h1>
-              <p className="text-rose-100/85 text-lg leading-relaxed mb-8 max-w-xl">
+              <p className="text-blue-100/85 text-lg leading-relaxed mb-8 max-w-xl">
                 Luxor PDF Secure puts a real expiry, an AES-256 password, a print block, and a kill switch on any document — and gives recipients a viewer that locks in real time. Encrypt in your browser, share a tokenised link, revoke whenever you want.
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
                   href={APP_URL}
-                  className="px-6 py-3 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-semibold transition-all shadow-lg shadow-rose-500/30 hover:shadow-rose-400/40 hover:-translate-y-0.5"
+                  className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-400/40 hover:-translate-y-0.5"
                 >
                   Protect a PDF — free →
                 </a>
@@ -347,10 +347,10 @@ export default function PdfSecurityPage() {
                   See the four modes
                 </a>
               </div>
-              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-rose-200/80">
-                <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-rose-300" /> No account required</span>
-                <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-rose-300" /> Browser-only encryption</span>
-                <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-rose-300" /> Works on any device</span>
+              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-blue-200/80">
+                <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-sky-300" /> No account required</span>
+                <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-sky-300" /> Browser-only encryption</span>
+                <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-sky-300" /> Works on any device</span>
               </div>
             </motion.div>
 
@@ -361,7 +361,7 @@ export default function PdfSecurityPage() {
               className="relative"
             >
               {/* Subtle glow under the mockup */}
-              <div className="absolute -inset-6 bg-gradient-to-br from-rose-500/20 to-orange-500/20 rounded-3xl blur-2xl" aria-hidden="true" />
+              <div className="absolute -inset-6 bg-gradient-to-br from-blue-500/20 to-sky-500/20 rounded-3xl blur-2xl" aria-hidden="true" />
               <motion.div
                 animate={{ y: [0, -8, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
@@ -375,7 +375,7 @@ export default function PdfSecurityPage() {
       </section>
 
       {/* === Stats strip === */}
-      <section className="bg-rose-700 py-7">
+      <section className="bg-blue-700 py-7">
         <div className="container mx-auto px-6">
           <motion.div
             {...stagger}
@@ -389,7 +389,7 @@ export default function PdfSecurityPage() {
             ].map(([val, lbl]) => (
               <motion.div key={lbl} variants={fadeUp}>
                 <p className="text-2xl font-bold tracking-tight">{val}</p>
-                <p className="text-rose-200 text-sm">{lbl}</p>
+                <p className="text-blue-200 text-sm">{lbl}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -400,7 +400,7 @@ export default function PdfSecurityPage() {
       <section id="modes" className="py-20 bg-slate-50">
         <div className="container mx-auto px-6">
           <motion.div {...fadeUp} className="text-center mb-14 max-w-2xl mx-auto">
-            <p className="text-xs uppercase tracking-[0.18em] text-rose-600 font-bold mb-3">The toolkit</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-blue-600 font-bold mb-3">The toolkit</p>
             <h2 className="text-4xl font-bold text-slate-900 mb-4">Four ways to lock down a PDF</h2>
             <p className="text-slate-500 leading-relaxed">
               Each mode is a separate tab in the app, with its own colour and its own preview. Use them on their own or combine them for layered protection.
@@ -440,21 +440,21 @@ export default function PdfSecurityPage() {
       </section>
 
       {/* === Self-locking viewer spotlight === */}
-      <section className="py-24 bg-gradient-to-br from-slate-950 via-rose-950 to-red-950 text-white relative overflow-hidden">
+      <section className="py-24 bg-gradient-to-br from-slate-950 via-blue-950 to-sky-950 text-white relative overflow-hidden">
         <motion.div
           aria-hidden="true"
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[36rem] h-[36rem] bg-rose-500/10 rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[36rem] h-[36rem] bg-blue-500/10 rounded-full blur-3xl"
           animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
         <div className="container mx-auto px-6 relative">
           <motion.div {...fadeUp} className="text-center mb-14 max-w-2xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-rose-500/15 border border-rose-400/30 rounded-full px-4 py-1.5 text-rose-200 text-sm font-medium mb-5">
+            <div className="inline-flex items-center gap-2 bg-blue-500/15 border border-blue-400/30 rounded-full px-4 py-1.5 text-blue-200 text-sm font-medium mb-5">
               <Timer className="w-4 h-4" strokeWidth={2.2} />
               The killer feature
             </div>
-            <h2 className="text-4xl font-bold mb-4">A viewer that watches the clock for you</h2>
-            <p className="text-rose-100/80 leading-relaxed">
+            <h2 className="text-4xl font-bold mb-4 text-white">A viewer that watches the clock for you</h2>
+            <p className="text-blue-100/80 leading-relaxed">
               Every recipient gets a tokenised page that ticks every second locally and checks back in with the server every thirty. The instant the expiry hits, the document is wiped from the page — no refresh needed, no leftover copy in their cache.
             </p>
           </motion.div>
@@ -471,7 +471,7 @@ export default function PdfSecurityPage() {
                 <span className="text-emerald-300 font-semibold uppercase tracking-wider text-xs">Live · before expiry</span>
               </div>
               <ViewerActiveMockup />
-              <p className="mt-4 text-rose-100/70 text-sm leading-relaxed">
+              <p className="mt-4 text-blue-100/70 text-sm leading-relaxed">
                 The recipient sees a clean, watermarked PDF with a live countdown floating in the corner. Local tick + server check keeps the timer honest.
               </p>
             </motion.div>
@@ -487,7 +487,7 @@ export default function PdfSecurityPage() {
                 <span className="text-rose-300 font-semibold uppercase tracking-wider text-xs">Locked · the moment time runs out</span>
               </div>
               <ViewerExpiredMockup />
-              <p className="mt-4 text-rose-100/70 text-sm leading-relaxed">
+              <p className="mt-4 text-blue-100/70 text-sm leading-relaxed">
                 When the clock hits zero (or you revoke early), the document blob is destroyed and the recipient is shown a clean lock screen instead.
               </p>
             </motion.div>
@@ -499,7 +499,7 @@ export default function PdfSecurityPage() {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6">
           <motion.div {...fadeUp} className="text-center mb-14 max-w-2xl mx-auto">
-            <p className="text-xs uppercase tracking-[0.18em] text-rose-600 font-bold mb-3">How it works</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-blue-600 font-bold mb-3">How it works</p>
             <h2 className="text-4xl font-bold text-slate-900 mb-4">From upload to revoked in four steps</h2>
             <p className="text-slate-500">No setup, no admin console. Drop a file, share a link, stay in control.</p>
           </motion.div>
@@ -507,11 +507,11 @@ export default function PdfSecurityPage() {
           <motion.div {...stagger} className="grid md:grid-cols-4 gap-6">
             {steps.map(({ n, title, desc }, i) => (
               <motion.div key={n} variants={fadeUp} className="relative flex flex-col items-center text-center">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-rose-500 to-rose-700 text-white font-bold text-xl flex items-center justify-center mb-4 shadow-lg shadow-rose-500/30">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white font-bold text-xl flex items-center justify-center mb-4 shadow-lg shadow-blue-500/30">
                   {n}
                 </div>
                 {i < 3 && (
-                  <div className="hidden md:block absolute top-7 left-[calc(50%+28px)] w-[calc(100%-56px)] h-0.5 bg-gradient-to-r from-rose-200 to-rose-100" />
+                  <div className="hidden md:block absolute top-7 left-[calc(50%+28px)] w-[calc(100%-56px)] h-0.5 bg-gradient-to-r from-blue-200 to-blue-100" />
                 )}
                 <h3 className="font-semibold text-slate-900 mb-1.5">{title}</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
@@ -525,7 +525,7 @@ export default function PdfSecurityPage() {
       <section className="py-20 bg-slate-50">
         <div className="container mx-auto px-6">
           <motion.div {...fadeUp} className="text-center mb-14 max-w-2xl mx-auto">
-            <p className="text-xs uppercase tracking-[0.18em] text-rose-600 font-bold mb-3">Under the hood</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-blue-600 font-bold mb-3">Under the hood</p>
             <h2 className="text-4xl font-bold text-slate-900 mb-4">Built for people who can't afford a leak</h2>
             <p className="text-slate-500">Every detail of the flow is designed to keep secrets actually secret.</p>
           </motion.div>
@@ -538,8 +538,8 @@ export default function PdfSecurityPage() {
                 whileHover={{ y: -4 }}
                 className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="w-11 h-11 rounded-xl bg-rose-50 flex items-center justify-center mb-4">
-                  <Icon className="w-5 h-5 text-rose-600" strokeWidth={2.2} />
+                <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
+                  <Icon className="w-5 h-5 text-blue-600" strokeWidth={2.2} />
                 </div>
                 <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
@@ -568,12 +568,12 @@ export default function PdfSecurityPage() {
                 key={role}
                 variants={fadeUp}
                 whileHover={{ y: -3 }}
-                className="bg-gradient-to-br from-rose-50 to-orange-50 rounded-2xl p-5 border border-rose-100 hover:shadow-md transition-shadow"
+                className="bg-gradient-to-br from-blue-50 to-sky-50 rounded-2xl p-5 border border-blue-100 hover:shadow-md transition-shadow"
               >
-                <div className="w-9 h-9 rounded-lg bg-white border border-rose-100 flex items-center justify-center mb-3">
-                  <Icon className="w-4 h-4 text-rose-600" strokeWidth={2.2} />
+                <div className="w-9 h-9 rounded-lg bg-white border border-blue-100 flex items-center justify-center mb-3">
+                  <Icon className="w-4 h-4 text-blue-600" strokeWidth={2.2} />
                 </div>
-                <h3 className="font-semibold text-rose-900 text-sm mb-2">{role}</h3>
+                <h3 className="font-semibold text-blue-900 text-sm mb-2">{role}</h3>
                 <p className="text-slate-600 text-sm leading-relaxed">{use}</p>
               </motion.div>
             ))}
@@ -595,7 +595,7 @@ export default function PdfSecurityPage() {
                 whileHover={{ y: -2 }}
                 className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 shadow-sm border border-slate-100"
               >
-                <CheckCircle2 className="w-4 h-4 text-rose-500" />
+                <CheckCircle2 className="w-4 h-4 text-blue-500" />
                 <span className="text-sm font-medium text-slate-700">{b}</span>
               </motion.div>
             ))}
@@ -604,7 +604,7 @@ export default function PdfSecurityPage() {
       </section>
 
       {/* === CTA === */}
-      <section className="relative overflow-hidden py-20 bg-gradient-to-br from-rose-900 via-red-900 to-orange-900 text-white">
+      <section className="relative overflow-hidden py-20 bg-gradient-to-br from-blue-900 via-blue-800 to-sky-900 text-white">
         <motion.div
           aria-hidden="true"
           className="absolute inset-0 opacity-30"
@@ -612,19 +612,19 @@ export default function PdfSecurityPage() {
           transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
           style={{
             backgroundImage:
-              "radial-gradient(circle at 20% 30%, rgba(244,63,94,0.5), transparent 40%), radial-gradient(circle at 80% 70%, rgba(251,146,60,0.4), transparent 45%)",
+              "radial-gradient(circle at 20% 30%, rgba(59,130,246,0.5), transparent 40%), radial-gradient(circle at 80% 70%, rgba(14,165,233,0.4), transparent 45%)",
             backgroundSize: "200% 200%",
           }}
         />
         <motion.div {...fadeUp} className="container mx-auto px-6 relative text-center">
-          <h2 className="text-4xl font-bold mb-4">Your documents. Your countdown. Your call.</h2>
-          <p className="text-rose-100/85 mb-8 max-w-md mx-auto">
+          <h2 className="text-4xl font-bold mb-4 text-white">Your documents. Your countdown. Your call.</h2>
+          <p className="text-blue-100/85 mb-8 max-w-md mx-auto">
             Open the app and protect your first PDF in under sixty seconds. No signup. No card. No catch.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <a
               href={APP_URL}
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-white text-rose-700 font-bold transition-all shadow-xl shadow-rose-950/40 hover:-translate-y-0.5 hover:shadow-rose-950/60"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-white text-blue-700 font-bold transition-all shadow-xl shadow-blue-950/40 hover:-translate-y-0.5 hover:shadow-blue-950/60"
             >
               <Lock className="w-4 h-4" strokeWidth={2.5} />
               Open Luxor PDF Secure

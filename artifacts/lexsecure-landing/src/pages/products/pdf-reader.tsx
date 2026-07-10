@@ -34,10 +34,10 @@ function ReaderMockup() {
       <circle cx="34" cy="18" r="5" fill="#f59e0b" />
       <circle cx="50" cy="18" r="5" fill="#22c55e" />
       {/* Toolbar */}
-      <rect x="0" y="36" width="520" height="32" fill="#1e3a5f" />
-      <rect x="10" y="44" width="60" height="16" rx="4" fill="#0284c7" opacity="0.8" />
-      <rect x="78" y="44" width="40" height="16" rx="4" fill="#1e40af" opacity="0.5" />
-      <rect x="126" y="44" width="40" height="16" rx="4" fill="#1e40af" opacity="0.5" />
+      <rect x="0" y="36" width="520" height="32" fill="#5b1a1a" />
+      <rect x="10" y="44" width="60" height="16" rx="4" fill="#dc2626" opacity="0.8" />
+      <rect x="78" y="44" width="40" height="16" rx="4" fill="#b91c1c" opacity="0.5" />
+      <rect x="126" y="44" width="40" height="16" rx="4" fill="#b91c1c" opacity="0.5" />
       <rect x="390" y="47" width="120" height="10" rx="3" fill="#0f172a" opacity="0.5" />
       {/* Sidebar thumbnails */}
       <rect x="0" y="68" width="64" height="272" fill="#0f172a" />
@@ -45,26 +45,26 @@ function ReaderMockup() {
         <g key={i}>
           <rect x="6" y={76 + i * 64} width="52" height="56" rx="3" fill="#1e293b" />
           <rect x="10" y={80 + i * 64} width="44" height="6" rx="1" fill="#334155" />
-          <rect x="10" y={88 + i * 64} width="44" height="3" rx="1" fill="#1e40af" opacity="0.4" />
-          <rect x="10" y={93 + i * 64} width="34" height="3" rx="1" fill="#1e40af" opacity="0.4" />
-          <rect x="10" y={98 + i * 64} width="40" height="3" rx="1" fill="#1e40af" opacity="0.4" />
-          <rect x="10" y={103 + i * 64} width="28" height="3" rx="1" fill="#1e40af" opacity="0.4" />
+          <rect x="10" y={88 + i * 64} width="44" height="3" rx="1" fill="#b91c1c" opacity="0.4" />
+          <rect x="10" y={93 + i * 64} width="34" height="3" rx="1" fill="#b91c1c" opacity="0.4" />
+          <rect x="10" y={98 + i * 64} width="40" height="3" rx="1" fill="#b91c1c" opacity="0.4" />
+          <rect x="10" y={103 + i * 64} width="28" height="3" rx="1" fill="#b91c1c" opacity="0.4" />
           <text x="32" y={125 + i * 64} textAnchor="middle" fill="#64748b" fontSize="8">{i + 1}</text>
         </g>
       ))}
       {/* Main page */}
       <rect x="72" y="68" width="360" height="272" fill="#ffffff" />
       {/* Page content lines */}
-      <rect x="100" y="92" width="200" height="14" rx="2" fill="#1e3a5f" />
+      <rect x="100" y="92" width="200" height="14" rx="2" fill="#5b1a1a" />
       <rect x="100" y="112" width="302" height="5" rx="1" fill="#e2e8f0" />
       <rect x="100" y="120" width="290" height="5" rx="1" fill="#e2e8f0" />
       <rect x="100" y="128" width="310" height="5" rx="1" fill="#e2e8f0" />
       <rect x="100" y="136" width="270" height="5" rx="1" fill="#e2e8f0" />
-      <rect x="100" y="152" width="240" height="90" rx="4" fill="#e0f2fe" />
-      <rect x="110" y="162" width="60" height="8" rx="2" fill="#0284c7" opacity="0.5" />
-      <rect x="110" y="174" width="210" height="4" rx="1" fill="#bae6fd" />
-      <rect x="110" y="181" width="190" height="4" rx="1" fill="#bae6fd" />
-      <rect x="110" y="188" width="205" height="4" rx="1" fill="#bae6fd" />
+      <rect x="100" y="152" width="240" height="90" rx="4" fill="#fee2e2" />
+      <rect x="110" y="162" width="60" height="8" rx="2" fill="#dc2626" opacity="0.5" />
+      <rect x="110" y="174" width="210" height="4" rx="1" fill="#fecaca" />
+      <rect x="110" y="181" width="190" height="4" rx="1" fill="#fecaca" />
+      <rect x="110" y="188" width="205" height="4" rx="1" fill="#fecaca" />
       <rect x="100" y="250" width="302" height="5" rx="1" fill="#e2e8f0" />
       <rect x="100" y="258" width="280" height="5" rx="1" fill="#e2e8f0" />
       <rect x="100" y="266" width="295" height="5" rx="1" fill="#e2e8f0" />
@@ -73,7 +73,7 @@ function ReaderMockup() {
       <rect x="140" y="120" width="48" height="5" rx="1" fill="#fde68a" />
       {/* Right scroll panel */}
       <rect x="432" y="68" width="88" height="272" fill="#0f172a" />
-      <rect x="444" y="90" width="64" height="8" rx="2" fill="#1e40af" opacity="0.5" />
+      <rect x="444" y="90" width="64" height="8" rx="2" fill="#b91c1c" opacity="0.5" />
       <rect x="444" y="104" width="52" height="6" rx="1" fill="#1e293b" />
       <rect x="444" y="114" width="60" height="6" rx="1" fill="#1e293b" />
       <rect x="444" y="124" width="44" height="6" rx="1" fill="#1e293b" />
@@ -86,26 +86,26 @@ export default function PdfReaderPage() {
   return (
     <ProductPageLayout>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-sky-950 via-blue-900 to-indigo-900 text-white py-24">
+      <section className="relative overflow-hidden bg-gradient-to-br from-red-950 via-rose-900 to-rose-950 text-white py-24">
         {/* Background blobs */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-sky-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-blue-400/10 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-red-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-rose-400/10 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4" />
 
         <div className="container mx-auto px-6 relative">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }}>
-              <div className="inline-flex items-center gap-2 bg-sky-500/20 border border-sky-400/30 rounded-full px-4 py-1.5 text-sky-300 text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 bg-red-500/20 border border-red-400/30 rounded-full px-4 py-1.5 text-red-300 text-sm font-medium mb-6">
                 <BookOpen className="w-4 h-4" strokeWidth={1.5} />
                 Luxor PDF Reader
               </div>
               <h1 className="text-5xl font-bold leading-tight mb-6 text-white">
-                Read PDFs <span className="text-sky-300">faster</span> than ever before
+                Read PDFs <span className="text-red-300">faster</span> than ever before
               </h1>
-              <p className="text-blue-200 text-lg leading-relaxed mb-8">
+              <p className="text-rose-200 text-lg leading-relaxed mb-8">
                 A lightweight yet powerful PDF viewer built for professionals. Open, navigate, search, and annotate any PDF document — locally, privately, and blazingly fast.
               </p>
               <div className="flex flex-wrap gap-4">
-                <a href="#download" className="px-6 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-semibold transition-colors shadow-lg shadow-sky-500/30">
+                <a href="#download" className="px-6 py-3 rounded-xl bg-red-500 hover:bg-red-400 text-white font-semibold transition-colors shadow-lg shadow-red-500/30">
                   Download Free
                 </a>
                 <a href="#features" className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 transition-colors">
@@ -121,13 +121,13 @@ export default function PdfReaderPage() {
       </section>
 
       {/* Stats strip */}
-      <section className="bg-sky-600 py-6">
+      <section className="bg-red-600 py-6">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-white text-center">
             {[["< 1 sec", "Average open time"], ["800%", "Maximum zoom"], ["50+ languages", "UI localisation"], ["100% offline", "No cloud required"]].map(([val, lbl]) => (
               <div key={lbl}>
                 <p className="text-2xl font-bold">{val}</p>
-                <p className="text-sky-200 text-sm">{lbl}</p>
+                <p className="text-red-200 text-sm">{lbl}</p>
               </div>
             ))}
           </div>
@@ -144,8 +144,8 @@ export default function PdfReaderPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map(({ icon: Icon, title, desc }) => (
               <motion.div key={title} whileHover={{ y: -4 }} className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-11 h-11 rounded-xl bg-sky-50 flex items-center justify-center mb-4">
-                  <Icon className="w-5 h-5 text-sky-600" strokeWidth={1.5} />
+                <div className="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center mb-4">
+                  <Icon className="w-5 h-5 text-red-600" strokeWidth={1.5} />
                 </div>
                 <h3 className="font-semibold text-slate-800 mb-2">{title}</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
@@ -158,14 +158,14 @@ export default function PdfReaderPage() {
       {/* Platform support */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-6">
-          <div className="bg-gradient-to-r from-sky-50 to-blue-50 rounded-3xl p-10 flex flex-col lg:flex-row items-center gap-10">
+          <div className="bg-gradient-to-r from-red-50 to-rose-50 rounded-3xl p-10 flex flex-col lg:flex-row items-center gap-10">
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-slate-800 mb-3">Works everywhere you do</h2>
               <p className="text-slate-500 mb-6">One licence, all your devices. Your reading preferences, bookmarks, and recent files stay in sync.</p>
               <div className="grid grid-cols-2 gap-3">
                 {specs.map(s => (
                   <div key={s} className="flex items-center gap-2 text-sm text-slate-700">
-                    <CheckCircle2 className="w-4 h-4 text-sky-500 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-red-500 shrink-0" />
                     {s}
                   </div>
                 ))}
@@ -173,11 +173,11 @@ export default function PdfReaderPage() {
             </div>
             <div className="flex gap-6">
               <div className="text-center">
-                <Monitor className="w-12 h-12 text-sky-600 mx-auto mb-2" strokeWidth={1.5} />
+                <Monitor className="w-12 h-12 text-red-600 mx-auto mb-2" strokeWidth={1.5} />
                 <p className="text-xs text-slate-500 font-medium">Desktop</p>
               </div>
               <div className="text-center">
-                <Smartphone className="w-12 h-12 text-blue-600 mx-auto mb-2" strokeWidth={1.5} />
+                <Smartphone className="w-12 h-12 text-rose-600 mx-auto mb-2" strokeWidth={1.5} />
                 <p className="text-xs text-slate-500 font-medium">Mobile</p>
               </div>
             </div>
@@ -195,7 +195,7 @@ export default function PdfReaderPage() {
           <div className="flex items-center justify-center">
             <a
               href={READER_FULL_INSTALLER_URL}
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold transition-colors shadow-xl shadow-sky-500/25"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold transition-colors shadow-xl shadow-red-500/25"
               data-testid="download-reader-button"
             >
               <Download className="w-5 h-5" />
@@ -215,7 +215,7 @@ export default function PdfReaderPage() {
             <dl className="grid sm:grid-cols-2 gap-x-8 gap-y-4">
               {systemRequirements.map(({ label, value }) => (
                 <div key={label} className="flex items-start gap-3">
-                  <CheckCircle2 className="w-4 h-4 text-sky-500 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                   <div>
                     <dt className="text-sm font-semibold text-slate-700">{label}</dt>
                     <dd className="text-sm text-slate-500">{value}</dd>
@@ -228,11 +228,11 @@ export default function PdfReaderPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-gradient-to-br from-sky-900 to-blue-900 text-white text-center">
+      <section className="py-16 bg-gradient-to-br from-red-900 to-rose-900 text-white text-center">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl font-bold mb-4 text-white">Start reading smarter today</h2>
-          <p className="text-sky-200 mb-8 max-w-md mx-auto">Free for personal use. Pro features unlock with a single affordable licence.</p>
-          <a href="#download" className="inline-block px-8 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-bold transition-colors shadow-xl shadow-sky-500/30">
+          <p className="text-red-200 mb-8 max-w-md mx-auto">Free for personal use. Pro features unlock with a single affordable licence.</p>
+          <a href="#download" className="inline-block px-8 py-3 rounded-xl bg-red-500 hover:bg-red-400 text-white font-bold transition-colors shadow-xl shadow-red-500/30">
             Download Luxor PDF Reader
           </a>
         </div>
