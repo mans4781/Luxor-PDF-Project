@@ -179,6 +179,10 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   const [compressOpen, setCompressOpen] = useState(false);
   const [screenshotActive, setScreenshotActive] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  // Non-null when the browser lacks the system share sheet — holds the
+  // prepared PDF so the fallback share menu can offer app links + download.
+  const [shareFallback, setShareFallback] = useState<File | null>(null);
   const [closeIntent, setCloseIntent] = useState<CloseIntent>(null);
 
   // ── New commercial-reader state ─────────────────────────────
@@ -612,7 +616,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   const handleFileSaveCopy = useCallback(async () => {
     if (!requireAuth("Save a Copy")) return;
     if (!file) { alert("No PDF is currently open."); return; }
-    if (downloading) return;
+    if (downloading || sharing) return;
     const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
     const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
     const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
@@ -643,7 +647,56 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
     } finally {
       setDownloading(false);
     }
-  }, [file, downloading, annotations, watermarkCfg, pageNoCfg, currentPage, requireAuth]);
+  }, [file, downloading, sharing, annotations, watermarkCfg, pageNoCfg, currentPage, requireAuth]);
+
+  // ── Share (system share sheet, with fallback menu) ─────────
+  const handleShare = useCallback(async () => {
+    if (!file) { alert("No PDF is currently open."); return; }
+    if (sharing || downloading) return;
+    const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
+    const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
+    const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
+    const needsExport = watermarkCfg !== null || pageNoCfg !== null ||
+      redactions.length > 0 || images.length > 0 || editTexts.length > 0;
+    // Sharing an EDITED PDF produces the same burned-in export as Save,
+    // so it is gated behind sign-in exactly like the Save actions.
+    // Sharing the untouched original stays free, like reading.
+    if (needsExport && !requireAuth("sharing edited PDFs")) return;
+    setSharing(true);
+    try {
+      const blob: Blob = needsExport
+        ? await exportPdfWithEdits(file, {
+            watermark: watermarkCfg, pageNo: pageNoCfg,
+            redactions, images, editTexts, currentPage,
+          })
+        : file;
+      const name = file.name.toLowerCase().endsWith(".pdf") ? file.name : `${file.name}.pdf`;
+      const shareFile = new File([blob], name, { type: "application/pdf" });
+      if (typeof navigator.share === "function" && navigator.canShare?.({ files: [shareFile] })) {
+        try {
+          await navigator.share({ files: [shareFile], title: name });
+        } catch (err: any) {
+          // User closing the share sheet is not an error.
+          if (err?.name !== "AbortError") setShareFallback(shareFile);
+        }
+      } else {
+        // Browser can't open the system share sheet — offer app links.
+        setShareFallback(shareFile);
+      }
+    } catch (err) {
+      console.error("Share failed:", err);
+      alert("Sorry — couldn't prepare the PDF for sharing.");
+    } finally {
+      setSharing(false);
+    }
+  }, [file, sharing, downloading, annotations, watermarkCfg, pageNoCfg, currentPage, requireAuth]);
+
+  const downloadShareFile = useCallback((f: File) => {
+    const url = URL.createObjectURL(f);
+    const a = document.createElement("a");
+    a.href = url; a.download = f.name; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, []);
 
   const handleFileClose = useCallback(() => {
     if (!file) { alert("No PDF is currently open."); return; }
@@ -797,7 +850,7 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
   }, [pdfDoc, currentPage, rotation, addAnnotation]);
 
   const handleDownload = async () => {
-    if (downloading) return;
+    if (downloading || sharing) return;
     const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
     const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
     const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
@@ -1130,6 +1183,8 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         onClearPageNo={() => { if (requireAuth("Page Numbers")) setPageNoCfg(null); }}
         watermarkActive={!!watermarkCfg}
         pageNoActive={!!pageNoCfg}
+        onShare={handleShare}
+        sharing={sharing}
         onFileSaveAs={handleFileSaveAs}
         onFileSaveCopy={handleFileSaveCopy}
         onFileClose={handleFileClose}
@@ -1241,6 +1296,97 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
           onSelectTool={handleToolChange}
           onAddImage={() => { if (requireAuth("Add Image")) handleAddImage(); }}
         />
+      )}
+
+      {/* ── Share fallback (no system share sheet available) ── */}
+      {shareFallback && (
+        <div
+          onClick={() => setShareFallback(null)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+            zIndex: 9200, display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff", color: "#1a1a1a",
+              width: 440, maxWidth: "92vw",
+              borderRadius: 12, padding: "22px 22px 18px",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
+            }}
+          >
+            <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 8 }}>Share this PDF</div>
+            <div style={{ fontSize: 13, lineHeight: 1.5, color: "#444", marginBottom: 16 }}>
+              Your browser can't open the system share window here, so first download the
+              PDF, then pick an app — attach the downloaded file to your message.
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+              <button
+                onClick={() => downloadShareFile(shareFallback)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  background: "#b91c1c", color: "#fff", border: "none",
+                  borderRadius: 8, padding: "10px 14px", fontSize: 13.5, fontWeight: 600,
+                  cursor: "pointer", textAlign: "left",
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 4v11"/><path d="M8.5 11.5 12 15l3.5-3.5"/>
+                  <path d="M5 15v3.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V15"/>
+                </svg>
+                1. Download the PDF
+              </button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => {
+                    window.open(
+                      `https://wa.me/?text=${encodeURIComponent(`Sharing a PDF with you: ${shareFallback.name} (file attached separately)`)}`,
+                      "_blank", "noopener,noreferrer",
+                    );
+                  }}
+                  style={{
+                    flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    background: "#fff", color: "#1a1a1a", border: "1px solid rgba(0,0,0,0.2)",
+                    borderRadius: 8, padding: "10px 12px", fontSize: 13, cursor: "pointer",
+                  }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L3 21l1.9-5.6A8.5 8.5 0 1 1 21 11.5z"/>
+                  </svg>
+                  2. WhatsApp
+                </button>
+                <button
+                  onClick={() => {
+                    window.location.href =
+                      `mailto:?subject=${encodeURIComponent(shareFallback.name)}&body=${encodeURIComponent(`Sharing a PDF with you: ${shareFallback.name}. The file is attached.`)}`;
+                  }}
+                  style={{
+                    flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    background: "#fff", color: "#1a1a1a", border: "1px solid rgba(0,0,0,0.2)",
+                    borderRadius: 8, padding: "10px 12px", fontSize: 13, cursor: "pointer",
+                  }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="5" width="18" height="14" rx="2"/>
+                    <path d="m3 7 9 6 9-6"/>
+                  </svg>
+                  2. Email
+                </button>
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setShareFallback(null)}
+                style={{
+                  background: "#fff", color: "#1a1a1a",
+                  border: "1px solid rgba(0,0,0,0.2)", borderRadius: 6,
+                  padding: "8px 14px", fontSize: 13, cursor: "pointer",
+                }}
+              >Close</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── Unsaved-changes confirmation ──────────────────── */}

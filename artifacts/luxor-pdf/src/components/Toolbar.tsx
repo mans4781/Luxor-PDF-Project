@@ -184,6 +184,8 @@ interface ToolbarProps {
   onClearPageNo: () => void;
   watermarkActive: boolean;
   pageNoActive: boolean;
+  onShare: () => void;
+  sharing: boolean;
   // File menu
   onFileSaveAs: () => void;
   onFileSaveCopy: () => void;
@@ -356,6 +358,7 @@ export default function Toolbar({
   onOpenWatermark, onOpenPageNo, onAddImage, onOpenCompress, onScreenshot,
   onClearWatermark, onClearPageNo,
   watermarkActive, pageNoActive,
+  onShare, sharing,
   onFileSaveAs, onFileSaveCopy, onFileClose,
   theme, onThemeChange,
   onFitWidth, onFitPage, isFullscreen, onToggleFullscreen,
@@ -1122,6 +1125,20 @@ export default function Toolbar({
         <span className="toolbar-tip">Print</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+        </svg>
+      </button>
+      <button
+        className="toolbar-btn"
+        onClick={onShare}
+        disabled={sharing}
+        title="Share this PDF"
+        style={sharing ? { opacity: 0.5, cursor: "wait" } : undefined}
+      >
+        <span className="toolbar-tip">{sharing ? "Preparing…" : "Share"}</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 15V4"/>
+          <path d="M8.5 7.5 12 4l3.5 3.5"/>
+          <path d="M5 12v6.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V12"/>
         </svg>
       </button>
       <div style={{ marginLeft: 8, display: "flex", alignItems: "center" }}>
