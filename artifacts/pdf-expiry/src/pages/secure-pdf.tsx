@@ -24,7 +24,6 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { scheduleAutoRefresh } from "@/lib/auto-refresh";
 import { encryptPdfAes256 } from "@/lib/qpdf-encrypt";
 import { saveToLocalHistory, loadLocalHistory } from "./history";
 import type { LocalPdfEntry } from "@/components/pdf-list";
@@ -361,7 +360,6 @@ function ExpiryTab() {
       setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null);
       saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
       queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
-      scheduleAutoRefresh();
     } catch (err) {
       toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" });
       throw err;
@@ -480,7 +478,6 @@ function PasswordTab() {
       setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null); setPassword("");
       saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
       queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
-      scheduleAutoRefresh();
       setConfirmOpen(false);
     } catch (err) {
       toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" });
@@ -747,7 +744,6 @@ function PrintControlTab() {
       setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null);
       saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
       queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
-      scheduleAutoRefresh();
     } catch (err) {
       toast({ title: "Upload failed", description: "Something went wrong.", variant: "destructive" });
       throw err;
@@ -928,7 +924,6 @@ function RevokeExpiryTab() {
       });
       queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
       toast({ title: "Access restored", description: "The PDF is available again." });
-      scheduleAutoRefresh();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Verification failed.";
       toast({ title: "Could not revoke expiry", description: msg, variant: "destructive" });
