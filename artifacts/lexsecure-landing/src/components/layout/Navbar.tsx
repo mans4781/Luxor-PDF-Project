@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ChevronDown, BookOpen, FileSignature, Lock, Home, Layers, Sparkles, Tag, Info, Wrench } from "lucide-react";
+import { ChevronDown, Home, Layers, Sparkles, Tag, Info, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,32 +9,29 @@ const productItems = [
   {
     label: "Luxor PDF Reader",
     href: "/products/pdf-reader",
-    icon: BookOpen,
+    iconSrc: "brand/product-reader.png",
     desc: "Flagship PDF reader",
     badge: "Flagship",
-    iconBg: "bg-[#312E81]/8 border-[#312E81]/15 group-hover:bg-[#312E81]/15",
-    iconColor: "text-[#312E81]",
+    iconBg: "bg-[#DC2626]/5 border-[#DC2626]/15 group-hover:bg-[#DC2626]/10",
     badgeBg: "bg-[#312E81]/10 text-[#312E81]",
   },
   {
     label: "Luxor PDF Secure",
     href: "/products/pdf-security",
-    icon: Lock,
+    iconSrc: "brand/product-secure.png",
     desc: "Self-destructing documents",
     badge: "Add-on",
-    iconBg: "bg-[#FB7185]/10 border-[#FB7185]/20 group-hover:bg-[#FB7185]/20",
-    iconColor: "text-[#E11D48]",
-    badgeBg: "bg-[#FB7185]/15 text-[#9F1239]",
+    iconBg: "bg-[#2563EB]/5 border-[#2563EB]/15 group-hover:bg-[#2563EB]/10",
+    badgeBg: "bg-[#2563EB]/10 text-[#1D4ED8]",
   },
   {
     label: "Luxor PDF eSign",
     href: "/products/esign",
-    icon: FileSignature,
+    iconSrc: "brand/product-esign.png",
     desc: "Legally-binding eSignatures",
     badge: "Add-on",
-    iconBg: "bg-[#2563EB]/8 border-[#2563EB]/15 group-hover:bg-[#2563EB]/15",
-    iconColor: "text-[#2563EB]",
-    badgeBg: "bg-[#2563EB]/10 text-[#2563EB]",
+    iconBg: "bg-[#16A34A]/5 border-[#16A34A]/15 group-hover:bg-[#16A34A]/10",
+    badgeBg: "bg-[#16A34A]/10 text-[#15803D]",
   },
 ];
 
@@ -130,7 +127,7 @@ export function Navbar() {
                   className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-80 bg-white rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200 overflow-hidden z-50"
                 >
                   <div className="p-2">
-                    {productItems.map(({ label, href, icon: Icon, desc, badge, iconBg, iconColor, badgeBg }) => (
+                    {productItems.map(({ label, href, iconSrc, desc, badge, iconBg, badgeBg }) => (
                       <Link
                         key={label}
                         href={href}
@@ -138,7 +135,13 @@ export function Navbar() {
                         className="group flex items-center gap-3 rounded-xl px-3 py-3 hover:bg-slate-50 transition-colors duration-150"
                       >
                         <div className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110 group-hover:rotate-[-4deg] ${iconBg}`}>
-                          <Icon size={18} className={iconColor} strokeWidth={2.2} />
+                          <img
+                            src={`${import.meta.env.BASE_URL}${iconSrc}`}
+                            alt=""
+                            aria-hidden="true"
+                            className="w-8 h-8 object-contain select-none"
+                            draggable={false}
+                          />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
