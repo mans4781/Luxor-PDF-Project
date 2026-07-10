@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Wrench,
@@ -12,7 +11,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { LoginModal } from "@/components/LoginModal";
+import { goToSignIn, goToSignUp } from "@/lib/authUrls";
 
 /**
  * Online Tools landing page.
@@ -90,7 +89,6 @@ const FADE_UP = {
 };
 
 export default function OnlineToolsPage() {
-  const [authOpen, setAuthOpen] = useState(false);
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <Navbar />
@@ -191,7 +189,7 @@ export default function OnlineToolsPage() {
               <div className="flex md:flex-col gap-3 md:items-end">
                 <button
                   type="button"
-                  onClick={() => setAuthOpen(true)}
+                  onClick={goToSignUp}
                   className="inline-flex items-center justify-center gap-2 rounded-lg bg-white text-[#312E81] font-semibold px-5 py-2.5 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
                   data-testid="online-tools-create-account"
                 >
@@ -199,7 +197,7 @@ export default function OnlineToolsPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setAuthOpen(true)}
+                  onClick={goToSignIn}
                   className="inline-flex items-center justify-center gap-2 rounded-lg bg-white/10 text-white font-semibold px-5 py-2.5 border border-white/30 hover:bg-white/20 transition-all"
                   data-testid="online-tools-sign-in"
                 >
@@ -238,7 +236,6 @@ export default function OnlineToolsPage() {
       </main>
 
       <Footer />
-      <LoginModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }

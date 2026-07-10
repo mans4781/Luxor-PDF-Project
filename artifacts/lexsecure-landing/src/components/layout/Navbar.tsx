@@ -3,7 +3,7 @@ import { ChevronDown, BookOpen, FileSignature, Lock, Home, Layers, Sparkles, Tag
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LoginModal } from "@/components/LoginModal";
+import { goToSignIn, goToSignUp } from "@/lib/authUrls";
 
 const productItems = [
   {
@@ -41,7 +41,6 @@ const productItems = [
 export function Navbar() {
   const [scrolled, setScrolled]         = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
-  const [loginOpen, setLoginOpen]       = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -181,13 +180,13 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
-            onClick={() => setLoginOpen(true)}
+            onClick={goToSignIn}
             className="text-[15px] font-semibold text-[#312E81] hover:text-[#1E1B4B] hover:bg-slate-100 hidden sm:inline-flex"
           >
             Sign in
           </Button>
           <Button
-            onClick={() => setLoginOpen(true)}
+            onClick={goToSignUp}
             className="text-[15px] font-semibold bg-[#312E81] hover:bg-[#3730A3] text-white shadow-md shadow-[#312E81]/20 hover:shadow-lg hover:shadow-[#312E81]/30 hover:-translate-y-0.5 rounded-lg hidden sm:inline-flex transition-all duration-200"
           >
             Start free →
@@ -195,7 +194,6 @@ export function Navbar() {
         </div>
       </div>
 
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </motion.header>
   );
 }

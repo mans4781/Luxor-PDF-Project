@@ -1,12 +1,10 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { LoginModal } from "@/components/LoginModal";
+import { goToSignUp } from "@/lib/authUrls";
 
 export function CTA() {
-  const [authOpen, setAuthOpen] = useState(false);
   return (
     <section className="py-24 md:py-32 relative overflow-hidden bg-gradient-to-b from-white via-indigo-50/30 to-white border-t border-slate-100">
       <div className="container mx-auto px-6 relative z-10">
@@ -38,7 +36,7 @@ export function CTA() {
             <div className="flex flex-col gap-3">
               <Button
                 size="lg"
-                onClick={() => setAuthOpen(true)}
+                onClick={goToSignUp}
                 className="h-14 px-8 text-base font-semibold bg-white text-[#312E81] hover:bg-neutral-100 rounded-lg shadow-xl group"
               >
                 Start free
@@ -51,7 +49,6 @@ export function CTA() {
           </div>
         </motion.div>
       </div>
-      <LoginModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </section>
   );
 }

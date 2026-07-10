@@ -1,9 +1,8 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Wrench, ShieldCheck, Clock, Shield, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { LoginModal } from "@/components/LoginModal";
+import { goToSignUp } from "@/lib/authUrls";
 
 const HERO_STATS = [
   { icon: Wrench,       value: "8+",       label: "PDF tools" },
@@ -17,7 +16,6 @@ const FADE_UP = {
 };
 
 export function Hero() {
-  const [authOpen, setAuthOpen] = useState(false);
   return (
     <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-br from-blue-50/60 via-white to-rose-50/40">
       <div className="absolute inset-0 pointer-events-none z-0">
@@ -52,7 +50,7 @@ export function Hero() {
             <motion.div variants={FADE_UP} className="flex flex-col sm:flex-row items-start gap-4">
               <Button
                 size="lg"
-                onClick={() => setAuthOpen(true)}
+                onClick={goToSignUp}
                 className="w-full sm:w-auto h-12 px-7 text-base font-semibold bg-[#312E81] hover:bg-[#3730A3] text-white rounded-lg shadow-sm group"
               >
                 Start free
