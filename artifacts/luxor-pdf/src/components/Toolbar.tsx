@@ -317,6 +317,24 @@ const EDIT_FEATURES: EditFeatureDef[] = [
 
 const isShapeTool = (t: ToolType) => ["line", "arrow", "oval", "rectangle"].includes(t);
 
+/** Quick palette for the standalone Freehand pen dropdown. */
+const FREEHAND_COLORS: { label: string; value: string }[] = [
+  { label: "Bright Blue",   value: "#0D62F2" },
+  { label: "Bright Red",    value: "#F21E1E" },
+  { label: "Bright Green",  value: "#00C853" },
+  { label: "Black",         value: "#000000" },
+  { label: "Bright Violet", value: "#9D2BFF" },
+];
+
+/** Preset thickness choices for the Freehand pen dropdown. */
+const FREEHAND_THICKNESSES: { label: string; value: number }[] = [
+  { label: "Thin (1px)",        value: 1 },
+  { label: "Regular (2px)",     value: 2 },
+  { label: "Medium (3px)",      value: 3 },
+  { label: "Thick (5px)",       value: 5 },
+  { label: "Extra Thick (8px)", value: 8 },
+];
+
 export default function Toolbar({
   fileName, viewControls, tool,
   highlightColor, textColor, textSize, textFont, drawColor, drawThickness, shapeFill, isSpeaking,
@@ -826,7 +844,7 @@ export default function Toolbar({
       <div className="toolbar-sep" />
 
       {/* ── 4b. Freehand pen (free for everyone) ────────────── */}
-      <div style={{ position: "relative" }}>
+      <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
         <button
           className={`toolbar-btn annot-btn ${tool === "freehand" ? "active" : ""}`}
           onClick={() => onToolChange(tool === "freehand" ? "hand" : "freehand")}
@@ -837,6 +855,82 @@ export default function Toolbar({
             <path d="M3 17c3-4 6-12 9-12s3 8 6 8 3-4 3-4"/>
           </svg>
         </button>
+        <button
+          onClick={() => toggle("draw")}
+          title="Pen color & thickness"
+          style={{
+            width: 16, minWidth: 16, height: 28, padding: 0, marginLeft: -2,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: popover === "draw" ? "rgba(13,98,242,0.12)" : "transparent",
+            border: "none", borderRadius: 4, cursor: "pointer",
+            color: popover === "draw" ? "#0D62F2" : "currentColor",
+          }}
+        >
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="5 8 10 13 15 8" />
+          </svg>
+        </button>
+
+        {popover === "draw" && (
+          <div className="popover-panel" style={{ minWidth: 190, left: 0, transform: "none" }}>
+            <div className="popover-label">Pen Color</div>
+            {!FREEHAND_COLORS.some(c => c.value.toLowerCase() === drawColor.toLowerCase()) && (
+              <div
+                style={{
+                  display: "flex", alignItems: "center", gap: 9,
+                  width: "100%", padding: "5px 8px", marginBottom: 2,
+                  background: "rgba(13,98,242,0.12)", borderRadius: 4,
+                  color: "#0D62F2", fontSize: 12,
+                }}
+              >
+                <span style={{
+                  width: 14, height: 14, borderRadius: "50%", background: drawColor,
+                  border: "1px solid rgba(0,0,0,0.15)", flexShrink: 0,
+                }} />
+                Current color
+              </div>
+            )}
+            {FREEHAND_COLORS.map(c => (
+              <button
+                key={c.value}
+                onClick={() => { onDrawColorChange(c.value); if (tool !== "freehand") onToolChange("freehand"); }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 9,
+                  width: "100%", padding: "5px 8px", marginBottom: 2,
+                  background: drawColor === c.value ? "rgba(13,98,242,0.12)" : "transparent",
+                  border: "none", borderRadius: 4,
+                  color: drawColor === c.value ? "#0D62F2" : "#222",
+                  cursor: "pointer", fontSize: 12, textAlign: "left",
+                }}
+              >
+                <span style={{
+                  width: 14, height: 14, borderRadius: "50%", background: c.value,
+                  border: c.value === "#000000" ? "1px solid rgba(0,0,0,0.25)" : "1px solid rgba(0,0,0,0.08)",
+                  flexShrink: 0,
+                }} />
+                {c.label}
+              </button>
+            ))}
+            <div style={{ height: 10 }} />
+            <div className="popover-label">Thickness</div>
+            <select
+              value={drawThickness}
+              onChange={e => { onDrawThicknessChange(parseInt(e.target.value, 10)); if (tool !== "freehand") onToolChange("freehand"); }}
+              style={{
+                width: "100%", padding: "6px 8px", fontSize: 12,
+                border: "1px solid rgba(0,0,0,0.15)", borderRadius: 5,
+                background: "#fff", color: "#222", cursor: "pointer",
+              }}
+            >
+              {!FREEHAND_THICKNESSES.some(t => t.value === drawThickness) && (
+                <option value={drawThickness}>{drawThickness}px</option>
+              )}
+              {FREEHAND_THICKNESSES.map(t => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* ── 5. Eraser icon ──────────────────────────────────── */}
