@@ -1114,7 +1114,7 @@ export default function PDFPage({
       } else if (ann.type === "strike") {
         ctx.save();
         ctx.strokeStyle = ann.color;
-        ctx.lineWidth = Math.max(0.75, canvas.height * 0.001);
+        ctx.lineWidth = Math.max(0.75, canvas.height * 0.0011);
         ctx.lineCap = "round";
         for (const r of ann.rects) {
           const y = (r.y + r.height * 0.55) * canvas.height;
