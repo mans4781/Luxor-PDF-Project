@@ -1117,7 +1117,6 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
         onEraseAll={() => { if (requireAuth("Erase All")) clearHighlights(); }}
         onReadAloud={handleReadAloud}
         onOpenFile={handleOpenFile}
-        onDownload={handleDownload}
         onPrint={handlePrint}
         onOpenWatermark={() => { if (requireAuth("Watermark")) setWatermarkOpen(true); }}
         onOpenPageNo={() => { if (requireAuth("Page Numbers")) setPageNoOpen(true); }}

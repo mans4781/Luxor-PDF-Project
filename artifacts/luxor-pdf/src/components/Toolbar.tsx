@@ -175,7 +175,6 @@ interface ToolbarProps {
   onEraseAll: () => void;
   onReadAloud: () => void;
   onOpenFile: () => void;
-  onDownload: () => void;
   onPrint: () => void;
   onOpenWatermark: () => void;
   onOpenPageNo: () => void;
@@ -326,7 +325,7 @@ export default function Toolbar({
   onToggleContents, onToggleSearch, onToggleSplit,
   onToolChange,
   onHighlightColorChange, onTextColorChange, onTextSizeChange, onTextFontChange, onDrawColorChange, onDrawThicknessChange, onShapeFillChange,
-  onEraseAll, onReadAloud, onOpenFile, onDownload, onPrint,
+  onEraseAll, onReadAloud, onOpenFile, onPrint,
   onOpenWatermark, onOpenPageNo, onAddImage, onOpenCompress, onScreenshot,
   onClearWatermark, onClearPageNo,
   watermarkActive, pageNoActive,
@@ -993,13 +992,6 @@ export default function Toolbar({
           <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
         </svg>
       </button>
-      <button className="toolbar-btn" onClick={onDownload} title="Download">
-        <span className="toolbar-tip">Download</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-      </button>
-
       <div style={{ marginLeft: 8, display: "flex", alignItems: "center" }}>
         <AuthMenu
           iconOnly
