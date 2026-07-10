@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback, useEffect, type ReactNode } from "react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
+import { useAuthGate } from "@/components/AuthGate";
 import { ToolType } from "@/lib/annotationTypes";
 import type { PanelKey } from "@/pages/Viewer";
 import {
@@ -334,6 +335,7 @@ export default function Toolbar({
   onFitWidth, onFitPage, isFullscreen, onToggleFullscreen,
   activePanel, onOpenPanel, onOpenSettings, showOCR, showAI,
 }: ToolbarProps) {
+  const { beginSignIn, beginSignUp } = useAuthGate();
   const [popover, setPopover] = useState<PopoverType>(null);
   // Which Edit-menu feature modal is currently open (null = none).
   // Each value matches one of the 6 Edit menu items. The actual
@@ -999,7 +1001,12 @@ export default function Toolbar({
       </button>
 
       <div style={{ marginLeft: 8, display: "flex", alignItems: "center" }}>
-        <AuthMenu iconOnly variant={theme === "dark" || theme === "night" ? "dark" : "light"} />
+        <AuthMenu
+          iconOnly
+          variant={theme === "dark" || theme === "night" ? "dark" : "light"}
+          onSignIn={beginSignIn}
+          onSignUp={beginSignUp}
+        />
       </div>
     </div>
   );

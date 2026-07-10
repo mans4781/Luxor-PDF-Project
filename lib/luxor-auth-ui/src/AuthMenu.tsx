@@ -26,6 +26,14 @@ export interface AuthMenuProps {
    * (avatar with initials) is unchanged.
    */
   iconOnly?: boolean;
+  /**
+   * Optional override for the Sign-in action. When provided, it is called
+   * instead of navigating to `signInUrl` — used by the desktop shell to run
+   * the browser-handoff flow instead of in-place navigation.
+   */
+  onSignIn?: () => void;
+  /** Optional override for the Create-account action (see `onSignIn`). */
+  onSignUp?: () => void;
 }
 
 function buildAuthUrl(base: string, redirectBack: boolean): string {
@@ -40,15 +48,27 @@ export function AuthMenu({
   redirectBackOnAuth = true,
   variant = "light",
   iconOnly = false,
+  onSignIn,
+  onSignUp,
 }: AuthMenuProps) {
   const isDark = variant === "dark";
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const goSignIn = () => {
+    setMenuOpen(false);
+    if (onSignIn) {
+      onSignIn();
+      return;
+    }
     window.location.href = buildAuthUrl(signInUrl, redirectBackOnAuth);
   };
   const goSignUp = () => {
+    setMenuOpen(false);
+    if (onSignUp) {
+      onSignUp();
+      return;
+    }
     window.location.href = buildAuthUrl(signUpUrl, redirectBackOnAuth);
   };
 

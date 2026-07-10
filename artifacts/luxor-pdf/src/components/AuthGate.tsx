@@ -30,6 +30,12 @@ interface AuthGateContextValue {
   /** Returns true if the user may use the feature; otherwise shows the
    *  sign-in prompt (labelled with `label`) and returns false. */
   requireAuth: (label: string) => boolean;
+  /** Explicitly start the sign-in flow (e.g. from the profile menu).
+   *  Web: navigates to the suite sign-in page. Desktop: opens the system
+   *  browser and waits for the handoff to complete. */
+  beginSignIn: () => void;
+  /** Same as `beginSignIn` but for account creation. */
+  beginSignUp: () => void;
   /** Whether Clerk has finished loading the auth state. */
   isLoaded: boolean;
   /** Whether a user is currently signed in (false until loaded). */
@@ -66,6 +72,9 @@ function desktopAuthUrl(kind: "sign-in" | "sign-up", state: string): string {
   const back = `${origin}${SUITE_AUTH_HOST_BASE}/desktop-link?state=${state}`;
   return `${origin}${SUITE_AUTH_HOST_BASE}/${kind}?redirect_url=${encodeURIComponent(back)}`;
 }
+
+/** Sentinel prompt label for explicit sign-in (no specific gated feature). */
+const GENERIC_PROMPT_LABEL = "\u0000generic";
 
 const DESKTOP_POLL_INTERVAL_MS = 2500;
 const DESKTOP_POLL_TIMEOUT_MS = 10 * 60 * 1000;
@@ -155,6 +164,33 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
   const authRef = useRef({ isLoaded, isSignedIn });
   authRef.current = { isLoaded, isSignedIn };
 
+  /**
+   * Explicit sign-in/up requested from the UI (profile menu). Unlike
+   * `requireAuth` this is never dev-bypassed — the user asked to sign in.
+   */
+  const beginAuth = useCallback(
+    (kind: "sign-in" | "sign-up") => {
+      const offlineNow = typeof navigator !== "undefined" && !navigator.onLine;
+      if (isDesktopShell()) {
+        // Desktop: show the dialog (it hosts the waiting/failed states) and
+        // hand off to the system browser.
+        setPromptLabel(GENERIC_PROMPT_LABEL);
+        if (!offlineNow) startDesktopAuth(kind);
+        return;
+      }
+      if (offlineNow) {
+        // The dialog can explain instead of navigating to a page that fails.
+        setPromptLabel(GENERIC_PROMPT_LABEL);
+        return;
+      }
+      window.location.assign(suiteAuthUrl(kind));
+    },
+    [startDesktopAuth],
+  );
+
+  const beginSignIn = useCallback(() => beginAuth("sign-in"), [beginAuth]);
+  const beginSignUp = useCallback(() => beginAuth("sign-up"), [beginAuth]);
+
   const requireAuth = useCallback((label: string): boolean => {
     if (DEV_BYPASS) return true;
     const { isLoaded: loaded, isSignedIn: signedIn } = authRef.current;
@@ -179,10 +215,12 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       requireAuth,
+      beginSignIn,
+      beginSignUp,
       isLoaded: DEV_BYPASS || isLoaded,
       isSignedIn: DEV_BYPASS || isSignedIn === true,
     }),
-    [requireAuth, isLoaded, isSignedIn],
+    [requireAuth, beginSignIn, beginSignUp, isLoaded, isSignedIn],
   );
 
   const offline = typeof navigator !== "undefined" && !navigator.onLine;
@@ -248,7 +286,9 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
               </svg>
             </div>
             <h2 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 700 }}>
-              Sign in to use {promptLabel}
+              {promptLabel === GENERIC_PROMPT_LABEL
+                ? "Sign in to Luxor PDF"
+                : `Sign in to use ${promptLabel}`}
             </h2>
             <p style={{ margin: "0 0 18px", fontSize: 13.5, lineHeight: 1.55, color: "#475569" }}>
               {offline

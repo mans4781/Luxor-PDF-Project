@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback } from "react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
+import { useAuthGate } from "@/components/AuthGate";
 import { loadRecents, clearRecents, formatFileSize, type RecentFileEntry } from "@/lib/recentFiles";
 import { loadSettings } from "@/lib/settings";
 
@@ -30,6 +31,7 @@ const FEATURES = [
 ];
 
 export default function Home({ onFileLoad }: HomeProps) {
+  const { beginSignIn, beginSignUp } = useAuthGate();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [recents, setRecents] = useState<RecentFileEntry[]>(() =>
@@ -73,7 +75,7 @@ export default function Home({ onFileLoad }: HomeProps) {
           gap: 8,
         }}
       >
-        <AuthMenu iconOnly variant="dark" />
+        <AuthMenu iconOnly variant="dark" onSignIn={beginSignIn} onSignUp={beginSignUp} />
       </div>
       <div className="home-logo-area">
         <div className="home-logo">L</div>
