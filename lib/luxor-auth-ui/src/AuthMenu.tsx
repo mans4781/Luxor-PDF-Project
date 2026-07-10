@@ -167,7 +167,7 @@ export function AuthMenu({
               >
                 <div
                   className={
-                    "px-3 py-1.5 text-[11px] " +
+                    "px-3 py-1.5 text-[10px] " +
                     (isDark ? "text-slate-400" : "text-slate-500")
                   }
                 >
@@ -179,13 +179,13 @@ export function AuthMenu({
                   onClick={goSignIn}
                   data-testid="button-sign-in"
                   className={
-                    "flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium transition-colors " +
+                    "flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs font-medium transition-colors " +
                     (isDark
                       ? "text-slate-200 hover:bg-white/10 hover:text-white"
                       : "text-slate-700 hover:bg-slate-50 hover:text-[#1e3a8a]")
                   }
                 >
-                  <LogIn className="h-4 w-4" />
+                  <LogIn className="h-3.5 w-3.5" />
                   Sign in
                 </button>
                 <button
@@ -194,13 +194,13 @@ export function AuthMenu({
                   onClick={goSignUp}
                   data-testid="button-sign-up"
                   className={
-                    "flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium transition-colors " +
+                    "flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs font-medium transition-colors " +
                     (isDark
                       ? "text-slate-200 hover:bg-white/10 hover:text-white"
                       : "text-slate-700 hover:bg-slate-50 hover:text-[#1e3a8a]")
                   }
                 >
-                  <UserRoundPlus className="h-4 w-4" />
+                  <UserRoundPlus className="h-3.5 w-3.5" />
                   Create account
                 </button>
                 {menuLinks && menuLinks.length > 0 && (
@@ -218,13 +218,13 @@ export function AuthMenu({
                         data-testid={link.testId}
                         onClick={() => setMenuOpen(false)}
                         className={
-                          "flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium transition-colors " +
+                          "flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs font-medium transition-colors " +
                           (isDark
                             ? "text-slate-200 hover:bg-white/10 hover:text-white"
                             : "text-slate-700 hover:bg-slate-50 hover:text-[#1e3a8a]")
                         }
                       >
-                        <span className="flex h-4 w-4 items-center justify-center [&>svg]:h-4 [&>svg]:w-4">
+                        <span className="flex h-3.5 w-3.5 items-center justify-center [&>svg]:h-3.5 [&>svg]:w-3.5">
                           {link.icon}
                         </span>
                         {link.label}
