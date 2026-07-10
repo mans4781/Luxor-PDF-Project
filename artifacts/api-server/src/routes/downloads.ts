@@ -75,11 +75,15 @@ router.get(
 );
 
 /**
- * GET /downloads/luxor-pdf-reader-latest — streams the newest full Reader
- * installer from GitHub Releases through this server, so the user's browser
- * never leaves the site. The asset name changes with each version
- * (Luxor-PDF-Installer-<version>.exe), so the website links here and this
- * route resolves the current name from latest.yml.
+ * GET /downloads/luxor-pdf-reader-latest — redirects to the newest full
+ * Reader installer on GitHub Releases. The asset name changes with each
+ * version (Luxor-PDF-Installer-<version>.exe), so the website links here and
+ * this route resolves the current name from latest.yml, then 302s the
+ * browser straight to the release asset.
+ *
+ * Do NOT stream the installer through this server: the deployed edge caps
+ * response sizes (~32 MB), so proxying the ~100 MB installer returns a 500
+ * in production even though the server logs a 200.
  */
 const READER_RELEASES_LATEST =
   "https://github.com/mans4781/Luxor-PDF-Project/releases/latest/download";
@@ -90,22 +94,12 @@ const READER_CACHE_TTL_MS = 5 * 60 * 1000;
 router.get(
   "/downloads/luxor-pdf-reader-latest",
   async (req: Request, res: Response): Promise<void> => {
-    // Abort upstream work if the client disconnects mid-download, and cap
-    // how long we'll wait on GitHub.
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15 * 60 * 1000);
-    let clientGone = false;
-    res.on("close", () => {
-      clientGone = true;
-      controller.abort();
-    });
-
     try {
-      let name = readerInstallerCache;
-      if (!name || Date.now() - name.fetchedAt > READER_CACHE_TTL_MS) {
+      let cached = readerInstallerCache;
+      if (!cached || Date.now() - cached.fetchedAt > READER_CACHE_TTL_MS) {
         const ymlRes = await fetch(`${READER_RELEASES_LATEST}/latest.yml`, {
           redirect: "follow",
-          signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15_000)]),
+          signal: AbortSignal.timeout(15_000),
         });
         if (!ymlRes.ok) {
           res.status(502).json({ error: "Release lookup failed" });
@@ -117,68 +111,17 @@ router.get(
           res.status(502).json({ error: "Could not resolve installer name" });
           return;
         }
-        name = { name: m[1].trim(), fetchedAt: Date.now() };
-        readerInstallerCache = name;
+        cached = { name: m[1].trim(), fetchedAt: Date.now() };
+        readerInstallerCache = cached;
       }
-      const assetRes = await fetch(
-        `${READER_RELEASES_LATEST}/${encodeURIComponent(name.name)}`,
-        { redirect: "follow", signal: controller.signal },
-      );
-      if (!assetRes.ok || !assetRes.body) {
-        readerInstallerCache = null;
-        res.status(502).json({ error: "Installer fetch failed" });
-        return;
-      }
-
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${name.name.replace(/["\\]/g, "")}"`,
-      );
-      res.setHeader("Content-Type", "application/octet-stream");
-      const len = assetRes.headers.get("content-length");
-      if (len) res.setHeader("Content-Length", len);
       res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
-
-      const reader = assetRes.body.getReader();
-      try {
-        for (;;) {
-          if (clientGone || res.writableEnded || res.destroyed) break;
-          const { value, done } = await reader.read();
-          if (done) break;
-          if (!res.write(Buffer.from(value))) {
-            // Wait for drain, but bail out if the socket closes first.
-            const canContinue = await new Promise<boolean>((resolve) => {
-              const onDrain = (): void => {
-                res.off("close", onClose);
-                resolve(true);
-              };
-              const onClose = (): void => {
-                res.off("drain", onDrain);
-                resolve(false);
-              };
-              res.once("drain", onDrain);
-              res.once("close", onClose);
-            });
-            if (!canContinue) break;
-          }
-        }
-      } finally {
-        void reader.cancel().catch(() => {});
-      }
-      if (!res.writableEnded) res.end();
+      res.redirect(
+        302,
+        `${READER_RELEASES_LATEST}/${encodeURIComponent(cached.name)}`,
+      );
     } catch (err) {
-      if (clientGone) {
-        req.log.info("Reader installer download aborted by client");
-        return;
-      }
-      req.log.error({ err }, "Reader installer download failed");
-      if (!res.headersSent) {
-        res.status(502).json({ error: "Release lookup failed" });
-      } else if (!res.writableEnded) {
-        res.end();
-      }
-    } finally {
-      clearTimeout(timeout);
+      req.log.error({ err }, "Reader installer redirect failed");
+      res.status(502).json({ error: "Release lookup failed" });
     }
   },
 );
