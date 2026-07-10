@@ -45,6 +45,7 @@ const TOOL_LABELS: Record<Exclude<ToolType, "hand">, string> = {
   oval: "Shapes",
   rectangle: "Shapes",
   redact: "Redaction",
+  whiteout: "Whiteout",
   image: "Add Image",
   edittext: "Edit Text",
 };

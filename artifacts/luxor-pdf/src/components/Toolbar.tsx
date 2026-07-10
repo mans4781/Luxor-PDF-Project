@@ -222,7 +222,7 @@ type PopoverType = "highlight" | "text" | "tools" | "edit" | "draw" | "file" | "
  * one needs pdf-lib integration and its own dedicated modal/tool.
  * Clicking any item opens a "Coming soon" stub modal.
  */
-type EditFeatureKey = "redact" | "image" | "watermark" | "pageno" | "edittext" | "compress" | "screenshot";
+type EditFeatureKey = "redact" | "whiteout" | "image" | "watermark" | "pageno" | "edittext" | "compress" | "screenshot";
 
 interface EditFeatureDef {
   key: EditFeatureKey;
@@ -239,6 +239,16 @@ const EDIT_FEATURES: EditFeatureDef[] = [
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="6" width="18" height="12" rx="1" fill="currentColor" stroke="none"/>
+      </svg>
+    ),
+  },
+  {
+    key: "whiteout",
+    label: "Whiteout",
+    desc: "Erase any text or area by covering it with clean paper-white. Burned into the PDF on save.",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="6" width="18" height="12" rx="1" strokeDasharray="3 2.5"/>
       </svg>
     ),
   },
@@ -495,11 +505,12 @@ export default function Toolbar({
             style={{ minWidth: 230, left: 0, transform: "none", padding: "6px 6px" }}
           >
             {EDIT_FEATURES.map((f) => {
-              const isLive = f.key === "watermark" || f.key === "pageno" || f.key === "redact" || f.key === "image" || f.key === "edittext" || f.key === "compress" || f.key === "screenshot";
+              const isLive = f.key === "watermark" || f.key === "pageno" || f.key === "redact" || f.key === "whiteout" || f.key === "image" || f.key === "edittext" || f.key === "compress" || f.key === "screenshot";
               const isActive =
                 (f.key === "watermark" && watermarkActive) ||
                 (f.key === "pageno" && pageNoActive) ||
                 (f.key === "redact" && tool === "redact") ||
+                (f.key === "whiteout" && tool === "whiteout") ||
                 (f.key === "edittext" && tool === "edittext");
               return (
               <button
@@ -511,6 +522,7 @@ export default function Toolbar({
                   if (f.key === "watermark") (watermarkActive ? onClearWatermark() : onOpenWatermark());
                   else if (f.key === "pageno") (pageNoActive ? onClearPageNo() : onOpenPageNo());
                   else if (f.key === "redact") onToolChange(tool === "redact" ? "hand" : "redact");
+                  else if (f.key === "whiteout") onToolChange(tool === "whiteout" ? "hand" : "whiteout");
                   else if (f.key === "image") onAddImage();
                   else if (f.key === "edittext") onToolChange(tool === "edittext" ? "hand" : "edittext");
                   else if (f.key === "compress") onOpenCompress();

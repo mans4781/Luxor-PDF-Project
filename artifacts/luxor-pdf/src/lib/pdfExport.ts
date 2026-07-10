@@ -245,7 +245,7 @@ function drawRedactionsOnPage(
       y,
       width,
       height,
-      color: rgb(0, 0, 0),
+      color: r.fill === "white" ? rgb(1, 1, 1) : rgb(0, 0, 0),
       opacity: 1,
     });
   }

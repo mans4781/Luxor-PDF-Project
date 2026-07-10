@@ -21,7 +21,7 @@ import {
   fontFamilyCss,
 } from "@/lib/annotationColors";
 
-const SHAPE_TOOLS: ToolType[] = ["freehand", "line", "arrow", "oval", "rectangle", "redact"];
+const SHAPE_TOOLS: ToolType[] = ["freehand", "line", "arrow", "oval", "rectangle", "redact", "whiteout"];
 const isShapeTool = (t: ToolType) => SHAPE_TOOLS.includes(t);
 
 /** Eraser cursor radius in CSS pixels — matches the visual cursor circle. */
@@ -1132,9 +1132,19 @@ export default function PDFPage({
         ctx.restore();
       } else if (ann.type === "redact") {
         ctx.save();
-        ctx.fillStyle = "#000000";
+        ctx.fillStyle = ann.fill === "white" ? "#FFFFFF" : "#000000";
         ctx.globalAlpha = 1;
-        ctx.fillRect(ann.x * canvas.width, ann.y * canvas.height, ann.w * canvas.width, ann.h * canvas.height);
+        const rx = ann.x * canvas.width, ry = ann.y * canvas.height;
+        const rw = ann.w * canvas.width, rh = ann.h * canvas.height;
+        ctx.fillRect(rx, ry, rw, rh);
+        if (ann.fill === "white") {
+          // Subtle dashed outline so the whiteout patch stays findable
+          // on screen (the outline is display-only, never exported).
+          ctx.strokeStyle = "rgba(0,0,0,0.18)";
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 3]);
+          ctx.strokeRect(rx, ry, rw, rh);
+        }
         ctx.restore();
       } else if (ann.type !== "text") {
         drawShapeOnCtx(ctx, ann as ShapeAnnotation);
@@ -1478,6 +1488,20 @@ export default function PDFPage({
         ctx.restore();
         break;
       }
+      case "whiteout": {
+        const w = pos.x - startX;
+        const h = pos.y - startY;
+        ctx.save();
+        ctx.fillStyle = "#FFFFFF";
+        ctx.globalAlpha = 1;
+        ctx.fillRect(startX, startY, w, h);
+        ctx.strokeStyle = "rgba(0,0,0,0.25)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 3]);
+        ctx.strokeRect(startX, startY, w, h);
+        ctx.restore();
+        break;
+      }
     }
     ctx.restore();
   }, [tool, drawColor, annotations, pageSize, shapeFill, shapeFillOpacity]);
@@ -1541,7 +1565,8 @@ export default function PDFPage({
         }
         break;
       }
-      case "redact": {
+      case "redact":
+      case "whiteout": {
         // Normalize the drag rect into a top-left + positive size in CANVAS
         // pixels, then convert to 0..1 page-relative coords for storage.
         let x = startX, y = startY, w = pos.x - startX, h = pos.y - startY;
@@ -1560,6 +1585,7 @@ export default function PDFPage({
             // native page rotation and the user-applied viewer rotation so
             // the export pipeline can unrotate back into PDF user-space.
             rotation: ((pageNativeRotationRef.current + rotation) % 360 + 360) % 360,
+            fill: tool === "whiteout" ? "white" : "black",
             createdAt: new Date().toISOString(),
           };
         }

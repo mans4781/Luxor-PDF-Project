@@ -1,4 +1,4 @@
-export type ToolType = "hand" | "highlight" | "eraser" | "text" | "freehand" | "line" | "arrow" | "oval" | "rectangle" | "redact" | "image" | "edittext";
+export type ToolType = "hand" | "highlight" | "eraser" | "text" | "freehand" | "line" | "arrow" | "oval" | "rectangle" | "redact" | "whiteout" | "image" | "edittext";
 
 export interface Point { x: number; y: number; }
 
@@ -143,8 +143,9 @@ export type ShapeAnnotation = FreehandAnnotation | LineAnnotation | ArrowAnnotat
  * Permanent redaction box. Coordinates are NORMALIZED 0..1 against the
  * rendered page (same scheme as highlights) so they survive zoom and
  * rotation, and so the export pipeline can convert them to PDF user-space
- * units regardless of viewer DPR. Always rendered as fully opaque black —
- * once burned in by pdf-lib the underlying content is permanently covered.
+ * units regardless of viewer DPR. Rendered fully opaque — black for classic
+ * redaction, white for the Whiteout content eraser (see `fill`) — and once
+ * burned in by pdf-lib the underlying content is permanently covered.
  */
 export interface RedactionAnnotation {
   id: string;
@@ -154,6 +155,12 @@ export interface RedactionAnnotation {
   y: number;
   w: number;
   h: number;
+  /**
+   * Box color burned into the PDF. "black" (default) is classic redaction;
+   * "white" is the Whiteout content eraser — covers original page content
+   * with clean paper-white so it reads as erased rather than censored.
+   */
+  fill?: "black" | "white";
   /**
    * Total rotation (page.rotate + viewer rotation, normalized 0/90/180/270)
    * applied to the rendered viewport when the box was drawn. The export
