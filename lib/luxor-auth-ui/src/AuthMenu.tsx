@@ -151,13 +151,9 @@ export function AuthMenu({
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               title="Account"
-              className={
-                isDark
-                  ? "flex h-8 w-8 items-center justify-center rounded-full border border-white/25 text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-                  : "flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-slate-600 hover:text-[#1e3a8a] hover:bg-slate-100 transition-colors"
-              }
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#1e3a8a] via-[#7c3aed] to-[#DC2626] text-white shadow-md shadow-[#7c3aed]/25 ring-2 ring-white/60 transition-all hover:shadow-lg hover:shadow-[#DC2626]/30 hover:scale-105"
             >
-              <UserRound className="h-[18px] w-[18px]" />
+              <UserRound className="h-[18px] w-[18px]" strokeWidth={2.4} />
             </button>
             {menuOpen && (
               <div
