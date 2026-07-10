@@ -230,7 +230,7 @@ export default function PdfReaderPage() {
       {/* CTA */}
       <section className="py-16 bg-gradient-to-br from-sky-900 to-blue-900 text-white text-center">
         <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold mb-4">Start reading smarter today</h2>
+          <h2 className="text-3xl font-bold mb-4 text-white">Start reading smarter today</h2>
           <p className="text-sky-200 mb-8 max-w-md mx-auto">Free for personal use. Pro features unlock with a single affordable licence.</p>
           <a href="#download" className="inline-block px-8 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-bold transition-colors shadow-xl shadow-sky-500/30">
             Download Luxor PDF Reader
