@@ -1,4 +1,5 @@
 import { Router, type Request, type Response } from "express";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { db, pdfsTable, productKeysTable, siteStats } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import {
@@ -23,6 +24,45 @@ const router = Router();
 
 const ADMIN_TOKEN = process.env["ADMIN_TOKEN"];
 const ADMIN_PASSPHRASE = process.env["ADMIN_PASSPHRASE"];
+const ADMIN_EMAIL = (process.env["ADMIN_EMAIL"] ?? "").trim().toLowerCase();
+const ADMIN_PASSWORD = process.env["ADMIN_PASSWORD"];
+
+/** Constant-time string comparison (hash first to normalize lengths). */
+function safeEqual(a: string, b: string): boolean {
+  const ha = createHash("sha256").update(a).digest();
+  const hb = createHash("sha256").update(b).digest();
+  return timingSafeEqual(ha, hb);
+}
+
+// ── Simple in-memory login throttle (per IP) ─────────────────────────────────
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_MAX_ATTEMPTS = 10;
+const loginAttempts = new Map<string, { count: number; resetAt: number }>();
+
+function throttleLogin(req: Request, res: Response): boolean {
+  const ip = req.ip ?? "unknown";
+  const now = Date.now();
+  const entry = loginAttempts.get(ip);
+  if (!entry || now > entry.resetAt) {
+    loginAttempts.set(ip, { count: 1, resetAt: now + LOGIN_WINDOW_MS });
+    return true;
+  }
+  entry.count += 1;
+  if (entry.count > LOGIN_MAX_ATTEMPTS) {
+    res.status(429).json({ error: "Too many attempts. Try again later." });
+    return false;
+  }
+  return true;
+}
+
+function credentialsValid(email: unknown, password: unknown): boolean {
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) return false;
+  if (typeof email !== "string" || typeof password !== "string") return false;
+  return (
+    safeEqual(email.trim().toLowerCase(), ADMIN_EMAIL) &&
+    safeEqual(password, ADMIN_PASSWORD)
+  );
+}
 
 function checkAuth(req: Request, res: Response): boolean {
   if (!ADMIN_TOKEN) {
@@ -58,13 +98,43 @@ function generateMonthlyData() {
   return months;
 }
 
-router.post("/admin/login", (req, res): void => {
-  if (!ADMIN_TOKEN || !ADMIN_PASSPHRASE) {
+// Step 1 of admin login: email + password. On success the client shows the
+// "Welcome admin" screen asking for the developer passphrase.
+router.post("/admin/login-credentials", (req, res): void => {
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
     res.status(503).json({ error: "Admin access not configured" });
     return;
   }
-  const { passphrase } = req.body as { passphrase?: string };
-  if (!passphrase || passphrase !== ADMIN_PASSPHRASE) {
+  if (!throttleLogin(req, res)) return;
+  const { email, password } = req.body as {
+    email?: string;
+    password?: string;
+  };
+  if (!credentialsValid(email, password)) {
+    res.status(401).json({ error: "Invalid email or password" });
+    return;
+  }
+  res.json({ ok: true });
+});
+
+// Step 2 of admin login: email + password + developer passphrase → token.
+// All three factors are re-verified server-side so step 1 cannot be skipped.
+router.post("/admin/login", (req, res): void => {
+  if (!ADMIN_TOKEN || !ADMIN_PASSPHRASE || !ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    res.status(503).json({ error: "Admin access not configured" });
+    return;
+  }
+  if (!throttleLogin(req, res)) return;
+  const { email, password, passphrase } = req.body as {
+    email?: string;
+    password?: string;
+    passphrase?: string;
+  };
+  if (!credentialsValid(email, password)) {
+    res.status(401).json({ error: "Invalid email or password" });
+    return;
+  }
+  if (typeof passphrase !== "string" || !passphrase || !safeEqual(passphrase, ADMIN_PASSPHRASE)) {
     res.status(401).json({ error: "Invalid passphrase" });
     return;
   }

@@ -799,29 +799,69 @@ function SettingsSection({ dark, onToggleDark, onLogout, t }: { dark: boolean; o
   );
 }
 
-// ── Login Screen ─────────────────────────────────────────────────────────────
+// ── Login Screen (two-step: email+password, then developer passphrase) ──────
+const inputStyle: React.CSSProperties = {
+  width: "100%", padding: "10px 14px", background: "rgba(255,255,255,0.07)",
+  border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#fff",
+  fontSize: 15, outline: "none", marginBottom: 12, boxSizing: "border-box",
+};
+
 function LoginScreen({ onUnlock }: { onUnlock: (token: string) => void }) {
+  const [step, setStep] = useState<"credentials" | "passphrase">("credentials");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [shake, setShake] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const submit = async () => {
+  const fail = (msg: string) => {
+    setError(msg);
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
+  };
+
+  const submitCredentials = async () => {
+    if (!email || !password) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/login-credentials", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (res.ok) {
+        setError("");
+        setStep("passphrase");
+      } else if (res.status === 429) {
+        fail("Too many attempts. Try again later.");
+      } else {
+        fail("Incorrect email or password");
+        setPassword("");
+      }
+    } catch {
+      setError("Unable to reach server. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitPassphrase = async () => {
     if (!pin) return;
     setLoading(true);
     try {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ passphrase: pin }),
+        body: JSON.stringify({ email, password, passphrase: pin }),
       });
       if (res.ok) {
         const data = await res.json() as { token: string };
         onUnlock(data.token);
+      } else if (res.status === 429) {
+        fail("Too many attempts. Try again later.");
       } else {
-        setError("Incorrect passphrase");
-        setShake(true);
-        setTimeout(() => setShake(false), 500);
+        fail("Incorrect passphrase");
         setPin("");
       }
     } catch {
@@ -841,10 +881,24 @@ function LoginScreen({ onUnlock }: { onUnlock: (token: string) => void }) {
         </div>
       </div>
       <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "36px 40px", width: 340, animation: shake ? "shake 0.4s ease" : undefined }}>
-        <div style={{ color: "#ccc", fontSize: 14, marginBottom: 16, textAlign: "center" }}>Enter admin passphrase to continue</div>
-        <input type="password" value={pin} onChange={e => { setPin(e.target.value); setError(""); }} onKeyDown={e => { if (e.key === "Enter") { void submit(); } }} placeholder="Passphrase" autoFocus style={{ width: "100%", padding: "10px 14px", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#fff", fontSize: 15, outline: "none", marginBottom: 12, boxSizing: "border-box" }} />
-        {error && <div style={{ color: "#ef4444", fontSize: 12, marginBottom: 10 }}>{error}</div>}
-        <button onClick={() => { void submit(); }} disabled={loading} style={{ width: "100%", padding: "11px", background: "#4f8ef7", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>{loading ? "Verifying…" : "Unlock Dashboard"}</button>
+        {step === "credentials" ? (
+          <>
+            <div style={{ color: "#ccc", fontSize: 14, marginBottom: 16, textAlign: "center" }}>Sign in with your admin account</div>
+            <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(""); }} placeholder="Email" autoFocus autoComplete="username" style={inputStyle} />
+            <input type="password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} onKeyDown={e => { if (e.key === "Enter") { void submitCredentials(); } }} placeholder="Password" autoComplete="current-password" style={inputStyle} />
+            {error && <div style={{ color: "#ef4444", fontSize: 12, marginBottom: 10 }}>{error}</div>}
+            <button onClick={() => { void submitCredentials(); }} disabled={loading} style={{ width: "100%", padding: "11px", background: "#4f8ef7", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>{loading ? "Checking…" : "Continue"}</button>
+          </>
+        ) : (
+          <>
+            <div style={{ color: "#fff", fontSize: 17, fontWeight: 700, marginBottom: 6, textAlign: "center" }}>Welcome, Admin</div>
+            <div style={{ color: "#ccc", fontSize: 13, marginBottom: 16, textAlign: "center" }}>Enter your developer passphrase to continue</div>
+            <input type="password" value={pin} onChange={e => { setPin(e.target.value); setError(""); }} onKeyDown={e => { if (e.key === "Enter") { void submitPassphrase(); } }} placeholder="Developer passphrase" autoFocus style={inputStyle} />
+            {error && <div style={{ color: "#ef4444", fontSize: 12, marginBottom: 10 }}>{error}</div>}
+            <button onClick={() => { void submitPassphrase(); }} disabled={loading} style={{ width: "100%", padding: "11px", background: "#4f8ef7", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>{loading ? "Verifying…" : "Unlock Dashboard"}</button>
+            <button onClick={() => { setStep("credentials"); setPin(""); setError(""); }} disabled={loading} style={{ width: "100%", padding: "9px", background: "transparent", border: "none", color: "#888", fontSize: 12, cursor: "pointer", marginTop: 8 }}>← Back to sign in</button>
+          </>
+        )}
       </div>
       <style>{`@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }`}</style>
     </div>

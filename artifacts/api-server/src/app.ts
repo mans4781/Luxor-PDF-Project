@@ -8,6 +8,7 @@ import {
   clerkProxyMiddleware,
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
+import { blockReservedAdminEmail } from "./middlewares/reservedAdminEmail";
 import router from "./routes";
 import { billingWebhookRouter, razorpayWebhookRouter } from "./routes/billing";
 import { logger } from "./lib/logger";
@@ -61,6 +62,9 @@ app.use(
     ),
   })),
 );
+
+// The admin email must never work as a regular signed-in user.
+app.use("/api", blockReservedAdminEmail());
 
 app.use("/api", router);
 
