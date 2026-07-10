@@ -92,6 +92,22 @@ function ActivateKeyContent() {
     }
   }, [isLoaded, isSignedIn, setLocation]);
 
+  // After successful activation, return to the dashboard in 3 seconds.
+  const [secondsLeft, setSecondsLeft] = useState(3);
+  useEffect(() => {
+    if (!done) return;
+    setSecondsLeft(3);
+    const tick = setInterval(
+      () => setSecondsLeft((s) => Math.max(0, s - 1)),
+      1000,
+    );
+    const redirect = setTimeout(() => setLocation("/"), 3000);
+    return () => {
+      clearInterval(tick);
+      clearTimeout(redirect);
+    };
+  }, [done, setLocation]);
+
   const wellFormed = KEY_REGEX.test(keyInput);
 
   async function handleBlur() {
@@ -140,7 +156,7 @@ function ActivateKeyContent() {
               <CheckCircle2 className="w-9 h-9 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900">
-              You're all set!
+              Activation successful!
             </h1>
             <p className="text-sm text-slate-600 mt-2">
               Your <span className="font-semibold capitalize">{done.plan}</span>{" "}
@@ -162,6 +178,12 @@ function ActivateKeyContent() {
               <Sparkles className="w-4 h-4 mr-2" />
               Open Luxor PDF
             </Button>
+            <p
+              className="text-xs text-slate-400 mt-3"
+              data-testid="activate-redirect-countdown"
+            >
+              Returning to the dashboard in {secondsLeft}s…
+            </p>
           </CardContent>
         </Card>
       </div>
