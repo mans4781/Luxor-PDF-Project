@@ -8,6 +8,43 @@
 import * as zod from "zod";
 
 /**
+ * Takes the document text extracted client-side (via the reader's
+text layer pipeline) and returns a concise structured summary.
+Requires a signed-in user. Long documents are truncated
+server-side to a safe token budget before summarization.
+
+ * @summary Generate an AI summary of a PDF's extracted text
+ */
+export const summarizePdfBodyTextMax = 400000;
+
+export const summarizePdfBodyFileNameMax = 300;
+
+export const SummarizePdfBody = zod.object({
+  text: zod
+    .string()
+    .min(1)
+    .max(summarizePdfBodyTextMax)
+    .describe("Document text extracted client-side, in page order."),
+  fileName: zod
+    .string()
+    .max(summarizePdfBodyFileNameMax)
+    .optional()
+    .describe("Original file name, used for context in the summary."),
+  totalPages: zod
+    .number()
+    .min(1)
+    .optional()
+    .describe("Total number of pages in the document."),
+});
+
+export const SummarizePdfResponse = zod.object({
+  summary: zod.string().describe("Markdown-formatted summary of the document."),
+  truncated: zod
+    .boolean()
+    .describe("True when the input text was cut to fit the model's budget."),
+});
+
+/**
  * Returns server health status
  * @summary Health check
  */

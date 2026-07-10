@@ -9,6 +9,7 @@ import billingRouter from "./billing";
 import orgRouter from "./org";
 import downloadsRouter from "./downloads";
 import desktopAuthRouter from "./desktop-auth";
+import aiRouter from "./ai";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(billingRouter);
 router.use(orgRouter);
 router.use(downloadsRouter);
 router.use(desktopAuthRouter);
+router.use(aiRouter);
 
 export default router;

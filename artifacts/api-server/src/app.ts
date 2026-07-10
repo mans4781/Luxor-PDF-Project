@@ -48,7 +48,9 @@ app.use("/api/billing/webhook", billingWebhookRouter);
 // Mounted on a distinct path (not a sub-path of the Stripe webhook).
 app.use("/api/billing/razorpay/webhook", razorpayWebhookRouter);
 
-app.use(express.json());
+// 2mb limit: the AI summarize endpoint receives extracted document text
+// (capped at 400k chars in the API contract) as a JSON body.
+app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // Resolve the publishable key from the incoming request host so the same

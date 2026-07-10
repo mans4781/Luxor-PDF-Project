@@ -55,6 +55,8 @@ import type {
   RequestRevokeOtpBody,
   RevokeInviteBody,
   RevokeOtpRequestResult,
+  SummarizePdfBody,
+  SummarizePdfResult,
   TodayUsage,
   UploadPdfBody,
   UsageCheckBody,
@@ -74,6 +76,97 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * Takes the document text extracted client-side (via the reader's
+text layer pipeline) and returns a concise structured summary.
+Requires a signed-in user. Long documents are truncated
+server-side to a safe token budget before summarization.
+
+ * @summary Generate an AI summary of a PDF's extracted text
+ */
+export const getSummarizePdfUrl = () => {
+  return `/api/ai/summarize`;
+};
+
+export const summarizePdf = async (
+  summarizePdfBody: SummarizePdfBody,
+  options?: RequestInit,
+): Promise<SummarizePdfResult> => {
+  return customFetch<SummarizePdfResult>(getSummarizePdfUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(summarizePdfBody),
+  });
+};
+
+export const getSummarizePdfMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof summarizePdf>>,
+    TError,
+    { data: BodyType<SummarizePdfBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof summarizePdf>>,
+  TError,
+  { data: BodyType<SummarizePdfBody> },
+  TContext
+> => {
+  const mutationKey = ["summarizePdf"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof summarizePdf>>,
+    { data: BodyType<SummarizePdfBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return summarizePdf(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SummarizePdfMutationResult = NonNullable<
+  Awaited<ReturnType<typeof summarizePdf>>
+>;
+export type SummarizePdfMutationBody = BodyType<SummarizePdfBody>;
+export type SummarizePdfMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Generate an AI summary of a PDF's extracted text
+ */
+export const useSummarizePdf = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof summarizePdf>>,
+    TError,
+    { data: BodyType<SummarizePdfBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof summarizePdf>>,
+  TError,
+  { data: BodyType<SummarizePdfBody> },
+  TContext
+> => {
+  return useMutation(getSummarizePdfMutationOptions(options));
+};
 
 /**
  * Returns server health status

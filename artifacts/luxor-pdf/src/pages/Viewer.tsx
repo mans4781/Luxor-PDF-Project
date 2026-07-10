@@ -1282,8 +1282,9 @@ export default function Viewer({ file, onClose, onFileLoad }: ViewerProps) {
           onClose={() => setActivePanel(null)}
         />
       )}
-      {activePanel === "ai" && (
+      {activePanel === "ai" && pdfDoc && (
         <AIToolsPanel
+          pdfDoc={pdfDoc}
           fileName={file.name}
           totalPages={totalPages}
           onClose={() => setActivePanel(null)}

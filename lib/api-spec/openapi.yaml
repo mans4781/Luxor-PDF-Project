@@ -19,7 +19,56 @@ tags:
     description: Admin-only operations (X-Admin-Token header required)
   - name: billing
     description: Stripe checkout + payment-provider registry
+  - name: ai
+    description: AI-powered document tools (sign-in required)
 paths:
+  /ai/summarize:
+    post:
+      operationId: summarizePdf
+      tags: [ai]
+      summary: Generate an AI summary of a PDF's extracted text
+      description: |
+        Takes the document text extracted client-side (via the reader's
+        text layer pipeline) and returns a concise structured summary.
+        Requires a signed-in user. Long documents are truncated
+        server-side to a safe token budget before summarization.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SummarizePdfBody"
+      responses:
+        "200":
+          description: The generated summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SummarizePdfResult"
+        "400":
+          description: Invalid request body or empty document text
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Caller is not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit reached (burst, daily, or a summary already in progress)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: The AI service failed to produce a summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /healthz:
     get:
       operationId: healthCheck
@@ -1287,6 +1336,38 @@ components:
         - remaining
         - passwordProtectUsed
         - securePdfUsed
+
+    SummarizePdfBody:
+      type: object
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 400000
+          description: Document text extracted client-side, in page order.
+        fileName:
+          type: string
+          maxLength: 300
+          description: Original file name, used for context in the summary.
+        totalPages:
+          type: integer
+          minimum: 1
+          description: Total number of pages in the document.
+      required:
+        - text
+
+    SummarizePdfResult:
+      type: object
+      properties:
+        summary:
+          type: string
+          description: Markdown-formatted summary of the document.
+        truncated:
+          type: boolean
+          description: True when the input text was cut to fit the model's budget.
+      required:
+        - summary
+        - truncated
 
     UsageCheckBody:
       type: object

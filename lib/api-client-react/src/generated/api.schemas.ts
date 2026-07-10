@@ -200,6 +200,32 @@ export interface LicenseStatus {
   serverTime: string;
 }
 
+export interface SummarizePdfBody {
+  /**
+   * Document text extracted client-side, in page order.
+   * @minLength 1
+   * @maxLength 400000
+   */
+  text: string;
+  /**
+   * Original file name, used for context in the summary.
+   * @maxLength 300
+   */
+  fileName?: string;
+  /**
+   * Total number of pages in the document.
+   * @minimum 1
+   */
+  totalPages?: number;
+}
+
+export interface SummarizePdfResult {
+  /** Markdown-formatted summary of the document. */
+  summary: string;
+  /** True when the input text was cut to fit the model's budget. */
+  truncated: boolean;
+}
+
 export interface UsageCheckBody {
   actionType: PdfActionType;
 }

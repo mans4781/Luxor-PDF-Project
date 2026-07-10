@@ -61,6 +61,8 @@ export * from "./renewLicenseResult";
 export * from "./requestRevokeOtpBody";
 export * from "./revokeInviteBody";
 export * from "./revokeOtpRequestResult";
+export * from "./summarizePdfBody";
+export * from "./summarizePdfResult";
 export * from "./todayUsage";
 export * from "./uploadPdfBody";
 export * from "./uploadPdfBodyExpiryAction";

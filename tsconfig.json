@@ -14,6 +14,9 @@
     },
     {
       "path": "./lib/license-keys"
+    },
+    {
+      "path": "./lib/integrations-openai-ai-server"
     }
   ]
 }
