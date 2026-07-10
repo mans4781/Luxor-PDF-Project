@@ -6,8 +6,10 @@
  *
  * Coordinate spaces in this app are mixed:
  *   - Highlight rects: NORMALIZED 0..1 of the rendered page
- *   - Shape annotations (freehand/line/arrow/oval/rect): CANVAS pixels
- *     (the high-DPI draw canvas at the time of creation)
+ *   - Shape annotations (freehand/line/arrow/oval/rect): NORMALIZED 0..1
+ *     when `norm: true` (new format, zoom-stable), otherwise LEGACY canvas
+ *     pixels captured at creation-time zoom/DPR
+ *     (see shapeToCanvasSpace for the conversion)
  *   - Text/comment annotations: CSS pixels relative to the page wrapper
  *
  * The caller builds a HitContext with the eraser position/radius in all
@@ -26,6 +28,30 @@ export interface HitContext {
   radiusCanvas: number;
   radiusNormX: number;
   radiusNormY: number;
+  /** Current draw-canvas pixel size — needed to place normalized shapes. */
+  canvasW: number;
+  canvasH: number;
+}
+
+/**
+ * Convert a shape annotation into CANVAS-pixel space for the given canvas
+ * size. Shapes with `norm: true` store 0..1 page-relative coordinates (and
+ * lineWidth as a fraction of page width); legacy shapes are already in
+ * canvas pixels and are returned unchanged.
+ */
+export function shapeToCanvasSpace(ann: ShapeAnnotation, w: number, h: number): ShapeAnnotation {
+  if (!ann.norm) return ann;
+  switch (ann.type) {
+    case "freehand":
+      return { ...ann, points: ann.points.map(p => ({ x: p.x * w, y: p.y * h })), lineWidth: ann.lineWidth * w };
+    case "line":
+    case "arrow":
+      return { ...ann, x1: ann.x1 * w, y1: ann.y1 * h, x2: ann.x2 * w, y2: ann.y2 * h, lineWidth: ann.lineWidth * w };
+    case "oval":
+      return { ...ann, cx: ann.cx * w, cy: ann.cy * h, rx: ann.rx * w, ry: ann.ry * h, lineWidth: ann.lineWidth * w };
+    case "rect":
+      return { ...ann, x: ann.x * w, y: ann.y * h, w: ann.w * w, h: ann.h * h, lineWidth: ann.lineWidth * w };
+  }
 }
 
 function circleIntersectsRect(
@@ -127,21 +153,25 @@ export function hitTestAnnotation(ann: Annotation, ctx: HitContext): boolean {
         ),
       );
     case "freehand": {
-      const lw = (ann.lineWidth || 1) / 2;
-      return segmentNearPolyline(ctx.canvasX, ctx.canvasY, ann.points, ctx.radiusCanvas + lw);
+      const s = shapeToCanvasSpace(ann, ctx.canvasW, ctx.canvasH) as typeof ann;
+      const lw = (s.lineWidth || 1) / 2;
+      return segmentNearPolyline(ctx.canvasX, ctx.canvasY, s.points, ctx.radiusCanvas + lw);
     }
     case "line":
     case "arrow": {
-      const lw = (ann.lineWidth || 1) / 2;
-      return distPointToSegment(ctx.canvasX, ctx.canvasY, ann.x1, ann.y1, ann.x2, ann.y2) <= ctx.radiusCanvas + lw;
+      const s = shapeToCanvasSpace(ann, ctx.canvasW, ctx.canvasH) as typeof ann;
+      const lw = (s.lineWidth || 1) / 2;
+      return distPointToSegment(ctx.canvasX, ctx.canvasY, s.x1, s.y1, s.x2, s.y2) <= ctx.radiusCanvas + lw;
     }
     case "oval": {
-      const lw = (ann.lineWidth || 1) / 2;
-      return pointNearEllipseOutline(ctx.canvasX, ctx.canvasY, ann.cx, ann.cy, ann.rx, ann.ry, ctx.radiusCanvas + lw);
+      const s = shapeToCanvasSpace(ann, ctx.canvasW, ctx.canvasH) as typeof ann;
+      const lw = (s.lineWidth || 1) / 2;
+      return pointNearEllipseOutline(ctx.canvasX, ctx.canvasY, s.cx, s.cy, s.rx, s.ry, ctx.radiusCanvas + lw);
     }
     case "rect": {
-      const lw = (ann.lineWidth || 1) / 2;
-      return pointNearRectOutline(ctx.canvasX, ctx.canvasY, ann.x, ann.y, ann.w, ann.h, ctx.radiusCanvas + lw);
+      const s = shapeToCanvasSpace(ann, ctx.canvasW, ctx.canvasH) as typeof ann;
+      const lw = (s.lineWidth || 1) / 2;
+      return pointNearRectOutline(ctx.canvasX, ctx.canvasY, s.x, s.y, s.w, s.h, ctx.radiusCanvas + lw);
     }
     case "redact": {
       // Redactions are filled, so hit anywhere inside the box (in normalized

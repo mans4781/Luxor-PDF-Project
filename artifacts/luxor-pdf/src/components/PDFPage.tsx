@@ -10,7 +10,7 @@ import {
   createHighlightFromSelection,
   type Rect,
 } from "@/lib/highlightOps";
-import { hitTestAnnotation, type HitContext } from "@/lib/hitTest";
+import { hitTestAnnotation, shapeToCanvasSpace, type HitContext } from "@/lib/hitTest";
 import { watermarkAppliesTo, pageNoAppliesTo, formatPageLabel } from "@/lib/editTypes";
 import {
   HIGHLIGHT_COLORS as HIGHLIGHT_PALETTE,
@@ -725,7 +725,10 @@ function drawArrowhead(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2
   ctx.stroke();
 }
 
-function drawShapeOnCtx(ctx: CanvasRenderingContext2D, ann: ShapeAnnotation) {
+function drawShapeOnCtx(ctx: CanvasRenderingContext2D, annIn: ShapeAnnotation) {
+  // Normalized shapes (norm: true) are stored page-relative; convert to
+  // this canvas's pixel space so they track the page through zoom changes.
+  const ann = shapeToCanvasSpace(annIn, ctx.canvas.width, ctx.canvas.height);
   ctx.save();
   ctx.strokeStyle = ann.color;
   ctx.lineWidth = ann.lineWidth;
@@ -1253,6 +1256,8 @@ export default function PDFPage({
       radiusCanvas: ERASER_RADIUS_CSS * canvasScaleX,
       radiusNormX: ERASER_RADIUS_CSS / pageSize.w,
       radiusNormY: ERASER_RADIUS_CSS / pageSize.h,
+      canvasW: canvas.width,
+      canvasH: canvas.height,
     };
   }, [pageSize]);
 
@@ -1532,27 +1537,33 @@ export default function PDFPage({
     const lw = drawThickness * (canvas.width / pageSize.w);
     const { startX, startY, shiftKey, points } = state;
 
+    // New shapes are stored NORMALIZED (0..1 of the rendered page, with
+    // lineWidth as a fraction of page width) so they scale and reposition
+    // correctly when the user zooms. `norm: true` marks the new format.
+    const cw = canvas.width, ch = canvas.height;
+    const nLw = lw / cw;
+
     let ann: ShapeAnnotation | RedactionAnnotation | null = null;
 
     switch (tool) {
       case "freehand": {
         points.push({ x: pos.x, y: pos.y });
         if (points.length >= 2) {
-          ann = { id: genId(), type: "freehand", page: pageNum, points, color: drawColor, lineWidth: lw };
+          ann = { id: genId(), type: "freehand", page: pageNum, points: points.map(p => ({ x: p.x / cw, y: p.y / ch })), color: drawColor, lineWidth: nLw, norm: true };
         }
         break;
       }
       case "line": {
         const dx = pos.x - startX, dy = pos.y - startY;
         if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-          ann = { id: genId(), type: "line", page: pageNum, x1: startX, y1: startY, x2: pos.x, y2: pos.y, color: drawColor, lineWidth: lw };
+          ann = { id: genId(), type: "line", page: pageNum, x1: startX / cw, y1: startY / ch, x2: pos.x / cw, y2: pos.y / ch, color: drawColor, lineWidth: nLw, norm: true };
         }
         break;
       }
       case "arrow": {
         const dx = pos.x - startX, dy = pos.y - startY;
         if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-          ann = { id: genId(), type: "arrow", page: pageNum, x1: startX, y1: startY, x2: pos.x, y2: pos.y, color: drawColor, lineWidth: lw };
+          ann = { id: genId(), type: "arrow", page: pageNum, x1: startX / cw, y1: startY / ch, x2: pos.x / cw, y2: pos.y / ch, color: drawColor, lineWidth: nLw, norm: true };
         }
         break;
       }
@@ -1563,7 +1574,7 @@ export default function PDFPage({
         if (rx > 3 && ry > 3) {
           const cx = (startX + pos.x) / 2;
           const cy = (startY + pos.y) / 2;
-          ann = { id: genId(), type: "oval", page: pageNum, cx, cy, rx, ry, color: drawColor, lineWidth: lw, fill: shapeFill, fillOpacity: shapeFillOpacity ?? 0.4 };
+          ann = { id: genId(), type: "oval", page: pageNum, cx: cx / cw, cy: cy / ch, rx: rx / cw, ry: ry / ch, color: drawColor, lineWidth: nLw, fill: shapeFill, fillOpacity: shapeFillOpacity ?? 0.4, norm: true };
         }
         break;
       }
@@ -1576,7 +1587,7 @@ export default function PDFPage({
           h = Math.sign(h) * side;
         }
         if (Math.abs(w) > 3 && Math.abs(h) > 3) {
-          ann = { id: genId(), type: "rect", page: pageNum, x: startX, y: startY, w, h, color: drawColor, lineWidth: lw, fill: shapeFill, fillOpacity: shapeFillOpacity ?? 0.4 };
+          ann = { id: genId(), type: "rect", page: pageNum, x: startX / cw, y: startY / ch, w: w / cw, h: h / ch, color: drawColor, lineWidth: nLw, fill: shapeFill, fillOpacity: shapeFillOpacity ?? 0.4, norm: true };
         }
         break;
       }

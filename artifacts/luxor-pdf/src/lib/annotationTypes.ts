@@ -74,6 +74,15 @@ export interface CommentAnnotation {
   rects: { x: number; y: number; width: number; height: number }[];
 }
 
+/**
+ * Shape coordinate spaces (see `norm` on each shape annotation):
+ *  - `norm: true`  → all coordinates are NORMALIZED 0..1 against the rendered
+ *    page (x-like values / page width, y-like values / page height) and
+ *    `lineWidth` is a fraction of page width. This is how NEW shapes are
+ *    stored so they track the page through zoom changes.
+ *  - `norm` absent → LEGACY: raw canvas pixels captured at creation-time
+ *    zoom/DPR. Rendered as-is for back-compat with previously saved shapes.
+ */
 export interface FreehandAnnotation {
   id: string;
   type: "freehand";
@@ -81,6 +90,7 @@ export interface FreehandAnnotation {
   points: Point[];
   color: string;
   lineWidth: number;
+  norm?: boolean;
 }
 
 export interface LineAnnotation {
@@ -93,6 +103,7 @@ export interface LineAnnotation {
   y2: number;
   color: string;
   lineWidth: number;
+  norm?: boolean;
 }
 
 export interface ArrowAnnotation {
@@ -105,6 +116,7 @@ export interface ArrowAnnotation {
   y2: number;
   color: string;
   lineWidth: number;
+  norm?: boolean;
 }
 
 export interface OvalAnnotation {
@@ -120,6 +132,7 @@ export interface OvalAnnotation {
   /** When true, fill the shape with `color` at `fillOpacity` (default 0.25). */
   fill?: boolean;
   fillOpacity?: number;
+  norm?: boolean;
 }
 
 export interface RectAnnotation {
@@ -135,6 +148,7 @@ export interface RectAnnotation {
   /** When true, fill the shape with `color` at `fillOpacity` (default 0.25). */
   fill?: boolean;
   fillOpacity?: number;
+  norm?: boolean;
 }
 
 export type ShapeAnnotation = FreehandAnnotation | LineAnnotation | ArrowAnnotation | OvalAnnotation | RectAnnotation;
