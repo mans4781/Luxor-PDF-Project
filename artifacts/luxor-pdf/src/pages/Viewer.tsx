@@ -630,13 +630,18 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   };
 
   // ── File menu actions ──────────────────────────────────────
+  // Always call the LATEST handleDownload via a ref — memoized callbacks
+  // (Save As, the unsaved-changes dialog) would otherwise capture a stale
+  // closure whose `annotations` was still empty, silently exporting the
+  // original file without redactions/images/text edits burned in.
+  const handleDownloadRef = useRef<() => Promise<void>>(async () => {});
   const handleFileSaveAs = useCallback(() => {
     // Browsers can't truly "save as" — handleDownload already prompts a
     // save dialog on Windows when downloads.always_ask is enabled and
     // exports the PDF with all current edits burned in.
     if (!requireAuth("Save As")) return;
     if (!file) { alert("No PDF is currently open."); return; }
-    handleDownload();
+    handleDownloadRef.current();
   }, [file, requireAuth]);
 
   const handleFileSaveCopy = useCallback(async () => {
@@ -756,7 +761,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         return;
       }
       // Trigger save first, then proceed regardless of result.
-      handleDownload().finally(proceed);
+      handleDownloadRef.current().finally(proceed);
     } else {
       proceed();
     }
