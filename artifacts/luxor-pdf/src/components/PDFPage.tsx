@@ -81,6 +81,12 @@ const RENDER_MARGIN = "1250px";
  *  canvases that freeze the tab. */
 const MAX_CANVAS_PIXELS = 16_000_000;
 
+/** Minimum physical render scale (supersampling floor). Pages are always
+ *  rasterized at at least this scale and then downscaled by CSS, so text
+ *  and images stay crisp ("4K-like") even on standard 1× displays or at
+ *  low zoom. Still subject to MAX_CANVAS_PIXELS above. */
+const MIN_RENDER_SCALE = 2;
+
 function genId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
@@ -995,14 +1001,14 @@ export default function PDFPage({
       try {
         if (renderTaskRef.current) { renderTaskRef.current.cancel(); renderTaskRef.current = null; }
         const page = await pdfDocument.getPage(pageNum);
-        const dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+        const dpr = Math.min(3, Math.max(1, window.devicePixelRatio || 1));
         const totalRotation = ((page.rotate ?? 0) + rotation) % 360;
         pageNativeRotationRef.current = page.rotate ?? 0;
         // CSS size always tracks the zoom exactly; the physical canvas
         // scale is capped so a huge page × high zoom × retina DPR can't
         // allocate a tab-freezing multi-hundred-MB canvas.
         const baseVp = page.getViewport({ scale: 1, rotation: totalRotation });
-        let renderScale = zoom * dpr;
+        let renderScale = Math.max(zoom * dpr, MIN_RENDER_SCALE);
         if (baseVp.width * baseVp.height * renderScale * renderScale > MAX_CANVAS_PIXELS) {
           renderScale = Math.sqrt(MAX_CANVAS_PIXELS / (baseVp.width * baseVp.height));
         }

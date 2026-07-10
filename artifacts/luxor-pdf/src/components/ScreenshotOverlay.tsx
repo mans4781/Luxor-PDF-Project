@@ -8,7 +8,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * screen — this overlay sitting on top does not appear in the capture.
  *
  * Coordinate mapping: the drag rect is in client (CSS) pixels. Each page
- * canvas is rendered at `zoom * devicePixelRatio` with rotation baked
+ * canvas is rendered at a physical scale of at least `zoom * dpr` (with a
+ * supersampling floor and pixel cap) and rotation baked
  * into the viewport, so its `.width`/`.height` are device pixels while
  * `getBoundingClientRect()` gives the on-screen CSS box. Scaling by
  * `canvas.width / rect.width` maps the selection back into bitmap space

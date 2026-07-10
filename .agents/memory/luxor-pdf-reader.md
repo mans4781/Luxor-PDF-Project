@@ -5,7 +5,7 @@ description: Virtualization/perf model, reader settings, panels, theming, and si
 
 ## Performance / virtualization
 - Only pages within ~1250px of the viewport render (IntersectionObserver `nearView` in `PDFPage.tsx`); offscreen pages cancel render tasks and free canvas bitmaps while keeping CSS size (placeholder size from `defaultPageSize` = page-1 base viewport × zoom, computed in `Viewer.tsx`).
-- DPR clamped to [1,2]; physical canvas capped at 16M pixels (`MAX_CANVAS_PIXELS`); CSS size always tracks zoom.
+- DPR clamped to [1,3], min render scale 2; physical canvas capped at 16M pixels (`MAX_CANVAS_PIXELS`); CSS size always tracks zoom.
 - Thumbnails lazy-render (first 12 eager, 600px margin).
 - Print uses a hidden-iframe blob URL of the original file — DOM print would show blank virtualized pages.
 - `src/polyfills.ts` (imported in `main.tsx` and custom worker entry `src/pdf-worker.ts`, loaded via `GlobalWorkerOptions.workerPort`) polyfills Map/WeakMap `getOrInsertComputed`/`getOrInsert` required by pdfjs-dist ≥5.6 on browsers without TC39 upsert.

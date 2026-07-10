@@ -9,7 +9,7 @@ Only pages near the viewport (~1250px margin) hold live canvases/text layers; of
 **How to apply:** anything that reads a page's canvas (screenshot, redact, export) must only assume the canvas is populated for near-view pages, or render the page itself via pdfjs. DOM-based printing is broken by design — print must go through the hidden-iframe blob-URL path (original file), not `window.print()`.
 
 ## Canvas scale cap
-Physical canvas is capped (`MAX_CANVAS_PIXELS` = 16M px, DPR clamped to [1,2]); CSS size always tracks zoom exactly.
+Physical canvas is capped (`MAX_CANVAS_PIXELS` = 16M px, DPR clamped to [1,3], supersampling floor `MIN_RENDER_SCALE` = 2 for crispness on 1× displays); CSS size always tracks zoom exactly.
 **Why:** huge page × high zoom × retina DPR would otherwise allocate tab-freezing canvases.
 
 ## pdfjs-dist ≥5.6 needs TC39 upsert polyfill
