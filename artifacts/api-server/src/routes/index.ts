@@ -8,6 +8,7 @@ import usageRouter from "./usage";
 import billingRouter from "./billing";
 import orgRouter from "./org";
 import downloadsRouter from "./downloads";
+import desktopAuthRouter from "./desktop-auth";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(usageRouter);
 router.use(billingRouter);
 router.use(orgRouter);
 router.use(downloadsRouter);
+router.use(desktopAuthRouter);
 
 export default router;
