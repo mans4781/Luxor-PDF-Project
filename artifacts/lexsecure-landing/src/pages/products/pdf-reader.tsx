@@ -11,9 +11,9 @@ const features = [
   { icon: Monitor,         title: "Dark Mode & Theming",   desc: "Eye-comfort modes including Sepia, Night, and High Contrast — perfect for long reading sessions." },
 ];
 
-const READER_RELEASES_BASE = "https://github.com/mans4781/Luxor-PDF-Project/releases/latest/download";
-const READER_WEB_INSTALLER_URL = `${READER_RELEASES_BASE}/Luxor.PDF.Web.Setup.exe`;
-const READER_FULL_INSTALLER_URL = "https://github.com/mans4781/Luxor-PDF-Project/releases/latest";
+const READER_FULL_INSTALLER_URL = "/api/downloads/luxor-pdf-reader-latest";
+const READER_WEB_INSTALLER_URL =
+  "https://github.com/mans4781/Luxor-PDF-Project/releases/latest/download/Luxor.PDF.Web.Setup.exe";
 
 const specs = ["Windows 10/11 (64-bit)", "Android 9+", "macOS 12+", "Less than 12 MB install", "No internet required", "Free tier available"];
 
@@ -187,20 +187,20 @@ export default function PdfReaderPage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
-              href={READER_WEB_INSTALLER_URL}
+              href={READER_FULL_INSTALLER_URL}
               className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold transition-colors shadow-xl shadow-sky-500/25"
               data-testid="download-reader-button"
             >
               <Download className="w-5 h-5" />
               Download for Windows
-              <span className="text-xs font-normal text-white/70">· Free</span>
+              <span className="text-xs font-normal text-white/70">· Free · ~100 MB</span>
             </a>
             <a
-              href={READER_FULL_INSTALLER_URL}
+              href={READER_WEB_INSTALLER_URL}
               className="text-sm text-slate-500 hover:text-slate-700 underline underline-offset-4"
-              data-testid="download-reader-offline-button"
+              data-testid="download-reader-web-button"
             >
-              Offline installer (~100 MB)
+              Small online installer (200 KB)
             </a>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-500">

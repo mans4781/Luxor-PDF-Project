@@ -74,6 +74,51 @@ router.get(
   },
 );
 
+/**
+ * GET /downloads/luxor-pdf-reader-latest — redirects to the newest full
+ * Reader installer on GitHub Releases. The asset name changes with each
+ * version (Luxor-PDF-Installer-<version>.exe), so the website links here
+ * and this route resolves the current name from latest.yml.
+ */
+const READER_RELEASES_LATEST =
+  "https://github.com/mans4781/Luxor-PDF-Project/releases/latest/download";
+
+let readerInstallerCache: { name: string; fetchedAt: number } | null = null;
+const READER_CACHE_TTL_MS = 5 * 60 * 1000;
+
+router.get(
+  "/downloads/luxor-pdf-reader-latest",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      let name = readerInstallerCache;
+      if (!name || Date.now() - name.fetchedAt > READER_CACHE_TTL_MS) {
+        const ymlRes = await fetch(`${READER_RELEASES_LATEST}/latest.yml`, {
+          redirect: "follow",
+        });
+        if (!ymlRes.ok) {
+          res.status(502).json({ error: "Release lookup failed" });
+          return;
+        }
+        const yml = await ymlRes.text();
+        const m = /^path:\s*(.+)$/m.exec(yml);
+        if (!m || !m[1]) {
+          res.status(502).json({ error: "Could not resolve installer name" });
+          return;
+        }
+        name = { name: m[1].trim(), fetchedAt: Date.now() };
+        readerInstallerCache = name;
+      }
+      res.redirect(
+        302,
+        `${READER_RELEASES_LATEST}/${encodeURIComponent(name.name)}`,
+      );
+    } catch (err) {
+      req.log.error({ err }, "Reader installer redirect failed");
+      res.status(502).json({ error: "Release lookup failed" });
+    }
+  },
+);
+
 /** GET /downloads/installer-info — lightweight check for the download page. */
 router.get(
   "/downloads/installer-info",

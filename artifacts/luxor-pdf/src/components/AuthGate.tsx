@@ -7,7 +7,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useAuth, useSignIn } from "@clerk/react";
+import { useAuth } from "@clerk/react";
+import { useSignIn } from "@clerk/react/legacy";
 import { SUITE_AUTH_HOST_BASE } from "@workspace/luxor-auth-ui";
 import { isDesktopShell } from "../lib/desktopBridge";
 
@@ -116,7 +117,13 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
             const data: { status: string; ticket?: string } =
               await res.json();
             if (data.status === "ready" && data.ticket) {
-              if (flow.cancelled || !signIn || !setActive) return;
+              if (flow.cancelled) return;
+              if (!signIn || !setActive) {
+                // Clerk isn't ready — the one-time ticket has already been
+                // claimed, so surface a failure instead of hanging.
+                setDesktopWait("failed");
+                return;
+              }
               const result = await signIn.create({
                 strategy: "ticket",
                 ticket: data.ticket,
@@ -186,10 +193,16 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
             padding: 16,
           }}
           onClick={(e) => {
-            if (e.target === e.currentTarget) setPromptLabel(null);
+            if (e.target === e.currentTarget) {
+              stopDesktopFlow();
+              setPromptLabel(null);
+            }
           }}
           onKeyDown={(e) => {
-            if (e.key === "Escape") setPromptLabel(null);
+            if (e.key === "Escape") {
+              stopDesktopFlow();
+              setPromptLabel(null);
+            }
           }}
         >
           <div
@@ -227,13 +240,36 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
             <p style={{ margin: "0 0 18px", fontSize: 13.5, lineHeight: 1.55, color: "#475569" }}>
               {offline
                 ? "You're offline right now. Reading works without internet, but you'll need to connect and sign in to use this feature."
-                : "Reading PDFs is always free. Create a free account or sign in to unlock annotations, editing and export tools."}
+                : desktopWait === "waiting"
+                  ? "We've opened your web browser. Sign in (or create an account) there — this app will finish signing you in automatically."
+                  : desktopWait === "failed"
+                    ? "That sign-in attempt didn't complete. Please try again."
+                    : "Reading PDFs is always free. Create a free account or sign in to unlock annotations, editing and export tools."}
             </p>
+            {desktopWait === "waiting" && (
+              <div
+                aria-live="polite"
+                style={{
+                  margin: "0 0 14px",
+                  fontSize: 13,
+                  color: "#2563eb",
+                  fontWeight: 600,
+                }}
+              >
+                Waiting for you to sign in in the browser…
+              </div>
+            )}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <button
                 type="button"
-                onClick={() => window.location.assign(suiteAuthUrl("sign-in"))}
-                disabled={offline}
+                onClick={() => {
+                  if (isDesktopShell()) {
+                    startDesktopAuth("sign-in");
+                  } else {
+                    window.location.assign(suiteAuthUrl("sign-in"));
+                  }
+                }}
+                disabled={offline || desktopWait === "waiting"}
                 style={{
                   padding: "10px 14px",
                   borderRadius: 9,
@@ -249,8 +285,14 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
               </button>
               <button
                 type="button"
-                onClick={() => window.location.assign(suiteAuthUrl("sign-up"))}
-                disabled={offline}
+                onClick={() => {
+                  if (isDesktopShell()) {
+                    startDesktopAuth("sign-up");
+                  } else {
+                    window.location.assign(suiteAuthUrl("sign-up"));
+                  }
+                }}
+                disabled={offline || desktopWait === "waiting"}
                 style={{
                   padding: "10px 14px",
                   borderRadius: 9,
@@ -266,7 +308,10 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
               </button>
               <button
                 type="button"
-                onClick={() => setPromptLabel(null)}
+                onClick={() => {
+                  stopDesktopFlow();
+                  setPromptLabel(null);
+                }}
                 style={{
                   padding: "8px 14px",
                   borderRadius: 9,

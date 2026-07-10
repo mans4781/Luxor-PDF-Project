@@ -1,8 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { getAuth, clerkClient } from "@clerk/express";
-import { and, eq, isNull, lt } from "drizzle-orm";
+import { and, eq, gt, isNull, lt } from "drizzle-orm";
 import { db, desktopAuthHandoffsTable } from "@workspace/db";
-import { z } from "zod/v4";
 
 /**
  * Browser-based sign-in handoff for the desktop apps.
@@ -20,11 +19,11 @@ const router: IRouter = Router();
 
 const HANDOFF_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
-const stateSchema = z
-  .string()
-  .regex(/^[a-f0-9]{64}$/, "state must be 64 lowercase hex chars");
+const STATE_RE = /^[a-f0-9]{64}$/;
 
-const completeBodySchema = z.object({ state: stateSchema });
+function parseState(value: unknown): string | null {
+  return typeof value === "string" && STATE_RE.test(value) ? value : null;
+}
 
 async function deleteExpired(): Promise<void> {
   await db
@@ -41,37 +40,35 @@ router.post(
       return;
     }
 
-    const parsed = completeBodySchema.safeParse(req.body);
-    if (!parsed.success) {
+    const state = parseState((req.body as { state?: unknown })?.state);
+    if (!state) {
       res.status(400).json({ error: "Invalid state" });
       return;
     }
-    const { state } = parsed.data;
 
     try {
       await deleteExpired();
-
-      // One handoff per state — reject replays of an already-used state.
-      const existing = await db
-        .select({ id: desktopAuthHandoffsTable.id })
-        .from(desktopAuthHandoffsTable)
-        .where(eq(desktopAuthHandoffsTable.state, state))
-        .limit(1);
-      if (existing.length > 0) {
-        res.status(409).json({ error: "State already used" });
-        return;
-      }
 
       const token = await clerkClient.signInTokens.createSignInToken({
         userId: auth.userId,
         expiresInSeconds: Math.floor(HANDOFF_TTL_MS / 1000),
       });
 
-      await db.insert(desktopAuthHandoffsTable).values({
-        state,
-        ticket: token.token,
-        expiresAt: new Date(Date.now() + HANDOFF_TTL_MS),
-      });
+      // One handoff per state — the unique index on `state` plus
+      // onConflictDoNothing makes replays race-safe.
+      const inserted = await db
+        .insert(desktopAuthHandoffsTable)
+        .values({
+          state,
+          ticket: token.token,
+          expiresAt: new Date(Date.now() + HANDOFF_TTL_MS),
+        })
+        .onConflictDoNothing({ target: desktopAuthHandoffsTable.state })
+        .returning({ id: desktopAuthHandoffsTable.id });
+      if (inserted.length === 0) {
+        res.status(409).json({ error: "State already used" });
+        return;
+      }
 
       res.json({ ok: true });
     } catch (err) {
@@ -84,12 +81,11 @@ router.post(
 router.get(
   "/desktop-auth/poll",
   async (req: Request, res: Response): Promise<void> => {
-    const parsed = stateSchema.safeParse(req.query.state);
-    if (!parsed.success) {
+    const state = parseState(req.query.state);
+    if (!state) {
       res.status(400).json({ error: "Invalid state" });
       return;
     }
-    const state = parsed.data;
 
     try {
       // Atomically claim: only an unclaimed, unexpired handoff returns the
@@ -101,15 +97,15 @@ router.get(
           and(
             eq(desktopAuthHandoffsTable.state, state),
             isNull(desktopAuthHandoffsTable.claimedAt),
+            gt(desktopAuthHandoffsTable.expiresAt, new Date()),
           ),
         )
         .returning({
           ticket: desktopAuthHandoffsTable.ticket,
-          expiresAt: desktopAuthHandoffsTable.expiresAt,
         });
 
       const row = claimed[0];
-      if (!row || row.expiresAt.getTime() < Date.now()) {
+      if (!row) {
         res.json({ status: "pending" });
         return;
       }

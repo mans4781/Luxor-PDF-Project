@@ -15,3 +15,5 @@ description: How pdf-expiry/luxor-pdf/esign-app share one Clerk session; lib/lux
 - CSS gotcha: `pdf-expiry/src/index.css` needs `@layer theme, base, clerk, components, utilities;` + `@import "@clerk/themes/shadcn.css"`, and `tailwindcss({ optimize: false })` in vite.config.ts — or Clerk styles break in prod builds.
 - Env (auto-set, never commit): `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`; prod adds `VITE_CLERK_PROXY_URL`. All artifacts read via `publishableKeyFromHost(...)` from `@clerk/react/internal`.
 - Landing (`/`) stays public — no auth gate.
+- Custom sign-in flows: `@clerk/react` ≥6.5's `useSignIn` returns the new signals API (no `setActive`, `create` returns `{error}`); import `useSignIn` from `@clerk/react/legacy` for ticket-strategy custom flows.
+- Desktop shell sign-in: browser handoff via one-time 64-hex state + Clerk signInTokens ticket stored server-side, claim-once poll. Ticket is single-use — if Clerk isn't loaded when it arrives, fail visibly, don't retry.
