@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useLayoutEffect, useState, useCallback } from "react";
 import { TextLayer } from "pdfjs-dist";
 import {
   Annotation, HighlightAnnotation, TextAnnotation, CommentAnnotation, ToolType,
@@ -26,6 +26,17 @@ const isShapeTool = (t: ToolType) => SHAPE_TOOLS.includes(t);
 
 /** Eraser cursor radius in CSS pixels — matches the visual cursor circle. */
 const ERASER_RADIUS_CSS = 10;
+
+/**
+ * Open a Google search for the given text in the user's browser (new tab
+ * on web; the desktop wrapper routes window.open to the default browser).
+ */
+function searchWebFor(text: string) {
+  const q = (text || "").trim().slice(0, 500);
+  if (!q) return;
+  window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, "_blank", "noopener,noreferrer");
+}
+
 interface PDFPageProps {
   pdfDocument: any;
   pageNum: number;
@@ -856,6 +867,21 @@ export default function PDFPage({
     rects: Rect[];
     text: string;
   } | null>(null);
+  const quickBarRef = useRef<HTMLDivElement | null>(null);
+
+  // Re-clamp the quick bar horizontally using its real rendered width —
+  // barPosForRects estimates with a fixed BAR_W, but the bar's actual
+  // width varies by mode (extra divider + button in "new"/"edit").
+  useLayoutEffect(() => {
+    if (!quickBar) return;
+    const el = quickBarRef.current;
+    if (!el || pageSize.w === 0) return;
+    const w = el.offsetWidth;
+    const clampedX = Math.max(4, Math.min(quickBar.x, pageSize.w - w - 4));
+    if (Math.abs(clampedX - quickBar.x) > 0.5) {
+      setQuickBar((qb) => (qb ? { ...qb, x: clampedX } : qb));
+    }
+  }, [quickBar, pageSize.w]);
 
   // Right-click popup highlight swatches come from the central palette in
   // src/lib/annotationColors.ts. The hex `value` is stored on the
@@ -1945,6 +1971,7 @@ export default function PDFPage({
       {quickBar && pageSize.w > 0 && (
         <div
           data-quick-bar
+          ref={quickBarRef}
           onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
           style={{
             position: "absolute",
@@ -1994,6 +2021,35 @@ export default function PDFPage({
               onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
             />
           ))}
+          {quickBar.mode === "new" && quickBar.text.trim() && (
+            <>
+              <span style={{ width: 1, height: 20, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
+              <button
+                type="button"
+                title="Search the web for this text"
+                onClick={() => {
+                  searchWebFor(quickBar.text);
+                  setQuickBar(null);
+                  window.getSelection()?.removeAllRanges();
+                }}
+                style={{
+                  width: 26, height: 24, display: "flex",
+                  alignItems: "center", justifyContent: "center",
+                  background: "transparent", border: "none", cursor: "pointer",
+                  padding: 0, borderRadius: 6, color: "#e0e0e0",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="9"/>
+                  <ellipse cx="12" cy="12" rx="4" ry="9"/>
+                  <line x1="3.5" y1="9" x2="20.5" y2="9"/>
+                  <line x1="3.5" y1="15" x2="20.5" y2="15"/>
+                </svg>
+              </button>
+            </>
+          )}
           {quickBar.mode === "edit" && (
             <>
               <span style={{ width: 1, height: 20, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
@@ -2273,8 +2329,7 @@ export default function PDFPage({
             onMouseEnter={e => (e.currentTarget.style.background = "#3a3a40")}
             onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
             onClick={() => {
-              const q = encodeURIComponent(contextMenu.selectedText);
-              window.open(`https://www.google.com/search?q=${q}`, "_blank");
+              searchWebFor(contextMenu.selectedText);
               setContextMenu(null);
               window.getSelection()?.removeAllRanges();
             }}
