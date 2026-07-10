@@ -711,7 +711,7 @@ export default function Dashboard() {
     const requested = new URLSearchParams(search).get("tool") as ToolKey | null;
     return requested && VALID_TOOL_KEYS.includes(requested)
       ? requested
-      : "secure-pdf";
+      : null;
   })();
   const [active, setActive] = useState<ToolKey | null>(initial);
 
