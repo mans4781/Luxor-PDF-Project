@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { Show, UserButton } from "@clerk/react";
 import { LogIn, UserRound, UserRoundPlus } from "lucide-react";
 import { SUITE_AUTH_HOST_BASE } from "./LuxorClerkProvider";
@@ -34,6 +34,20 @@ export interface AuthMenuProps {
   onSignIn?: () => void;
   /** Optional override for the Create-account action (see `onSignIn`). */
   onSignUp?: () => void;
+  /**
+   * App-specific shortcut links shown in the account menu in BOTH auth
+   * states: below a divider in the icon-only signed-out dropdown, and as
+   * custom menu items inside the signed-in avatar menu.
+   */
+  menuLinks?: AuthMenuLink[];
+}
+
+export interface AuthMenuLink {
+  label: string;
+  href: string;
+  /** Small icon element rendered next to the label (e.g. a lucide icon). */
+  icon: ReactNode;
+  testId?: string;
 }
 
 function buildAuthUrl(base: string, redirectBack: boolean): string {
@@ -50,6 +64,7 @@ export function AuthMenu({
   iconOnly = false,
   onSignIn,
   onSignUp,
+  menuLinks,
 }: AuthMenuProps) {
   const isDark = variant === "dark";
   const [menuOpen, setMenuOpen] = useState(false);
@@ -110,7 +125,20 @@ export function AuthMenu({
               userPreviewSecondaryIdentifier: "text-slate-500",
             },
           }}
-        />
+        >
+          {menuLinks && menuLinks.length > 0 && (
+            <UserButton.MenuItems>
+              {menuLinks.map((link) => (
+                <UserButton.Link
+                  key={link.href}
+                  label={link.label}
+                  href={link.href}
+                  labelIcon={link.icon}
+                />
+              ))}
+            </UserButton.MenuItems>
+          )}
+        </UserButton>
       </Show>
       <Show when="signed-out">
         {iconOnly ? (
@@ -179,6 +207,35 @@ export function AuthMenu({
                   <UserRoundPlus className="h-4 w-4" />
                   Create account
                 </button>
+                {menuLinks && menuLinks.length > 0 && (
+                  <>
+                    <div
+                      className={
+                        "my-1 h-px " + (isDark ? "bg-white/15" : "bg-slate-200")
+                      }
+                    />
+                    {menuLinks.map((link) => (
+                      <a
+                        key={link.href}
+                        href={link.href}
+                        role="menuitem"
+                        data-testid={link.testId}
+                        onClick={() => setMenuOpen(false)}
+                        className={
+                          "flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium transition-colors " +
+                          (isDark
+                            ? "text-slate-200 hover:bg-white/10 hover:text-white"
+                            : "text-slate-700 hover:bg-slate-50 hover:text-[#1e3a8a]")
+                        }
+                      >
+                        <span className="flex h-4 w-4 items-center justify-center [&>svg]:h-4 [&>svg]:w-4">
+                          {link.icon}
+                        </span>
+                        {link.label}
+                      </a>
+                    ))}
+                  </>
+                )}
               </div>
             )}
           </div>

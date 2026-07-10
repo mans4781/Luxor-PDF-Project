@@ -1,15 +1,7 @@
 import { ReactNode, useState } from "react";
-import { Undo2, Search, Settings, History, KeyRound, Sparkles, HelpCircle } from "lucide-react";
+import { Undo2, Search, History, KeyRound, Sparkles, HelpCircle } from "lucide-react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { PlanBadge, DailyLimitBanner } from "@/license/UsageBadge";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import { Kbd } from "@/components/ui/kbd";
 import { basePath } from "@/lib/base-path";
 
@@ -87,55 +79,43 @@ export function Layout({
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <PlanBadge />
 
-              {/* Settings / quick-access menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    title="Settings & shortcuts"
-                    aria-label="Settings and shortcuts"
-                    className="inline-flex items-center justify-center h-9 w-9 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#DC2626]/30"
-                    data-testid="header-settings-menu"
-                  >
-                    <Settings className="w-4 h-4" strokeWidth={2.2} />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52">
-                  <DropdownMenuLabel>Quick access</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <a href={`${basePath}/history`} data-testid="menu-item-history">
-                      <History className="w-4 h-4" /> History
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href={`${basePath}/?tool=user-guide`} data-testid="menu-item-guide">
-                      <HelpCircle className="w-4 h-4" /> User guide
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href={`${basePath}/activate-key`} data-testid="menu-item-activate">
-                      <KeyRound className="w-4 h-4" /> Activate key
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <a href={PRICING_URL} data-testid="menu-item-plans">
-                      <Sparkles className="w-4 h-4" /> Plans &amp; pricing
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href="/online-tools" data-testid="menu-item-online-tools">
-                      <Undo2 className="w-4 h-4" /> Back to online tools
-                    </a>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
               <AuthMenu
                 signInUrl={`${basePath}/sign-in`}
                 signUpUrl={`${basePath}/sign-up`}
                 redirectBackOnAuth={false}
+                iconOnly
+                menuLinks={[
+                  {
+                    label: "History",
+                    href: `${basePath}/history`,
+                    icon: <History />,
+                    testId: "menu-item-history",
+                  },
+                  {
+                    label: "User guide",
+                    href: `${basePath}/?tool=user-guide`,
+                    icon: <HelpCircle />,
+                    testId: "menu-item-guide",
+                  },
+                  {
+                    label: "Activate key",
+                    href: `${basePath}/activate-key`,
+                    icon: <KeyRound />,
+                    testId: "menu-item-activate",
+                  },
+                  {
+                    label: "Plans & pricing",
+                    href: PRICING_URL,
+                    icon: <Sparkles />,
+                    testId: "menu-item-plans",
+                  },
+                  {
+                    label: "Back to online tools",
+                    href: "/online-tools",
+                    icon: <Undo2 />,
+                    testId: "menu-item-online-tools",
+                  },
+                ]}
               />
             </div>
           </div>
