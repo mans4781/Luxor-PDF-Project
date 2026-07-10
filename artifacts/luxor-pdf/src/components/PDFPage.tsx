@@ -1058,6 +1058,17 @@ export default function PDFPage({
           textLayerTaskRef.current = tl;
           await tl.render();
           textLayerTaskRef.current = null;
+          // pdf.js's TextLayerBuilder normally appends this sentinel div.
+          // During a drag-selection it expands to cover the whole layer
+          // (via the `.selecting` class, see pdf_viewer.css) so that the
+          // browser anchors the selection to it instead of jumping to a
+          // far-away span when the cursor passes over empty space between
+          // lines. Without it, selecting 2 lines often grabs many lines.
+          if (!cancelled && textLayerRef.current) {
+            const eoc = document.createElement("div");
+            eoc.className = "endOfContent";
+            textLayerRef.current.append(eoc);
+          }
         }
       } catch (err: any) {
         if (err?.name !== "RenderingCancelledException") console.error(err);
@@ -1071,6 +1082,36 @@ export default function PDFPage({
   }, [pdfDocument, pageNum, zoom, rotation, nearView]);
 
   useEffect(() => { redrawAnnotations(); }, [annotations, pageSize]);
+
+  // Toggle the `.selecting` class on ALL text layers while the user is
+  // drag-selecting. pdf_viewer.css then stretches each layer's
+  // .endOfContent sentinel to full size, which keeps the native selection
+  // anchored under the cursor (and lets selections cross page boundaries)
+  // instead of ballooning to unrelated lines.
+  useEffect(() => {
+    const layer = textLayerRef.current;
+    if (!layer) return;
+    const setSelecting = (on: boolean) => {
+      document.querySelectorAll(".textLayer").forEach(l =>
+        l.classList.toggle("selecting", on),
+      );
+    };
+    const onDown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      setSelecting(true);
+    };
+    const onEnd = () => setSelecting(false);
+    layer.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointerup", onEnd);
+    window.addEventListener("pointercancel", onEnd);
+    window.addEventListener("blur", onEnd);
+    return () => {
+      layer.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointerup", onEnd);
+      window.removeEventListener("pointercancel", onEnd);
+      window.removeEventListener("blur", onEnd);
+    };
+  }, []);
 
   useEffect(() => {
     if (textLayerRef.current) highlightTextInLayer(textLayerRef.current, searchTerm);
