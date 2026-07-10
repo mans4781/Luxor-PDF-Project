@@ -81,6 +81,10 @@ router.post(
 router.get(
   "/desktop-auth/poll",
   async (req: Request, res: Response): Promise<void> => {
+    // Polling must never be served from HTTP cache — a cached "pending"
+    // response could mask the ticket becoming ready.
+    res.setHeader("Cache-Control", "no-store");
+
     const state = parseState(req.query.state);
     if (!state) {
       res.status(400).json({ error: "Invalid state" });

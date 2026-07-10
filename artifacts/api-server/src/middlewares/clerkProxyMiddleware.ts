@@ -24,7 +24,17 @@ import type { RequestHandler } from "express";
 import type { IncomingHttpHeaders } from "http";
 
 const CLERK_FAPI = "https://frontend-api.clerk.dev";
+// ClerkJS (clerk.browser.js) is served from the jsDelivr CDN, not the
+// Frontend API. Clerk's proxy spec requires `/npm/*` requests to be routed
+// there; sending them to the FAPI returns 404 and the sign-in UI never loads.
+const CLERK_NPM_CDN = "https://cdn.jsdelivr.net";
 export const CLERK_PROXY_PATH = "/api/__clerk";
+
+/** Path as seen by the proxy with the mount prefix stripped (Express strips
+ *  it when mounted via `app.use(CLERK_PROXY_PATH, ...)`, but be tolerant). */
+function strippedPath(url: string | undefined): string {
+  return (url ?? "").replace(new RegExp(`^${CLERK_PROXY_PATH}`), "");
+}
 
 /**
  * Returns the first effective public hostname for the given request,
@@ -66,10 +76,16 @@ export function clerkProxyMiddleware(): RequestHandler {
   return createProxyMiddleware({
     target: CLERK_FAPI,
     changeOrigin: true,
+    router: (req) =>
+      strippedPath(req.url).startsWith("/npm/") ? CLERK_NPM_CDN : CLERK_FAPI,
     pathRewrite: (path: string) =>
       path.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ""),
     on: {
       proxyReq: (proxyReq, req) => {
+        // Static script requests go to the public CDN — never forward Clerk
+        // credentials or proxy headers there.
+        if (strippedPath(req.url).startsWith("/npm/")) return;
+
         const protocol = req.headers["x-forwarded-proto"] || "https";
         const host = getClerkProxyHost(req) || "";
         const proxyUrl = `${protocol}://${host}${CLERK_PROXY_PATH}`;
