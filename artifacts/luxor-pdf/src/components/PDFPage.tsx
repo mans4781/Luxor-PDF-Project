@@ -690,6 +690,31 @@ function highlightTextInLayer(container: HTMLElement, term: string) {
   }
 }
 
+/**
+ * Stroke a freehand point trail as a smooth curve instead of jagged
+ * straight segments. Uses quadratic Béziers with each raw point as the
+ * control point and the midpoints between samples as curve anchors —
+ * the standard "midpoint smoothing" technique used by native ink
+ * renderers, so strokes look fluid at 60 Hz mouse sampling.
+ */
+function strokeSmoothPath(ctx: CanvasRenderingContext2D, points: { x: number; y: number }[]) {
+  if (points.length < 2) return;
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  if (points.length === 2) {
+    ctx.lineTo(points[1].x, points[1].y);
+  } else {
+    for (let i = 1; i < points.length - 1; i++) {
+      const midX = (points[i].x + points[i + 1].x) / 2;
+      const midY = (points[i].y + points[i + 1].y) / 2;
+      ctx.quadraticCurveTo(points[i].x, points[i].y, midX, midY);
+    }
+    const last = points[points.length - 1];
+    ctx.lineTo(last.x, last.y);
+  }
+  ctx.stroke();
+}
+
 function drawArrowhead(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number, size: number) {
   const angle = Math.atan2(y2 - y1, x2 - x1);
   ctx.beginPath();
@@ -709,13 +734,7 @@ function drawShapeOnCtx(ctx: CanvasRenderingContext2D, ann: ShapeAnnotation) {
 
   switch (ann.type) {
     case "freehand": {
-      if (ann.points.length < 2) break;
-      ctx.beginPath();
-      ctx.moveTo(ann.points[0].x, ann.points[0].y);
-      for (let i = 1; i < ann.points.length; i++) {
-        ctx.lineTo(ann.points[i].x, ann.points[i].y);
-      }
-      ctx.stroke();
+      strokeSmoothPath(ctx, ann.points);
       break;
     }
     case "line": {
@@ -1418,11 +1437,7 @@ export default function PDFPage({
 
     switch (tool) {
       case "freehand": {
-        if (points.length < 2) break;
-        ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
-        for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
-        ctx.stroke();
+        strokeSmoothPath(ctx, points);
         break;
       }
       case "line": {
