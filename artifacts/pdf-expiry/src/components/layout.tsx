@@ -1,5 +1,5 @@
 import { ReactNode, useState } from "react";
-import { Undo2, Users, Search, Settings, History, KeyRound, Sparkles, HelpCircle } from "lucide-react";
+import { Undo2, Search, Settings, History, KeyRound, Sparkles, HelpCircle } from "lucide-react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { PlanBadge, DailyLimitBanner } from "@/license/UsageBadge";
 import {
@@ -86,15 +86,6 @@ export function Layout({
 
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <PlanBadge />
-              <a
-                href={`${basePath}/team`}
-                title="Team"
-                className="inline-flex items-center gap-1.5 h-9 px-3 text-sm font-semibold text-[#312E81] hover:text-[#1E1B4B] bg-[#312E81]/5 hover:bg-[#312E81]/10 border border-[#312E81]/15 rounded-full transition-colors"
-                data-testid="header-team-link"
-              >
-                <Users className="w-4 h-4" strokeWidth={2.2} />
-                <span className="hidden sm:inline">Team</span>
-              </a>
 
               {/* Settings / quick-access menu */}
               <DropdownMenu>
