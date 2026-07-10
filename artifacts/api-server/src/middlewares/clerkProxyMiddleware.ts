@@ -24,17 +24,7 @@ import type { RequestHandler } from "express";
 import type { IncomingHttpHeaders } from "http";
 
 const CLERK_FAPI = "https://frontend-api.clerk.dev";
-// ClerkJS (clerk.browser.js) is served from the jsDelivr CDN, not the
-// Frontend API. Clerk's proxy spec requires `/npm/*` requests to be routed
-// there; sending them to the FAPI returns 404 and the sign-in UI never loads.
-const CLERK_NPM_CDN = "https://cdn.jsdelivr.net";
 export const CLERK_PROXY_PATH = "/api/__clerk";
-
-/** Path as seen by the proxy with the mount prefix stripped (Express strips
- *  it when mounted via `app.use(CLERK_PROXY_PATH, ...)`, but be tolerant). */
-function strippedPath(url: string | undefined): string {
-  return (url ?? "").replace(new RegExp(`^${CLERK_PROXY_PATH}`), "");
-}
 
 /**
  * Returns the first effective public hostname for the given request,
@@ -76,16 +66,13 @@ export function clerkProxyMiddleware(): RequestHandler {
   return createProxyMiddleware({
     target: CLERK_FAPI,
     changeOrigin: true,
-    router: (req) =>
-      strippedPath(req.url).startsWith("/npm/") ? CLERK_NPM_CDN : CLERK_FAPI,
+    // Take over the response so it can be re-sent with a Content-Length (see
+    // proxyRes); the deployment edge rejects chunked proxied responses.
+    selfHandleResponse: true,
     pathRewrite: (path: string) =>
       path.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ""),
     on: {
       proxyReq: (proxyReq, req) => {
-        // Static script requests go to the public CDN — never forward Clerk
-        // credentials or proxy headers there.
-        if (strippedPath(req.url).startsWith("/npm/")) return;
-
         const protocol = req.headers["x-forwarded-proto"] || "https";
         const host = getClerkProxyHost(req) || "";
         const proxyUrl = `${protocol}://${host}${CLERK_PROXY_PATH}`;
@@ -101,6 +88,58 @@ export function clerkProxyMiddleware(): RequestHandler {
         if (clientIp) {
           proxyReq.setHeader("X-Forwarded-For", clientIp);
         }
+      },
+      // Clerk's dynamic Frontend API responses (/v1/environment, /v1/client,
+      // JWKS, ...) arrive without a Content-Length, so relaying them would use
+      // Transfer-Encoding: chunked — which the deployment edge (Cloud Run)
+      // rejects, turning the app's 200 into a 500. Buffer only those so they can
+      // be re-sent with a Content-Length; the body is forwarded untouched so
+      // Content-Encoding is preserved. Length-known responses (e.g. /npm/*
+      // assets) and body-less responses stream through without buffering.
+      proxyRes: (proxyRes, req, res) => {
+        const headers = { ...proxyRes.headers };
+        // Transfer-Encoding/Connection are hop-by-hop (RFC 7230 §6.1).
+        delete headers["transfer-encoding"];
+        delete headers["connection"];
+        delete headers["keep-alive"];
+
+        const status = proxyRes.statusCode ?? 502;
+        // Content-Length is forbidden on 1xx/204; HEAD/304 may keep theirs.
+        if (status < 200 || status === 204) {
+          delete headers["content-length"];
+        }
+
+        const bodyless =
+          req.method === "HEAD" ||
+          status < 200 ||
+          status === 204 ||
+          status === 304;
+        if (headers["content-length"] !== undefined || bodyless) {
+          res.writeHead(status, headers);
+          // Headers are already sent, so abort the response if the upstream
+          // stream errors mid-pipe (e.g. ECONNRESET) rather than leaving an
+          // unhandled 'error' or a hung client.
+          proxyRes.on("error", () => res.destroy());
+          proxyRes.pipe(res);
+          return;
+        }
+
+        const chunks: Buffer[] = [];
+        proxyRes.on("data", (chunk: Buffer) => chunks.push(chunk));
+        proxyRes.on("end", () => {
+          const body = Buffer.concat(chunks);
+          headers["content-length"] = String(body.length);
+          res.writeHead(status, headers);
+          res.end(body);
+        });
+        proxyRes.on("error", () => {
+          if (!res.headersSent) {
+            // Set a length so the empty 502 isn't sent chunked (which the
+            // deployment edge would reject just like the original response).
+            res.writeHead(502, { "content-length": "0" });
+          }
+          res.end();
+        });
       },
     },
   }) as RequestHandler;

@@ -1,3 +1,4 @@
+- [Deployment NODE_ENV pitfall](deployment-node-env.md) — autoscale deploys don't set NODE_ENV=production; prod-gated code (Clerk proxy) silently no-ops. Tell: pretty logs in prod.
 - [Teams licensing architecture](teams-licensing.md) — custom orgs/seats/invites layer (no Clerk org tenants); how Team access & device caps mirror the individual license flow.
 - [Stripe webhook patterns](stripe-webhook-patterns.md) — established idempotency + renewal-handling conventions in billing.ts; what is deliberately NOT handled.
 - [Secure upload enforcement](secure-upload-enforcement.md) — secure/expiry (Password & Expiry) is paid-only; gate it on POST /api/pdfs/upload itself, not the advisory endpoints.
