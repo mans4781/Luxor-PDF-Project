@@ -14,6 +14,7 @@ import ConvertTool from "@/pages/convert-tool";
 import SecurePdf from "@/pages/secure-pdf";
 import PdfViewer from "@/pages/viewer";
 import SignInPage from "@/pages/sign-in";
+import DesktopLinkPage from "@/pages/desktop-link";
 import SignUpPage from "@/pages/sign-up";
 import ActivateKeyPage from "@/pages/activate-key";
 import CheckoutPage from "@/pages/checkout";
@@ -79,6 +80,7 @@ function Router() {
       <Route path="/checkout" component={CheckoutPage} />
       <Route path="/team" component={TeamPage} />
       <Route path="/accept-invite" component={AcceptInvitePage} />
+      <Route path="/desktop-link" component={DesktopLinkPage} />
       <Route component={NotFound} />
     </Switch>
   );

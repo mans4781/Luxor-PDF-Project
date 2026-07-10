@@ -7,8 +7,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useAuth } from "@clerk/react";
+import { useAuth, useSignIn } from "@clerk/react";
 import { SUITE_AUTH_HOST_BASE } from "@workspace/luxor-auth-ui";
+import { isDesktopShell } from "../lib/desktopBridge";
 
 /**
  * Sign-in gate for non-reading features.
@@ -51,9 +52,96 @@ function suiteAuthUrl(kind: "sign-in" | "sign-up"): string {
   return `${SUITE_AUTH_HOST_BASE}/${kind}?redirect_url=${redirect}`;
 }
 
+/** Random 64-char lowercase-hex handoff state for desktop sign-in. */
+function randomState(): string {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** Absolute browser URL that starts the desktop sign-in handoff. */
+function desktopAuthUrl(kind: "sign-in" | "sign-up", state: string): string {
+  const origin = window.location.origin;
+  const back = `${origin}${SUITE_AUTH_HOST_BASE}/desktop-link?state=${state}`;
+  return `${origin}${SUITE_AUTH_HOST_BASE}/${kind}?redirect_url=${encodeURIComponent(back)}`;
+}
+
+const DESKTOP_POLL_INTERVAL_MS = 2500;
+const DESKTOP_POLL_TIMEOUT_MS = 10 * 60 * 1000;
+
 export function AuthGateProvider({ children }: { children: ReactNode }) {
   const { isLoaded, isSignedIn } = useAuth();
+  const { signIn, setActive } = useSignIn();
   const [promptLabel, setPromptLabel] = useState<string | null>(null);
+  // Desktop browser-handoff state: null = not started.
+  const [desktopWait, setDesktopWait] = useState<"waiting" | "failed" | null>(
+    null,
+  );
+  const pollAbortRef = useRef<{ cancelled: boolean } | null>(null);
+
+  const stopDesktopFlow = useCallback(() => {
+    if (pollAbortRef.current) pollAbortRef.current.cancelled = true;
+    pollAbortRef.current = null;
+    setDesktopWait(null);
+  }, []);
+
+  /**
+   * Desktop: open the sign-in page in the user's default browser, then
+   * poll the API for the one-time ticket the browser flow produces and
+   * finish the Clerk session inside the app with it.
+   */
+  const startDesktopAuth = useCallback(
+    (kind: "sign-in" | "sign-up") => {
+      const state = randomState();
+      // window.open is intercepted by the desktop shell and routed to the
+      // system default browser.
+      window.open(desktopAuthUrl(kind, state), "_blank", "noopener");
+
+      const flow = { cancelled: false };
+      if (pollAbortRef.current) pollAbortRef.current.cancelled = true;
+      pollAbortRef.current = flow;
+      setDesktopWait("waiting");
+
+      const deadline = Date.now() + DESKTOP_POLL_TIMEOUT_MS;
+      const poll = async (): Promise<void> => {
+        while (!flow.cancelled && Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, DESKTOP_POLL_INTERVAL_MS));
+          if (flow.cancelled) return;
+          try {
+            const res = await fetch(
+              `/api/desktop-auth/poll?state=${state}`,
+              { credentials: "include" },
+            );
+            if (!res.ok) continue;
+            const data: { status: string; ticket?: string } =
+              await res.json();
+            if (data.status === "ready" && data.ticket) {
+              if (flow.cancelled || !signIn || !setActive) return;
+              const result = await signIn.create({
+                strategy: "ticket",
+                ticket: data.ticket,
+              });
+              if (result.status === "complete") {
+                await setActive({ session: result.createdSessionId });
+                if (!flow.cancelled) {
+                  setDesktopWait(null);
+                  setPromptLabel(null);
+                }
+              } else {
+                if (!flow.cancelled) setDesktopWait("failed");
+              }
+              return;
+            }
+          } catch {
+            // Transient network error — keep polling.
+          }
+        }
+        if (!flow.cancelled) setDesktopWait("failed");
+      };
+      void poll();
+    },
+    [signIn, setActive],
+  );
 
   // Keep the latest auth state in refs so `requireAuth` stays referentially
   // stable — callers use it inside useCallback handlers.
