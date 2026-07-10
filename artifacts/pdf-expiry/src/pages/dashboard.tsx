@@ -54,6 +54,17 @@ type ToolItem = {
 
 const TOOLS: ToolItem[] = [
   {
+    key: "secure-pdf",
+    label: "Secure your PDF",
+    description: "Expiry, password & print controls",
+    icon: ShieldCheck,
+    accent: "#DC2626",
+    iconBg: "bg-[#E61E3C] group-hover:bg-[#C81934]",
+    iconText: "text-white",
+    activeRing: "ring-rose-500/40 border-rose-500",
+    badge: "Signature",
+  },
+  {
     key: "pdf-tool",
     label: "Edit Your PDF",
     description: "Merge, split & extract pages",
@@ -82,17 +93,6 @@ const TOOLS: ToolItem[] = [
     iconBg: "bg-[#32AD71] group-hover:bg-[#2A9460]",
     iconText: "text-white",
     activeRing: "ring-emerald-500/40 border-emerald-500",
-  },
-  {
-    key: "secure-pdf",
-    label: "Secure your PDF",
-    description: "Expiry, password & print controls",
-    icon: ShieldCheck,
-    accent: "#DC2626",
-    iconBg: "bg-[#E61E3C] group-hover:bg-[#C81934]",
-    iconText: "text-white",
-    activeRing: "ring-rose-500/40 border-rose-500",
-    badge: "Signature",
   },
   {
     key: "compress-pdf",
@@ -711,7 +711,7 @@ export default function Dashboard() {
     const requested = new URLSearchParams(search).get("tool") as ToolKey | null;
     return requested && VALID_TOOL_KEYS.includes(requested)
       ? requested
-      : "pdf-tool";
+      : "secure-pdf";
   })();
   const [active, setActive] = useState<ToolKey | null>(initial);
 
