@@ -110,18 +110,30 @@ function ActivateKeyContent() {
 
   const wellFormed = KEY_REGEX.test(keyInput);
 
-  async function handleBlur() {
-    if (!wellFormed || verifyMut.isPending) return;
-    try {
-      const r = await verifyMut.mutateAsync({ data: { productKey: keyInput } });
-      setVerify(r);
-    } catch {
-      setVerify(null);
-    }
-  }
+  // Verify the key automatically (debounced) as soon as it's fully typed —
+  // no blur handler, so clicking "Activate" never races a layout shift.
+  useEffect(() => {
+    if (!wellFormed) return;
+    let cancelled = false;
+    const t = setTimeout(() => {
+      verifyMut
+        .mutateAsync({ data: { productKey: keyInput } })
+        .then((r) => {
+          if (!cancelled) setVerify(r);
+        })
+        .catch(() => {
+          if (!cancelled) setVerify(null);
+        });
+    }, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyInput, wellFormed]);
 
   async function handleActivate() {
-    if (!wellFormed) return;
+    if (!wellFormed || activateMut.isPending) return;
     try {
       const result = await activateMut.mutateAsync({
         data: {
@@ -215,7 +227,14 @@ function ActivateKeyContent() {
       </div>
 
       <Card className="border-indigo-100 shadow-sm">
-        <CardContent className="pt-6 space-y-4">
+        <CardContent className="pt-6">
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void handleActivate();
+            }}
+          >
           <div className="space-y-1.5">
             <Label
               htmlFor="product-key"
@@ -231,7 +250,6 @@ function ActivateKeyContent() {
                 setKeyInput(formatKey(e.target.value));
                 setVerify(null);
               }}
-              onBlur={handleBlur}
               placeholder="LUXOR-XXXX-XXXX-XXXX-XXXX"
               autoComplete="off"
               spellCheck={false}
@@ -293,7 +311,7 @@ function ActivateKeyContent() {
               activateMut.isPending ||
               (verify !== null && !verify.valid)
             }
-            onClick={handleActivate}
+            type="submit"
             data-testid="button-activate-key"
           >
             {activateMut.isPending ? (
@@ -308,8 +326,9 @@ function ActivateKeyContent() {
               </>
             )}
           </Button>
+          </form>
 
-          <div className="border-t border-slate-100 pt-3 text-center">
+          <div className="border-t border-slate-100 pt-3 mt-4 text-center">
             <p className="text-xs text-slate-500">
               Don't have a key yet?{" "}
               <a
