@@ -1519,6 +1519,7 @@ const TABS_GRID_BY_COUNT: Record<number, string> = {
 
 const ACCENT_GRADIENTS: Record<string, string> = {
   blue: "from-[#1754F4] via-[#154EE2] to-[#1447D0]",
+  orange: "from-[#F37311] via-[#E26A0F] to-[#D4640C]",
   green: "from-[#32AD71] via-[#2EA068] to-[#2A9460]",
   default: "from-emerald-500 via-teal-500 to-orange-400",
 };

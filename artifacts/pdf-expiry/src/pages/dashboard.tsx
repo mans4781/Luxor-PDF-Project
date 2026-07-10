@@ -79,10 +79,10 @@ const TOOLS: ToolItem[] = [
     label: "Convert from PDF",
     description: "PDF to images or text",
     icon: FileOutput,
-    accent: "#2563EB",
-    iconBg: "bg-[#1754F4] group-hover:bg-[#1447D0]",
+    accent: "#EA580C",
+    iconBg: "bg-[#F37311] group-hover:bg-[#D4640C]",
     iconText: "text-white",
-    activeRing: "ring-blue-500/40 border-blue-500",
+    activeRing: "ring-orange-500/40 border-orange-500",
   },
   {
     key: "convert-to",
@@ -679,7 +679,7 @@ function RightPanel({ active }: { active: ToolKey | null }) {
         <ConvertToolContent
           defaultTab="pdf-to-images"
           tabs={["pdf-to-images", "pdf-to-word", "pdf-to-excel"]}
-          accent="blue"
+          accent="orange"
         />
       )}
       {active === "convert-to" && (
