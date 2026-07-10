@@ -69,10 +69,10 @@ const TOOLS: ToolItem[] = [
     label: "Edit Your PDF",
     description: "Merge, split & extract pages",
     icon: Wrench,
-    accent: "#2563EB",
-    iconBg: "bg-[#1754F4] group-hover:bg-[#1447D0]",
+    accent: "#DC2626",
+    iconBg: "bg-[#E61E3C] group-hover:bg-[#C81934]",
     iconText: "text-white",
-    activeRing: "ring-blue-500/40 border-blue-500",
+    activeRing: "ring-rose-500/40 border-rose-500",
   },
   {
     key: "convert-from",
