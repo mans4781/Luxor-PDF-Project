@@ -86,17 +86,6 @@ function MissionGraphic() {
   );
 }
 
-function TeamAvatar({ initials, gradient, size = 56 }: { initials: string; gradient: string; size?: number }) {
-  return (
-    <div
-      className={`rounded-2xl flex items-center justify-center font-bold text-white text-lg shadow-lg ${gradient}`}
-      style={{ width: size, height: size }}
-    >
-      {initials}
-    </div>
-  );
-}
-
 /* ─── Data ─── */
 
 const stats = [
@@ -113,15 +102,6 @@ const values = [
   { icon: Handshake,  title: "Transparent Trust",   color: "bg-emerald-50 text-emerald-600",desc: "No dark patterns, no hidden fees, no telemetry. What you see is exactly what you get." },
   { icon: Globe,      title: "Built for Everyone",  color: "bg-rose-50   text-rose-600",    desc: "From solo freelancers to Fortune 500 legal teams — our tools adapt to you, not the other way around." },
   { icon: Heart,      title: "People Over Profit",  color: "bg-pink-50   text-pink-600",    desc: "We're a small team that genuinely cares about the people using our products. Your satisfaction is our metric." },
-];
-
-const team = [
-  { initials: "AR", name: "Aryan Raj",        role: "Co-Founder & CEO",        gradient: "bg-gradient-to-br from-violet-600 to-indigo-700", bio: "Former software architect at a Big 4 law firm. Saw firsthand how broken PDF workflows cost teams thousands of hours a year." },
-  { initials: "SM", name: "Sara Mitchell",    role: "Co-Founder & CTO",        gradient: "bg-gradient-to-br from-indigo-600 to-blue-600",   bio: "Cryptography engineer with 12 years in enterprise security. Designed the zero-trust encryption layer that powers Luxor PDF." },
-  { initials: "DK", name: "Dev Kumar",        role: "Head of Product",         gradient: "bg-gradient-to-br from-sky-500 to-cyan-500",      bio: "Serial UX designer obsessed with reducing friction. Previously led design at two Y Combinator startups." },
-  { initials: "LP", name: "Layla Petrov",     role: "Head of Engineering",     gradient: "bg-gradient-to-br from-emerald-500 to-teal-500",  bio: "Full-stack engineer & open-source contributor. Owns the cross-platform architecture across Windows, Android, and Web." },
-  { initials: "MC", name: "Marcus Chen",      role: "Head of Customer Success",gradient: "bg-gradient-to-br from-amber-500 to-orange-500",  bio: "Spent a decade supporting enterprise legal software. Ensures every Luxor customer gets the outcome they came for." },
-  { initials: "FN", name: "Fatima Nouri",     role: "Lead Security Engineer",  gradient: "bg-gradient-to-br from-rose-500 to-pink-500",     bio: "Certified ethical hacker & compliance expert. Leads our GDPR, SOC 2, and ISO 27001 programs." },
 ];
 
 const timeline = [
@@ -283,36 +263,6 @@ export default function AboutPage() {
                 </div>
                 <h3 className="text-lg font-bold text-slate-800 mb-2">{title}</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Team ── */}
-      <section className="py-20 bg-gradient-to-br from-slate-50 to-indigo-50">
-        <div className="container mx-auto px-6">
-          <motion.div {...fade()} className="text-center mb-14">
-            <span className="text-xs font-bold uppercase tracking-widest text-violet-600 bg-violet-50 px-3 py-1.5 rounded-full">The People</span>
-            <h2 className="text-4xl font-bold text-slate-800 mt-4 mb-3">Meet the Team</h2>
-            <p className="text-slate-500 max-w-xl mx-auto">A small, focused group of people who care deeply about privacy, great software, and helping you do your best work.</p>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7 max-w-5xl mx-auto">
-            {team.map(({ initials, name, role, gradient, bio }, i) => (
-              <motion.div
-                key={name}
-                {...fade(i * 0.07)}
-                className="bg-white rounded-3xl p-7 border border-slate-100 shadow-sm hover:shadow-lg transition-shadow group"
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <TeamAvatar initials={initials} gradient={gradient} />
-                  <div>
-                    <h3 className="font-bold text-slate-800">{name}</h3>
-                    <p className="text-xs font-semibold text-violet-600 bg-violet-50 px-2.5 py-0.5 rounded-full mt-0.5 inline-block">{role}</p>
-                  </div>
-                </div>
-                <p className="text-slate-500 text-sm leading-relaxed">{bio}</p>
               </motion.div>
             ))}
           </div>
