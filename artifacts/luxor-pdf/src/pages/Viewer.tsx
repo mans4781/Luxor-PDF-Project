@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/web/pdf_viewer.css";
 import Toolbar, { type ThemeKey } from "@/components/Toolbar";
@@ -934,6 +934,13 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       setDownloading(false);
     }
   };
+  // Keep the ref pointing at the latest handleDownload so memoized
+  // callers (Save As, unsaved-changes dialog) never run a stale closure.
+  // Assigned post-commit (not during render) so an interrupted concurrent
+  // render can never leave the ref pointing at uncommitted state.
+  useLayoutEffect(() => {
+    handleDownloadRef.current = handleDownload;
+  });
 
   // Print via a hidden iframe holding the original PDF so the browser's
   // native PDF printing handles every page. (Printing the DOM would only
