@@ -1135,10 +1135,10 @@ export default function Toolbar({
         style={sharing ? { opacity: 0.5, cursor: "wait" } : undefined}
       >
         <span className="toolbar-tip">{sharing ? "Preparing…" : "Share"}</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 15V4"/>
-          <path d="M8.5 7.5 12 4l3.5 3.5"/>
-          <path d="M5 12v6.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V12"/>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 9.5V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5.5"/>
+          <path d="M7.5 15.5C7.8 10.6 11.2 7.6 16.4 7.3"/>
+          <path d="M13.2 3.6 17.4 7.3 13.2 11"/>
         </svg>
       </button>
       <div style={{ marginLeft: 8, display: "flex", alignItems: "center" }}>
