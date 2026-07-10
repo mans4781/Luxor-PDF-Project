@@ -851,8 +851,8 @@ export default function Toolbar({
           title="Freehand pen — draw anywhere on the page"
         >
           <span className="toolbar-tip">Freehand</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-            <path d="M3 17c3-4 6-12 9-12s3 8 6 8 3-4 3-4"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2.5 15.5C4.5 9 7.5 4.5 9.5 5.5c2 1-0.5 8 1.5 10s4.5-7.5 6.5-6.5c1.5 0.8-0.5 6 1.5 6.5 0.8 0.2 1.5-0.5 2-1.5"/>
           </svg>
         </button>
         <button
