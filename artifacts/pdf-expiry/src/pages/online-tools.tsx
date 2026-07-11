@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
-import { Layout } from "@/components/layout";
+import { MarketingLayout } from "@/components/marketing-layout";
 import { TOOL_CATEGORIES } from "@/lib/tools-registry";
 
 export default function OnlineTools() {
@@ -10,7 +10,7 @@ export default function OnlineTools() {
   }, []);
 
   return (
-    <Layout>
+    <MarketingLayout>
       <div className="max-w-5xl mx-auto space-y-10">
         <header className="text-center max-w-2xl mx-auto">
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
@@ -60,6 +60,6 @@ export default function OnlineTools() {
           </section>
         ))}
       </div>
-    </Layout>
+    </MarketingLayout>
   );
 }
