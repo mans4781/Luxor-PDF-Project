@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ChevronDown, Home, Layers, Sparkles, Tag, Info, Wrench, ArrowRight } from "lucide-react";
+import { ChevronDown, Home, Layers, Sparkles, Tag, Info, Wrench, Grid3x3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -234,10 +234,11 @@ export function Navbar() {
                     <Link
                       href="/online-tools"
                       onClick={() => setToolsOpen(false)}
-                      className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#312E81] hover:text-[#1E1B4B] transition-colors"
+                      data-testid="mega-link-all-tools"
+                      className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#312E81] hover:underline"
                     >
-                      Browse the tools overview
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <Grid3x3 className="w-4 h-4" />
+                      Browse all tools
                     </Link>
                   </div>
                 </motion.div>
