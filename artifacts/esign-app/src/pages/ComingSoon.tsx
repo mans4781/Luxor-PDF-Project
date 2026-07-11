@@ -17,12 +17,16 @@ export default function ComingSoon() {
 
       <div className="relative z-10 text-center max-w-xl">
         {/* Brand */}
-        <div className="inline-flex items-center gap-2.5 mb-10">
+        <a
+          href={import.meta.env.BASE_URL}
+          aria-label="LuxorSign — home"
+          className="inline-flex items-center gap-2.5 mb-10 rounded-xl transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+        >
           <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
             <PenLine className="w-5 h-5 text-white" strokeWidth={2.5} />
           </div>
           <span className="text-2xl font-semibold tracking-tight">LuxorSign</span>
-        </div>
+        </a>
 
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-indigo-200 text-xs font-medium mb-6">

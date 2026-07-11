@@ -55,7 +55,11 @@ export function AuthShell({ children, variant }: AuthShellProps) {
 
         {/* Top: brand lockup */}
         <div className="relative flex items-center">
-          <div className="flex items-center gap-3">
+          <a
+            href={baseUrl}
+            aria-label="Luxor PDF Secure — home"
+            className="flex items-center gap-3 rounded-2xl transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+          >
             <img
               src={`${baseUrl}brand/luxor-icon.png?v=20260627`}
               alt=""
@@ -77,7 +81,7 @@ export function AuthShell({ children, variant }: AuthShellProps) {
                 Private PDF Suite
               </span>
             </div>
-          </div>
+          </a>
         </div>
 
         {/* Middle: pitch */}

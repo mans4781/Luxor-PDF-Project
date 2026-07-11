@@ -33,7 +33,11 @@ export function Layout({
         <header className="bg-white border-b border-slate-200">
           <div className="container mx-auto px-6 h-20 flex items-center justify-between gap-4">
             {/* Brand lockup */}
-            <div className="flex items-center gap-3 shrink-0">
+            <a
+              href={baseUrl}
+              aria-label="Luxor PDF Secure — home"
+              className="flex items-center gap-3 shrink-0 rounded-lg transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1754F4]/40"
+            >
               <img
                 src={`${baseUrl}brand/luxor-secure-icon.png?v=20260710`}
                 alt=""
@@ -53,7 +57,7 @@ export function Layout({
                   Private PDF Suite
                 </span>
               </div>
-            </div>
+            </a>
 
             {/* Centered tool search (only on pages that opt in) */}
             {showSearch && (
