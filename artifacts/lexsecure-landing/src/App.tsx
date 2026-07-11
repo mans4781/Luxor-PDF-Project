@@ -11,6 +11,7 @@ import PrivacyPage from "@/pages/privacy";
 import TermsPage from "@/pages/terms";
 import CookiesPage from "@/pages/cookies";
 import LicensingPage from "@/pages/licensing";
+import RefundPage from "@/pages/refund";
 import PdfReaderPage from "@/pages/products/pdf-reader";
 import PdfEditorPage from "@/pages/products/pdf-editor";
 import ESignPage from "@/pages/products/esign";
@@ -46,6 +47,7 @@ function Router() {
       <Route path="/terms" component={TermsPage} />
       <Route path="/cookies" component={CookiesPage} />
       <Route path="/licensing" component={LicensingPage} />
+      <Route path="/refund" component={RefundPage} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/products/pdf-reader" component={PdfReaderPage} />
       <Route path="/products/pdf-editor" component={PdfEditorPage} />

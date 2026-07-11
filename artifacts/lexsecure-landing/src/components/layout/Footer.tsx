@@ -30,6 +30,7 @@ const POLICY_LINKS: LinkItem[] = [
   { label: "Terms of Use", href: "/terms" },
   { label: "Cookie Policy", href: "/cookies" },
   { label: "Licensing", href: "/licensing" },
+  { label: "Refund Policy", href: "/refund" },
 ];
 
 type SocialLink = {
