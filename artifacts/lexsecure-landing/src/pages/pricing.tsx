@@ -496,7 +496,6 @@ export default function PricingPage() {
               { label: "Cancel anytime", sub: "No long contracts" },
               { label: "License keys", sub: "Auto-renewed" },
               { label: "Web + Desktop", sub: "Same subscription" },
-              { label: "GDPR ready", sub: "EU & India compliant" },
               { label: "30-day refund", sub: "If you're not happy" },
             ].map((item) => (
               <div key={item.label} className="bg-white rounded-xl p-5 border border-slate-200 text-center">

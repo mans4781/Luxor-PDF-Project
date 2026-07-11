@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
 import {
-  Shield, Target, Eye, Heart, Zap, Users, Globe, Award,
-  Lock, BookOpen, Lightbulb, Handshake
+  Target, Eye, Heart, Zap, Users, Globe, Award,
+  Lock, Lightbulb, Handshake
 } from "lucide-react";
 
 const fade = (delay = 0) => ({
@@ -52,8 +52,6 @@ function HeroIllustration() {
       {/* Floating pills */}
       <rect x="150" y="270" width="80"  height="26" rx="13" fill="white" fillOpacity="0.15" stroke="white" strokeOpacity="0.3" />
       <text x="190" y="287" textAnchor="middle" fill="white" fontSize="10" fontWeight="600">AES-256</text>
-      <rect x="250" y="270" width="80"  height="26" rx="13" fill="white" fillOpacity="0.15" stroke="white" strokeOpacity="0.3" />
-      <text x="290" y="287" textAnchor="middle" fill="white" fontSize="10" fontWeight="600">GDPR ✓</text>
 
       {/* Dots */}
       <circle cx="100" cy="290" r="5" fill="white" fillOpacity="0.25" />
@@ -173,7 +171,7 @@ export default function AboutPage() {
         <div className="container mx-auto px-6 max-w-3xl">
           <motion.div {...fade()} className="text-center mb-14">
             <span className="text-xs font-bold uppercase tracking-widest text-violet-600 bg-violet-50 px-3 py-1.5 rounded-full">Our Story</span>
-            <h2 className="text-4xl font-bold text-slate-800 mt-4 mb-3">From frustration to product</h2>
+            <h2 className="text-4xl font-bold text-slate-800 mt-4 mb-3">Our journey</h2>
             <p className="text-slate-500 text-lg">A timeline of how Luxor PDF grew from a weekend hack into a platform trusted by 50,000+ professionals.</p>
           </motion.div>
 
@@ -275,9 +273,6 @@ export default function AboutPage() {
           <motion.div {...fade()} className="flex flex-wrap justify-center gap-8 items-center">
             {[
               { icon: Award,    color: "text-amber-500",  bg: "bg-amber-50",   label: "Product Hunt",      sub: "#1 Product of the Day" },
-              { icon: Shield,   color: "text-violet-600", bg: "bg-violet-50",  label: "ISO 27001 Ready",   sub: "Security Certified" },
-              { icon: Globe,    color: "text-sky-600",    bg: "bg-sky-50",     label: "GDPR Compliant",    sub: "EU Privacy Standard" },
-              { icon: BookOpen, color: "text-emerald-600",bg: "bg-emerald-50", label: "G2 Leader",         sub: "PDF Software Category" },
               { icon: Users,    color: "text-rose-600",   bg: "bg-rose-50",    label: "50K+ Users",        sub: "120+ Countries" },
             ].map(({ icon: Icon, color, bg, label, sub }) => (
               <div key={label} className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-slate-50 border border-slate-100">

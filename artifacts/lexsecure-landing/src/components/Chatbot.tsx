@@ -49,7 +49,7 @@ const KB: MatchRule[] = [
   {
     patterns: [/secure/i, /privacy/i, /encrypt/i, /data/i, /safe/i, /gdpr/i, /private/i],
     response:
-      "Security is at the core of Luxor PDF:\n\n🔒 **AES-256 encryption** on all documents\n📴 **100% local processing** — your files never leave your device unless you choose to share\n✅ **GDPR compliant** with zero telemetry\n🛡️ **Zero-trust architecture** — we can't read your files even if we wanted to\n\nYour data is yours. Period.",
+      "Security is at the core of Luxor PDF:\n\n🔒 **AES-256 encryption** on all documents\n📴 **100% local processing** — your files never leave your device unless you choose to share\n✅ **Zero telemetry** — we don't track you\n🛡️ **Zero-trust architecture** — we can't read your files even if we wanted to\n\nYour data is yours. Period.",
   },
   {
     patterns: [/esign/i, /e.?sign/i, /signature/i, /sign doc/i],

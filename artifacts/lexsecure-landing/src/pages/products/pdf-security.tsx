@@ -581,28 +581,6 @@ export default function PdfSecurityPage() {
         </div>
       </section>
 
-      {/* === Compliance === */}
-      <section className="py-14 bg-slate-50">
-        <div className="container mx-auto px-6">
-          <motion.p {...fadeUp} className="text-center text-slate-400 text-sm mb-6 uppercase tracking-[0.18em] font-medium">
-            Standards & compliance
-          </motion.p>
-          <motion.div {...stagger} className="flex flex-wrap justify-center gap-3">
-            {["GDPR", "HIPAA Ready", "ISO 27001", "PDF/A Archival", "SOC 2 Ready", "FIPS 140-2"].map(b => (
-              <motion.div
-                key={b}
-                variants={fadeUp}
-                whileHover={{ y: -2 }}
-                className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 shadow-sm border border-slate-100"
-              >
-                <CheckCircle2 className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-medium text-slate-700">{b}</span>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
       {/* === CTA === */}
       <section className="relative overflow-hidden py-20 bg-gradient-to-br from-blue-900 via-blue-800 to-sky-900 text-white">
         <motion.div

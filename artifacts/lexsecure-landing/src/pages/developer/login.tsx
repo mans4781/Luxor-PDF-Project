@@ -250,7 +250,6 @@ export default function DeveloperLoginPage() {
             {[
               { icon: ShieldCheck, label: "AES-256 encryption end-to-end", color: "text-emerald-300" },
               { icon: KeyRound, label: "Scoped API keys with rotation", color: "text-amber-300" },
-              { icon: Lock, label: "Compliance: SOC 2 · GDPR · HIPAA", color: "text-rose-300" },
             ].map(({ icon: Icon, label, color }) => (
               <li key={label} className="flex items-center gap-3 text-white/85">
                 <span className="w-9 h-9 rounded-lg bg-white/10 border border-white/15 flex items-center justify-center flex-shrink-0">

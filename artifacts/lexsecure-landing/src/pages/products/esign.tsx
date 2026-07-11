@@ -186,7 +186,7 @@ export default function ESignPage() {
         <div className="container mx-auto px-6">
           <p className="text-center text-slate-400 text-sm mb-6 uppercase tracking-wider font-medium">Legal compliance</p>
           <div className="flex flex-wrap justify-center gap-6">
-            {["eIDAS (EU)", "ESIGN Act (US)", "UETA", "GDPR Compliant", "SOC 2 Ready", "ISO 27001"].map(b => (
+            {["eIDAS (EU)", "ESIGN Act (US)", "UETA"].map(b => (
               <div key={b} className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 shadow-sm border border-slate-100">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 <span className="text-sm font-medium text-slate-700">{b}</span>
