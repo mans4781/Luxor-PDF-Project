@@ -53,7 +53,7 @@ export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
   { name: "Green",  value: "#00FF80", opacity: 0.50 },
   { name: "Cyan",   value: "#00AEFF", opacity: 0.50 },
   { name: "Violet", value: "#8000FF", opacity: 0.50 },
-  { name: "Pink",   value: "#FF0080", opacity: 0.50 },
+  { name: "Pink",   value: "#F8C8DC", opacity: 0.50 },
 ];
 
 /**
@@ -68,7 +68,7 @@ export const QUICK_HIGHLIGHT_COLORS: HighlightSwatch[] = [
   { name: "Green",  value: "#00FF80", opacity: 0.50 },
   { name: "Cyan",   value: "#00AEFF", opacity: 0.50 },
   { name: "Violet", value: "#8000FF", opacity: 0.50 },
-  { name: "Pink",   value: "#FF0080", opacity: 0.50 },
+  { name: "Pink",   value: "#F8C8DC", opacity: 0.50 },
 ];
 
 /** Fixed blue tint (#007FFF) used by the live text-selection overlay —
@@ -94,7 +94,7 @@ export const SELECTION_PREVIEW_BY_HIGHLIGHT: Record<string, string> = {
   "#00FF80": "rgba(0, 255, 128, 0.50)",   // Green
   "#00AEFF": "rgba(0, 174, 255, 0.50)",   // Cyan
   "#8000FF": "rgba(128, 0, 255, 0.50)",   // Violet
-  "#FF0080": "rgba(255, 0, 128, 0.50)",   // Pink
+  "#F8C8DC": "rgba(248, 200, 220, 0.50)", // Baby Pink
 };
 
 /** Resolve a highlight hex to its soft selection-preview shade. */
