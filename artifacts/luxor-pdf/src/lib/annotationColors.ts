@@ -41,15 +41,18 @@ export const SELECTION = {
  * uses CSS `mix-blend-mode: multiply` (screen in night mode), so the
  * background takes the exact swatch color while the black text underneath
  * stays fully intact. Order runs across the hue wheel:
- *   Yellow #FFFF00, Lime #80FF00, Green #00FF80, Cyan #00AEFF, Pink #FF0080.
+ *   Yellow #FFFF00, Orange #FF8000, Lime #80FF00, Green #00FF80,
+ *   Cyan #00AEFF, Violet #8000FF, Pink #FF0080.
  * The `opacity` field is retained only as stored annotation data; on-screen
  * display is full-opacity because the blend mode does the see-through work.
  */
 export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
   { name: "Yellow", value: "#FFFF00", opacity: 0.50 },
+  { name: "Orange", value: "#FF8000", opacity: 0.50 },
   { name: "Lime",   value: "#80FF00", opacity: 0.50 },
   { name: "Green",  value: "#00FF80", opacity: 0.50 },
   { name: "Cyan",   value: "#00AEFF", opacity: 0.50 },
+  { name: "Violet", value: "#8000FF", opacity: 0.50 },
   { name: "Pink",   value: "#FF0080", opacity: 0.50 },
 ];
 
@@ -60,9 +63,11 @@ export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
  */
 export const QUICK_HIGHLIGHT_COLORS: HighlightSwatch[] = [
   { name: "Yellow", value: "#FFFF00", opacity: 0.50 },
+  { name: "Orange", value: "#FF8000", opacity: 0.50 },
   { name: "Lime",   value: "#80FF00", opacity: 0.50 },
   { name: "Green",  value: "#00FF80", opacity: 0.50 },
   { name: "Cyan",   value: "#00AEFF", opacity: 0.50 },
+  { name: "Violet", value: "#8000FF", opacity: 0.50 },
   { name: "Pink",   value: "#FF0080", opacity: 0.50 },
 ];
 
@@ -84,9 +89,11 @@ export const SELECTION_PREVIEW_DEFAULT = "rgba(0, 120, 255, 0.25)";
 
 export const SELECTION_PREVIEW_BY_HIGHLIGHT: Record<string, string> = {
   "#FFFF00": "rgba(255, 255, 0, 0.50)",   // Yellow
+  "#FF8000": "rgba(255, 128, 0, 0.50)",   // Orange
   "#80FF00": "rgba(128, 255, 0, 0.50)",   // Lime
   "#00FF80": "rgba(0, 255, 128, 0.50)",   // Green
   "#00AEFF": "rgba(0, 174, 255, 0.50)",   // Cyan
+  "#8000FF": "rgba(128, 0, 255, 0.50)",   // Violet
   "#FF0080": "rgba(255, 0, 128, 0.50)",   // Pink
 };
 
