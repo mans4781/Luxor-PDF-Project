@@ -34,7 +34,7 @@ export function Layout({
           <div className="container mx-auto px-6 h-20 flex items-center justify-between gap-4">
             {/* Brand lockup */}
             <a
-              href={baseUrl}
+              href="/"
               aria-label="Luxor PDF Secure — home"
               className="flex items-center gap-3 shrink-0 rounded-lg transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1754F4]/40"
             >
