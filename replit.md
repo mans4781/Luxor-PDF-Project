@@ -2,6 +2,7 @@
 
 ## User preferences
 
+- **Desktop app icon colors (do not mix up)**: Luxor PDF **Reader** (`luxor-reader-desktop`) icon is **RED**; Luxor PDF **Secure** (`luxor-desktop`) icon is **BLUE**. Applies to app + installer icons.
 - **Originality / no-copy requirement (all Luxor products, especially Luxor PDF Reader)**: never copy, clone, or imitate the UI, layout, icons, graphics, colors, wording, workflows, branding, or design system of Adobe Acrobat, Foxit, PDF-XChange, Nitro, Smallpdf, iLovePDF, DocuSign, or any other existing PDF software. Those products may be referenced only for understanding user expectations. All layouts, toolbar/sidebar/panel/modal designs, empty states, loading states, UI copy, labels, error messages, and mock AI/OCR/security/signature workflows must be newly written and original to Luxor PDF. Use only properly licensed open-source libraries (PDF.js, React, TypeScript, Tailwind, Lucide icons, etc.). No copyrighted assets, scraped images, copied SVGs, or copied CSS. Keep the Luxor identity: red document/shield accent, clean white interface, modern dark mode, premium business-software feel.
 
 ## Overview
