@@ -207,7 +207,7 @@ export function Navbar() {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-4 gap-x-1 gap-y-1 px-4 py-5">
+                  <div className="grid grid-cols-4 gap-x-0 gap-y-1 px-3 py-5">
                     {ONLINE_TOOL_COLUMNS.map((col) => (
                       <div key={col.title} className="min-w-0">
                         <p className="text-[11px] font-bold uppercase tracking-wider text-[#312E81]/70 mb-2 px-2">
