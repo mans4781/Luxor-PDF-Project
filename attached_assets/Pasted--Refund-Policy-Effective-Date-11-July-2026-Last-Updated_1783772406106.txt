@@ -1,0 +1,570 @@
+# Refund Policy
+
+**Effective Date:** 11 July 2026
+**Last Updated:** 11 July 2026
+
+## 1. Introduction
+
+This Refund Policy explains when a customer may request a refund for a Luxor PDF product, software licence, subscription, or online service.
+
+**Luxor PDF is a brand owned and operated by Fairnova Labs Private Limited.**
+
+This Refund Policy applies to purchases made directly through the official Luxor PDF website or another sales channel operated by Fairnova Labs Private Limited.
+
+By purchasing a Luxor PDF product or service, you agree to this Refund Policy, the Luxor PDF Terms of Use, Privacy Policy, and any product-specific conditions displayed at checkout.
+
+For refund-related questions, contact:
+
+**[support@luxorpdf.com](mailto:support@luxorpdf.com)**
+
+## 2. Products Covered by This Policy
+
+This Refund Policy may apply to purchases of:
+
+* Luxor PDF Reader;
+* Luxor PDF Secure;
+* Luxor PDF eSign;
+* Individual licences;
+* Professional licences;
+* Team licences;
+* Business licences;
+* Monthly subscriptions;
+* Annual subscriptions;
+* Fixed-term software licences;
+* eSignature plans or transaction packages;
+* Cloud document-processing services;
+* Product bundles; and
+* Other Luxor PDF products purchased directly from us.
+
+Refund eligibility may depend on the product, licence, subscription, purchase channel, usage level, and reason for the request.
+
+## 3. Fourteen-Day Refund Request Period
+
+You may request a refund for an eligible first-time purchase within **14 calendar days of the original purchase date**.
+
+Submitting a request within 14 days does not automatically guarantee approval. We may review:
+
+* The reason for the request;
+* Whether the licence has been activated;
+* How extensively the product has been used;
+* The number of documents processed;
+* Whether eSign transactions or credits have been consumed;
+* Whether online storage or cloud resources have been used;
+* Whether the purchase was made directly from Luxor PDF; and
+* Whether the request complies with this Refund Policy.
+
+This 14-day policy does not limit any mandatory refund, cancellation, or consumer rights available under applicable law.
+
+## 4. Eligible Refund Circumstances
+
+A refund may be approved in circumstances such as the following.
+
+### 4.1 Duplicate Purchase
+
+You were charged more than once for the same Luxor PDF product or accidentally purchased the same licence twice.
+
+### 4.2 Incorrect Charge
+
+You were charged an amount different from the amount displayed or confirmed at checkout, excluding taxes, currency conversion, or charges imposed separately by your bank or payment provider.
+
+### 4.3 Technical Incompatibility
+
+The purchased software cannot be installed or used on a device or operating system that was expressly listed as supported at the time of purchase.
+
+You may be required to cooperate with our support team and allow a reasonable opportunity to diagnose and resolve the issue before a refund is approved.
+
+### 4.4 Unresolved Technical Failure
+
+A significant technical problem prevents you from using the main paid functions of the product, and our support team is unable to provide a reasonable solution.
+
+A refund may not be available where the issue results from:
+
+* An unsupported device or operating system;
+* An outdated operating system;
+* Insufficient device resources;
+* Third-party software conflicts;
+* Internet or network restrictions;
+* Incorrect user settings;
+* Failure to install required updates; or
+* Circumstances outside Luxor PDF’s reasonable control.
+
+### 4.5 Accidental First-Time Purchase
+
+You accidentally purchased a Luxor PDF product and contacted us within 14 calendar days without substantially using the product or service.
+
+### 4.6 Product Materially Different from Its Description
+
+The purchased product materially differs from the key features expressly described on the official Luxor PDF website at the time of purchase.
+
+Minor design changes, feature placement, workflow differences, or reasonable product updates will not normally qualify as a material difference.
+
+### 4.7 Unauthorised Transaction
+
+You believe a purchase was made using your payment method without your permission.
+
+We may request information reasonably required to investigate the transaction and may refer the matter to the relevant payment provider.
+
+## 5. Situations That Are Generally Not Eligible for a Refund
+
+Unless required by applicable law, a refund will generally not be provided in the following circumstances.
+
+### 5.1 Refund Period Has Expired
+
+The refund request is submitted more than 14 calendar days after the original purchase date.
+
+### 5.2 Substantial Product Usage
+
+The product has been substantially used, including where a customer has:
+
+* Processed a significant number of documents;
+* Used premium tools repeatedly;
+* Converted, compressed, merged, split, or edited multiple files;
+* Applied document-security controls;
+* Used redaction features;
+* Used secure sharing;
+* Used AI-powered features;
+* Used substantial online storage or processing capacity; or
+* Otherwise received significant value from the product.
+
+### 5.3 Completed eSignature Transactions
+
+A refund will generally not be provided for:
+
+* Completed eSignature transactions;
+* Documents already sent to signers;
+* Audit trails already generated;
+* Signing requests already processed;
+* Identity-verification services already used;
+* Transaction credits already consumed; or
+* Other eSign services already delivered.
+
+### 5.4 Consumed Credits or Usage Allowances
+
+Prepaid document-processing credits, eSign credits, AI credits, storage allowances, or other usage-based resources that have already been consumed are generally non-refundable.
+
+### 5.5 Failure to Review Product Requirements
+
+The customer did not review the published:
+
+* System requirements;
+* Supported operating systems;
+* Supported file formats;
+* Internet requirements;
+* Product features;
+* Licence limits;
+* User limits;
+* Device limits; or
+* Plan restrictions before purchasing.
+
+### 5.6 Change of Mind After Substantial Use
+
+The customer changes their mind after substantially using the software or receiving the purchased service.
+
+### 5.7 Failure to Use the Product
+
+A refund will not normally be provided solely because the customer:
+
+* Did not download the software;
+* Did not activate the licence;
+* Did not use the subscription;
+* Forgot about the purchase;
+* No longer needs the product; or
+* Did not cancel before the end of the refund period.
+
+An exception may be considered for an unused first-time purchase when the request is submitted within 14 calendar days.
+
+### 5.8 Incorrect Purchase Caused by Customer Selection
+
+The customer purchased the wrong:
+
+* Product;
+* Plan;
+* Subscription duration;
+* Number of users;
+* Number of devices;
+* Currency;
+* eSign package; or
+* Licence type.
+
+Where possible, we may offer a plan correction, licence adjustment, or account credit instead of a refund.
+
+### 5.9 Refusal to Cooperate with Technical Support
+
+A customer claims that the software does not work but does not provide reasonable information or cooperate with basic troubleshooting.
+
+We will not request passwords, complete payment credentials, or unnecessary confidential documents during troubleshooting.
+
+### 5.10 Violation of the Terms of Use
+
+The licence or account was suspended or terminated because of:
+
+* Licence sharing;
+* Account misuse;
+* Fraud;
+* Piracy;
+* Chargeback abuse;
+* Unauthorised reselling;
+* Circumvention of licence controls;
+* Unlawful document processing; or
+* Another violation of the Luxor PDF Terms of Use.
+
+### 5.11 Customised or Negotiated Business Purchases
+
+Custom business, enterprise, institutional, educational, or volume-licensing orders may be non-refundable once:
+
+* Licences have been provisioned;
+* Custom onboarding has begun;
+* Special pricing has been accepted;
+* Custom work has commenced;
+* Users have been added;
+* Services have been delivered; or
+* The applicable quotation or agreement states that the purchase is non-refundable.
+
+The applicable quotation, order form, or written agreement will control where it contains specific refund terms.
+
+## 6. Free Trials
+
+Where Luxor PDF provides a free trial, customers are encouraged to use the trial to evaluate:
+
+* Product features;
+* Device compatibility;
+* Operating-system compatibility;
+* Performance;
+* Workflow suitability;
+* File-format support; and
+* General product usability.
+
+A customer who had a reasonable opportunity to evaluate the product through a free trial may not be eligible for a refund based solely on dissatisfaction with a feature that was available during the trial.
+
+Obtaining multiple trials through duplicate accounts, devices, identities, or payment methods may result in the denial of a refund and suspension of access.
+
+## 7. Subscription Renewals
+
+Luxor PDF subscriptions may renew automatically when automatic renewal is selected or disclosed at checkout.
+
+Customers are responsible for cancelling an unwanted subscription before its renewal date.
+
+### 7.1 Renewal Refund Requests
+
+A refund request for an automatic renewal may be considered when:
+
+* The request is submitted within **7 calendar days of the renewal charge**;
+* The subscription has not been substantially used after renewal;
+* No significant document processing has occurred;
+* No eSign transactions or credits have been consumed; and
+* The account has not received substantial benefit during the renewed period.
+
+Approval remains subject to review and applicable law.
+
+### 7.2 Late Renewal Requests
+
+Renewal charges are generally non-refundable when:
+
+* The request is submitted more than seven calendar days after renewal;
+* The renewed subscription has been used;
+* Premium features have been accessed extensively;
+* Documents have been processed;
+* eSign transactions have been initiated or completed; or
+* Included credits or resources have been consumed.
+
+### 7.3 Cancelling Future Renewals
+
+Cancelling a subscription stops future renewal charges but does not automatically refund the current subscription period.
+
+After cancellation, paid access will normally continue until the end of the current billing period.
+
+Uninstalling the Luxor PDF application does not cancel a subscription.
+
+## 8. Monthly and Annual Subscriptions
+
+Refunds for monthly or annual plans are assessed according to the same eligibility conditions in this Policy.
+
+Unless required by law:
+
+* Monthly subscription fees are not refundable for partially used billing periods;
+* Annual subscriptions are not refundable on a prorated basis after the refund period;
+* Cancelling an annual subscription stops the next renewal but does not automatically refund the remaining months; and
+* Failure to use a subscription does not automatically create refund eligibility.
+
+Where a refund is approved for an annual subscription, access to paid features may end immediately.
+
+## 9. Lifetime or Perpetual Licences
+
+Where Luxor PDF offers a lifetime or perpetual licence, the licence applies to the product version and conditions specified at purchase.
+
+A lifetime or perpetual licence does not necessarily include:
+
+* Every future Luxor PDF product;
+* Unlimited cloud services;
+* Unlimited eSign transactions;
+* Unlimited AI processing;
+* Every future major version;
+* Third-party services;
+* Indefinite online storage; or
+* Features not included in the original purchase.
+
+Refund requests for lifetime or perpetual licences must generally be submitted within 14 calendar days and remain subject to usage and eligibility review.
+
+## 10. eSign and Usage-Based Services
+
+Because eSign and usage-based services may create immediate costs and transaction records, amounts paid for services already delivered are generally non-refundable.
+
+This includes:
+
+* Documents sent for signature;
+* Signature requests initiated;
+* Completed signatures;
+* Audit trails generated;
+* Authentication or verification services used;
+* Notifications delivered;
+* Cloud processing completed;
+* AI requests processed; and
+* Credits already consumed.
+
+Unused prepaid credits may be eligible for a refund only where:
+
+* The request is submitted within 14 calendar days of the original purchase;
+* No portion of the package has been used;
+* The package was purchased directly from Luxor PDF; and
+* No separate non-refundable condition was displayed at purchase.
+
+## 11. Purchases Through Third Parties
+
+This Refund Policy applies primarily to purchases made directly through Luxor PDF.
+
+Purchases made through an external platform may be governed by that platform’s refund rules, including purchases made through:
+
+* An app store;
+* A software marketplace;
+* An authorised reseller;
+* A payment partner;
+* An e-commerce platform; or
+* Another third-party distributor.
+
+Where a third party collected the payment, you may need to submit your refund request directly to that third party.
+
+Luxor PDF cannot guarantee or directly issue a refund where the payment and transaction are controlled by another provider.
+
+## 12. Promotional, Discounted, and Bundled Purchases
+
+Products purchased through a discount, promotional code, introductory offer, bundle, or special campaign remain subject to this Refund Policy unless different conditions were clearly displayed at purchase.
+
+Where a partial refund is approved for a bundle:
+
+* The value of products retained by the customer may be deducted;
+* Promotional discounts may be recalculated;
+* Free products or bonus credits may be cancelled; and
+* Access to bundled features may be removed.
+
+Promotional credits, free credits, referral rewards, and complimentary licences have no cash value and are not refundable.
+
+## 13. Plan Upgrades and Downgrades
+
+### Plan upgrades
+
+Where you upgrade a plan, charges may be adjusted according to the remaining subscription period.
+
+A refund is not normally provided for an upgrade that has already been activated and used.
+
+### Plan downgrades
+
+A downgrade generally takes effect from the next billing period.
+
+Downgrading does not normally produce a refund for the unused portion of the current plan unless otherwise stated or required by law.
+
+## 14. Duplicate and Incorrect Charges
+
+If you believe you were charged twice or charged an incorrect amount, contact **[support@luxorpdf.com](mailto:support@luxorpdf.com)** promptly.
+
+Please provide:
+
+* The email address used for the purchase;
+* The product or plan purchased;
+* The transaction date;
+* The amount charged;
+* The currency;
+* The transaction or invoice reference, where available; and
+* A brief explanation of the issue.
+
+Do not send complete card numbers, banking passwords, UPI PINs, security codes, or other sensitive payment credentials.
+
+Verified duplicate or incorrect charges will be refunded or corrected as appropriate.
+
+## 15. How to Request a Refund
+
+To request a refund, email:
+
+**[support@luxorpdf.com](mailto:support@luxorpdf.com)**
+
+Your request should include:
+
+* Your full name;
+* The email address associated with your Luxor PDF account;
+* The product or subscription purchased;
+* The purchase date;
+* The transaction or invoice reference;
+* The reason for requesting a refund;
+* A description of any technical issue;
+* The device and operating system used, where relevant; and
+* Any non-sensitive information reasonably required to assess the request.
+
+Submitting incomplete or inaccurate information may delay the review.
+
+## 16. Refund Review Process
+
+After receiving a refund request, we may:
+
+* Verify the purchase;
+* Review the request date;
+* Confirm the payment status;
+* Check licence activation;
+* Review product-usage records;
+* Review document-processing counts without reviewing private document contents;
+* Review consumed credits or completed transactions;
+* Request additional information;
+* Offer technical support;
+* Offer a replacement licence;
+* Offer a plan correction;
+* Offer account credit; or
+* Approve or reject the refund request.
+
+We aim to assess requests fairly and consistently.
+
+Refund decisions will be made according to this Policy, the circumstances of the purchase, and applicable law.
+
+## 17. Approved Refunds
+
+Where a refund is approved:
+
+* Access to the refunded product may be suspended or terminated;
+* The relevant licence may be deactivated;
+* Paid features may become unavailable;
+* Unused credits may be cancelled;
+* Online services may stop;
+* Promotional benefits connected with the purchase may be removed; and
+* The customer may be required to uninstall or stop using the refunded software.
+
+A refund does not grant continued access to the refunded licence, subscription, credits, or services.
+
+## 18. Refund Method
+
+Approved refunds will normally be returned to the original payment method used for the purchase.
+
+We may be unable to send a refund to:
+
+* A different card;
+* A different bank account;
+* Another person;
+* An unrelated payment wallet; or
+* A payment method not connected with the original transaction.
+
+Where the original payment method is unavailable, the available refund method will depend on the payment provider and applicable law.
+
+## 19. Refund Processing Time
+
+After a refund is approved, Luxor PDF will submit the refund to the relevant payment provider.
+
+Refunds typically appear within **7 to 10 business days**, but the actual time may vary depending on:
+
+* The payment provider;
+* The issuing bank;
+* The payment method;
+* Public holidays;
+* International processing;
+* Currency conversion; and
+* Banking procedures.
+
+Luxor PDF does not control delays caused by banks or external payment providers after a refund has been submitted.
+
+## 20. Taxes, Bank Charges, and Currency Conversion
+
+An approved refund will generally cover the amount actually received by Luxor PDF for the eligible purchase.
+
+Certain amounts may not be recoverable where they were independently charged or retained by another party, including:
+
+* Bank charges;
+* Foreign-exchange fees;
+* Payment-provider charges;
+* International transaction fees;
+* Withholding taxes;
+* Government charges; or
+* Other third-party fees.
+
+Applicable taxes collected and refundable under law will be handled according to relevant tax and payment requirements.
+
+## 21. Chargebacks and Payment Disputes
+
+Before initiating a chargeback or payment dispute, please contact **[support@luxorpdf.com](mailto:support@luxorpdf.com)** so that we can attempt to resolve the matter.
+
+Submitting a chargeback does not automatically create refund eligibility.
+
+Where a chargeback is initiated, we may:
+
+* Suspend the relevant account;
+* Deactivate the licence;
+* Restrict paid features;
+* Preserve transaction and usage records;
+* Respond to the payment provider;
+* Provide evidence relating to the transaction; and
+* Recover amounts lawfully due.
+
+Fraudulent or abusive chargebacks may result in permanent account or licence restrictions.
+
+Nothing in this section prevents a customer from exercising lawful rights through their bank, payment provider, or consumer-protection authority.
+
+## 22. Mandatory Consumer Rights
+
+Nothing in this Refund Policy excludes, limits, or replaces any refund, cancellation, repair, replacement, or other consumer right that cannot lawfully be excluded.
+
+Where applicable law provides greater protection than this Refund Policy, the applicable legal requirement will take priority.
+
+A customer may be required to provide express consent before receiving immediate access to digital software, content, or services and may acknowledge that certain cancellation rights can be affected once digital supply or service performance begins.
+
+## 23. Policy Abuse
+
+We may reject a refund request where there is reasonable evidence of:
+
+* Repeated purchases followed by refund requests;
+* Extensive use followed by a refund request;
+* Duplicate trial accounts;
+* Licence sharing;
+* Fraudulent payment activity;
+* Misrepresentation;
+* Piracy;
+* Unauthorised reselling;
+* Chargeback abuse;
+* Manipulation of product-usage records; or
+* Attempts to obtain paid services without payment.
+
+This section does not affect legitimate refund requests or mandatory consumer rights.
+
+## 24. Changes to This Refund Policy
+
+We may update this Refund Policy to reflect:
+
+* Changes to Luxor PDF products;
+* New subscription models;
+* New payment methods;
+* Changes in business practices;
+* Changes involving payment providers;
+* New legal requirements; or
+* Operational improvements.
+
+The updated Policy will display a revised “Last Updated” date.
+
+The policy applicable on the original purchase date will generally govern that purchase unless a later version provides greater protection or applicable law requires otherwise.
+
+## 25. Contact Us
+
+For refund requests, billing issues, duplicate charges, subscription questions, or payment concerns, contact:
+
+**Fairnova Labs Private Limited**
+**Luxor PDF Support:** [support@luxorpdf.com](mailto:support@luxorpdf.com)
+
+---
+
+## Brand Ownership Notice
+
+**Luxor PDF is a brand owned and operated by Fairnova Labs Private Limited.**
+
+All Luxor PDF products, software applications, licences, subscriptions, websites, and related services are owned or operated by Fairnova Labs Private Limited unless expressly stated otherwise.

@@ -29,7 +29,7 @@ const POLICY_LINKS: LinkItem[] = [
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Use", href: "/terms" },
   { label: "Cookie Policy", href: "/cookies" },
-  { label: "Licensing", href: "/about" },
+  { label: "Licensing", href: "/licensing" },
 ];
 
 type SocialLink = {
