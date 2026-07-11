@@ -38,7 +38,7 @@ export function MegaMenu() {
         }`}
       >
         <LayoutGrid className="w-4 h-4" />
-        <span className="hidden sm:inline">All Tools</span>
+        <span className="hidden sm:inline">Online Tools</span>
         <ChevronDown
           className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`}
         />
