@@ -5,467 +5,517 @@ Welcome to **Luxor PDF**.
 
 Luxor PDF is a brand owned and operated by **Fairnova Labs Private Limited**, a company incorporated under the laws of India.
 
-This Privacy Policy explains how Fairnova Labs Private Limited, referred to in this Policy as **“Fairnova Labs,” “Luxor PDF,” “we,” “our,” or “us,”** collects, uses, stores, shares, and protects personal information when you:
+This Privacy Policy explains how Fairnova Labs Private Limited collects, uses, stores, shares, and protects personal information when you access or use:
 
-* Visit the Luxor PDF website;
-* Download, install, activate, or use Luxor PDF software;
-* Use Luxor PDF Reader;
-* Use Luxor PDF Secure;
-* Use Luxor PDF eSign;
-* Create or manage a Luxor PDF account;
-* Purchase a subscription, licence, or paid service;
-* Contact our customer support team;
-* Participate in a trial, promotion, survey, or feedback programme; or
-* Otherwise interact with Luxor PDF.
+* The Luxor PDF website;
+* Luxor PDF Reader;
+* Luxor PDF Secure;
+* Luxor PDF eSign;
+* Luxor PDF desktop, web, or mobile applications;
+* Luxor PDF online tools;
+* User accounts and dashboards;
+* Free trials, subscriptions, and software licences;
+* Customer-support services; and
+* Other Luxor PDF products or services that link to this Privacy Policy.
 
-By using Luxor PDF, you acknowledge that you have read and understood this Privacy Policy.
+In this Privacy Policy, **“Luxor PDF,” “Fairnova Labs,” “we,” “us,” or “our”** refers to Fairnova Labs Private Limited.
 
-## 2. Scope of This Privacy Policy
+The words **“you” and “your”** refer to the individual using or interacting with Luxor PDF.
 
-This Privacy Policy applies to the Luxor PDF website, desktop applications, mobile applications, online services, account portals, licensing systems, and related services provided by Fairnova Labs Private Limited.
+By accessing or using Luxor PDF, you acknowledge that you have read and understood this Privacy Policy.
 
-The Luxor PDF suite may include:
+## 2. Company and Brand Disclosure
 
-### Luxor PDF Reader
+**Luxor PDF is a brand of Fairnova Labs Private Limited.**
 
-Software and services for opening, viewing, reading, searching, printing, annotating, organising, and managing PDF documents.
+Luxor PDF is not a separate legal entity. Fairnova Labs Private Limited is responsible for operating Luxor PDF and processing personal information under this Privacy Policy, unless another arrangement is expressly stated in writing.
 
-### Luxor PDF Secure
+For privacy questions or requests, contact:
 
-Software and services for protecting, compressing, converting, merging, splitting, extracting, redacting, watermarking, sharing, restricting, and managing PDF documents.
+**Email:** [support@luxorpdf.com](mailto:support@luxorpdf.com)
 
-### Luxor PDF eSign
+## 3. Scope of This Privacy Policy
 
-Software and services for preparing, sending, signing, approving, tracking, and managing electronic documents and electronic signatures.
+This Privacy Policy applies to the personal information processed through Luxor PDF products and services.
 
-Some features may operate entirely on your device, while other features may require an internet connection, account authentication, cloud processing, electronic delivery, payment processing, or third-party integrations.
+The Luxor PDF product suite may include:
 
-## 3. Legal Entity Responsible for Your Information
+### 3.1 Luxor PDF Reader
 
-The organisation responsible for processing personal information under this Privacy Policy is:
+Software and services for opening, reading, searching, printing, completing, annotating, and managing PDF documents.
 
-**Privacy Email:** privacy@luxorpdf.com
+### 3.2 Luxor PDF Secure
 
-Depending on your location and the applicable law, Fairnova Labs Private Limited may act as a data fiduciary, data controller, business, service provider, or data processor.
+Software and services for converting, compressing, merging, splitting, extracting, redacting, watermarking, protecting, sharing, expiring, revoking, and restricting access to PDF documents.
+
+### 3.3 Luxor PDF eSign
+
+Software and services for preparing, sending, reviewing, approving, signing, tracking, and managing electronic documents and electronic-signature transactions.
+
+Some features may operate entirely on your device. Other features may require internet access, online processing, cloud storage, licence verification, account authentication, third-party integrations, or electronic delivery.
 
 ## 4. Information We May Collect
 
-The information we collect depends on the Luxor PDF products and features you use.
+The information we collect depends on the products, features, and services you use.
 
-### 4.1 Account and Profile Information
+## 4.1 Account Information
 
 When you create or manage a Luxor PDF account, we may collect:
 
-* Full name;
+* Your full name;
 * Email address;
-* Telephone number;
 * Country or region;
 * Company or organisation name;
 * Job title;
-* Account username;
-* Encrypted or securely protected authentication credentials;
-* Profile preferences;
-* Account language;
-* Communication preferences; and
-* Subscription or licence information.
+* Account preferences;
+* Preferred language;
+* Subscription or licence information;
+* Account status;
+* Authentication information; and
+* Communication preferences.
 
-### 4.2 Payment and Transaction Information
+Passwords and authentication credentials should be stored using appropriate security protections and should not be visible in plain text.
 
-When you purchase a subscription, software licence, renewal, or other paid service, we may collect or receive:
+## 4.2 Purchase and Transaction Information
+
+When you purchase a Luxor PDF licence, plan, subscription, or other paid service, we may collect or receive:
 
 * Customer name;
-* Billing address;
-* Tax identification details, where applicable;
-* Purchased product or plan;
-* Licence duration;
+* Billing country or region;
+* Product or plan purchased;
+* Subscription duration;
+* Licence type;
+* Number of authorised users or devices;
 * Transaction date;
-* Currency and payment amount;
+* Payment amount;
+* Currency;
 * Payment status;
 * Invoice information;
-* Payment-provider transaction reference; and
-* Renewal or cancellation status.
+* Tax-related information where required;
+* Renewal or cancellation status; and
+* Payment-provider transaction reference.
 
-Payments may be processed by independent payment service providers. Luxor PDF may not directly receive or store complete debit-card, credit-card, bank-account, UPI, or other payment credentials.
+Payments may be processed by third-party payment providers.
 
-Payment providers process payment information according to their own privacy policies and legal obligations.
+Luxor PDF does not need to receive or store your complete credit-card, debit-card, bank-account, UPI, or other payment credentials when those details are processed directly by an authorised payment provider.
 
-### 4.3 Device and Technical Information
+Payment providers process information according to their own terms and privacy policies.
 
-When you visit our website or use Luxor PDF software, we may automatically collect:
+## 4.3 Device and Technical Information
+
+When you visit our website or use Luxor PDF software, we may automatically collect technical information such as:
 
 * Internet Protocol address;
 * Device type;
-* Device identifier;
-* Operating system and version;
-* Application version;
+* Operating system;
 * Browser type and version;
-* Language and regional settings;
-* Screen resolution;
-* Installation identifier;
+* Application version;
+* Device or installation identifier;
 * Licence activation identifier;
+* Language and regional settings;
 * Approximate location derived from an IP address;
 * Network information;
 * Date and time of access;
+* Application errors;
 * Crash reports;
-* Error logs;
 * Diagnostic information;
 * Performance information; and
 * Security or authentication events.
 
-We use this information to activate licences, maintain compatibility, prevent fraud, diagnose errors, improve performance, and protect our systems.
+We may use this information to operate the software, maintain compatibility, validate licences, prevent fraud, improve performance, and diagnose technical issues.
 
-### 4.4 Product Usage Information
+## 4.4 Product-Usage Information
 
-We may collect information about how Luxor PDF is used, including:
+We may collect information about how Luxor PDF products and features are used, including:
 
 * Features accessed;
-* Buttons, menus, or tools used;
+* General actions performed;
 * Frequency and duration of use;
 * Application launch and closing events;
 * Number of documents processed;
-* Subscription or trial limits reached;
-* Software settings;
-* Licence activation and deactivation events;
-* Error conditions;
-* Feature performance; and
-* General usage statistics.
+* Usage allowances reached;
+* Subscription or trial limits;
+* Product settings;
+* Licence activation and deactivation;
+* Errors or failed operations; and
+* General performance statistics.
 
 Where reasonably possible, product analytics may be aggregated, anonymised, or pseudonymised.
 
-We do not use the textual or visual contents of your private PDF documents to create advertising profiles.
+We do not use the private textual or visual contents of your PDF documents to build advertising profiles.
 
-### 4.5 Documents and File Information
+## 4.5 Documents and Files
 
-Luxor PDF allows users to open, modify, secure, convert, send, sign, or otherwise process documents.
+Luxor PDF allows users to open, process, edit, protect, share, or sign documents.
 
 Depending on the feature used, we may process:
 
-* PDF files and other uploaded documents;
+* PDF files;
+* Other supported document formats;
 * File names;
 * File types and sizes;
 * Document metadata;
-* Document page counts;
-* Document passwords or access instructions;
+* Page counts;
 * Annotations and comments;
+* Form entries;
 * Watermarks;
 * Redaction instructions;
-* Form data;
+* Document passwords or permission settings;
+* Access restrictions;
+* Expiry or revocation settings;
+* Sharing permissions;
 * Signature fields;
-* Signing certificates;
-* Document access settings;
-* Sharing permissions; and
-* Processing results.
+* Processing instructions; and
+* Generated output files.
 
-#### Local document processing
+### Local processing
 
-Where a Luxor PDF feature operates locally, the document remains on your device and is processed by the installed application.
+Where a feature operates locally, the document may remain on your device and be processed by the installed Luxor PDF application.
 
-#### Online or cloud document processing
+### Online or cloud processing
 
-Where you voluntarily use an online, cloud-based, sharing, conversion, eSignature, backup, synchronisation, or remote-access feature, the document may be transmitted to and temporarily stored on our systems or those of an authorised service provider.
+Where you voluntarily use online conversion, sharing, synchronisation, cloud storage, artificial intelligence, or electronic-signature features, your document may be transmitted to and processed through our systems or those of an authorised service provider.
 
-We process documents only to provide the feature requested by the user, maintain security, troubleshoot technical problems, comply with lawful obligations, or enforce applicable agreements.
+Documents are processed only as reasonably necessary to provide the feature requested by you, maintain security, resolve technical issues, comply with lawful obligations, or enforce applicable agreements.
 
-We do not claim ownership of documents uploaded to or processed through Luxor PDF.
+Luxor PDF does not claim ownership of your documents.
 
-### 4.6 Electronic Signature Information
+## 4.6 Electronic-Signature Information
 
-When you use Luxor PDF eSign, we may process information such as:
+When you use Luxor PDF eSign, we may process:
 
-* Names and email addresses of senders and recipients;
-* Signature images or electronic signature representations;
+* Sender names and email addresses;
+* Signer names and email addresses;
+* Approver or recipient details;
+* Electronic signature representations;
 * Initials;
+* Form-field entries;
 * Signing dates and times;
-* Document access history;
-* Authentication information;
+* Document access events;
+* Authentication events;
 * Internet Protocol addresses;
 * Device and browser information;
-* Consent and acceptance records;
-* Audit-trail information;
-* Document status;
+* Consent or acceptance records;
 * Signing sequence;
 * Reminder activity;
-* Completion certificates; and
-* Other information entered into a document by a signer.
+* Document status;
+* Audit-trail information; and
+* Completion records.
 
-This information may be necessary to deliver documents, authenticate participants, record signing activity, maintain audit trails, and support the enforceability and integrity of electronic transactions.
+This information may be necessary to deliver documents, authenticate participants, record transaction activity, maintain audit trails, and provide completed documents.
 
-Users who upload or send documents containing another person’s information are responsible for ensuring that they have an appropriate legal basis or authorisation to do so.
+A person who uploads or sends a document containing another person’s information is responsible for having the necessary permission or lawful basis to do so.
 
-### 4.7 Communications and Customer Support
+## 4.7 Customer-Support Information
 
-When you contact us, we may collect:
+When you contact customer support, we may collect:
 
 * Your name;
 * Email address;
-* Telephone number;
-* Company information;
-* Support request;
-* Message contents;
+* Product or account details;
+* The contents of your support request;
 * Screenshots;
+* Error reports;
+* Diagnostic information;
 * Files voluntarily provided for troubleshooting;
-* Diagnostic reports;
 * Previous communications; and
-* Customer-satisfaction feedback.
+* Feedback about our products or support.
 
-Please avoid sending confidential documents, passwords, financial information, government identification numbers, or other sensitive information unless it is necessary and specifically requested through an approved support channel.
+Please do not send passwords, payment credentials, private keys, authentication codes, or unnecessary confidential information through support communications.
 
-### 4.8 Marketing Information
+Where you provide a document for troubleshooting, you confirm that you are authorised to share it.
+
+## 4.8 Marketing and Communication Information
 
 Where permitted by law, we may collect and use:
 
-* Marketing preferences;
 * Newsletter subscription status;
-* Campaign engagement;
-* Email-opening information;
-* Link interactions;
+* Marketing preferences;
 * Product interests;
-* Promotion participation; and
+* Promotional campaign engagement;
+* Email interaction information;
+* Link interactions;
+* Survey responses; and
 * Communication history.
 
-You may unsubscribe from promotional communications at any time. Service-related messages, including account, licence, billing, security, and policy notifications, may still be sent when necessary.
+You may unsubscribe from promotional communications at any time.
 
-### 4.9 Information from Third Parties
+We may continue to send necessary account, billing, licence, security, transaction, and service-related communications.
+
+## 4.9 Cookies and Similar Technologies
+
+Our website and online services may use:
+
+* Cookies;
+* Local storage;
+* Session storage;
+* Pixels;
+* Tags;
+* Web beacons;
+* Scripts;
+* Authentication tokens;
+* Device identifiers; and
+* Similar technologies.
+
+These technologies may be used to:
+
+* Keep users signed in;
+* Maintain website security;
+* Remember preferences;
+* Manage checkout sessions;
+* Prevent fraud;
+* Measure website performance;
+* Understand website usage;
+* Support customer-service tools; and
+* Measure marketing campaigns where permitted.
+
+For more information, please review the Luxor PDF Cookie Policy.
+
+## 4.10 Information Received from Third Parties
 
 We may receive information from:
 
 * Payment processors;
-* Software-distribution platforms;
 * App stores;
-* Resellers or authorised partners;
-* Identity and authentication providers;
+* Software-distribution platforms;
+* Authorised resellers;
+* Authentication providers;
 * Cloud-service providers;
 * Analytics providers;
 * Customer-support platforms;
-* Business customers managing organisational accounts;
-* Referral or affiliate partners; and
-* Publicly available sources.
+* Business customers;
+* Referral partners; and
+* Other services connected by the user.
 
-We process information received from third parties in accordance with this Privacy Policy and any applicable contractual or legal requirements.
+We process information received from third parties according to this Privacy Policy and applicable legal or contractual requirements.
 
 ## 5. How We Use Personal Information
 
 We may use personal information to:
 
-* Provide, operate, and maintain Luxor PDF;
+* Provide and operate Luxor PDF;
 * Create and manage user accounts;
-* Verify identities and authenticate users;
+* Authenticate users;
 * Activate and validate software licences;
 * Provide free trials;
-* Process payments, subscriptions, invoices, and renewals;
-* Open, convert, secure, sign, share, or otherwise process documents;
+* Process purchases, subscriptions, invoices, and renewals;
+* Provide document-reading and editing features;
+* Convert, compress, merge, split, protect, or process documents;
+* Provide document-sharing and access-management features;
 * Deliver electronic-signature requests;
-* Generate and maintain electronic-signature audit trails;
-* Synchronise information across authorised devices;
+* Maintain eSignature audit and completion records;
+* Synchronise authorised information across devices;
 * Provide customer and technical support;
-* Diagnose crashes, errors, and compatibility issues;
-* Improve product functionality and user experience;
+* Diagnose errors and compatibility problems;
+* Improve product functionality and performance;
 * Develop new features and services;
 * Protect accounts, documents, software, and infrastructure;
-* Detect fraud, abuse, piracy, or unauthorised licence use;
-* Enforce subscription, licence, and usage limitations;
-* Send administrative, transactional, and security communications;
-* Send marketing communications where permitted;
+* Detect fraud, abuse, piracy, or unauthorised use;
+* Enforce plan, user, document, and device limitations;
+* Send account, billing, security, and service communications;
+* Send promotional communications where permitted;
 * Measure website and product performance;
-* Comply with legal, tax, accounting, regulatory, and contractual obligations;
+* Comply with legal, tax, accounting, and regulatory obligations;
+* Investigate complaints or disputes;
 * Establish, exercise, or defend legal claims; and
-* Conduct corporate transactions such as restructuring, investment, acquisition, or sale.
+* Support a merger, restructuring, investment, acquisition, or sale of business assets.
 
-## 6. Legal Bases for Processing
+We will not process personal information for an incompatible purpose without providing appropriate notice or obtaining consent where required.
 
-Depending on your location and applicable law, we may process personal information on one or more of the following grounds:
+## 6. Legal Grounds for Processing
 
-### Performance of a contract
+Depending on your location and applicable law, we may process personal information on one or more of the following grounds.
 
-Processing may be necessary to provide the software, subscription, licence, document service, electronic-signature service, customer support, or other service requested by you.
+### 6.1 Performance of a Contract
 
-### Consent
+Processing may be necessary to:
 
-We may rely on your consent for activities such as optional marketing, non-essential cookies, certain analytics, or the processing of information where consent is legally required.
+* Create your account;
+* Activate your software;
+* Provide a subscription;
+* Process a document;
+* Deliver an eSignature request;
+* Process payment;
+* Provide customer support; or
+* Perform another service requested by you.
 
-You may withdraw your consent, subject to legal and contractual limitations.
+### 6.2 Consent
 
-### Legitimate interests
+We may rely on your consent for:
 
-We may process information for legitimate business interests, including:
+* Optional marketing;
+* Non-essential cookies;
+* Certain analytics;
+* Optional AI features;
+* Processing where consent is legally required; and
+* Other optional activities presented to you.
 
-* Securing our services;
-* Preventing fraud and software piracy;
-* Improving product performance;
+You may withdraw your consent at any time, subject to applicable legal and contractual limitations.
+
+Withdrawal of consent does not affect processing that lawfully occurred before consent was withdrawn.
+
+### 6.3 Legitimate Business Interests
+
+Where permitted by law, we may process information for legitimate interests such as:
+
+* Maintaining product security;
+* Preventing fraud and piracy;
+* Improving service performance;
 * Understanding general product usage;
-* Providing customer support;
-* Managing business relationships; and
-* Protecting our legal rights.
+* Supporting customers;
+* Managing business operations; and
+* Protecting our rights and users.
 
-We consider the potential effect of such processing on users’ rights and interests.
+We will consider the potential impact of such processing on your interests and privacy rights.
 
-### Legal obligations
+### 6.4 Legal Obligations
 
-We may process information to comply with applicable laws, lawful requests, court orders, tax obligations, accounting requirements, regulatory obligations, and law-enforcement requests.
+We may process information where necessary to comply with:
 
-### Protection of vital or legal interests
+* Applicable laws;
+* Court orders;
+* Lawful government requests;
+* Tax requirements;
+* Accounting obligations;
+* Regulatory requirements; and
+* Other legally binding duties.
 
-In limited circumstances, processing may be necessary to protect a person’s safety, prevent serious harm, or establish, exercise, or defend legal claims.
+### 6.5 Protection of Rights and Safety
 
-## 7. Ownership and Confidentiality of User Documents
+In limited circumstances, information may be processed to:
 
-You retain ownership of the documents, content, signatures, annotations, and other materials you upload, create, or process through Luxor PDF.
+* Protect users or other individuals;
+* Prevent serious harm;
+* Investigate security incidents;
+* Establish or defend legal claims; or
+* Protect the rights and property of Fairnova Labs Private Limited.
 
-Fairnova Labs Private Limited does not acquire ownership of your documents merely because they are processed through a Luxor PDF service.
+## 7. Ownership and Confidentiality of Documents
 
-We will process document contents only as reasonably necessary to:
+You retain ownership of documents, content, annotations, signatures, and other materials that you upload, create, or process through Luxor PDF.
 
-* Provide a feature requested by you;
-* Store or transmit a document at your instruction;
-* Deliver a document to designated recipients;
-* Support electronic signing;
+Fairnova Labs Private Limited does not acquire ownership of a document merely because it is processed using Luxor PDF.
+
+We may process document contents only as reasonably necessary to:
+
+* Provide the feature requested by you;
+* Convert or edit the document;
+* Apply document security;
+* Store or transmit the document at your instruction;
+* Deliver it to authorised recipients;
+* Facilitate electronic signing;
 * Detect malicious files or security threats;
-* Resolve a technical problem with your authorisation;
+* Resolve a technical issue with appropriate authorisation;
 * Comply with applicable law; or
-* Enforce our legal agreements.
+* Enforce our agreements.
 
-Users are responsible for the legality, accuracy, confidentiality, and authorised use of documents they upload or share.
+Users remain responsible for the legality, accuracy, confidentiality, and authorised use of their documents.
 
-## 8. Artificial Intelligence Features
+## 8. Artificial-Intelligence Features
 
-Luxor PDF may offer optional artificial-intelligence features, such as:
+Luxor PDF may provide optional AI-assisted features, including:
 
 * Document summarisation;
-* Text recognition;
-* Document classification;
 * Question answering;
-* Data extraction;
-* Suggested form completion;
-* Smart redaction assistance;
+* Optical character recognition;
 * Translation;
-* Writing assistance; or
+* Text extraction;
+* Document classification;
+* Form assistance;
+* Suggested redaction;
+* Writing assistance; and
 * Document organisation.
 
-When you intentionally use an AI feature, relevant document content or instructions may be transmitted to an AI-processing provider or processed through Fairnova Labs’ systems.
+When you intentionally use an AI feature, relevant document content, questions, or instructions may be transmitted to an AI-processing system or authorised provider.
 
-Before using an AI feature, users should avoid submitting information that is unnecessary, highly confidential, legally privileged, or prohibited from third-party processing.
+You should avoid submitting information that is unnecessary, highly confidential, legally privileged, or prohibited from third-party processing.
 
-Where applicable:
+AI-generated results may contain errors and should be independently reviewed.
 
-* AI features will be identified within the product;
-* Document content will be processed to provide the requested output;
-* AI-generated results may contain errors and should be reviewed by the user;
-* AI output should not be treated as legal, financial, medical, or professional advice; and
-* Separate notices may apply to particular AI features.
+We do not use the private contents of your documents to train general-purpose AI models unless we provide clear notice and obtain any consent required by applicable law.
 
-We will not use private document contents to train general-purpose artificial-intelligence models unless we provide clear notice and obtain any consent required by applicable law.
+Additional notices may be presented for particular AI features.
 
-## 9. Cookies and Similar Technologies
+## 9. How We Share Information
 
-Our website and online services may use cookies, local storage, pixels, software development kits, and similar technologies.
+We do not sell personal information for monetary consideration.
 
-These technologies may be used to:
+We do not use the private contents of your documents for third-party behavioural advertising.
 
-* Keep users signed in;
-* Remember settings and preferences;
-* Maintain security;
-* Prevent fraud;
-* Measure traffic and performance;
-* Understand website interactions;
-* Provide customer support;
-* Process referrals; and
-* Deliver relevant communications.
+We may share information in the following circumstances.
 
-Cookies may be classified as:
+## 9.1 Service Providers
 
-### Strictly necessary cookies
+We may engage authorised service providers for:
 
-These are required for essential website, account, security, and payment functions.
-
-### Preference cookies
-
-These remember language, region, display, and other user preferences.
-
-### Analytics cookies
-
-These help us understand how visitors interact with our website and services.
-
-### Marketing cookies
-
-These may be used to measure campaigns or provide relevant advertisements where permitted.
-
-Where required by law, non-essential cookies will be used only after obtaining appropriate consent.
-
-You can manage cookies through our cookie-consent interface or your browser settings. Disabling some cookies may affect the availability or functionality of certain services.
-
-## 10. How We Share Personal Information
-
-We may share personal information only as reasonably necessary with the following categories of recipients.
-
-### 10.1 Service Providers
-
-We may engage service providers for:
-
-* Cloud hosting;
+* Website and cloud hosting;
 * Data storage;
 * Payment processing;
-* Software licensing;
 * Email delivery;
+* Software licensing;
+* Identity authentication;
 * Customer support;
 * Product analytics;
 * Security monitoring;
 * Crash reporting;
-* Identity authentication;
-* Electronic-signature delivery;
 * Document conversion or processing;
+* Artificial-intelligence services;
+* Electronic-signature delivery;
 * Accounting;
 * Legal services; and
 * Business administration.
 
-Service providers are permitted to process information only for contracted purposes and are expected to apply appropriate confidentiality and security protections.
+Service providers are permitted to process information only for authorised purposes and subject to appropriate contractual, confidentiality, and security requirements.
 
-### 10.2 Electronic Signature Participants
+## 9.2 eSignature Participants
 
 When you use Luxor PDF eSign, information may be shared with:
 
 * Document senders;
 * Signers;
 * Approvers;
-* Witnesses;
 * Reviewers;
+* Witnesses;
+* Authorised recipients;
 * Account administrators; and
-* Other persons authorised to participate in the transaction.
+* Other participants selected by the sender.
 
-The sender of an electronic-signature request may receive status information, audit records, completion details, and signed copies.
+Senders may receive status information, audit records, completed documents, and transaction information.
 
-### 10.3 Organisational Account Administrators
+## 9.3 Organisational Account Administrators
 
-When you use Luxor PDF through an employer, educational institution, business, or other organisation, its authorised administrators may be able to:
+If Luxor PDF is provided through your employer, school, business, or another organisation, its authorised administrators may be able to:
 
-* Manage your account;
-* Assign or revoke licences;
+* Assign or remove licences;
+* Manage organisational users;
 * View account and licence activity;
 * Configure product settings;
-* Manage documents stored in organisational workspaces;
-* Access audit records;
-* Apply security or retention controls; and
-* Suspend or terminate organisational access.
+* Manage organisational workspaces;
+* Access organisational documents where authorised;
+* Review audit information;
+* Apply security or retention settings; and
+* Suspend organisational access.
 
-Your organisation’s own privacy policies may also apply.
+The organisation’s own privacy policy and employment or usage rules may also apply.
 
-### 10.4 Legal and Regulatory Disclosures
+## 9.4 Legal and Regulatory Disclosures
 
 We may disclose information where reasonably necessary to:
 
 * Comply with applicable law;
-* Respond to a valid legal process;
+* Respond to valid legal proceedings;
 * Comply with a court or governmental order;
-* Cooperate with authorised regulators or law-enforcement agencies;
+* Cooperate with authorised regulators or law-enforcement bodies;
 * Protect users or the public;
-* Investigate suspected fraud, abuse, security incidents, or illegal activity;
+* Investigate fraud, abuse, piracy, or security incidents;
 * Enforce our agreements; or
 * Establish, exercise, or defend legal claims.
 
-We will assess requests for information and disclose only information that we reasonably believe must or may lawfully be disclosed.
+We will assess requests and disclose only information that we reasonably believe may lawfully be disclosed.
 
-### 10.5 Business Transactions
+## 9.5 Business Transactions
 
-Information may be disclosed in connection with:
+Information may be transferred or disclosed in connection with:
 
 * A merger;
 * Acquisition;
@@ -474,376 +524,345 @@ Information may be disclosed in connection with:
 * Corporate restructuring;
 * Transfer of assets;
 * Insolvency proceeding; or
-* Sale of all or part of our business.
+* Sale of all or part of the Luxor PDF business.
 
-Where required, we will provide appropriate notice or require the recipient to continue protecting the information.
+Where appropriate, the recipient will be required to continue protecting personal information.
 
-## 11. Sale and Advertising Use of Personal Information
+## 10. International Processing and Transfers
 
-Fairnova Labs Private Limited does not sell personal information for monetary consideration.
+Fairnova Labs Private Limited is based in India.
 
-We do not use the private contents of documents processed through Luxor PDF for third-party behavioural advertising.
+Our users, service providers, and technology infrastructure may be located in different countries. As a result, personal information may be processed in India or another country where:
 
-Certain jurisdictions may define “sale,” “sharing,” or “targeted advertising” broadly. Where our use of analytics or advertising technologies falls within such a definition, eligible users may exercise the applicable opt-out rights.
+* Our infrastructure is located;
+* A service provider operates;
+* A user or recipient is located; or
+* You instruct us to send or process a document.
 
-## 12. International Data Transfers
+Privacy laws may differ between countries.
 
-Fairnova Labs Private Limited is based in India. Our service providers, infrastructure, customers, and users may be located in other countries.
+Where required by applicable law, we may use appropriate safeguards such as:
 
-As a result, personal information may be processed in India or in another country where:
-
-* We operate;
-* Our service providers maintain infrastructure;
-* A recipient is located; or
-* A user requests a document to be delivered.
-
-Data-protection laws may vary between countries.
-
-Where required by applicable law, we will use appropriate safeguards for international transfers, which may include:
-
-* Contractual data-protection clauses;
 * Data-processing agreements;
+* Contractual data-protection terms;
 * Approved transfer mechanisms;
 * Security and confidentiality commitments;
-* Transfer-risk assessments; or
+* Transfer-risk assessments; and
 * Consent where legally permitted.
 
-## 13. Data Retention
+## 11. Data Retention
 
 We retain personal information only for as long as reasonably necessary for the purposes described in this Privacy Policy.
 
 Retention periods may depend on:
 
-* The nature of the information;
+* The type of information;
 * The product or feature used;
-* The duration of an account or subscription;
-* Licence-verification requirements;
+* The duration of your account or subscription;
 * User instructions;
+* Licence-verification requirements;
+* Security and fraud-prevention needs;
 * Contractual obligations;
-* Security requirements;
-* Applicable limitation periods;
+* Legal limitation periods;
 * Tax and accounting requirements;
-* Legal disputes; and
-* Regulatory obligations.
+* Regulatory obligations; and
+* Existing or anticipated disputes.
 
-Examples may include:
+For example:
 
-* Account information retained while the account remains active;
-* Transaction records retained for applicable tax and accounting periods;
-* Support communications retained for quality, security, and dispute-resolution purposes;
-* Security logs retained for a limited period;
-* eSignature audit trails retained as required to support transaction records;
-* Documents stored until deleted by the user, expired under the selected service, or removed according to the applicable retention schedule; and
-* Backup copies retained temporarily before being securely overwritten or deleted.
+* Account information may be retained while an account remains active;
+* Purchase records may be retained for applicable accounting and tax periods;
+* Support communications may be retained for service, security, and dispute purposes;
+* Security logs may be retained for a limited period;
+* eSignature records may be retained to support transaction integrity;
+* Documents stored online may remain until deleted, expired, or removed under the applicable service settings; and
+* Backup copies may remain temporarily before being overwritten or deleted.
 
 When information is no longer required, we may delete, anonymise, aggregate, or securely isolate it.
 
-## 14. Document Deletion
+## 12. Document Deletion
 
-Where document storage is offered, users may be able to delete stored documents through their account or product interface.
+Where online document storage is offered, you may be able to delete documents through your account or product interface.
 
-Deletion from an active system may not immediately remove:
+Deleting a document from an active system may not immediately remove:
 
 * Backup copies;
 * Security records;
 * Audit trails;
-* Completed eSignature transaction records;
+* eSignature completion records;
 * Copies retained by recipients;
-* Information required for legal compliance; or
-* Information involved in an active dispute.
+* Information required by law; or
+* Information connected with an active dispute.
 
-Recipients of a shared or signed document may retain their own copy independently of Luxor PDF.
+Recipients of a shared or signed document may retain their own copies independently of Luxor PDF.
 
-## 15. Security
+Users should download documents they wish to retain before closing an account or allowing a subscription to expire.
 
-We use reasonable administrative, organisational, physical, and technical measures designed to protect personal information and documents.
+## 13. Information Security
 
-These measures may include:
+We use reasonable administrative, technical, organisational, and physical safeguards designed to protect personal information and documents.
 
-* Encryption during transmission;
-* Encryption at rest where appropriate;
-* Access controls;
+Safeguards may include:
+
+* Access restrictions;
 * Authentication controls;
-* Secure software-development practices;
-* Network and infrastructure monitoring;
-* Malware protection;
-* Logging and incident detection;
+* Secure transmission methods;
+* Storage protections;
 * Restricted employee and contractor access;
-* Confidentiality obligations;
+* Confidentiality commitments;
+* Logging and incident detection;
+* Secure software-development practices;
 * Backup and recovery controls;
+* Malware prevention;
 * Vulnerability management; and
-* Periodic security reviews.
+* Security reviews.
 
-No software, network, transmission, or storage system can be guaranteed to be completely secure. Users should protect their devices, account credentials, document passwords, recovery information, and access links.
+No software, network, storage system, or internet transmission can be guaranteed to be completely secure.
 
-Please notify us promptly if you believe that your account, licence, document, or personal information has been compromised.
+You are responsible for protecting:
 
-## 16. Personal Data Breaches
+* Your devices;
+* Account credentials;
+* Authentication codes;
+* Document passwords;
+* Signing links;
+* Shared links; and
+* Locally stored files and backups.
 
-Where we identify a personal-data breach, we will investigate and take reasonable steps to contain, mitigate, and remediate the incident.
+Suspected security or privacy incidents should be reported to:
 
-Where required by applicable law, we will notify affected individuals, regulators, customers, or other relevant parties within the legally prescribed period.
+**[support@luxorpdf.com](mailto:support@luxorpdf.com)**
 
-The nature and timing of any notice will depend on the circumstances, risks, available information, and applicable legal requirements.
+## 14. Personal-Data Breaches
 
-## 17. Your Privacy Rights
+Where we become aware of a personal-data breach, we may:
+
+* Investigate the incident;
+* Take steps to contain it;
+* Reduce potential harm;
+* Restore affected systems;
+* Preserve relevant evidence; and
+* Improve safeguards where appropriate.
+
+Where legally required, we will notify affected individuals, regulators, customers, or other relevant parties.
+
+The content and timing of a notification will depend on the nature of the incident, the available information, the level of risk, and applicable law.
+
+## 15. Your Privacy Rights
 
 Depending on your location and applicable law, you may have the right to:
 
-* Receive information about how your personal information is processed;
-* Access personal information held about you;
+* Receive information about how your data is processed;
+* Request access to personal information held about you;
 * Request correction of inaccurate or incomplete information;
 * Request deletion or erasure;
 * Withdraw consent;
 * Restrict certain processing;
 * Object to certain processing;
 * Request a portable copy of eligible information;
-* Opt out of certain marketing;
-* Opt out of certain sale, sharing, or targeted-advertising activities;
+* Opt out of promotional communications;
 * Request information about categories of recipients;
 * Request review of certain automated decisions;
-* Nominate another person to exercise applicable rights in the event of death or incapacity;
+* Nominate another person to exercise applicable rights in specified circumstances;
 * Submit a complaint or grievance; and
-* Contact an applicable data-protection authority.
+* Contact an appropriate data-protection authority.
 
-These rights may be subject to legal exceptions. For example, we may retain information where necessary to:
+Individuals located in the European Economic Area or United Kingdom may have additional rights under applicable data-protection laws where those laws apply to Luxor PDF’s processing activities.
 
-* Complete a transaction;
-* Provide a requested service;
-* Protect security;
+Privacy rights may be subject to legal exceptions. For example, we may retain information where necessary to:
+
+* Complete a requested transaction;
+* Provide a service;
+* Protect accounts and security;
 * Prevent fraud;
-* Maintain eSignature evidence;
-* Comply with law;
-* Exercise freedom of expression;
-* Establish or defend legal claims; or
-* meet tax, accounting, or regulatory obligations.
+* Maintain electronic-signature evidence;
+* Comply with applicable law;
+* Resolve disputes; or
+* Establish, exercise, or defend legal claims.
 
-## 18. How to Exercise Your Privacy Rights
+## 16. Exercising Your Privacy Rights
 
-To submit a privacy request, contact us at:
+To submit a privacy request, contact:
 
-**Privacy Email:** privacy@luxorpdf.com
+**[support@luxorpdf.com](mailto:support@luxorpdf.com)**
 
 Please include:
 
 * Your full name;
-* The email address connected with your account;
+* The email address associated with your account;
 * The Luxor PDF product you use;
-* Your country or state of residence;
+* Your country or region;
 * A clear description of your request; and
-* Any information reasonably required to locate your account or verify your identity.
+* Information reasonably necessary to identify the relevant account or records.
 
-We may request reasonable identity verification before fulfilling a request.
+We may request reasonable verification before fulfilling a privacy request.
 
-We will not discriminate against eligible users for exercising privacy rights.
+We will respond within the period required by applicable law.
 
-An authorised representative may submit a request where permitted by law, subject to verification of the representative’s authority and the identity of the person concerned.
+We will not unlawfully discriminate against an eligible individual for exercising a privacy right.
 
-## 19. Grievance Redressal
+Where legally permitted, an authorised representative may submit a request on your behalf, subject to verification of the representative’s authority and your identity.
 
-Users may contact the designated grievance or privacy contact regarding:
+## 17. Grievances and Complaints
 
-* Personal-data concerns;
-* Consent withdrawal;
-* Account or information access;
+You may contact us regarding:
+
+* Access to personal information;
 * Correction or deletion requests;
+* Withdrawal of consent;
+* Unwanted marketing;
 * Suspected misuse of information;
-* Security incidents;
-* Unwanted communications; or
+* Security concerns;
+* Account privacy;
+* Document-processing concerns;
+* Electronic-signature information; or
 * Questions about this Privacy Policy.
 
-**Grievance Officer or Privacy Contact:** Privacy Team
-**Email:** privacy@luxorpdf.com
+All privacy complaints and grievances may be sent to:
 
-We will acknowledge and address grievances within the period required by applicable law.
+**[support@luxorpdf.com](mailto:support@luxorpdf.com)**
 
-## 20. European Economic Area, United Kingdom, and Switzerland
+We will review and respond to complaints in accordance with applicable law.
 
-Where applicable data-protection law provides additional rights, users in the European Economic Area, United Kingdom, or Switzerland may have rights relating to:
+## 18. Children’s Privacy
 
-* Access;
-* Rectification;
-* Erasure;
-* Restriction;
-* Objection;
-* Data portability;
-* Withdrawal of consent; and
-* Complaints to a supervisory authority.
+Luxor PDF is intended primarily for adults, professionals, businesses, and educational organisations.
 
-Where processing is based on legitimate interests, you may request information about the balancing considerations relevant to that processing.
-
-Where applicable, you may contact your local data-protection authority.
-
-## 21. California Privacy Notice
-
-This section applies where California privacy law covers our processing.
-
-During the preceding twelve months, we may have collected the categories of information described in this Privacy Policy, including:
-
-* Identifiers;
-* Customer-record information;
-* Commercial information;
-* Internet or electronic-network activity;
-* Approximate geolocation information;
-* Professional or employment-related information;
-* Electronic communications;
-* Inferences based on service interactions; and
-* Sensitive personal information voluntarily included in documents or transactions.
-
-We collect and use these categories for the business and commercial purposes described in this Privacy Policy.
-
-Eligible California residents may have the right to:
-
-* Know what personal information is collected;
-* Request access to categories or specific pieces of information;
-* Request correction;
-* Request deletion;
-* Opt out of sale or sharing;
-* Limit certain uses of sensitive personal information; and
-* Receive equal service without unlawful discrimination.
-
-We do not sell personal information for monetary consideration.
-
-Privacy requests may be submitted using the contact information in Section 18.
-
-## 22. India-Specific Privacy Rights
-
-Where Indian data-protection law applies, individuals may have rights concerning:
-
-* Access to information about personal-data processing;
-* Correction and completion of personal information;
-* Erasure of personal information;
-* Withdrawal of consent;
-* Grievance redressal; and
-* Nomination of another person to exercise applicable rights in specified circumstances.
-
-Users are also expected to provide accurate information, avoid impersonation, avoid filing false or frivolous complaints, and comply with applicable legal requirements when using Luxor PDF.
-
-Requests may be submitted through the contact details provided in this Privacy Policy.
-
-## 23. Children’s Privacy
-
-Luxor PDF is intended primarily for adults, professionals, businesses, educational institutions, and users who are legally capable of entering into a binding agreement.
-
-Our services are not directed to children below the minimum age established by applicable law, unless the service is provided through and authorised by a parent, legal guardian, school, or educational institution.
+Our services are not directed to children below the minimum age required by applicable law unless the service is used with appropriate authorisation from a parent, legal guardian, school, or educational institution.
 
 We do not knowingly collect personal information from children in violation of applicable law.
 
-If you believe that a child has provided personal information without the required authorisation, please contact us. We will review the matter and take appropriate action.
+If you believe that a child has provided personal information without appropriate permission, contact:
 
-## 24. Sensitive and Confidential Information
+**[support@luxorpdf.com](mailto:support@luxorpdf.com)**
 
-Documents processed through Luxor PDF may contain sensitive or confidential information.
+We will review the request and take appropriate action.
 
-Users should carefully evaluate whether online or third-party processing is appropriate before uploading documents containing:
+## 19. Sensitive and Confidential Information
+
+Documents processed through Luxor PDF may contain confidential, regulated, or sensitive information.
+
+Before using an online or third-party feature, you should consider whether it is appropriate to upload documents containing:
 
 * Government identification information;
-* Financial-account details;
+* Financial-account information;
 * Health or medical records;
 * Biometric information;
-* Legal or privileged communications;
+* Legally privileged communications;
 * Trade secrets;
 * Children’s information;
 * Passwords or authentication credentials;
 * Criminal or regulatory records; or
 * Other highly sensitive information.
 
-Users remain responsible for complying with professional, contractual, regulatory, and confidentiality obligations applicable to their documents.
+Users remain responsible for complying with professional, contractual, confidentiality, regulatory, and legal obligations applicable to their documents.
 
-## 25. Third-Party Websites, Services, and Integrations
+## 20. Business and Organisational Customers
 
-Luxor PDF may contain links to or integrate with third-party services, including:
+Where a company, institution, or organisation uses Luxor PDF to process information concerning its customers, employees, students, contractors, or other individuals:
 
-* Cloud-storage providers;
+* The organisation may determine why and how the information is processed;
+* Fairnova Labs Private Limited may process information on behalf of the organisation;
+* The organisation is responsible for providing required privacy notices;
+* The organisation is responsible for obtaining an appropriate legal basis;
+* We may process information according to the organisation’s documented instructions;
+* Applicable service agreements may contain additional data-processing terms; and
+* Individuals may need to submit requests directly to the organisation controlling their account or documents.
+
+Business customers may contact **[support@luxorpdf.com](mailto:support@luxorpdf.com)** regarding applicable data-processing arrangements.
+
+## 21. Third-Party Services and Integrations
+
+Luxor PDF may link to or integrate with third-party services, including:
+
 * Payment processors;
+* Cloud-storage providers;
 * Email services;
-* Identity providers;
-* App stores;
+* Identity and authentication providers;
 * Artificial-intelligence providers;
 * Analytics platforms;
-* Social-media platforms; and
+* App stores;
+* Customer-support tools; and
 * Business productivity services.
 
-Third parties operate under their own terms and privacy policies. Fairnova Labs Private Limited is not responsible for the independent privacy practices of third parties.
+Third parties operate under their own terms and privacy policies.
 
-Users should review the applicable third-party privacy policy before connecting or using an external service.
+Fairnova Labs Private Limited is not responsible for the independent privacy practices of third-party services that it does not control.
 
-## 26. Business Customers and Data Processing
+You should review the applicable third-party policies before enabling or using an integration.
 
-Where a business, institution, or organisation uses Luxor PDF to process personal information on behalf of its customers, employees, students, contractors, or other individuals:
-
-* The organisation may act as the data controller or data fiduciary;
-* Fairnova Labs Private Limited may act as a processor or service provider;
-* The organisation is responsible for providing required notices and obtaining an appropriate legal basis;
-* Fairnova Labs will process the information according to the customer’s documented instructions, applicable agreements, and legal obligations; and
-* Additional data-processing terms may apply.
-
-Business customers may contact us to request an applicable Data Processing Agreement.
-
-## 27. Automated Decision-Making
+## 22. Automated Processing
 
 Luxor PDF may use automated tools to:
 
 * Detect fraud;
-* Prevent abuse;
-* Verify licence activity;
+* Prevent licence abuse;
 * Identify security threats;
 * Detect malicious files;
-* Recommend product features; or
+* Verify account or subscription activity;
+* Recommend product features; and
 * Assist with document processing.
 
 We do not intend to make decisions producing significant legal or similarly significant effects solely through automated processing unless:
 
-* The processing is necessary for a contract;
+* The processing is necessary to provide a contracted service;
 * It is authorised by applicable law;
 * You provide valid consent; or
-* Appropriate safeguards and review mechanisms are provided.
+* Appropriate safeguards and review mechanisms are available.
 
-## 28. Do Not Track and Global Privacy Signals
+## 23. Marketing Communications
 
-Some browsers provide “Do Not Track” settings or privacy-preference signals.
+Where permitted by law, we may send information about:
 
-Where legally required and technically supported, we may recognise applicable browser-based opt-out signals, including supported global privacy-control signals.
+* Luxor PDF products;
+* New features;
+* Product updates;
+* Special offers;
+* Educational content;
+* Subscription renewals; and
+* Related Fairnova Labs services.
 
-Because technical standards continue to develop, our response may depend on the signal, browser, jurisdiction, and service used.
+You may unsubscribe from promotional messages using the unsubscribe option included in the communication or by contacting:
 
-## 29. Changes to This Privacy Policy
+**[support@luxorpdf.com](mailto:support@luxorpdf.com)**
+
+Unsubscribing from promotional communications will not stop necessary service, transaction, security, billing, or licence-related messages.
+
+## 24. Changes to This Privacy Policy
 
 We may update this Privacy Policy to reflect:
 
-* New products or features;
-* Changes in our business practices;
+* Changes to our products or features;
+* New technologies;
 * New service providers;
+* Changes in business practices;
 * Security improvements;
 * Legal or regulatory developments; or
-* Changes in technology.
+* Organisational changes.
 
-When we make material changes, we may provide notice through:
+The revised Privacy Policy will display an updated effective date.
+
+Where changes are material, we may provide notice through:
 
 * The Luxor PDF website;
-* The application;
-* Your registered email address;
+* The Luxor PDF application;
 * Your account dashboard; or
-* Another appropriate communication channel.
+* Your registered email address.
 
-The updated Policy will become effective on the date shown at the top unless otherwise stated.
+Continued use of Luxor PDF after the revised Privacy Policy becomes effective constitutes acknowledgement of the updated Policy, subject to any consent requirements under applicable law.
 
-Continued use of Luxor PDF after the effective date of an updated Policy constitutes acknowledgement of the revised Policy, subject to any consent requirements under applicable law.
+## 25. Contact Us
 
-## 30. Contact Us
+For questions, complaints, security concerns, or requests relating to this Privacy Policy or the processing of personal information, contact:
 
-For questions, concerns, complaints, or privacy requests relating to this Privacy Policy, contact:
-
-**Privacy Email:** privacy@luxorpdf.com
-**Website:** luxorpdf.com
-
-We will make reasonable efforts to respond within the period required under applicable law.
+**Fairnova Labs Private Limited**
+**Luxor PDF Support:** [support@luxorpdf.com](mailto:support@luxorpdf.com)
 
 ---
 
-## Company and Brand Disclosure
+## Brand Ownership Notice
 
-**Luxor PDF is a brand of Fairnova Labs Private Limited.**
+**Luxor PDF is a brand owned and operated by Fairnova Labs Private Limited.**
 
-All Luxor PDF products, applications, websites, services, software licences, subscriptions, and related offerings are owned or operated by Fairnova Labs Private Limited unless expressly stated otherwise.
+All Luxor PDF products, applications, websites, subscriptions, licences, and related services are owned or operated by Fairnova Labs Private Limited unless expressly stated otherwise.
 `;
