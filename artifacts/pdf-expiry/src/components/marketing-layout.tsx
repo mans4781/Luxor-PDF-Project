@@ -159,8 +159,9 @@ function MarketingFooter() {
               </div>
             </a>
             <p className="mt-6 max-w-sm text-sm leading-7 text-slate-600">
-              A modern PDF platform for reading, converting, merging, splitting,
-              extracting, and protecting business documents.
+              Secure, reliable PDF solutions for reading, protecting, signing,
+              and managing documents—designed to make everyday document
+              workflows faster and simpler.
             </p>
             <div className="mt-6 flex gap-3">
               {SOCIAL_LINKS.map(({ label, href, color, path }) => (
