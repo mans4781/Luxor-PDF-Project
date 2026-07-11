@@ -207,6 +207,10 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   const [settings, setSettings] = useState<ReaderSettings>(() => loadSettings());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelKey | null>(null);
+  // Interactive AcroForm fill mode: when on, native form widgets become
+  // clickable/typeable (see PDFPage's annotationLayer). Values live in
+  // pdfDoc.annotationStorage and are serialized on "Download filled PDF".
+  const [formFillMode, setFormFillMode] = useState(false);
   const [loadError, setLoadError] = useState<{ title: string; message: string } | null>(null);
   const [needsPassword, setNeedsPassword] = useState(false);
   const [wrongPassword, setWrongPassword] = useState(false);
@@ -247,6 +251,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     if (authLoaded && !isSignedIn) {
       setWatermarkCfg(null);
       setPageNoCfg(null);
+      setFormFillMode(false);
     }
   }, [authLoaded, isSignedIn]);
 
@@ -679,6 +684,53 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       setDownloading(false);
     }
   }, [file, downloading, sharing, annotations, watermarkCfg, pageNoCfg, currentPage, requireAuth]);
+
+  // ── Interactive form filling (AcroForm) ────────────────────
+  const handleToggleFormFill = useCallback(() => {
+    setFormFillMode((on) => {
+      const next = !on;
+      // Switch to the hand tool when entering fill mode so annotation tools
+      // don't fight the form widgets for clicks.
+      if (next) setTool("hand");
+      return next;
+    });
+  }, []);
+
+  // Serialize the values the user typed/checked into the live form widgets
+  // (held in pdfDoc.annotationStorage) into a real filled PDF. If other edit
+  // features are also active, overlay them on top of the filled bytes.
+  const handleDownloadFilledForm = useCallback(async () => {
+    if (!requireAuth("Download filled PDF")) return;
+    if (!file || !pdfDoc) { alert("No PDF is currently open."); return; }
+    if (downloading || sharing) return;
+    setDownloading(true);
+    try {
+      const filled: Uint8Array = await pdfDoc.saveDocument();
+      const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
+      const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
+      const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
+      const hasOtherEdits = watermarkCfg !== null || pageNoCfg !== null ||
+        redactions.length > 0 || images.length > 0 || editTexts.length > 0;
+      const blob: Blob = hasOtherEdits
+        ? await exportPdfWithEdits(file, {
+            watermark: watermarkCfg, pageNo: pageNoCfg,
+            redactions, images, editTexts, currentPage,
+            sourceBytes: filled,
+          })
+        : new Blob([filled as BlobPart], { type: "application/pdf" });
+      const dot = file.name.lastIndexOf(".");
+      const base = dot > 0 ? file.name.slice(0, dot) : file.name;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `${base} - filled.pdf`; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("Filled form export failed:", err);
+      alert("Sorry — couldn't save the filled form. The PDF may be encrypted or corrupted.");
+    } finally {
+      setDownloading(false);
+    }
+  }, [file, pdfDoc, downloading, sharing, annotations, watermarkCfg, pageNoCfg, currentPage, requireAuth]);
 
   // ── Share (system share sheet, with fallback menu) ─────────
   const handleShare = useCallback(async () => {
@@ -1345,6 +1397,9 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
           onClose={() => setActivePanel(null)}
           onSelectTool={handleToolChange}
           onAddImage={() => { if (requireAuth("Add Image")) handleAddImage(); }}
+          formFillMode={formFillMode}
+          onToggleFormFill={handleToggleFormFill}
+          onDownloadFilled={handleDownloadFilledForm}
         />
       )}
 
@@ -1549,7 +1604,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
                     onSearchTermChange={handleSearchFromContext}
                     watermark={watermarkCfg} pageNo={pageNoCfg}
                     totalPages={totalPages} currentPage={currentPage}
-                    defaultPageSize={defaultPageSize}
+                    formFillMode={formFillMode}
+defaultPageSize={defaultPageSize}
                   />
                   {right <= totalPages && (
                     <PDFPage
@@ -1565,7 +1621,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
                       onSearchTermChange={handleSearchFromContext}
                       watermark={watermarkCfg} pageNo={pageNoCfg}
                       totalPages={totalPages} currentPage={currentPage}
-                      defaultPageSize={defaultPageSize}
+                      formFillMode={formFillMode}
+defaultPageSize={defaultPageSize}
                     />
                   )}
                 </div>
@@ -1587,7 +1644,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
                 onSearchTermChange={handleSearchFromContext}
                 watermark={watermarkCfg} pageNo={pageNoCfg}
                 totalPages={totalPages} currentPage={currentPage}
-                defaultPageSize={defaultPageSize}
+                formFillMode={formFillMode}
+defaultPageSize={defaultPageSize}
               />
             ))
         )}

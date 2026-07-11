@@ -8,6 +8,12 @@ interface FormsPanelProps {
   /** Switch the active annotation tool (already sign-in gated upstream). */
   onSelectTool: (tool: ToolType) => void;
   onAddImage: () => void;
+  /** Whether interactive form-fill mode is currently on. */
+  formFillMode: boolean;
+  /** Toggle interactive form-fill mode (makes native widgets clickable). */
+  onToggleFormFill: () => void;
+  /** Serialize typed/checked values into a downloaded filled PDF (sign-in gated). */
+  onDownloadFilled: () => void;
 }
 
 interface FieldSummary {
@@ -19,16 +25,17 @@ interface FieldSummary {
 /**
  * Forms & Signature panel.
  *
- * Form DETECTION is real: pdf.js getFieldObjects() lists AcroForm fields.
- * Form FILLING is a mock — INTEGRATION POINT: render pdf.js
- * AnnotationLayer with `renderForms: true` on each page, then export
- * filled values via pdf-lib's PDFForm (form.getTextField(...).setText(...)).
+ * Form DETECTION lists AcroForm fields via pdf.js getFieldObjects().
+ * Form FILLING is real: toggling "Fill form fields" makes the native
+ * widgets interactive (PDFPage renders a pdf.js AnnotationLayer with
+ * renderForms:true bound to pdfDoc.annotationStorage). "Download filled
+ * PDF" serializes those values via pdfDoc.saveDocument().
  *
  * Signatures reuse existing live tools: "Draw signature" activates the
  * freehand pen; "Upload signature image" opens the Add Image flow (both
  * are burned into the PDF on save by the existing export pipeline).
  */
-export default function FormsPanel({ pdfDoc, onClose, onSelectTool, onAddImage }: FormsPanelProps) {
+export default function FormsPanel({ pdfDoc, onClose, onSelectTool, onAddImage, formFillMode, onToggleFormFill, onDownloadFilled }: FormsPanelProps) {
   const [fields, setFields] = useState<FieldSummary[] | null>(null);
 
   useEffect(() => {
@@ -89,13 +96,47 @@ export default function FormsPanel({ pdfDoc, onClose, onSelectTool, onAddImage }
               </div>
             ))}
           </div>
-          <div style={{
-            fontSize: 12, color: "#f5b942", lineHeight: 1.55,
-            background: "rgba(245,185,66,0.08)", border: "1px solid rgba(245,185,66,0.25)",
-            borderRadius: 8, padding: "9px 11px", marginBottom: 14,
-          }}>
-            <strong>Preview mode:</strong> interactive form filling is coming soon. Meanwhile, use the Text Box tool to type over any field.
-          </div>
+          <button
+            onClick={onToggleFormFill}
+            style={{
+              display: "flex", alignItems: "center", gap: 10, width: "100%",
+              padding: "10px 12px", marginBottom: 8,
+              background: formFillMode ? "rgba(90,140,240,0.18)" : "rgba(255,255,255,0.05)",
+              border: `1px solid ${formFillMode ? "rgba(90,140,240,0.55)" : "rgba(255,255,255,0.1)"}`,
+              borderRadius: 8, color: formFillMode ? "#a8c4ff" : "#ddd",
+              fontSize: 12.5, fontWeight: 600, cursor: "pointer", textAlign: "left",
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+            </svg>
+            <span style={{ flex: 1 }}>{formFillMode ? "Filling fields — click to stop" : "Fill form fields"}</span>
+          </button>
+
+          {formFillMode && (
+            <div style={{
+              fontSize: 12, color: "#7fd18f", lineHeight: 1.55,
+              background: "rgba(90,200,120,0.08)", border: "1px solid rgba(90,200,120,0.22)",
+              borderRadius: 8, padding: "9px 11px", marginBottom: 10,
+            }}>
+              Click any field on the page to type, tick, or choose a value. Your entries are kept as you scroll and zoom.
+            </div>
+          )}
+
+          <button
+            onClick={onDownloadFilled}
+            style={{
+              display: "flex", alignItems: "center", gap: 10, width: "100%",
+              padding: "10px 12px", marginBottom: 14,
+              background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 8, color: "#ddd", fontSize: 12.5, cursor: "pointer", textAlign: "left",
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span style={{ flex: 1 }}>Download filled PDF</span>
+          </button>
         </>
       )}
 

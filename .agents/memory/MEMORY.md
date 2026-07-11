@@ -5,6 +5,7 @@
 - [PDF→Word server conversion](pdf-to-word-server-conversion.md) — the one online-tool that runs server-side (pdf2docx via `python3 -c`); reserve concurrency slots synchronously to keep the cap race-free.
 - [Luxor PDF highlight model](luxor-pdf-highlights.md) — highlights use normalized-rect model (not <mark>/offsets); localStorage writes gated by hydratedKey.
 - [Luxor PDF text annotations](luxor-pdf-text-annotations.md) — Add-Text overlays are display-only (not flattened on export); only edittext/watermark/etc are burned into the PDF.
+- [Luxor PDF form filling](luxor-pdf-form-filling.md) — live AcroForm widgets via pdfjs AnnotationLayer+annotationStorage; canvas render annotationMode:2; export via saveDocument; Widget-only + inert link service for safety.
 - [Viewer stale-closure save bug](viewer-stale-closures.md) — memoized save/export callbacks must call the download handler via a latest-ref; stale closures silently export the unedited file.
 - [AI endpoint cost guards](ai-endpoint-cost-guards.md) — AI-backed API routes must ship with per-user rate limits, in-flight guard, timeout, and input caps in the same change; auth alone fails review.
 - [Reader feature gating](reader-feature-gating.md) — gate premium reader features at the execution point, not the UI trigger; clear persisted premium configs on sign-out.

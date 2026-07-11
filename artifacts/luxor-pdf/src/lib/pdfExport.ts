@@ -34,10 +34,15 @@ export interface ExportEdits {
   editTexts?: EditTextAnnotation[];
   /** 1-based page that was current in the viewer (used by `pageRange: current`). */
   currentPage: number;
+  /** Optional pre-processed source bytes to burn edits into instead of the
+   *  original file — used when interactive AcroForm values have already been
+   *  serialized (via pdf.js saveDocument) and we still need to overlay other
+   *  edits (watermark, redactions, images, text) on top of the filled PDF. */
+  sourceBytes?: ArrayBuffer | Uint8Array;
 }
 
 export async function exportPdfWithEdits(file: File, edits: ExportEdits): Promise<Blob> {
-  const bytes = await file.arrayBuffer();
+  const bytes = edits.sourceBytes ?? (await file.arrayBuffer());
   const pdf = await PDFDocument.load(bytes);
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);

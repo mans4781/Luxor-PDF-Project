@@ -1,5 +1,5 @@
 import { useRef, useEffect, useLayoutEffect, useState, useCallback } from "react";
-import { TextLayer } from "pdfjs-dist";
+import { TextLayer, AnnotationLayer } from "pdfjs-dist";
 import {
   Annotation, HighlightAnnotation, TextAnnotation, CommentAnnotation, ToolType,
   FreehandAnnotation, LineAnnotation, ArrowAnnotation, OvalAnnotation, RectAnnotation,
@@ -26,6 +26,32 @@ const isShapeTool = (t: ToolType) => SHAPE_TOOLS.includes(t);
 
 /** Eraser cursor radius in CSS pixels — matches the visual cursor circle. */
 const ERASER_RADIUS_CSS = 10;
+
+/**
+ * Minimal link-service stub for pdf.js's AnnotationLayer. This feature renders
+ * interactive AcroForm widgets only — never link navigation. Link handling is
+ * deliberately inert: `externalLinkEnabled` is false and `addLinkAttributes`
+ * never writes a PDF-controlled URL into `href`, so a hostile PDF cannot smuggle
+ * a `javascript:`/`data:` link through the annotation layer.
+ */
+const FORM_LINK_SERVICE = {
+  externalLinkTarget: null,
+  externalLinkRel: "noopener noreferrer nofollow",
+  externalLinkEnabled: false,
+  isInPresentationMode: false,
+  eventBus: undefined,
+  getDestinationHash: () => "",
+  getAnchorUrl: () => "",
+  setHash: () => {},
+  executeNamedAction: () => {},
+  executeSetOCGState: () => {},
+  addLinkAttributes: (link: HTMLAnchorElement) => {
+    // Never trust the PDF-supplied URL. Neutralize the anchor entirely.
+    link.removeAttribute("href");
+    link.setAttribute("aria-disabled", "true");
+    link.style.pointerEvents = "none";
+  },
+} as any;
 
 /**
  * Open a Google search for the given text in the user's browser (new tab
@@ -64,6 +90,10 @@ interface PDFPageProps {
   pageNo?: import("@/lib/editTypes").PageNoConfig | null;
   totalPages?: number;
   currentPage?: number;
+  /** When true, native AcroForm widgets become interactive (users can type
+   *  into text fields, tick checkboxes, pick dropdowns). Values are written
+   *  to pdfDocument.annotationStorage and persist across zoom/re-render. */
+  formFillMode?: boolean;
   /** Approximate CSS size (page-1 size at the current zoom) used to size
    *  the placeholder before this page has actually rendered, so the
    *  scrollbar and page positions stay stable under virtualization. */
@@ -811,12 +841,14 @@ export default function PDFPage({
   onAnnotationAdd, onAnnotationUpdate, onAnnotationRemove,
   onVisible, onSearchTermChange,
   watermark, pageNo, totalPages, currentPage,
+  formFillMode,
   defaultPageSize,
 }: PDFPageProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const pageCanvasRef = useRef<HTMLCanvasElement>(null);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
   const textLayerRef = useRef<HTMLDivElement>(null);
+  const formLayerRef = useRef<HTMLDivElement>(null);
   const [pageSize, setPageSize] = useState({ w: 0, h: 0 });
   const [editingText, setEditingText] = useState<{ id: string; x: number; y: number } | null>(null);
   /** Inline Adobe-style "Edit Text" editor state. Coords are in CSS pixels
@@ -992,6 +1024,7 @@ export default function PDFPage({
         drawCanvasRef.current.height = 0;
       }
       if (textLayerRef.current) textLayerRef.current.innerHTML = "";
+      if (formLayerRef.current) formLayerRef.current.replaceChildren();
       return;
     }
 
@@ -1036,7 +1069,10 @@ export default function PDFPage({
         const ctx = canvas.getContext("2d")!;
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
-        const task = page.render({ canvasContext: ctx, viewport });
+        // annotationMode 2 = ENABLE_FORMS: paint non-widget annotations on the
+        // canvas but leave AcroForm fields for the interactive HTML annotation
+        // layer so live widgets aren't double-drawn behind the inputs.
+        const task = page.render({ canvasContext: ctx, viewport, annotationMode: 2 });
         renderTaskRef.current = task;
         await task.promise;
         renderTaskRef.current = null;
@@ -1068,6 +1104,55 @@ export default function PDFPage({
             const eoc = document.createElement("div");
             eoc.className = "endOfContent";
             textLayerRef.current.append(eoc);
+          }
+        }
+
+        // Interactive AcroForm widgets. We render the pdf.js AnnotationLayer
+        // with renderForms:true bound to the shared annotationStorage so the
+        // user's typed/checked values persist across zoom, page virtualization
+        // and are later serialized by pdfDocument.saveDocument(). The layer is
+        // always built (so values survive re-renders) but only accepts pointer
+        // input when formFillMode is on — see the JSX wrapper below.
+        if (formLayerRef.current && !cancelled) {
+          const layerDiv = formLayerRef.current;
+          try {
+            const allAnnots = await page.getAnnotations({ intent: "display" });
+            if (cancelled) return;
+            // Only ever render interactive AcroForm widgets — never link, popup
+            // or other annotation subtypes. This keeps the feature scoped to form
+            // input and removes any PDF-controlled link-navigation surface.
+            const annots = allAnnots.filter((a: any) => a.subtype === "Widget");
+            const hasWidgets = annots.length > 0;
+            layerDiv.replaceChildren();
+            if (hasWidgets) {
+              const annVp = page
+                .getViewport({ scale: zoom, rotation: totalRotation })
+                .clone({ dontFlip: true });
+              layerDiv.style.setProperty("--scale-factor", String(zoom));
+              layerDiv.style.setProperty("--total-scale-factor", String(zoom));
+              const annotationLayer = new AnnotationLayer({
+                div: layerDiv,
+                page,
+                viewport: annVp,
+                annotationStorage: pdfDocument.annotationStorage,
+                linkService: FORM_LINK_SERVICE,
+              } as any);
+              await annotationLayer.render({
+                annotations: annots,
+                page,
+                viewport: annVp,
+                annotationStorage: pdfDocument.annotationStorage,
+                linkService: FORM_LINK_SERVICE,
+                renderForms: true,
+                imageResourcesPath: "",
+                downloadManager: null,
+                enableScripting: false,
+                hasJSActions: false,
+                fieldObjects: null,
+              } as any);
+            }
+          } catch (formErr: any) {
+            if (formErr?.name !== "RenderingCancelledException") console.error(formErr);
           }
         }
       } catch (err: any) {
@@ -1927,6 +2012,19 @@ export default function PDFPage({
         className="textLayer"
       />
 
+      {/* Interactive AcroForm widgets (pdf.js AnnotationLayer, renderForms).
+          Only accepts pointer input while the user is in Fill-form mode so it
+          never steals clicks from text selection or the annotation tools. */}
+      <div
+        ref={formLayerRef}
+        className={`annotationLayer${formFillMode ? "" : " disabled"}`}
+        style={{
+          position: "absolute", top: 0, left: 0,
+          width: pageSize.w || undefined, height: pageSize.h || undefined,
+          zIndex: 4,
+        }}
+      />
+
       {selRects.length > 0 && pageSize.w > 0 && (
         <div
           className="selection-overlay"
@@ -2111,11 +2209,19 @@ export default function PDFPage({
                   width: 26, height: 24, display: "flex",
                   alignItems: "center", justifyContent: "center",
                   background: "transparent", border: "none", cursor: "pointer",
-                  fontSize: 14, padding: 0, borderRadius: 6,
+                  color: "#ff6b6b", padding: 0, borderRadius: 6,
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,107,107,0.14)")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-              >🗑️</button>
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3,6 5,6 21,6" />
+                  <path d="M19,6 L19,20a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6" />
+                  <path d="M8,6 V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6" />
+                  <line x1="10" y1="11" x2="10" y2="17" />
+                  <line x1="14" y1="11" x2="14" y2="17" />
+                </svg>
+              </button>
             </>
           )}
         </div>
