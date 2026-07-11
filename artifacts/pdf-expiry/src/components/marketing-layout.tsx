@@ -45,13 +45,6 @@ const COMPANY_LINKS: LinkItem[] = [
   { label: "Pricing", href: "/pricing" },
 ];
 
-const RESOURCE_LINKS: LinkItem[] = [
-  { label: "Help Center", href: "mailto:hello@luxorpdf.com" },
-  { label: "Documentation", href: "/features" },
-  { label: "Security Guide", href: "/#security" },
-  { label: "Release Notes", href: "/about" },
-];
-
 const POLICY_LINKS: LinkItem[] = [
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Use", href: "/terms" },
@@ -120,7 +113,6 @@ function MarketingFooter() {
   const columns: { title: string; links: LinkItem[] }[] = [
     { title: "Products", links: PRODUCT_LINKS },
     { title: "Company", links: COMPANY_LINKS },
-    { title: "Resources", links: RESOURCE_LINKS },
     { title: "Company Policies", links: POLICY_LINKS },
   ];
 
@@ -140,7 +132,7 @@ function MarketingFooter() {
       />
 
       <div className="relative mx-auto max-w-7xl">
-        <div className="grid gap-10 border-b border-slate-200 pb-14 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_0.9fr_1.1fr]">
+        <div className="grid gap-10 border-b border-slate-200 pb-14 lg:grid-cols-[1.2fr_0.8fr_0.9fr_1.1fr]">
           {/* Brand column */}
           <div>
             <a
