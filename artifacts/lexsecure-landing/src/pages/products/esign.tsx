@@ -132,7 +132,7 @@ export default function ESignPage() {
       <section className="bg-emerald-600 py-6">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-white text-center">
-            {[["eIDAS Compliant","EU legal standard"], ["40+ Countries","Global recognition"], ["Tamper-proof Seal","Cryptographic lock"], ["Instant Delivery","Signed in minutes"]].map(([val, lbl]) => (
+            {[["AES-256 secure","Bank-grade encryption"], ["40+ Countries","Global recognition"], ["Tamper-proof Seal","Cryptographic lock"], ["Instant Delivery","Signed in minutes"]].map(([val, lbl]) => (
               <div key={lbl}><p className="text-xl font-bold">{val}</p><p className="text-emerald-200 text-sm">{lbl}</p></div>
             ))}
           </div>
