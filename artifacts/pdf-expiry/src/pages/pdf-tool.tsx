@@ -156,7 +156,7 @@ async function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
 
 // ─── Merge ────────────────────────────────────────────────────────────────────
 
-function MergeTab() {
+export function MergeTab() {
   const accentBtn = useAccentBtn("from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700");
   const guard = useGuardedAction({ bypass: true });
   const [files, setFiles] = useState<File[]>([]);
@@ -254,7 +254,7 @@ function MergeTab() {
 
 // ─── Split ────────────────────────────────────────────────────────────────────
 
-function SplitTab() {
+export function SplitTab() {
   const accentBtn = useAccentBtn("from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700");
   const guard = useGuardedAction({ bypass: true });
   const [file, setFile] = useState<File | null>(null);
@@ -328,7 +328,7 @@ function SplitTab() {
           </div>
           <button
             data-testid="button-clear-split-file"
-            onClick={() => { setFile(null); setPageCount(null); clearFolder(); setError(null); setProgress(""); }}
+            onClick={() => { setFile(null); setPageCount(null); setError(null); setProgress(""); }}
             className="text-muted-foreground hover:text-destructive transition-colors"
           >
             <X className="w-4 h-4" />
@@ -381,7 +381,7 @@ function SplitTab() {
 
 // ─── Extract ──────────────────────────────────────────────────────────────────
 
-function ExtractTab() {
+export function ExtractTab() {
   const accentBtn = useAccentBtn("from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700");
   const guard = useGuardedAction({ bypass: true });
   const [file, setFile] = useState<File | null>(null);
@@ -595,7 +595,7 @@ function ExtractTab() {
 
 // ─── Delete Pages ─────────────────────────────────────────────────────────────
 
-function DeleteTab() {
+export function DeleteTab() {
   const accentBtn = useAccentBtn("from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700");
   const guard = useGuardedAction({ bypass: true });
   const [file, setFile] = useState<File | null>(null);
@@ -825,7 +825,7 @@ const PAGE_SIZES: Record<BlankSize, [number, number]> = {
   Letter: [612, 792],
 };
 
-function AddTab() {
+export function AddTab() {
   const accentBtn = useAccentBtn("from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700");
   const guard = useGuardedAction({ bypass: true });
   const [hostFile, setHostFile] = useState<File | null>(null);

@@ -11,6 +11,8 @@ import Dashboard from "@/pages/dashboard";
 import History from "@/pages/history";
 import PdfTool from "@/pages/pdf-tool";
 import ConvertTool from "@/pages/convert-tool";
+import OnlineTools from "@/pages/online-tools";
+import ToolPage from "@/pages/tool-page";
 import SecurePdf from "@/pages/secure-pdf";
 import PdfViewer from "@/pages/viewer";
 import SignInPage from "@/pages/sign-in";
@@ -72,6 +74,8 @@ function Router() {
       <Route path="/history" component={History} />
       <Route path="/pdf-tool" component={PdfTool} />
       <Route path="/convert" component={ConvertTool} />
+      <Route path="/online-tools" component={OnlineTools} />
+      <Route path="/tools/:slug" component={ToolPage} />
       <Route path="/secure-pdf" component={SecurePdf} />
       <Route path="/v/:id" component={PdfViewer} />
       <Route path="/sign-in/*?" component={SignInPage} />

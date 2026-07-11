@@ -45,6 +45,7 @@ if (typeof _mapProto.getOrInsertComputed !== "function") {
 }
 
 const MB = 1024 * 1024;
+const KB = 1024;
 
 type CompressionTarget = {
   label: string;
@@ -53,32 +54,26 @@ type CompressionTarget = {
   accent: string;
 };
 
+const ACCENT = "from-[#F37311] to-[#D4640C]";
+
 const TARGETS: CompressionTarget[] = [
-  {
-    label: "15 MB",
-    bytes: 15 * MB,
-    minOriginalBytes: 15 * MB,
-    accent: "from-[#F37311] to-[#D4640C]",
-  },
-  {
-    label: "10 MB",
-    bytes: 10 * MB,
-    minOriginalBytes: 10 * MB,
-    accent: "from-[#F37311] to-[#D4640C]",
-  },
-  {
-    label: "5 MB",
-    bytes: 5 * MB,
-    minOriginalBytes: 5 * MB,
-    accent: "from-[#F37311] to-[#D4640C]",
-  },
-  {
-    label: "1 MB",
-    bytes: 1 * MB,
-    minOriginalBytes: 1 * MB,
-    accent: "from-[#F37311] to-[#D4640C]",
-  },
+  { label: "25 MB", bytes: 25 * MB, minOriginalBytes: 25 * MB, accent: ACCENT },
+  { label: "20 MB", bytes: 20 * MB, minOriginalBytes: 20 * MB, accent: ACCENT },
+  { label: "15 MB", bytes: 15 * MB, minOriginalBytes: 15 * MB, accent: ACCENT },
+  { label: "10 MB", bytes: 10 * MB, minOriginalBytes: 10 * MB, accent: ACCENT },
+  { label: "5 MB", bytes: 5 * MB, minOriginalBytes: 5 * MB, accent: ACCENT },
+  { label: "1000 kB", bytes: 1000 * KB, minOriginalBytes: 1000 * KB, accent: ACCENT },
+  { label: "500 kB", bytes: 500 * KB, minOriginalBytes: 500 * KB, accent: ACCENT },
+  { label: "200 kB", bytes: 200 * KB, minOriginalBytes: 200 * KB, accent: ACCENT },
+  { label: "100 kB", bytes: 100 * KB, minOriginalBytes: 100 * KB, accent: ACCENT },
+  { label: "50 kB", bytes: 50 * KB, minOriginalBytes: 50 * KB, accent: ACCENT },
+  { label: "20 kB", bytes: 20 * KB, minOriginalBytes: 20 * KB, accent: ACCENT },
 ];
+
+/** Look up a compression target by its byte size (used by per-size pages). */
+export const COMPRESS_TARGETS: { label: string; bytes: number }[] = TARGETS.map(
+  (t) => ({ label: t.label, bytes: t.bytes }),
+);
 
 function FileDropZone({
   onFiles,
@@ -405,7 +400,7 @@ function CompressPdfContentInner() {
               <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-emerald-900">
-                  This PDF is already under 1 MB
+                  This PDF is already very small
                 </p>
                 <p className="text-xs text-emerald-800 mt-0.5">
                   Nothing to compress. Targets only appear once a file is
@@ -498,6 +493,190 @@ function CompressPdfContentInner() {
           modified.
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Focused single-target compressor (used by per-size tool pages) ──────────
+
+export function CompressToSize({ bytes, label }: { bytes: number; label: string }) {
+  return (
+    <AccentProvider value="orange">
+      <CompressToSizeInner bytes={bytes} label={label} />
+    </AccentProvider>
+  );
+}
+
+function CompressToSizeInner({ bytes, label }: { bytes: number; label: string }) {
+  const downloadAccent = useAccentBtn(
+    "from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700",
+  );
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<CompressResult | null>(null);
+
+  function handleFile(files: File[]) {
+    setFile(files[0]);
+    setError(null);
+    setResult(null);
+    setProgress("");
+  }
+
+  function clearFile() {
+    setFile(null);
+    setError(null);
+    setResult(null);
+    setProgress("");
+  }
+
+  async function compress() {
+    if (!file) return;
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    try {
+      const buf = await readFileAsArrayBuffer(file);
+      const compressed = await compressToTarget(buf, bytes, setProgress);
+      setResult({
+        bytes: compressed,
+        targetLabel: label,
+        originalSize: file.size,
+      });
+      setProgress("");
+    } catch (e) {
+      console.error(e);
+      setError(
+        "Could not compress this PDF. Make sure it is a valid, non-encrypted file.",
+      );
+      setProgress("");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function downloadResult() {
+    if (!result || !file) return;
+    const baseName = file.name.replace(/\.pdf$/i, "");
+    const buffer = new Uint8Array(result.bytes).buffer;
+    const blob = new Blob([buffer], { type: "application/pdf" });
+    await saveFile(blob, `${baseName}-compressed.pdf`);
+    scheduleAutoRefresh();
+  }
+
+  const alreadySmaller = file ? file.size <= bytes : false;
+
+  return (
+    <div className="space-y-5">
+      <AlwaysFreeBadge />
+
+      {!file ? (
+        <FileDropZone onFiles={handleFile} />
+      ) : (
+        <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center shrink-0">
+              <FileText className="w-5 h-5 text-teal-700" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-slate-900 truncate">
+                {file.name}
+              </p>
+              <p className="text-xs text-slate-500">{formatBytes(file.size)}</p>
+            </div>
+          </div>
+          <button
+            onClick={clearFile}
+            className="text-slate-400 hover:text-rose-500 transition-colors"
+            aria-label="Remove file"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {file && alreadySmaller && (
+        <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-emerald-900">
+              This PDF is already under {label}
+            </p>
+            <p className="text-xs text-emerald-800 mt-0.5">
+              You can still re-compress it, but the file may not get much
+              smaller.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {file && (
+        <Button
+          data-testid={`button-compress-${label.replace(/\s+/g, "").toLowerCase()}`}
+          disabled={loading}
+          onClick={compress}
+          className={`w-full h-auto py-4 bg-gradient-to-r ${ACCENT} hover:brightness-110 text-white border-0 shadow-md font-semibold`}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              {progress || "Compressing…"}
+            </>
+          ) : (
+            <>
+              <Minimize2 className="w-4 h-4 mr-2" />
+              Compress PDF to {label}
+            </>
+          )}
+        </Button>
+      )}
+
+      {error && (
+        <p
+          data-testid="compress-error"
+          className="text-sm text-rose-600 bg-rose-50 border border-rose-100 rounded-lg px-3 py-2"
+        >
+          {error}
+        </p>
+      )}
+
+      {result && (
+        <div
+          data-testid="compress-result"
+          className="bg-white border border-emerald-200 rounded-xl p-5 shadow-sm"
+        >
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-slate-900">
+                Compressed to {formatBytes(result.bytes.byteLength)}
+              </p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Target: {result.targetLabel} · Original:{" "}
+                {formatBytes(result.originalSize)} · Saved{" "}
+                {Math.max(
+                  0,
+                  Math.round(
+                    (1 - result.bytes.byteLength / result.originalSize) * 100,
+                  ),
+                )}
+                %
+              </p>
+            </div>
+          </div>
+          <Button
+            data-testid="button-download-compressed"
+            onClick={downloadResult}
+            className={`w-full bg-gradient-to-r ${downloadAccent} text-white border-0 shadow-md font-semibold`}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download compressed PDF
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

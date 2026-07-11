@@ -3,6 +3,7 @@ import { Undo2, Search, History, KeyRound, Sparkles, HelpCircle } from "lucide-r
 import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { PlanBadge, DailyLimitBanner } from "@/license/UsageBadge";
 import { Kbd } from "@/components/ui/kbd";
+import { MegaMenu } from "@/components/mega-menu";
 import { basePath } from "@/lib/base-path";
 
 const PRICING_URL = `/pricing`;
@@ -81,6 +82,7 @@ export function Layout({
             )}
 
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <MegaMenu />
               <PlanBadge />
 
               <AuthMenu

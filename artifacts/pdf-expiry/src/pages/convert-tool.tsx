@@ -29,6 +29,7 @@ import {
 } from "docx";
 import { useGuardedAction } from "@/license/useGuardedAction";
 import { useUploadAuthGate } from "@/license/useUploadAuthGate";
+import { canvasToBmpBlob, canvasToGifBlob } from "@/lib/raster-encode";
 
 // Set the worker source
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -189,7 +190,19 @@ function FileRow({ name, size, onRemove }: { name: string; size: number; onRemov
 
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp"];
 
-function ImagesToPdf() {
+export function ImagesToPdf({
+  acceptTypes = IMAGE_TYPES,
+  accept = "image/jpeg,image/png,image/webp,image/gif,image/bmp",
+  label = "Click or drag images here",
+  hint = "Supports JPG, PNG, WEBP, GIF, BMP — each image becomes one page",
+}: {
+  /** MIME types accepted for filtering dropped/picked files. */
+  acceptTypes?: readonly string[];
+  /** `accept` attribute passed to the file input. */
+  accept?: string;
+  label?: string;
+  hint?: string;
+} = {}) {
   const accentBtn = useAccentBtn("from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700");
   const guard = useGuardedAction({ bypass: true });
   const [files, setFiles] = useState<File[]>([]);
@@ -198,8 +211,8 @@ function ImagesToPdf() {
 
 
   function addFiles(incoming: File[]) {
-    const valid = incoming.filter((f) => IMAGE_TYPES.includes(f.type));
-    if (valid.length < incoming.length) setError("Some files were skipped — only image files are accepted.");
+    const valid = incoming.filter((f) => acceptTypes.includes(f.type));
+    if (valid.length < incoming.length) setError("Some files were skipped — they aren't in a supported image format.");
     else setError(null);
     setFiles((prev) => {
       const names = new Set(prev.map((f) => f.name));
@@ -226,8 +239,19 @@ function ImagesToPdf() {
         let embedded;
         if (file.type === "image/png") {
           embedded = await pdf.embedPng(await readAsArrayBuffer(file));
-        } else {
+        } else if (file.type === "image/jpeg") {
           embedded = await pdf.embedJpg(await readAsArrayBuffer(file));
+        } else {
+          // WEBP / GIF / BMP aren't directly embeddable — rasterize to PNG first.
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d")!;
+          ctx.drawImage(img, 0, 0, w, h);
+          const pngBlob = await new Promise<Blob>((res, rej) =>
+            canvas.toBlob((b) => b ? res(b) : rej(new Error("toBlob failed")), "image/png")
+          );
+          embedded = await pdf.embedPng(await pngBlob.arrayBuffer());
         }
         page.drawImage(embedded, { x: 0, y: 0, width: w, height: h });
       }
@@ -246,9 +270,9 @@ function ImagesToPdf() {
       <DropZone
         onFiles={addFiles}
         multiple
-        accept="image/jpeg,image/png,image/webp,image/gif,image/bmp"
-        label="Click or drag images here"
-        hint="Supports JPG, PNG, WEBP, GIF, BMP — each image becomes one page"
+        accept={accept}
+        label={label}
+        hint={hint}
         colorScheme="emerald"
       />
 
@@ -286,7 +310,7 @@ function ImagesToPdf() {
 
 // ─── Word → PDF ───────────────────────────────────────────────────────────────
 
-function WordToPdf() {
+export function WordToPdf() {
   const accentBtn = useAccentBtn("from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800");
   const guard = useGuardedAction({ bypass: true });
   const [file, setFile] = useState<File | null>(null);
@@ -464,7 +488,7 @@ function WordToPdf() {
 
 // ─── Excel → PDF ──────────────────────────────────────────────────────────────
 
-function ExcelToPdf() {
+export function ExcelToPdf() {
   const accentBtn = useAccentBtn("from-lime-600 to-green-700 hover:from-lime-700 hover:to-green-800");
   const guard = useGuardedAction({ bypass: true });
   const [file, setFile] = useState<File | null>(null);
@@ -647,7 +671,9 @@ const IMAGE_FORMATS = [
   { value: "png",  label: "PNG",  mime: "image/png",  ext: "png"  },
   { value: "jpg",  label: "JPG",  mime: "image/jpeg", ext: "jpg"  },
   { value: "jpeg", label: "JPEG", mime: "image/jpeg", ext: "jpeg" },
+  { value: "webp", label: "WEBP", mime: "image/webp", ext: "webp" },
   { value: "bmp",  label: "BMP",  mime: "image/bmp",  ext: "bmp"  },
+  { value: "gif",  label: "GIF",  mime: "image/gif",  ext: "gif"  },
   { value: "tiff", label: "TIFF", mime: "image/png",  ext: "tiff" }, // canvas → PNG bytes, .tiff ext
   { value: "svg",  label: "SVG",  mime: "image/png",  ext: "svg"  }, // canvas → PNG embedded in SVG
 ] as const;
@@ -656,7 +682,7 @@ type ImageFormatValue = typeof IMAGE_FORMATS[number]["value"];
 
 // ─── PDF → Images ─────────────────────────────────────────────────────────────
 
-function PdfToImages() {
+export function PdfToImages({ fixedFormat }: { fixedFormat?: ImageFormatValue } = {}) {
   const accentBtn = useAccentBtn("from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600");
   const guard = useGuardedAction({ bypass: true });
   const [file, setFile] = useState<File | null>(null);
@@ -719,9 +745,19 @@ function PdfToImages() {
           fileBytes = new TextEncoder().encode(svgStr).buffer;
           zip.file(`${pageSlug}.svg`, fileBytes);
         } else {
-          const blob = await new Promise<Blob>((res, rej) =>
-            canvas.toBlob((b) => b ? res(b) : rej(new Error("toBlob failed")), fmt.mime, fmt.mime === "image/jpeg" ? 0.92 : undefined)
-          );
+          // BMP and GIF aren't supported by canvas.toBlob, so encode them
+          // ourselves. Everything else (PNG/JPEG/WEBP/TIFF-as-PNG) goes
+          // through the native encoder.
+          let blob: Blob;
+          if (format === "bmp") {
+            blob = canvasToBmpBlob(canvas);
+          } else if (format === "gif") {
+            blob = canvasToGifBlob(canvas);
+          } else {
+            blob = await new Promise<Blob>((res, rej) =>
+              canvas.toBlob((b) => b ? res(b) : rej(new Error("toBlob failed")), fmt.mime, fmt.mime === "image/jpeg" ? 0.92 : undefined)
+            );
+          }
           fileBytes = await blob.arrayBuffer();
           zip.file(`${pageSlug}.${fmt.ext}`, fileBytes);
         }
@@ -849,12 +885,24 @@ function PdfToImages() {
       )}
 
       <Button
-        onClick={() => setShowFormatDialog(true)}
+        onClick={() => {
+          if (fixedFormat) {
+            void guard("pdf_to_image", () => convert(fixedFormat));
+          } else {
+            setShowFormatDialog(true);
+          }
+        }}
         disabled={!file || loading}
         className={`w-full bg-gradient-to-r ${accentBtn} text-white border-0 shadow-md`}
         data-testid="button-pdf-to-images"
       >
-        {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{progress || "Converting…"}</> : <><Download className="w-4 h-4 mr-2" />Convert to Images &amp; Download ZIP</>}
+        {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{progress || "Converting…"}</> : (
+          <><Download className="w-4 h-4 mr-2" />
+            {fixedFormat
+              ? `Convert to ${IMAGE_FORMATS.find((f) => f.value === fixedFormat)?.label ?? "Images"} & Download ZIP`
+              : "Convert to Images & Download ZIP"}
+          </>
+        )}
       </Button>
     </div>
   );
@@ -862,7 +910,7 @@ function PdfToImages() {
 
 // ─── PDF → Word ───────────────────────────────────────────────────────────────
 
-function PdfToWord() {
+export function PdfToWord() {
   const guard = useGuardedAction({ bypass: true });
   const accentBtn = useAccentBtn("from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600");
   const [file, setFile] = useState<File | null>(null);
@@ -1109,7 +1157,7 @@ function PdfToWord() {
 
 // ─── PDF → Excel ──────────────────────────────────────────────────────────────
 
-function PdfToExcel() {
+export function PdfToExcel() {
   const guard = useGuardedAction({ bypass: true });
   const accentBtn = useAccentBtn("from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800");
   const [file, setFile] = useState<File | null>(null);
