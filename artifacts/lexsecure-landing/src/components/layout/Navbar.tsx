@@ -195,7 +195,7 @@ export function Navbar() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[860px] max-w-[92vw] bg-white rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200 overflow-hidden z-50"
+                  className="fixed top-[84px] left-1/2 -translate-x-1/2 w-[860px] max-w-[94vw] bg-white rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200 overflow-hidden z-50"
                 >
                   <div className="flex items-center justify-between gap-3 px-5 py-3 bg-gradient-to-r from-[#312E81]/5 via-[#2563EB]/5 to-[#FB7185]/5 border-b border-slate-100">
                     <div>
