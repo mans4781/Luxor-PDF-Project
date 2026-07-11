@@ -1,0 +1,91 @@
+name: Luxor PDF Secure — Windows installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish to GitHub Releases (requires GH_RELEASES_TOKEN secret + matching publish repo)"
+        type: boolean
+        default: false
+  push:
+    tags:
+      - "secure-v*"
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      # electron-builder reads GH_TOKEN when publishing to GitHub Releases.
+      # The token must have repo scope on the publish repo configured in
+      # artifacts/luxor-desktop/package.json (publish.owner/repo =
+      # luxor-pdf/luxor-desktop). Publishing is opt-in (see "Decide publish
+      # mode"); the default build only uploads the installer as an artifact.
+      GH_TOKEN: ${{ secrets.GH_RELEASES_TOKEN }}
+      # The installer is left unsigned automatically when no code-signing
+      # credentials are present (scripts/sign-windows.cjs opts in only when
+      # a WIN_CSC_* / AZURE_KEY_VAULT_* credential group is set), so builds
+      # work out-of-the-box and sign automatically once secrets are added.
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # The Replit workspace template blocks all non-Linux platform binaries
+      # (rollup, tailwind oxide, esbuild, etc.) via `"pkg>dep": "-"` overrides
+      # in pnpm-workspace.yaml to keep Linux installs slim. On the Windows
+      # runner those binaries are required, so strip the blocks before
+      # installing (CI-only change; the lockfile is re-resolved here).
+      - name: Allow Windows platform binaries
+        shell: bash
+        run: |
+          sed -i '/: "-"$/d' pnpm-workspace.yaml
+          # The template also pins brace-expansion to ^2, which breaks
+          # electron-builder (expects the newer named `expand` export).
+          sed -i '/"brace-expansion"/d' pnpm-workspace.yaml
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Compile Electron main & preload
+        run: pnpm --filter @workspace/luxor-desktop run build
+
+      - name: Build offline web bundle (pdf-expiry)
+        run: pnpm --filter @workspace/luxor-desktop run build:web-bundle
+
+      - name: Decide publish mode
+        id: mode
+        shell: bash
+        run: |
+          # Publishing is opt-in via the manual "publish" input only. Tag
+          # pushes still build and upload the installer artifact, but do NOT
+          # auto-publish — the publish repo (luxor-pdf/luxor-desktop) needs a
+          # token scoped to it, so forcing a release on tags would just fail.
+          if [[ "${{ inputs.publish }}" == "true" ]]; then
+            echo "flag=always" >> "$GITHUB_OUTPUT"
+          else
+            echo "flag=never" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build NSIS installer
+        run: pnpm --filter @workspace/luxor-desktop exec electron-builder --win --x64 --publish ${{ steps.mode.outputs.flag }}
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: luxor-pdf-secure-windows-installer
+          path: |
+            artifacts/luxor-desktop/dist/*.exe
+            artifacts/luxor-desktop/dist/*.blockmap
+            artifacts/luxor-desktop/dist/latest.yml
+          if-no-files-found: error
+          retention-days: 30
