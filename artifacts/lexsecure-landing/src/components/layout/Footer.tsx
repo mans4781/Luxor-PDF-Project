@@ -27,7 +27,7 @@ const RESOURCE_LINKS: LinkItem[] = [
 ];
 
 const LEGAL_LINKS: LinkItem[] = [
-  { label: "Privacy Policy", href: "/about" },
+  { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Service", href: "/about" },
   { label: "Cookie Policy", href: "/about" },
   { label: "Licensing", href: "/about" },
