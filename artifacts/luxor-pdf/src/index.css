@@ -56,6 +56,10 @@
   --viewer-bg: #0e0e0e;
   --page-bg: #111111;
   --page-filter: invert(1) hue-rotate(180deg);
+  /* The page is now dark with light text, so multiply would darken the
+     highlight into invisibility. `screen` is multiply's dual: it tints the
+     dark background while keeping the light text intact. */
+  --highlight-blend: screen;
   --toolbar-bg: #1a1a1a;
   --toolbar-fg: #e8e8e8;
   --toolbar-fg-muted: #b5b5b5;
@@ -673,6 +677,21 @@ mark.search-hl {
   display: block;
   image-rendering: auto;
   filter: var(--page-filter, none);
+}
+
+/* Highlights render on this dedicated overlay so the letters underneath
+ * stay intact. `mix-blend-mode: multiply` tints the white page to the exact
+ * swatch hue while black text (0 × colour = 0) stays black. In night mode
+ * the page is inverted (light text on dark), so we switch to `screen`, the
+ * dual of multiply, which keeps the light text intact on the dark page. */
+.pdf-highlight-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: var(--highlight-blend, multiply);
 }
 
 /* ── Home screen ─────────────────────────────────────────────────────────── */

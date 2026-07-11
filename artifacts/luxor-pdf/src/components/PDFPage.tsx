@@ -846,6 +846,7 @@ export default function PDFPage({
 }: PDFPageProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const pageCanvasRef = useRef<HTMLCanvasElement>(null);
+  const highlightCanvasRef = useRef<HTMLCanvasElement>(null);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
   const textLayerRef = useRef<HTMLDivElement>(null);
   const formLayerRef = useRef<HTMLDivElement>(null);
@@ -1019,6 +1020,10 @@ export default function PDFPage({
       if (textLayerTaskRef.current) { textLayerTaskRef.current.cancel?.(); textLayerTaskRef.current = null; }
       const canvas = pageCanvasRef.current;
       if (canvas && canvas.width > 0) { canvas.width = 0; canvas.height = 0; }
+      if (highlightCanvasRef.current && highlightCanvasRef.current.width > 0) {
+        highlightCanvasRef.current.width = 0;
+        highlightCanvasRef.current.height = 0;
+      }
       if (drawCanvasRef.current && drawCanvasRef.current.width > 0) {
         drawCanvasRef.current.width = 0;
         drawCanvasRef.current.height = 0;
@@ -1056,6 +1061,13 @@ export default function PDFPage({
         canvas.height = viewport.height;
         canvas.style.width = `${cssW}px`;
         canvas.style.height = `${cssH}px`;
+
+        if (highlightCanvasRef.current) {
+          highlightCanvasRef.current.width = viewport.width;
+          highlightCanvasRef.current.height = viewport.height;
+          highlightCanvasRef.current.style.width = `${cssW}px`;
+          highlightCanvasRef.current.style.height = `${cssH}px`;
+        }
 
         if (drawCanvasRef.current) {
           drawCanvasRef.current.width = viewport.width;
@@ -1252,16 +1264,16 @@ export default function PDFPage({
       if (ann.type !== "highlight") continue;
       if (ann.rects.length === 0) continue;
       ctx.save();
-      // Vibrant marker fill: paint the swatch's hex at its own alpha
-      // straight onto the page (default `source-over` blend, no
-      // multiply). This is the canvas equivalent of a DOM rect with
-      // `background: rgba(R,G,B,a); opacity: 1; mix-blend-mode: normal`
-      // and is what keeps the color crisp and bright instead of
-      // washed-out. PDF text is dark enough that a 0.56–0.72 alpha
-      // tint still reads sharply through the highlight.
+      // Highlights live on their own canvas whose CSS `mix-blend-mode` is
+      // `multiply` on bright pages (and `screen` in night mode). That blend
+      // is what keeps the letters underneath fully intact: multiplying the
+      // colour onto white tints the background to the exact swatch hue while
+      // black text (0 × colour = 0) stays black. So we paint the solid hex
+      // at full opacity here and let the blend mode do the see-through work,
+      // rather than a translucent source-over fill that muddies the text.
       ctx.globalCompositeOperation = "source-over";
       ctx.fillStyle = ann.color;
-      ctx.globalAlpha = typeof ann.opacity === "number" ? ann.opacity : highlightOpacityFor(ann.color);
+      ctx.globalAlpha = 1;
       for (const r of ann.rects) {
         ctx.fillRect(r.x * canvas.width, r.y * canvas.height, r.width * canvas.width, r.height * canvas.height);
       }
@@ -1274,10 +1286,17 @@ export default function PDFPage({
     if (!canvas || pageSize.w === 0) return;
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    renderHighlights(ctx, canvas, annotations);
+    // Highlights render on their own blend-mode canvas so the text under
+    // them stays intact; every other annotation type stays on drawCanvas.
+    const hlCanvas = highlightCanvasRef.current;
+    if (hlCanvas) {
+      const hlCtx = hlCanvas.getContext("2d")!;
+      hlCtx.clearRect(0, 0, hlCanvas.width, hlCanvas.height);
+      renderHighlights(hlCtx, hlCanvas, annotations);
+    }
     for (const ann of annotations) {
       if (ann.type === "highlight") {
-        // already drawn above
+        // drawn on the dedicated highlight canvas above
       } else if (ann.type === "underline") {
         ctx.save();
         ctx.strokeStyle = ann.color;
@@ -1349,13 +1368,15 @@ export default function PDFPage({
   const onHighlightMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!highlightRef.current?.active) return;
     const pos = getCanvasPos(e);
-    const canvas = drawCanvasRef.current!;
+    // Preview draws on the highlight canvas so it gets the same blend-mode
+    // treatment (text stays intact) as the committed highlight.
+    const canvas = highlightCanvasRef.current!;
     const ctx = canvas.getContext("2d")!;
     redrawAnnotations();
     const { startX, startY } = highlightRef.current;
     ctx.save();
     ctx.globalCompositeOperation = "source-over";
-    ctx.globalAlpha = highlightOpacityFor(highlightColor);
+    ctx.globalAlpha = 1;
     ctx.fillStyle = highlightColor;
     ctx.fillRect(startX, startY, pos.x - startX, pos.y - startY);
     ctx.restore();
@@ -1912,6 +1933,12 @@ export default function PDFPage({
       onTouchEnd={onWrapperPointerUp}
     >
       <canvas ref={pageCanvasRef} className="pdf-page-canvas" />
+
+      {/* Committed + preview highlights render here. The dedicated canvas
+          uses `mix-blend-mode` (multiply on bright pages, screen in night
+          mode) so the colour tints the page while the letters underneath
+          stay fully intact. */}
+      <canvas ref={highlightCanvasRef} className="pdf-highlight-canvas" />
 
       {/* Watermark / page-number on-screen overlays. These mirror what
           the pdf-lib export burns into the saved PDF. */}
