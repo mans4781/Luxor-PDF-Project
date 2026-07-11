@@ -56,8 +56,8 @@ export const ONLINE_TOOL_COLUMNS: ToolColumn[] = [
   {
     title: "Convert from PDF",
     tools: [
-      { label: "PDF to Jpeg", href: `${SUITE}/pdf-to-jpeg`, icon: FileImage, color: "#F97316" },
-      { label: "PDF to Jpg", href: `${SUITE}/pdf-to-jpg`, icon: FileImage, color: "#FB923C" },
+      { label: "PDF to JPEG", href: `${SUITE}/pdf-to-jpeg`, icon: FileImage, color: "#F97316" },
+      { label: "PDF to JPG", href: `${SUITE}/pdf-to-jpg`, icon: FileImage, color: "#FB923C" },
       { label: "PDF to PNG", href: `${SUITE}/pdf-to-png`, icon: FileImage, color: "#EF4444" },
       { label: "PDF to BMP", href: `${SUITE}/pdf-to-bmp`, icon: FileImage, color: "#F59E0B" },
       { label: "PDF to GIF", href: `${SUITE}/pdf-to-gif`, icon: FileImage, color: "#EC4899" },
@@ -69,8 +69,8 @@ export const ONLINE_TOOL_COLUMNS: ToolColumn[] = [
   {
     title: "Convert to PDF",
     tools: [
-      { label: "Jpeg to PDF", href: `${SUITE}/jpeg-to-pdf`, icon: ImageIcon, color: "#10B981" },
-      { label: "Jpg to PDF", href: `${SUITE}/jpg-to-pdf`, icon: ImageIcon, color: "#14B8A6" },
+      { label: "JPEG to PDF", href: `${SUITE}/jpeg-to-pdf`, icon: ImageIcon, color: "#10B981" },
+      { label: "JPG to PDF", href: `${SUITE}/jpg-to-pdf`, icon: ImageIcon, color: "#14B8A6" },
       { label: "PNG to PDF", href: `${SUITE}/png-to-pdf`, icon: ImageIcon, color: "#06B6D4" },
       { label: "BMP to PDF", href: `${SUITE}/bmp-to-pdf`, icon: ImageIcon, color: "#0EA5E9" },
       { label: "GIF to PDF", href: `${SUITE}/gif-to-pdf`, icon: ImageIcon, color: "#22C55E" },
