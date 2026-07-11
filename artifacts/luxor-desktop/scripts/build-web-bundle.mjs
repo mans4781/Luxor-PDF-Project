@@ -15,7 +15,12 @@ const targetDir = path.join(desktopRoot, "web-bundle");
 
 function run(cmd, args, opts) {
   return new Promise((resolve, reject) => {
-    const child = spawn(cmd, args, { stdio: "inherit", ...opts });
+    const child = spawn(cmd, args, {
+      stdio: "inherit",
+      // Node ≥20 refuses to spawn .cmd shims (pnpm on Windows) without a shell.
+      shell: process.platform === "win32",
+      ...opts,
+    });
     child.on("exit", (code) => {
       if (code === 0) resolve();
       else reject(new Error(`${cmd} ${args.join(" ")} exited with ${code}`));
@@ -41,7 +46,7 @@ async function copyDir(src, dest) {
 
 console.log("[build-web-bundle] building pdf-expiry with BASE_PATH=./");
 await run(
-  process.platform === "win32" ? "pnpm.cmd" : "pnpm",
+  "pnpm",
   ["--filter", "@workspace/pdf-expiry", "run", "build"],
   {
     cwd: repoRoot,
