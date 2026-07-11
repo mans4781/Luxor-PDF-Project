@@ -53,15 +53,18 @@ export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
 
 /**
  * Quick-highlight palette shown in the floating toolbar that pops up over
- * a live text selection (Yellow / Green / Blue / Pink, in that order — the
- * set the user requested). Each swatch carries its own opacity so the
- * committed highlight reads vibrant while leaving the text sharp.
+ * a live text selection (Yellow / Green / Blue / Pink / Violet / Red, in
+ * that order — the set the user requested). Each swatch carries its own
+ * opacity so the committed highlight reads vibrant while leaving the text
+ * sharp.
  */
 export const QUICK_HIGHLIGHT_COLORS: HighlightSwatch[] = [
   { name: "Yellow", value: "#FFD600", opacity: 0.28 },
   { name: "Green",  value: "#4CAF50", opacity: 0.24 },
   { name: "Blue",   value: "#2196F3", opacity: 0.26 },
   { name: "Pink",   value: "#EC407A", opacity: 0.24 },
+  { name: "Violet", value: "#9C27B0", opacity: 0.26 },
+  { name: "Red",    value: "#F44336", opacity: 0.26 },
 ];
 
 /** Fixed blue tint used by the live text-selection overlay (matches the

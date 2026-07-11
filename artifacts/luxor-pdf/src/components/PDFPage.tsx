@@ -2166,35 +2166,6 @@ export default function PDFPage({
               onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
             />
           ))}
-          {quickBar.mode === "new" && quickBar.text.trim() && (
-            <>
-              <span style={{ width: 1, height: 20, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
-              <button
-                type="button"
-                title="Search the web for this text"
-                onClick={() => {
-                  searchWebFor(quickBar.text);
-                  setQuickBar(null);
-                  window.getSelection()?.removeAllRanges();
-                }}
-                style={{
-                  width: 26, height: 24, display: "flex",
-                  alignItems: "center", justifyContent: "center",
-                  background: "transparent", border: "none", cursor: "pointer",
-                  padding: 0, borderRadius: 6, color: "#e0e0e0",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-                  <circle cx="12" cy="12" r="9"/>
-                  <ellipse cx="12" cy="12" rx="4" ry="9"/>
-                  <line x1="3.5" y1="9" x2="20.5" y2="9"/>
-                  <line x1="3.5" y1="15" x2="20.5" y2="15"/>
-                </svg>
-              </button>
-            </>
-          )}
           {quickBar.mode === "edit" && (
             <>
               <span style={{ width: 1, height: 20, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
