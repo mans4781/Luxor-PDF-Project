@@ -36,38 +36,37 @@ export const SELECTION = {
  * exactly the configured color at the configured alpha.
  */
 /**
- * Microsoft Edge PDF highlighter palette — matched 1:1. Edge stores the
- * exact base hues below and renders them as a semi-transparent overlay at
- * ~50% opacity, which is exactly how our renderer paints them (rgba at the
- * given alpha, straight onto the page). This keeps the color and see-through
- * text appearance identical to Edge:
- *   Yellow #FFFF00, Green #90EE90, Light Blue #ADD8E6, Pink #FFB6C1, Red #FF0000.
- * Violet and Grey are not part of Edge's set, so they use light-pastel
- * equivalents in the same family for a consistent look. Order is the
- * user-specified order.
+ * Luxor highlighter palette — the exact six hues the user selected. The
+ * renderer paints these as solid hex on a dedicated overlay canvas that
+ * uses CSS `mix-blend-mode: multiply` (screen in night mode), so the
+ * background takes the exact swatch color while the black text underneath
+ * stays fully intact. Order runs across the hue wheel:
+ *   Yellow #FFFF00, Lime #80FF00, Green #00FF80, Cyan #00AEFF,
+ *   Blue #007FFF, Pink #FF0080.
+ * The `opacity` field is retained only as stored annotation data; on-screen
+ * display is full-opacity because the blend mode does the see-through work.
  */
 export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Green",  value: "#90EE90", opacity: 0.50 },
   { name: "Yellow", value: "#FFFF00", opacity: 0.50 },
-  { name: "Red",    value: "#FF0000", opacity: 0.50 },
-  { name: "Violet", value: "#DDA0DD", opacity: 0.50 },
-  { name: "Grey",   value: "#D3D3D3", opacity: 0.50 },
+  { name: "Lime",   value: "#80FF00", opacity: 0.50 },
+  { name: "Green",  value: "#00FF80", opacity: 0.50 },
+  { name: "Cyan",   value: "#00AEFF", opacity: 0.50 },
+  { name: "Blue",   value: "#007FFF", opacity: 0.50 },
+  { name: "Pink",   value: "#FF0080", opacity: 0.50 },
 ];
 
 /**
- * Quick-highlight palette shown in the floating toolbar that pops up over
- * a live text selection (Yellow / Green / Blue / Pink / Violet / Red, in
- * that order — the set the user requested). Each swatch carries its own
- * opacity so the committed highlight reads vibrant while leaving the text
- * sharp.
+ * Quick-highlight palette shown in the floating toolbar that pops up over a
+ * live text selection. Uses the same six user-selected hues in the same
+ * order as HIGHLIGHT_COLORS for one consistent color system.
  */
 export const QUICK_HIGHLIGHT_COLORS: HighlightSwatch[] = [
   { name: "Yellow", value: "#FFFF00", opacity: 0.50 },
-  { name: "Green",  value: "#90EE90", opacity: 0.50 },
-  { name: "Blue",   value: "#ADD8E6", opacity: 0.50 },
-  { name: "Pink",   value: "#FFB6C1", opacity: 0.50 },
-  { name: "Violet", value: "#DDA0DD", opacity: 0.50 },
-  { name: "Red",    value: "#FF0000", opacity: 0.50 },
+  { name: "Lime",   value: "#80FF00", opacity: 0.50 },
+  { name: "Green",  value: "#00FF80", opacity: 0.50 },
+  { name: "Cyan",   value: "#00AEFF", opacity: 0.50 },
+  { name: "Blue",   value: "#007FFF", opacity: 0.50 },
+  { name: "Pink",   value: "#FF0080", opacity: 0.50 },
 ];
 
 /** Fixed blue tint used by the live text-selection overlay (matches the
@@ -87,13 +86,12 @@ export const SELECTION_BLUE = "rgba(37, 99, 235, 0.28)";
 export const SELECTION_PREVIEW_DEFAULT = "rgba(0, 120, 255, 0.25)";
 
 export const SELECTION_PREVIEW_BY_HIGHLIGHT: Record<string, string> = {
-  "#90EE90": "rgba(144, 238, 144, 0.50)", // Green
   "#FFFF00": "rgba(255, 255, 0, 0.50)",   // Yellow
-  "#FF0000": "rgba(255, 0, 0, 0.50)",     // Red
-  "#DDA0DD": "rgba(221, 160, 221, 0.50)", // Violet
-  "#D3D3D3": "rgba(211, 211, 211, 0.50)", // Grey
-  "#ADD8E6": "rgba(173, 216, 230, 0.50)", // Blue
-  "#FFB6C1": "rgba(255, 182, 193, 0.50)", // Pink
+  "#80FF00": "rgba(128, 255, 0, 0.50)",   // Lime
+  "#00FF80": "rgba(0, 255, 128, 0.50)",   // Green
+  "#00AEFF": "rgba(0, 174, 255, 0.50)",   // Cyan
+  "#007FFF": "rgba(0, 127, 255, 0.50)",   // Blue
+  "#FF0080": "rgba(255, 0, 128, 0.50)",   // Pink
 };
 
 /** Resolve a highlight hex to its soft selection-preview shade. */
@@ -190,11 +188,11 @@ export const DRAW_THICKNESS = {
   default: 3,
 } as const;
 
-/** Default highlight = Yellow (index 1 in the new palette). */
-const DEFAULT_HIGHLIGHT_INDEX = 1;
+/** Default highlight = Yellow (index 0 in the palette). */
+const DEFAULT_HIGHLIGHT_INDEX = 0;
 export const DEFAULTS = {
-  highlightColor: HIGHLIGHT_COLORS[DEFAULT_HIGHLIGHT_INDEX].value,   // Yellow #FFD600
-  highlightOpacity: HIGHLIGHT_COLORS[DEFAULT_HIGHLIGHT_INDEX].opacity, // 0.28
+  highlightColor: HIGHLIGHT_COLORS[DEFAULT_HIGHLIGHT_INDEX].value,   // Yellow #FFFF00
+  highlightOpacity: HIGHLIGHT_COLORS[DEFAULT_HIGHLIGHT_INDEX].opacity, // 0.50
   penColor: "#0D62F2",                         // Bright Blue
   penWidth: DRAW_THICKNESS.default,            // 3px
   underlineColor: "#0D62F2",
