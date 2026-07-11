@@ -19,8 +19,9 @@ jobs:
       # electron-builder reads GH_TOKEN when publishing to GitHub Releases.
       # The token must have repo scope on the publish repo configured in
       # artifacts/luxor-desktop/package.json (publish.owner/repo =
-      # luxor-pdf/luxor-desktop). Publishing is opt-in (see "Decide publish
-      # mode"); the default build only uploads the installer as an artifact.
+      # mans4781/Luxor-Secure-Project). This is Secure's OWN release repo,
+      # separate from Reader's (mans4781/Luxor-PDF-Project), so publishing on
+      # tags is safe and never clobbers the Reader's latest.yml.
       GH_TOKEN: ${{ secrets.GH_RELEASES_TOKEN }}
       # The installer is left unsigned automatically when no code-signing
       # credentials are present (scripts/sign-windows.cjs opts in only when
@@ -66,11 +67,11 @@ jobs:
         id: mode
         shell: bash
         run: |
-          # Publishing is opt-in via the manual "publish" input only. Tag
-          # pushes still build and upload the installer artifact, but do NOT
-          # auto-publish — the publish repo (luxor-pdf/luxor-desktop) needs a
-          # token scoped to it, so forcing a release on tags would just fail.
-          if [[ "${{ inputs.publish }}" == "true" ]]; then
+          # Publish to GitHub Releases on a secure-v* tag push, or on a manual
+          # run with publish=true. Both require the GH_RELEASES_TOKEN secret
+          # scoped to mans4781/Luxor-Secure-Project. Plain builds only upload
+          # the installer as a workflow artifact.
+          if [[ "${GITHUB_REF}" == refs/tags/secure-v* || "${{ inputs.publish }}" == "true" ]]; then
             echo "flag=always" >> "$GITHUB_OUTPUT"
           else
             echo "flag=never" >> "$GITHUB_OUTPUT"

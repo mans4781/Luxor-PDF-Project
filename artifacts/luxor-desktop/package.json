@@ -85,8 +85,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "luxor-pdf",
-        "repo": "luxor-desktop",
+        "owner": "mans4781",
+        "repo": "Luxor-Secure-Project",
         "releaseType": "release"
       }
     ]
