@@ -80,7 +80,7 @@ export const ONLINE_TOOL_COLUMNS: ToolColumn[] = [
     ],
   },
   {
-    title: "Compress",
+    title: "Compress a PDF",
     tools: [
       { label: "Compress a PDF to 25 MB", href: `${SUITE}/compress-pdf-to-25mb`, icon: Minimize2, color: "#F43F5E" },
       { label: "Compress a PDF to 20 MB", href: `${SUITE}/compress-pdf-to-20mb`, icon: Minimize2, color: "#FB7185" },
