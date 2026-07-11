@@ -1,5 +1,5 @@
 import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
-import { FileSignature, ShieldCheck, Mail, Clock, Users, BarChart3, Globe, CheckCircle2 } from "lucide-react";
+import { FileSignature, ShieldCheck, Mail, Clock, Users, BarChart3, Globe } from "lucide-react";
 import { motion } from "framer-motion";
 
 const features = [
@@ -176,21 +176,6 @@ export default function ESignPage() {
                 <h3 className="font-semibold text-slate-800 mb-2">{title}</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
               </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Trust badges */}
-      <section className="py-12 bg-slate-50">
-        <div className="container mx-auto px-6">
-          <p className="text-center text-slate-400 text-sm mb-6 uppercase tracking-wider font-medium">Legal compliance</p>
-          <div className="flex flex-wrap justify-center gap-6">
-            {["eIDAS (EU)", "ESIGN Act (US)", "UETA"].map(b => (
-              <div key={b} className="flex items-center gap-2 bg-white rounded-xl px-4 py-2.5 shadow-sm border border-slate-100">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm font-medium text-slate-700">{b}</span>
-              </div>
             ))}
           </div>
         </div>
