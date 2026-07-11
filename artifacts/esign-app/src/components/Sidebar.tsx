@@ -29,7 +29,7 @@ export function Sidebar() {
         aria-label="LuxorSign — home"
         className="h-16 flex items-center gap-2.5 px-5 border-b border-sidebar-border cursor-pointer text-left transition-opacity hover:opacity-80"
       >
-        <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center">
           <PenLine className="w-4 h-4 text-white" strokeWidth={2.5} />
         </div>
         <span className="text-white font-semibold text-lg tracking-tight">LuxorSign</span>
