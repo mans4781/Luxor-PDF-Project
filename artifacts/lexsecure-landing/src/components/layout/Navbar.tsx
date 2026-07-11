@@ -231,15 +231,15 @@ export function Navbar() {
                   </div>
 
                   <div className="px-5 py-3 border-t border-slate-100">
-                    <Link
-                      href="/online-tools"
+                    <a
+                      href="/pdf-expiry/online-tools"
                       onClick={() => setToolsOpen(false)}
                       data-testid="mega-link-all-tools"
                       className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1754F4] hover:underline"
                     >
                       <Grid3x3 className="w-4 h-4" />
                       Browse all tools
-                    </Link>
+                    </a>
                   </div>
                 </motion.div>
               )}
