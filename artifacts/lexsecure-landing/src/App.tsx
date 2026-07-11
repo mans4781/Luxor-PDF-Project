@@ -8,6 +8,7 @@ import WebAppPage from "@/pages/web-app";
 import PricingPage from "@/pages/pricing";
 import AboutPage from "@/pages/about";
 import PrivacyPage from "@/pages/privacy";
+import TermsPage from "@/pages/terms";
 import PdfReaderPage from "@/pages/products/pdf-reader";
 import PdfEditorPage from "@/pages/products/pdf-editor";
 import ESignPage from "@/pages/products/esign";
@@ -40,6 +41,7 @@ function Router() {
       <Route path="/web-app" component={WebAppPage} />
       <Route path="/about" component={AboutPage} />
       <Route path="/privacy" component={PrivacyPage} />
+      <Route path="/terms" component={TermsPage} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/products/pdf-reader" component={PdfReaderPage} />
       <Route path="/products/pdf-editor" component={PdfEditorPage} />

@@ -1,0 +1,988 @@
+export const termsOfUseMarkdown = `
+## 1. Introduction
+
+Welcome to **Luxor PDF**.
+
+Luxor PDF is a brand owned and operated by **Fairnova Labs Private Limited**, a company incorporated under the laws of India.
+
+These Terms of Use govern your access to and use of:
+
+* The Luxor PDF website;
+* Luxor PDF Reader;
+* Luxor PDF Secure;
+* Luxor PDF eSign;
+* Luxor PDF desktop, web, and mobile applications;
+* Online PDF tools and document-processing services;
+* User accounts and dashboards;
+* Free trials, software licences, subscriptions, and paid plans;
+* Electronic-signature services;
+* Document security, sharing, conversion, and management services; and
+* Any related products, features, updates, support services, or integrations.
+
+In these Terms, **“Luxor PDF,” “Fairnova Labs,” “we,” “us,” or “our”** refers to Fairnova Labs Private Limited.
+
+The words **“you” and “your”** refer to the person or organisation accessing or using Luxor PDF.
+
+By downloading, installing, accessing, purchasing, registering for, or using Luxor PDF, or by clicking an “Accept,” “Agree,” “Sign Up,” “Purchase,” or similar button, you confirm that you have read, understood, and agreed to these Terms.
+
+If you do not agree to these Terms, you must not access, install, or use Luxor PDF.
+
+## 2. Company and Brand Disclosure
+
+**Luxor PDF is a brand of Fairnova Labs Private Limited.**
+
+Luxor PDF is not a separate legal entity. Unless expressly stated otherwise in a written agreement, all contracts, licences, subscriptions, purchases, services, and transactions relating to Luxor PDF are entered into with Fairnova Labs Private Limited.
+
+For questions concerning these Terms, contact:
+
+**Email:** [support@luxorpdf.com](mailto:support@luxorpdf.com)
+
+## 3. Luxor PDF Products
+
+The Luxor PDF product suite may include the following products and services.
+
+### 3.1 Luxor PDF Reader
+
+Luxor PDF Reader may allow users to:
+
+* Open and view PDF documents;
+* Search document text;
+* Navigate pages and bookmarks;
+* Zoom, rotate, or change display modes;
+* Print documents;
+* Complete PDF forms;
+* Add annotations, highlights, notes, or comments;
+* Organise PDF files; and
+* Use other reading and document-management features.
+
+### 3.2 Luxor PDF Secure
+
+Luxor PDF Secure may allow users to:
+
+* Merge and split PDF documents;
+* Extract, insert, delete, rotate, or rearrange pages;
+* Compress PDF documents;
+* Convert documents between supported formats;
+* Add passwords, permissions, and access restrictions;
+* Restrict printing, copying, editing, or sharing;
+* Apply document expiry settings;
+* Revoke document access where supported;
+* Add watermarks;
+* Redact sensitive information;
+* Create secure sharing links;
+* Generate document-access records; and
+* Use other document-security and processing features.
+
+### 3.3 Luxor PDF eSign
+
+Luxor PDF eSign may allow users to:
+
+* Upload documents for electronic signing;
+* Create or add electronic signatures;
+* Add initials, dates, text, checkboxes, and form fields;
+* Send documents to signers or approvers;
+* Define signing sequences;
+* Send reminders;
+* Track document status;
+* Record signing activity;
+* Generate audit trails or completion records;
+* Download completed documents; and
+* Manage electronic-signature transactions.
+
+Features may differ according to your product version, operating system, device, country, subscription, licence, usage allowance, or third-party service availability.
+
+We do not guarantee that every feature will be available in every country, plan, product, or device.
+
+## 4. Eligibility
+
+You may use Luxor PDF only if:
+
+* You are legally capable of entering into a binding agreement;
+* You meet the minimum legal age required in your country;
+* You are not prohibited from using the services under applicable law;
+* You provide accurate account and payment information; and
+* You comply with these Terms.
+
+If you use Luxor PDF on behalf of a business, employer, educational institution, government body, partnership, or other organisation, you confirm that:
+
+* You are authorised to act on behalf of that organisation;
+* You have authority to accept these Terms;
+* You are authorised to use the payment method provided;
+* You are authorised to upload and process the relevant documents; and
+* The organisation agrees to comply with these Terms.
+
+## 5. User Accounts
+
+Some Luxor PDF features may require you to create an account.
+
+You agree to:
+
+* Provide accurate, complete, and current information;
+* Keep your account details updated;
+* Protect your password and authentication credentials;
+* Prevent unauthorised access to your account;
+* Use only accounts that you are authorised to access;
+* Notify us promptly of suspected unauthorised activity; and
+* Accept responsibility for activities performed through your account, except where applicable law provides otherwise.
+
+You must not:
+
+* Share an individual account with unauthorised users;
+* Sell, transfer, lease, or sublicense your account;
+* Create an account using false or misleading information;
+* Impersonate another person or organisation;
+* Use another person’s account without permission;
+* Circumvent account, device, subscription, or licence limitations; or
+* Create multiple accounts to misuse trials, promotions, or free allowances.
+
+We may require email, device, identity, licence, or payment verification before activating or restoring access.
+
+## 6. Software Licence
+
+Subject to your compliance with these Terms and payment of all applicable fees, Fairnova Labs Private Limited grants you a limited, non-exclusive, non-transferable, non-sublicensable, and revocable licence to install and use the applicable Luxor PDF software.
+
+The licence is provided only:
+
+* For the licence or subscription period purchased;
+* For the authorised number of users or devices;
+* For personal, professional, educational, or internal business use;
+* In accordance with the applicable plan limits; and
+* Subject to these Terms.
+
+Luxor PDF software is **licensed, not sold**.
+
+Purchasing a Luxor PDF licence does not transfer ownership of the software, source code, algorithms, technology, trademarks, designs, interfaces, or other intellectual property to you.
+
+### 6.1 Individual licences
+
+An individual licence may be used only by the authorised individual and on the permitted number of devices.
+
+### 6.2 Team and business licences
+
+Team and business licences may be assigned only to authorised users within the purchasing organisation.
+
+The organisation is responsible for:
+
+* Assigning licences correctly;
+* Removing users who are no longer authorised;
+* Maintaining accurate user counts;
+* Preventing unauthorised account sharing; and
+* Ensuring that its users comply with these Terms.
+
+### 6.3 Licence verification
+
+Luxor PDF may periodically connect to our systems to:
+
+* Activate the software;
+* Confirm licence validity;
+* Verify subscription status;
+* Enforce user or device limits;
+* Detect unauthorised use;
+* Prevent fraud or software piracy;
+* Provide updates; and
+* Maintain the security of the services.
+
+An internet connection may be required for activation, periodic verification, online services, eSign services, subscription validation, cloud processing, updates, or support.
+
+## 7. Free Trials and Free Features
+
+We may provide free trials, promotional access, limited plans, or free product features.
+
+Trials and free plans may be subject to:
+
+* A limited duration;
+* A maximum number of documents;
+* Page or file-size restrictions;
+* Limited storage;
+* Restricted features;
+* Watermarked output;
+* Device or account limits; and
+* Other restrictions displayed within the product.
+
+Unless otherwise stated:
+
+* A trial may be used only once per user, organisation, device, or payment method;
+* Creating multiple accounts to obtain repeated trials is prohibited;
+* Trial features may automatically end when the trial expires;
+* Users should download their documents before trial access ends; and
+* Continued use of paid features may require purchasing a licence or subscription.
+
+We may modify or discontinue a free plan or promotional offer where permitted by law.
+
+## 8. Permitted Use
+
+You may use Luxor PDF for lawful purposes, including:
+
+* Reading and managing your documents;
+* Editing documents that you own or are authorised to use;
+* Converting, compressing, merging, or organising documents;
+* Applying authorised document-security settings;
+* Obtaining valid electronic signatures;
+* Completing authorised business transactions;
+* Sharing documents with authorised recipients;
+* Completing permitted forms; and
+* Performing other activities supported by your plan.
+
+Your use must comply with:
+
+* These Terms;
+* Applicable laws and regulations;
+* Intellectual-property laws;
+* Privacy and data-protection requirements;
+* Confidentiality obligations;
+* Employment and professional obligations;
+* Court orders;
+* Contractual restrictions; and
+* Your subscription or licence limits.
+
+## 9. Prohibited Use
+
+You must not use Luxor PDF to:
+
+* Violate any applicable law or regulation;
+* Commit fraud, forgery, deception, or identity theft;
+* Falsify documents, signatures, dates, approvals, certificates, or records;
+* Sign a document without proper authority;
+* Misrepresent another person’s identity, approval, or consent;
+* Access another person’s account, device, files, or documents without permission;
+* Circumvent document-security controls without authorisation;
+* Remove a valid signature or alter a completed document unlawfully;
+* Upload malware, viruses, ransomware, spyware, or harmful code;
+* Conduct phishing, social engineering, or cyberattacks;
+* Upload unlawful, defamatory, threatening, abusive, or infringing material;
+* Violate copyright, trademark, privacy, confidentiality, or publicity rights;
+* Use stolen, unlawfully obtained, or unauthorised documents;
+* Facilitate unlawful activity, sanctions evasion, money laundering, or terrorism;
+* Tamper with audit trails or transaction evidence;
+* Overload, disrupt, attack, or interfere with our systems;
+* Circumvent payments, trials, licence controls, rate limits, or device limits;
+* Use automated bots or scripts through unauthorised methods;
+* Reverse engineer, decompile, disassemble, or attempt to discover source code, except where legally permitted;
+* Remove proprietary notices;
+* Copy, resell, rent, lease, sublicense, or commercially redistribute the software without written permission;
+* Develop a competing service using protected elements of Luxor PDF;
+* Use Luxor PDF to train an artificial-intelligence model without written permission;
+* Publish misleading or manipulated performance comparisons;
+* Use the services in safety-critical systems where failure could cause serious injury, death, or physical damage; or
+* Assist another person in carrying out any prohibited activity.
+
+We may investigate suspected misuse and take appropriate action, including restricting access, suspending accounts, terminating licences, preserving relevant records, or reporting unlawful activity where legally required.
+
+## 10. User Documents and Ownership
+
+You retain ownership of documents and content that you upload, create, edit, open, sign, share, or process through Luxor PDF.
+
+Using Luxor PDF does not transfer ownership of your documents to Fairnova Labs Private Limited.
+
+You grant us a limited right to process your documents only as reasonably necessary to:
+
+* Provide the feature requested by you;
+* Convert, compress, merge, split, secure, store, sign, or transmit the document;
+* Display the document to authorised recipients;
+* Maintain service security;
+* Detect malicious files or abuse;
+* Troubleshoot technical issues;
+* Create temporary backups where applicable;
+* Follow your instructions;
+* Comply with applicable law; and
+* Enforce these Terms.
+
+This limited permission ends when the requested processing and applicable retention period end, except where records must be retained for legal, security, backup, transaction, or dispute-resolution purposes.
+
+## 11. Your Responsibility for Documents
+
+You are responsible for every document and item of content that you process through Luxor PDF.
+
+You confirm that:
+
+* You own the document or have permission to use it;
+* You are authorised to upload, edit, secure, convert, sign, or share it;
+* Processing the document does not violate any law, contract, court order, or third-party right;
+* You have obtained any required consent from individuals whose information appears in the document;
+* You are authorised to invite each recipient, signer, approver, or witness;
+* Information supplied by you is accurate; and
+* Your instructions do not require Luxor PDF to perform an unlawful act.
+
+We do not independently verify your ownership, authority, legal basis, or right to process each document.
+
+## 12. Local and Online Processing
+
+Some Luxor PDF features may operate locally on your device, while other features may require online or cloud processing.
+
+### Local processing
+
+When a feature operates locally:
+
+* The document may remain on your device;
+* Processing may be completed through the installed application;
+* You remain responsible for device security and backups; and
+* Technical, diagnostic, licence, or activation information may still be transmitted.
+
+### Online processing
+
+When you use cloud processing, online conversion, sharing, synchronisation, AI features, storage, or eSign services:
+
+* Documents may be transmitted through the internet;
+* Documents may be temporarily or persistently stored;
+* Authorised service providers may process the documents;
+* Processing may occur in another country; and
+* Our Privacy Policy and applicable retention rules will apply.
+
+You should carefully consider whether online processing is appropriate before uploading confidential, regulated, privileged, or highly sensitive documents.
+
+## 13. Luxor PDF eSign
+
+Luxor PDF eSign provides technology for facilitating electronic-signature transactions.
+
+Luxor PDF does not provide legal advice and does not guarantee that every electronic signature or document will be legally valid or enforceable in every jurisdiction.
+
+### 13.1 Sender responsibilities
+
+The sender of a document is responsible for:
+
+* Verifying the identity and contact information of each signer;
+* Confirming that electronic signing is legally appropriate;
+* Selecting a suitable authentication method;
+* Obtaining consent to electronic transactions where required;
+* Confirming that every signer has authority to sign;
+* Setting the correct signing order;
+* Ensuring that the document is complete and accurate;
+* Retaining completed copies and supporting evidence;
+* Meeting witnessing, notarisation, stamping, filing, or registration requirements; and
+* Complying with applicable legal and industry-specific requirements.
+
+### 13.2 Signer responsibilities
+
+Each signer must:
+
+* Read and review the complete document before signing;
+* Confirm that their identity and contact information are accurate;
+* Sign only documents they understand and are authorised to sign;
+* Protect signing links, passwords, and authentication codes;
+* Prevent another person from signing using their identity; and
+* Retain a completed copy where appropriate.
+
+### 13.3 Documents requiring special formalities
+
+Certain documents may not be suitable for ordinary electronic signing or may require additional legal formalities.
+
+These may include:
+
+* Wills and testamentary documents;
+* Trust documents;
+* Powers of attorney;
+* Documents relating to immovable property;
+* Negotiable instruments;
+* Court or government filings;
+* Adoption or family-law documents;
+* Documents requiring notarisation;
+* Documents requiring independent witnesses;
+* Documents requiring stamping or registration; and
+* Documents excluded from electronic signing under applicable law.
+
+You should obtain professional legal advice when uncertain about whether a document can be signed electronically.
+
+### 13.4 Identity verification
+
+Unless expressly stated for a particular feature, Luxor PDF does not independently certify the identity, legal capacity, age, authority, or intention of a signer.
+
+An email address, access code, IP address, device record, typed name, signature image, or audit record does not guarantee that the person signing is the person claimed.
+
+### 13.5 Audit trails
+
+Luxor PDF eSign may record:
+
+* Names and email addresses;
+* Document access times;
+* Signing dates and times;
+* IP addresses;
+* Device or browser information;
+* Authentication events;
+* Consent records;
+* Field completion;
+* Document status; and
+* Completion information.
+
+Audit trails may support transaction evidence but do not guarantee enforceability or prevent every type of fraud.
+
+### 13.6 Luxor PDF is not a party to your transaction
+
+Unless expressly agreed in writing, Fairnova Labs Private Limited:
+
+* Is not a party to the document being signed;
+* Does not negotiate, review, or approve its terms;
+* Does not determine whether its contents are lawful or fair;
+* Does not guarantee the identity or authority of participants;
+* Does not guarantee payment or contractual performance; and
+* Is not responsible for disputes between senders, signers, recipients, or other parties.
+
+## 14. Document Expiry, Revocation, and Access Restrictions
+
+Luxor PDF Secure may allow users to set expiry dates, revoke access, apply passwords, restrict printing, prevent copying, limit editing, or control document access.
+
+No document-security technology can guarantee complete control after a document has been accessed.
+
+For example:
+
+* A recipient may save, print, copy, photograph, screen-record, or reproduce a document before access is restricted;
+* Copies may remain in downloads, backups, caches, email systems, or recipient devices;
+* Offline copies may not immediately receive updated restrictions;
+* Different PDF readers may interpret restrictions differently;
+* Passwords may be shared, lost, guessed, or compromised;
+* Revocation may depend on internet connectivity;
+* Expiry functions may depend on server availability, device settings, or supported software; and
+* External recording devices may bypass technical restrictions.
+
+You are responsible for deciding whether Luxor PDF Secure provides sufficient protection for your documents.
+
+Security controls should not replace confidentiality agreements, organisational safeguards, user-access management, secure devices, employee training, or professional cybersecurity measures.
+
+## 15. Redaction
+
+Placing a shape, highlight, annotation, coloured box, or visual covering over text does not necessarily remove the underlying information.
+
+You are responsible for:
+
+* Using the designated redaction feature;
+* Applying redactions correctly;
+* Removing metadata where necessary;
+* Reviewing the final document;
+* Confirming that redacted content cannot be copied, searched, extracted, or recovered;
+* Sharing the correct final version; and
+* Retaining an original backup where appropriate.
+
+We are not responsible for information disclosed because a user incorrectly applied redaction or shared the wrong document.
+
+## 16. Document Conversion
+
+Document conversion may result in:
+
+* Layout changes;
+* Font substitution;
+* Reflowed text;
+* Changed image quality;
+* Missing elements;
+* Altered pagination;
+* Modified metadata;
+* Unsupported interactive content;
+* Accessibility changes; or
+* Differences in technical, mathematical, or multilingual content.
+
+You must review converted documents before submitting, signing, publishing, printing, distributing, or relying on them.
+
+## 17. Artificial-Intelligence Features
+
+Luxor PDF may provide optional AI-assisted features, including:
+
+* Document summarisation;
+* Question answering;
+* Text recognition;
+* Translation;
+* Classification;
+* Data extraction;
+* Suggested redaction;
+* Writing assistance;
+* Form assistance; and
+* Document analysis.
+
+AI-generated output may be inaccurate, incomplete, outdated, misleading, or unsuitable for your intended purpose.
+
+You must independently review all AI-generated output before using it.
+
+AI output must not be treated as:
+
+* Legal advice;
+* Medical advice;
+* Financial advice;
+* Tax advice;
+* Engineering advice;
+* Regulatory advice;
+* A certified translation;
+* A professional opinion; or
+* A substitute for qualified human review.
+
+You must not use AI features to make unlawful, deceptive, discriminatory, or high-impact decisions without appropriate human oversight.
+
+## 18. Subscriptions and Payments
+
+Some Luxor PDF products and features require payment.
+
+By purchasing a licence, plan, or subscription, you agree to pay:
+
+* The price displayed at checkout;
+* Applicable taxes;
+* Currency-conversion or banking charges;
+* Subscription renewal charges where applicable; and
+* Any additional charge clearly disclosed before purchase.
+
+Prices may vary according to:
+
+* Country or currency;
+* Product or plan;
+* Number of users or devices;
+* Storage allowance;
+* Document volume;
+* Available features;
+* Subscription period; and
+* Promotional eligibility.
+
+Payments may be handled by third-party payment processors. Their own terms and privacy practices may also apply.
+
+## 19. Automatic Renewal
+
+Where a subscription renews automatically:
+
+* The renewal period will be disclosed at purchase;
+* The subscription will continue until cancelled;
+* The selected payment method may be charged automatically;
+* Renewal may occur on or shortly before the renewal date;
+* Cancellation normally takes effect at the end of the current paid period; and
+* Access may continue until the current subscription period ends.
+
+You may cancel using the account dashboard, payment provider, app store, or cancellation method described at purchase.
+
+Uninstalling Luxor PDF does not automatically cancel a subscription.
+
+## 20. Pricing Changes
+
+We may change subscription prices from time to time.
+
+For an existing subscription, a new price will normally apply from a future renewal date after appropriate notice.
+
+Price changes may also occur when:
+
+* You change your plan;
+* A promotional period ends;
+* Applicable taxes change;
+* A pricing error is corrected; or
+* A payment platform applies different terms.
+
+You may cancel your subscription before the revised price takes effect.
+
+## 21. Refunds
+
+Refund eligibility depends on:
+
+* The refund policy displayed at the time of purchase;
+* The product or subscription purchased;
+* The purchase channel;
+* The amount of product usage;
+* The reason for the request;
+* Applicable consumer law; and
+* Any separate written agreement.
+
+Unless otherwise required by law or stated in a refund policy, fees may be non-refundable after:
+
+* A software licence has been activated;
+* A digital product has been downloaded;
+* A substantial portion of the service has been used;
+* Documents have been processed;
+* An eSign transaction has been completed; or
+* The applicable refund period has expired.
+
+Purchases made through an app store, marketplace, reseller, or payment partner may be subject to that provider’s refund procedure.
+
+Nothing in these Terms limits mandatory consumer rights.
+
+## 22. Failed Payments and Chargebacks
+
+If a payment fails, is reversed, disputed, charged back, or remains unpaid, we may:
+
+* Retry the payment;
+* Request another payment method;
+* Restrict paid features;
+* Suspend the subscription;
+* Change the account to a free plan;
+* Cancel the subscription;
+* Recover amounts lawfully due; or
+* Restrict future transactions where fraud is suspected.
+
+## 23. Intellectual Property
+
+Luxor PDF and all related intellectual property are owned by Fairnova Labs Private Limited or its licensors.
+
+This includes:
+
+* Software;
+* Source code and object code;
+* Algorithms;
+* Product architecture;
+* Interfaces;
+* Workflows;
+* Designs and layouts;
+* Logos and icons;
+* Product names and trademarks;
+* Documentation;
+* Databases;
+* Website content;
+* Graphics and videos;
+* Templates;
+* Security technologies;
+* AI configurations; and
+* Product features.
+
+Except for the limited licence granted under these Terms, no intellectual-property rights are transferred to you.
+
+You must not use the Luxor PDF or Fairnova Labs name, logo, branding, design, or trademarks without prior written permission.
+
+## 24. Feedback
+
+You may provide suggestions, ideas, reviews, recommendations, or feature requests.
+
+By submitting feedback, you allow us to use it without restriction or payment to:
+
+* Improve existing products;
+* Develop new products;
+* Conduct research;
+* Create new features;
+* Prepare documentation; and
+* Operate or promote our business.
+
+This does not transfer ownership of your private documents or confidential business information.
+
+## 25. Third-Party Services
+
+Luxor PDF may use or integrate with third-party services, including:
+
+* Cloud-storage providers;
+* Payment processors;
+* Email services;
+* Identity providers;
+* Artificial-intelligence providers;
+* Analytics services;
+* App stores;
+* Software libraries; and
+* Document-processing technologies.
+
+Your use of a third-party service may be governed by that provider’s own terms and privacy policy.
+
+We do not guarantee the availability, accuracy, security, performance, or continued operation of services controlled by third parties.
+
+## 26. Privacy
+
+Our collection and use of personal information are governed by the Luxor PDF Privacy Policy.
+
+By using Luxor PDF, you acknowledge that:
+
+* Account information may be required to provide services;
+* Online features may require document transmission or storage;
+* eSign transactions may generate audit records;
+* Licence systems may collect activation and device information;
+* Payment processors may independently process payment information; and
+* Authorised service providers may process information on our behalf.
+
+## 27. Security Responsibilities
+
+We use reasonable security measures, but no software, network, or online system can be guaranteed to be completely secure.
+
+You are responsible for:
+
+* Protecting your devices;
+* Installing security and operating-system updates;
+* Using strong passwords;
+* Protecting authentication codes;
+* Maintaining document backups;
+* Using trusted networks;
+* Managing account permissions;
+* Removing former or unauthorised users;
+* Reviewing shared-document links;
+* Protecting document passwords; and
+* Reporting suspected security issues promptly.
+
+Security concerns may be reported to:
+
+**[support@luxorpdf.com](mailto:support@luxorpdf.com)**
+
+## 28. Software Updates
+
+We may release:
+
+* Security updates;
+* Bug fixes;
+* Compatibility updates;
+* Performance improvements;
+* User-interface changes;
+* New features;
+* Revised features; and
+* New software versions.
+
+Some updates may be installed automatically where permitted by your settings and applicable law.
+
+Using an outdated version may result in reduced functionality, compatibility issues, security risks, loss of online features, or limited support.
+
+## 29. Service Availability
+
+We aim to provide reliable services but do not guarantee that Luxor PDF will always be uninterrupted, secure, or error-free.
+
+Services may be unavailable because of:
+
+* Maintenance;
+* Software updates;
+* Internet or server failures;
+* Cyberattacks;
+* Third-party service failures;
+* Power failures;
+* Capacity limitations;
+* Natural disasters;
+* Government actions;
+* Legal requirements; or
+* Events beyond our reasonable control.
+
+We may modify, suspend, limit, replace, or discontinue a feature where reasonably necessary.
+
+## 30. Beta and Experimental Features
+
+We may provide beta, preview, experimental, or early-access features.
+
+Such features may:
+
+* Contain errors;
+* Be incomplete;
+* Change without notice;
+* Produce inaccurate results;
+* Have limited technical support;
+* Experience reduced availability;
+* Cause data loss; or
+* Be discontinued.
+
+You should not rely on experimental features for critical, confidential, regulated, or production use.
+
+## 31. Customer Support
+
+Customer support may be provided through email, help resources, in-application assistance, diagnostics, or other available channels.
+
+Support availability and response times may depend on your product or plan.
+
+You must not send:
+
+* Passwords;
+* Payment credentials;
+* Private keys;
+* Authentication codes; or
+* Unnecessary confidential information.
+
+Where you voluntarily provide a document for troubleshooting, you confirm that you are authorised to share it.
+
+Support requests may be sent to:
+
+**[support@luxorpdf.com](mailto:support@luxorpdf.com)**
+
+## 32. Suspension and Termination
+
+We may suspend, restrict, or terminate your account, licence, or service access where reasonably necessary because:
+
+* You breach these Terms;
+* Payment remains unpaid or is reversed;
+* Licence limits are exceeded;
+* Fraud or software piracy is suspected;
+* Your activity creates a security risk;
+* Your use is unlawful;
+* You interfere with service operation;
+* We are legally required to restrict access;
+* A required third-party service is discontinued; or
+* The product or service is discontinued.
+
+Where appropriate, we may provide notice and an opportunity to correct the breach.
+
+Immediate action may be taken where necessary to prevent fraud, unlawful conduct, security incidents, harm, or unauthorised access.
+
+## 33. Termination by You
+
+You may stop using Luxor PDF at any time.
+
+You may also:
+
+* Cancel an automatically renewing subscription;
+* Uninstall the software;
+* Deactivate authorised devices;
+* Delete your account where this feature is available; or
+* Request assistance through [support@luxorpdf.com](mailto:support@luxorpdf.com).
+
+Uninstalling the software does not automatically:
+
+* Cancel your subscription;
+* Delete your account;
+* Remove documents stored online;
+* Reverse a completed transaction; or
+* Entitle you to a refund.
+
+## 34. Effect of Termination
+
+When your subscription or licence ends:
+
+* Your right to use paid features may end;
+* The software may move to a limited or read-only mode;
+* Online services may become unavailable;
+* Stored documents may become inaccessible;
+* Licence keys may be deactivated; and
+* You must stop using unauthorised copies.
+
+Termination does not affect:
+
+* Fees already due;
+* Completed transactions;
+* Rights that arose before termination;
+* Electronic-signature records;
+* Legal retention obligations;
+* Intellectual-property ownership;
+* Warranty disclaimers;
+* Liability limitations;
+* Indemnification provisions; or
+* Dispute-resolution provisions.
+
+## 35. No Professional Advice
+
+Luxor PDF is a software and document-technology service.
+
+Fairnova Labs Private Limited does not provide:
+
+* Legal advice;
+* Tax advice;
+* Financial advice;
+* Medical advice;
+* Accounting advice;
+* Regulatory advice;
+* Notarial services;
+* Certification services;
+* Professional translation services; or
+* Independent identity verification, unless expressly stated.
+
+You should consult a qualified professional before relying on a document, signature method, security setting, template, converted file, or AI-generated result for an important matter.
+
+## 36. Disclaimer of Warranties
+
+To the fullest extent permitted by applicable law, Luxor PDF is provided on an **“as is”** and **“as available”** basis.
+
+We do not guarantee that:
+
+* The service will always be available;
+* Every feature will be error-free;
+* Every document will open or convert successfully;
+* Formatting will always remain unchanged;
+* Security restrictions cannot be bypassed;
+* Every electronic signature will be enforceable;
+* Every signer’s identity will be genuine;
+* Every audit trail will be sufficient evidence;
+* AI-generated results will be accurate;
+* Data loss will never occur;
+* Every third-party integration will remain available; or
+* Luxor PDF will meet every professional, regulatory, or industry requirement.
+
+Nothing in these Terms excludes warranties or rights that cannot lawfully be excluded.
+
+## 37. Limitation of Liability
+
+To the fullest extent permitted by applicable law, Fairnova Labs Private Limited and its directors, employees, contractors, affiliates, and licensors will not be liable for:
+
+* Indirect, incidental, special, punitive, or consequential damages;
+* Lost profits or revenue;
+* Lost business opportunities;
+* Loss of goodwill;
+* Loss of anticipated savings;
+* Data loss, corruption, or unauthorised disclosure;
+* Document-formatting or conversion errors;
+* Invalid or disputed signatures;
+* Recipient misuse of documents;
+* Failure of expiry, revocation, password, or access controls;
+* Business interruption; or
+* Claims arising from your documents, users, signers, or transactions.
+
+To the fullest extent permitted by law, our total aggregate liability relating to Luxor PDF will not exceed the amount paid by you for the affected Luxor PDF product during the twelve months preceding the event giving rise to the claim.
+
+Where you used only free services, our total liability will not exceed INR 1,000.
+
+These limitations do not apply where liability cannot legally be excluded or limited.
+
+## 38. Indemnification
+
+To the extent permitted by law, business and organisational users agree to indemnify Fairnova Labs Private Limited and its directors, employees, contractors, affiliates, and licensors against claims, damages, liabilities, penalties, and reasonable legal expenses arising from:
+
+* The user’s documents or content;
+* Unauthorised processing or sharing of documents;
+* Infringement of third-party rights;
+* Fraudulent or unauthorised electronic signatures;
+* Misrepresentation of identity or authority;
+* Breach of privacy or confidentiality obligations;
+* Misuse of expiry, revocation, redaction, or access controls;
+* Breach of these Terms; or
+* Violation of applicable law.
+
+This provision does not apply to individual consumers where such an obligation would be prohibited by law.
+
+## 39. Governing Law
+
+These Terms are governed by the laws of India, without regard to conflict-of-law principles.
+
+Mandatory consumer rights available under the laws of your country or region remain unaffected.
+
+## 40. Dispute Resolution
+
+Before initiating formal legal proceedings, you agree to contact us at **[support@luxorpdf.com](mailto:support@luxorpdf.com)** and make a reasonable attempt to resolve the dispute informally.
+
+Please include:
+
+* Your name;
+* Your registered email address;
+* The Luxor PDF product involved;
+* A description of the issue; and
+* The resolution requested.
+
+If a dispute cannot be resolved informally, it will be subject to the jurisdiction of the competent courts in India, except where applicable consumer law permits or requires proceedings in another jurisdiction.
+
+## 41. Changes to These Terms
+
+We may update these Terms to reflect:
+
+* New products or features;
+* Changes to our services;
+* Security improvements;
+* Changes in business practices;
+* Changes in law;
+* Changes involving third-party providers; or
+* Operational requirements.
+
+The revised Terms will display an updated effective date.
+
+Where changes are material, we may provide notice through the website, application, account dashboard, or email.
+
+Continued use of Luxor PDF after the revised Terms take effect constitutes acceptance of the updated Terms, subject to any consent requirements under applicable law.
+
+## 42. Assignment
+
+You may not transfer or assign your rights or obligations under these Terms without our prior written consent.
+
+Fairnova Labs Private Limited may transfer or assign its rights and obligations as part of a merger, restructuring, financing, acquisition, sale of assets, or transfer of the Luxor PDF business.
+
+## 43. Severability
+
+If any provision of these Terms is found to be unlawful, invalid, or unenforceable, that provision will be enforced to the maximum extent legally permitted.
+
+The remaining provisions will continue in full force and effect.
+
+## 44. No Waiver
+
+Failure by Fairnova Labs Private Limited to enforce any provision of these Terms does not waive its right to enforce that provision later.
+
+Any waiver must be expressly provided in writing.
+
+## 45. Entire Agreement
+
+These Terms, together with the Luxor PDF Privacy Policy, applicable pricing terms, refund terms, subscription terms, order forms, and product-specific notices, constitute the entire agreement between you and Fairnova Labs Private Limited concerning your use of Luxor PDF.
+
+A separate written agreement signed by Fairnova Labs Private Limited will take priority where it expressly conflicts with these Terms.
+
+## 46. Contact Us
+
+For questions about these Terms, your Luxor PDF account, licence, subscription, payment, or product usage, contact:
+
+**Fairnova Labs Private Limited**
+**Luxor PDF Support:** [support@luxorpdf.com](mailto:support@luxorpdf.com)
+
+---
+
+## Brand Ownership Notice
+
+**Luxor PDF is a brand owned and operated by Fairnova Labs Private Limited.**
+
+All Luxor PDF products, software applications, websites, subscriptions, licences, services, logos, trademarks, and related offerings are owned or operated by Fairnova Labs Private Limited unless expressly stated otherwise.
+`;
