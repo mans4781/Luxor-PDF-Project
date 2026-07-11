@@ -36,19 +36,21 @@ export const SELECTION = {
  * exactly the configured color at the configured alpha.
  */
 /**
- * New ChatGPT-style soft highlight palette. Replaces the older 7-color
- * neon set (Yellow #FFF200, Green #39FF14, Blue #00BFFF, Pink #FF4FB8,
- * Red #FF3030, Cyan #00FFFF, Violet #A855FF). The new shades are
- * intentionally lower-saturation so the underlying text stays sharp and
- * readable, and so the live drag-select preview matches the committed
- * highlight color exactly. Order is the user-specified order.
+ * Fresh, vibrant fluorescent-marker highlight palette (Microsoft Edge
+ * highlighter feel): saturated neon hex values painted straight onto the
+ * page at a marker-strength alpha so the color reads bright and crisp —
+ * e.g. Green looks like true neon green rather than a muted pastel — while
+ * the black text underneath stays sharp and readable. Yellow carries the
+ * highest alpha because pure yellow on white washes out otherwise; the
+ * darker primaries (Violet/Red) sit slightly lower so they don't dim the
+ * text. Order is the user-specified order.
  */
 export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Green",  value: "#4CAF50", opacity: 0.24 },
-  { name: "Yellow", value: "#FFD600", opacity: 0.28 },
-  { name: "Red",    value: "#F44336", opacity: 0.22 },
-  { name: "Violet", value: "#7E57C2", opacity: 0.22 },
-  { name: "Grey",   value: "#9E9E9E", opacity: 0.22 },
+  { name: "Green",  value: "#35FF12", opacity: 0.46 },
+  { name: "Yellow", value: "#FFEA00", opacity: 0.50 },
+  { name: "Red",    value: "#FF2D2D", opacity: 0.42 },
+  { name: "Violet", value: "#B23CFF", opacity: 0.42 },
+  { name: "Grey",   value: "#9E9E9E", opacity: 0.30 },
 ];
 
 /**
@@ -59,12 +61,12 @@ export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
  * sharp.
  */
 export const QUICK_HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Yellow", value: "#FFD600", opacity: 0.28 },
-  { name: "Green",  value: "#4CAF50", opacity: 0.24 },
-  { name: "Blue",   value: "#2196F3", opacity: 0.26 },
-  { name: "Pink",   value: "#EC407A", opacity: 0.24 },
-  { name: "Violet", value: "#9C27B0", opacity: 0.26 },
-  { name: "Red",    value: "#F44336", opacity: 0.26 },
+  { name: "Yellow", value: "#FFEA00", opacity: 0.50 },
+  { name: "Green",  value: "#35FF12", opacity: 0.46 },
+  { name: "Blue",   value: "#12CFFF", opacity: 0.46 },
+  { name: "Pink",   value: "#FF2E97", opacity: 0.44 },
+  { name: "Violet", value: "#B23CFF", opacity: 0.42 },
+  { name: "Red",    value: "#FF2D2D", opacity: 0.42 },
 ];
 
 /** Fixed blue tint used by the live text-selection overlay (matches the
@@ -84,13 +86,13 @@ export const SELECTION_BLUE = "rgba(37, 99, 235, 0.28)";
 export const SELECTION_PREVIEW_DEFAULT = "rgba(0, 120, 255, 0.25)";
 
 export const SELECTION_PREVIEW_BY_HIGHLIGHT: Record<string, string> = {
-  "#4CAF50": "rgba(76, 175, 80, 0.24)",   // Green
-  "#FFD600": "rgba(255, 214, 0, 0.28)",   // Yellow
-  "#F44336": "rgba(244, 67, 54, 0.22)",   // Red
-  "#7E57C2": "rgba(126, 87, 194, 0.22)",  // Violet
-  "#9E9E9E": "rgba(158, 158, 158, 0.22)", // Grey
-  "#2196F3": "rgba(33, 150, 243, 0.26)",  // Blue
-  "#EC407A": "rgba(236, 64, 122, 0.24)",  // Pink
+  "#35FF12": "rgba(53, 255, 18, 0.46)",   // Green
+  "#FFEA00": "rgba(255, 234, 0, 0.50)",   // Yellow
+  "#FF2D2D": "rgba(255, 45, 45, 0.42)",   // Red
+  "#B23CFF": "rgba(178, 60, 255, 0.42)",  // Violet
+  "#9E9E9E": "rgba(158, 158, 158, 0.30)", // Grey
+  "#12CFFF": "rgba(18, 207, 255, 0.46)",  // Blue
+  "#FF2E97": "rgba(255, 46, 151, 0.44)",  // Pink
 };
 
 /** Resolve a highlight hex to its soft selection-preview shade. */
