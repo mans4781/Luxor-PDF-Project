@@ -36,23 +36,22 @@ export const SELECTION = {
  * exactly the configured color at the configured alpha.
  */
 /**
- * Fresh, electric fluorescent-marker highlight palette (Microsoft Edge
- * highlighter feel): saturated neon hex values painted straight onto the
- * page so the color reads bright and crisp — e.g. Green is an electric
- * lime rather than a muted pastel.
- *
- * Alphas are tuned for a see-through marker look so the black letters
- * underneath stay clear and readable: high-luminance hues (Yellow, Lime,
- * Cyan) can carry a bit more alpha because they barely darken the text,
- * while the darker hues (Violet, Red, Pink) sit lower so they don't muddy
- * the words beneath them. Order is the user-specified order.
+ * Microsoft Edge PDF highlighter palette — matched 1:1. Edge stores the
+ * exact base hues below and renders them as a semi-transparent overlay at
+ * ~50% opacity, which is exactly how our renderer paints them (rgba at the
+ * given alpha, straight onto the page). This keeps the color and see-through
+ * text appearance identical to Edge:
+ *   Yellow #FFFF00, Green #90EE90, Light Blue #ADD8E6, Pink #FFB6C1, Red #FF0000.
+ * Violet and Grey are not part of Edge's set, so they use light-pastel
+ * equivalents in the same family for a consistent look. Order is the
+ * user-specified order.
  */
 export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Green",  value: "#CCFF00", opacity: 0.42 },
-  { name: "Yellow", value: "#FFF200", opacity: 0.46 },
-  { name: "Red",    value: "#FF1A1A", opacity: 0.34 },
-  { name: "Violet", value: "#C400FF", opacity: 0.32 },
-  { name: "Grey",   value: "#9E9E9E", opacity: 0.26 },
+  { name: "Green",  value: "#90EE90", opacity: 0.50 },
+  { name: "Yellow", value: "#FFFF00", opacity: 0.50 },
+  { name: "Red",    value: "#FF0000", opacity: 0.50 },
+  { name: "Violet", value: "#DDA0DD", opacity: 0.50 },
+  { name: "Grey",   value: "#D3D3D3", opacity: 0.50 },
 ];
 
 /**
@@ -63,12 +62,12 @@ export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
  * sharp.
  */
 export const QUICK_HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Yellow", value: "#FFF200", opacity: 0.46 },
-  { name: "Green",  value: "#CCFF00", opacity: 0.42 },
-  { name: "Blue",   value: "#00E0FF", opacity: 0.40 },
-  { name: "Pink",   value: "#FF1FA8", opacity: 0.34 },
-  { name: "Violet", value: "#C400FF", opacity: 0.32 },
-  { name: "Red",    value: "#FF1A1A", opacity: 0.34 },
+  { name: "Yellow", value: "#FFFF00", opacity: 0.50 },
+  { name: "Green",  value: "#90EE90", opacity: 0.50 },
+  { name: "Blue",   value: "#ADD8E6", opacity: 0.50 },
+  { name: "Pink",   value: "#FFB6C1", opacity: 0.50 },
+  { name: "Violet", value: "#DDA0DD", opacity: 0.50 },
+  { name: "Red",    value: "#FF0000", opacity: 0.50 },
 ];
 
 /** Fixed blue tint used by the live text-selection overlay (matches the
@@ -88,13 +87,13 @@ export const SELECTION_BLUE = "rgba(37, 99, 235, 0.28)";
 export const SELECTION_PREVIEW_DEFAULT = "rgba(0, 120, 255, 0.25)";
 
 export const SELECTION_PREVIEW_BY_HIGHLIGHT: Record<string, string> = {
-  "#CCFF00": "rgba(204, 255, 0, 0.42)",   // Green
-  "#FFF200": "rgba(255, 242, 0, 0.46)",   // Yellow
-  "#FF1A1A": "rgba(255, 26, 26, 0.34)",   // Red
-  "#C400FF": "rgba(196, 0, 255, 0.32)",   // Violet
-  "#9E9E9E": "rgba(158, 158, 158, 0.26)", // Grey
-  "#00E0FF": "rgba(0, 224, 255, 0.40)",   // Blue
-  "#FF1FA8": "rgba(255, 31, 168, 0.34)",  // Pink
+  "#90EE90": "rgba(144, 238, 144, 0.50)", // Green
+  "#FFFF00": "rgba(255, 255, 0, 0.50)",   // Yellow
+  "#FF0000": "rgba(255, 0, 0, 0.50)",     // Red
+  "#DDA0DD": "rgba(221, 160, 221, 0.50)", // Violet
+  "#D3D3D3": "rgba(211, 211, 211, 0.50)", // Grey
+  "#ADD8E6": "rgba(173, 216, 230, 0.50)", // Blue
+  "#FFB6C1": "rgba(255, 182, 193, 0.50)", // Pink
 };
 
 /** Resolve a highlight hex to its soft selection-preview shade. */

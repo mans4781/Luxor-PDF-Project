@@ -141,9 +141,9 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   const [loading, setLoading] = useState(true);
   const [tool, setTool] = useState<ToolType>("hand");
   const [highlightColor, setHighlightColor] = useState(() => {
-    // Migrate stale highlight colors from the old neon palette
-    // (#FFF200, #39FF14, #00BFFF, #FF4FB8, #FF3030, #00FFFF, #A855FF) to
-    // the new ChatGPT-style soft palette default.
+    // Any highlight color stored under a previous palette that is no longer
+    // present in HIGHLIGHT_COLORS falls back to the current default, so
+    // switching palettes degrades gracefully.
     const stored = lsGet(LS_KEYS.highlight, COLOR_DEFAULTS.highlightColor);
     const valid = HIGHLIGHT_COLORS.some(
       (c) => c.value.toLowerCase() === String(stored).toLowerCase(),
