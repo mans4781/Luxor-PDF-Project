@@ -18,7 +18,6 @@ const ESignPage = lazy(() => import("@/pages/products/esign"));
 const PdfSecurityPage = lazy(() => import("@/pages/products/pdf-security"));
 const AdminPage = lazy(() => import("@/pages/admin"));
 const FeaturesPage = lazy(() => import("@/pages/features"));
-const OnlineToolsPage = lazy(() => import("@/pages/online-tools"));
 const DownloadPage = lazy(() => import("@/pages/download"));
 const BrandPage = lazy(() => import("@/pages/brand"));
 const DeveloperLoginPage = lazy(() => import("@/pages/developer/login"));
@@ -62,7 +61,6 @@ function Router() {
       <Route path="/products/esign" component={ESignPage} />
       <Route path="/products/pdf-security" component={PdfSecurityPage} />
       <Route path="/features" component={FeaturesPage} />
-      <Route path="/online-tools" component={OnlineToolsPage} />
       <Route path="/download" component={DownloadPage} />
       <Route path="/thank-you" component={DownloadPage} />
       <Route path="/brand" component={BrandPage} />
