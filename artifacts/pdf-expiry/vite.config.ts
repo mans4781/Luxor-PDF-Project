@@ -39,12 +39,39 @@ const noCacheDevPlugin = {
   },
 };
 
+// The free Online Tools pages are served at clean root addresses
+// (/online-tools, /tools/<slug>) in addition to the app's /pdf-expiry base.
+// In production the static file server rewrites these to index.html; the Vite
+// dev server only serves paths under `base`, so mirror that rewrite here by
+// re-pointing clean tool requests at the base path. The browser URL is
+// untouched, so the client still reads the clean path and renders accordingly.
+const prefix = basePath.replace(/\/$/, "");
+const cleanToolPathsDevPlugin = {
+  name: "clean-tool-paths-dev",
+  configureServer(server: { middlewares: { use: (fn: (req: { url?: string }, res: unknown, next: () => void) => void) => void } }) {
+    server.middlewares.use((req, _res, next) => {
+      const url = req.url ?? "";
+      const p = url.split("?")[0];
+      if (
+        p === "/online-tools" ||
+        p.startsWith("/online-tools/") ||
+        p === "/tools" ||
+        p.startsWith("/tools/")
+      ) {
+        req.url = prefix + url;
+      }
+      next();
+    });
+  },
+};
+
 export default defineConfig({
   base: basePath,
   plugins: [
     react(),
     tailwindcss({ optimize: false }),
     runtimeErrorOverlay(),
+    cleanToolPathsDevPlugin,
     noCacheDevPlugin,
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined

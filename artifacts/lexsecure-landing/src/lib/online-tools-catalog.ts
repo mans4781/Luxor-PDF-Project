@@ -2,7 +2,7 @@
  * Catalog of the free browser-based PDF tools surfaced on luxorpdf.com.
  *
  * Every entry links to a dedicated tool page inside the `pdf-expiry`
- * artifact (served at `/pdf-expiry/tools/<slug>`). Those pages are free
+ * artifact, surfaced at the clean address `/tools/<slug>`. Those pages are free
  * for everyone — no sign-in and no usage quota. Only "Secure your PDF"
  * (password & expiry) is paid/gated and is intentionally NOT listed here.
  *
@@ -28,7 +28,7 @@ import {
   Minimize2,
 } from "lucide-react";
 
-const SUITE = "/pdf-expiry/tools";
+const SUITE = "/tools";
 
 export interface ToolLink {
   label: string;

@@ -24,7 +24,7 @@ import TeamPage from "@/pages/team";
 import AcceptInvitePage from "@/pages/accept-invite";
 import { LicenseProvider } from "@/license/LicenseProvider";
 import { LockOverlay } from "@/license/LockOverlay";
-import { basePath } from "@/lib/base-path";
+import { basePath, routerBase } from "@/lib/base-path";
 
 const queryClient = new QueryClient();
 
@@ -93,14 +93,30 @@ function Router() {
 function ClerkProviderWithRoutes() {
   const [, setLocation] = useLocation();
 
+  // On the clean-URL tool surface (routerBase === "") the wouter router runs at
+  // the site root, but every account/auth route (history, activate-key,
+  // checkout, sign-in, …) lives under the static /pdf-expiry base. Clerk drives
+  // those via routerPush/replace to prefixed URLs, so from a clean-entry
+  // session we must leave the SPA with a full-page navigation to the proxied
+  // prefixed URL rather than SPA-pushing to an unproxied root path.
+  const isCleanEntry = routerBase === "";
+  const navigate = (to: string, replace: boolean) => {
+    if (isCleanEntry && basePath && to.startsWith(basePath)) {
+      if (replace) window.location.replace(to);
+      else window.location.assign(to);
+      return;
+    }
+    setLocation(stripBase(to), replace ? { replace: true } : undefined);
+  };
+
   return (
     <LuxorClerkProvider
       publishableKey={clerkPubKey!}
       proxyUrl={clerkProxyUrl}
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
-      routerPush={(to) => setLocation(stripBase(to))}
-      routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
+      routerPush={(to) => navigate(to, false)}
+      routerReplace={(to) => navigate(to, true)}
     >
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
@@ -118,7 +134,7 @@ function ClerkProviderWithRoutes() {
 
 function App() {
   return (
-    <WouterRouter base={basePath}>
+    <WouterRouter base={routerBase}>
       <ClerkProviderWithRoutes />
     </WouterRouter>
   );

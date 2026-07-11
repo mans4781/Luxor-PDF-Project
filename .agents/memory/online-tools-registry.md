@@ -26,12 +26,31 @@ configurable via props so ONE component serves many focused pages:
 
 ## Surfacing on the marketing site (lexsecure-landing)
 The luxorpdf.com "Online Tools" navbar item is a 4-column mega menu that links to
-these same tool pages cross-artifact at `/pdf-expiry/tools/<slug>`. Its link list lives
-in `lexsecure-landing/src/lib/online-tools-catalog.ts` (a hand-kept copy of the slugs —
+these same tool pages cross-artifact. Its link list lives in
+`lexsecure-landing/src/lib/online-tools-catalog.ts` (a hand-kept copy of the slugs —
 artifacts can't import each other, so keep it in sync with the pdf-expiry registry).
 **Cross-artifact links must be plain `<a href>` absolute paths, never wouter `<Link>`**,
 so the shared proxy routes them to the pdf-expiry app. These tools are free for all (no
 sign-in); only Secure/expiry stays paid and is excluded from the menu.
+
+## Clean URLs for the free tool pages (no /pdf-expiry prefix)
+The Online Tools catalog + per-tool pages are reachable at CLEAN root addresses
+(`/online-tools`, `/tools`, `/tools/<slug>`) as well as under the normal `/pdf-expiry`
+base. This is a deliberate "same SPA, two bases" setup:
+- pdf-expiry `artifact.toml` service `paths` lists the clean paths alongside `/pdf-expiry/`
+  so the shared proxy routes them to the pdf-expiry service. Assets stay under
+  `/pdf-expiry/assets` (Vite `base` unchanged); prod static serve already rewrites
+  `/* -> /index.html`; a dev-only Vite middleware mirrors that rewrite for `pnpm dev`.
+- `lib/base-path.ts` exports a static `basePath` (`/pdf-expiry`, used for auth/asset/Clerk
+  stripping — never changes) AND a dynamic `routerBase` = `""` only when the page loaded
+  at a clean tool path, else `basePath`. `App.tsx` feeds `routerBase` to `<WouterRouter base>`.
+- **Gotcha (fixed):** every non-tool route (history, checkout, sign-in, …) lives ONLY under
+  `/pdf-expiry`. In clean-entry mode the wouter base is `""`, so Clerk `routerPush/replace`
+  to a prefixed URL must FULL-PAGE navigate (`window.location`) instead of SPA-pushing —
+  otherwise it strips to an unproxied root path (`/history`) that 404s on reload. See the
+  `navigate()` guard in `App.tsx`.
+**Why:** marketing wanted shareable clean tool URLs without moving the whole app off its
+`/pdf-expiry` base (which would break Clerk suite SSO host + the desktop wrapper).
 
 ## Gotchas
 - **Duplicate-by-design slugs**: PDF→Jpeg vs PDF→Jpg (both `image/jpeg`) and jpeg-to-pdf vs

@@ -242,7 +242,7 @@ export function Navbar() {
 
                   <div className="px-5 py-3 border-t border-slate-100">
                     <a
-                      href="/pdf-expiry/online-tools"
+                      href="/online-tools"
                       onClick={() => setToolsOpen(false)}
                       data-testid="mega-link-all-tools"
                       className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1754F4] hover:underline"

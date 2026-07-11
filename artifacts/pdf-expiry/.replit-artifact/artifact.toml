@@ -11,7 +11,7 @@ version = "1.0.0"
 
 [[services]]
 name = "web"
-paths = [ "/pdf-expiry/" ]
+paths = [ "/pdf-expiry/", "/online-tools", "/tools", "/tools/" ]
 localPort = 19050
 
 [services.development]
