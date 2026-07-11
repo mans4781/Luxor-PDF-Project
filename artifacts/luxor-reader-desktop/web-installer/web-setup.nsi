@@ -37,6 +37,9 @@ VIAddVersionKey "CompanyName" "Luxor PDF"
 !insertmacro MUI_LANGUAGE "English"
 
 Section "Download and install"
+  ; Auto-close the progress page the moment this section finishes, so the
+  ; stub never lingers on a "Downloading..." screen after the work is done.
+  SetAutoClose true
   SetDetailsPrint both
   InitPluginsDir
   SetOutPath "$PLUGINSDIR"
@@ -52,11 +55,12 @@ Section "Download and install"
     Abort
   download_ok:
 
+  DetailPrint "Download complete."
   DetailPrint "Starting the ${PRODUCT_NAME} installer..."
   ; Hide the stub while the real installer's UI takes over.
   HideWindow
   ExecWait '"$PLUGINSDIR\LuxorPDFReaderSetup.exe"' $1
   DetailPrint "Installer finished (exit code $1)."
-  ; Quit immediately — no finish page needed after the real installer ran.
+  ; Auto-close is on; Quit forces an immediate exit as a belt-and-suspenders.
   Quit
 SectionEnd
