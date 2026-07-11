@@ -69,10 +69,10 @@ export const QUICK_HIGHLIGHT_COLORS: HighlightSwatch[] = [
   { name: "Pink",   value: "#FF0080", opacity: 0.50 },
 ];
 
-/** Fixed blue tint used by the live text-selection overlay (matches the
- *  reference design — selection is always blue regardless of the picked
- *  highlight color). */
-export const SELECTION_BLUE = "rgba(37, 99, 235, 0.28)";
+/** Fixed cyan tint (#00D4FF) used by the live text-selection overlay —
+ *  the selection color stays the same regardless of the picked highlight
+ *  color. */
+export const SELECTION_BLUE = "rgba(0, 212, 255, 0.30)";
 
 /**
  * Soft, ChatGPT-style translucent shades used as the live text-selection
