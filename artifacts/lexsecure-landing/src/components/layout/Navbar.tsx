@@ -1,9 +1,10 @@
 import { Link } from "wouter";
-import { ChevronDown, Home, Layers, Sparkles, Tag, Info, Wrench } from "lucide-react";
+import { ChevronDown, Home, Layers, Sparkles, Tag, Info, Wrench, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { goToSignIn, goToSignUp } from "@/lib/authUrls";
+import { ONLINE_TOOL_COLUMNS } from "@/lib/online-tools-catalog";
 
 const productItems = [
   {
@@ -38,7 +39,9 @@ const productItems = [
 export function Navbar() {
   const [scrolled, setScrolled]         = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
+  const [toolsOpen, setToolsOpen]       = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const toolsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -50,6 +53,9 @@ export function Navbar() {
     function handleClick(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setProductsOpen(false);
+      }
+      if (toolsRef.current && !toolsRef.current.contains(e.target as Node)) {
+        setToolsOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClick);
@@ -109,7 +115,7 @@ export function Navbar() {
             onMouseLeave={() => setProductsOpen(false)}
           >
             <button
-              onClick={() => setProductsOpen(o => !o)}
+              onClick={() => { setToolsOpen(false); setProductsOpen(o => !o); }}
               className={`group ${linkCls}`}
             >
               <Layers className={linkIconCls} strokeWidth={2.2} />
@@ -165,10 +171,80 @@ export function Navbar() {
             </AnimatePresence>
           </div>
 
-          <Link href="/online-tools" className={`group ${linkCls}`} data-testid="nav-online-tools">
-            <Wrench className={linkIconCls} strokeWidth={2.2} />
-            Online Tools
-          </Link>
+          {/* Online Tools mega menu */}
+          <div
+            ref={toolsRef}
+            className="relative"
+            onMouseEnter={() => setToolsOpen(true)}
+            onMouseLeave={() => setToolsOpen(false)}
+          >
+            <button
+              onClick={() => { setProductsOpen(false); setToolsOpen(o => !o); }}
+              className={`group ${linkCls}`}
+              data-testid="nav-online-tools"
+            >
+              <Wrench className={linkIconCls} strokeWidth={2.2} />
+              Online Tools
+              <ChevronDown className={`w-4 h-4 ml-0.5 transition-transform duration-200 ${toolsOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            <AnimatePresence>
+              {toolsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[860px] max-w-[92vw] bg-white rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200 overflow-hidden z-50"
+                >
+                  <div className="flex items-center justify-between gap-3 px-5 py-3 bg-gradient-to-r from-[#312E81]/5 via-[#2563EB]/5 to-[#FB7185]/5 border-b border-slate-100">
+                    <div>
+                      <p className="text-sm font-bold text-[#1E1B4B]">All online PDF tools</p>
+                      <p className="text-[11px] text-slate-500">Runs in your browser — no upload, no account.</p>
+                    </div>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      Free for everyone
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-x-4 gap-y-1 p-5">
+                    {ONLINE_TOOL_COLUMNS.map((col) => (
+                      <div key={col.title} className="min-w-0">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-[#312E81]/70 mb-2 px-2">
+                          {col.title}
+                        </p>
+                        <ul className="space-y-0.5">
+                          {col.tools.map((tool) => (
+                            <li key={tool.href}>
+                              <a
+                                href={tool.href}
+                                onClick={() => setToolsOpen(false)}
+                                className="block rounded-lg px-2 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-slate-50 hover:text-[#312E81] transition-colors truncate"
+                              >
+                                {tool.label}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="px-5 py-3 border-t border-slate-100">
+                    <Link
+                      href="/online-tools"
+                      onClick={() => setToolsOpen(false)}
+                      className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#312E81] hover:text-[#1E1B4B] transition-colors"
+                    >
+                      Browse the tools overview
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           <Link href="/features" className={`group ${linkCls}`}>
             <Sparkles className={linkIconCls} strokeWidth={2.2} />
             Features

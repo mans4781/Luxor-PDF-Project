@@ -24,6 +24,15 @@ configurable via props so ONE component serves many focused pages:
 **Why:** keeps 30+ tools DRY and consistent; the registry is the only place to edit.
 **How to apply:** to add/rename a tool, edit the registry only — do not hand-write new pages.
 
+## Surfacing on the marketing site (lexsecure-landing)
+The luxorpdf.com "Online Tools" navbar item is a 4-column mega menu that links to
+these same tool pages cross-artifact at `/pdf-expiry/tools/<slug>`. Its link list lives
+in `lexsecure-landing/src/lib/online-tools-catalog.ts` (a hand-kept copy of the slugs —
+artifacts can't import each other, so keep it in sync with the pdf-expiry registry).
+**Cross-artifact links must be plain `<a href>` absolute paths, never wouter `<Link>`**,
+so the shared proxy routes them to the pdf-expiry app. These tools are free for all (no
+sign-in); only Secure/expiry stays paid and is excluded from the menu.
+
 ## Gotchas
 - **Duplicate-by-design slugs**: PDF→Jpeg vs PDF→Jpg (both `image/jpeg`) and jpeg-to-pdf vs
   jpg-to-pdf are intentionally separate entries for discoverability; same underlying behavior.
