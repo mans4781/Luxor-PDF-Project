@@ -61,7 +61,7 @@ export function AuthShell({ children, variant }: AuthShellProps) {
             className="flex items-center gap-3 rounded-2xl transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
           >
             <img
-              src={`${baseUrl}brand/luxor-secure-icon.png?v=20260710`}
+              src={`${baseUrl}brand/luxor-secure-icon.png?v=20260711`}
               alt=""
               aria-hidden="true"
               width={56}
@@ -157,7 +157,7 @@ export function AuthShell({ children, variant }: AuthShellProps) {
           {/* Brand row above the Clerk card */}
           <div className="flex items-center justify-center gap-3 mb-6">
             <img
-              src={`${baseUrl}brand/luxor-secure-icon.png?v=20260710`}
+              src={`${baseUrl}brand/luxor-secure-icon.png?v=20260711`}
               alt=""
               aria-hidden="true"
               width={48}

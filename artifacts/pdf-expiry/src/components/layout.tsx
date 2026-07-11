@@ -39,7 +39,7 @@ export function Layout({
               className="flex items-center gap-3 shrink-0 rounded-lg transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1754F4]/40"
             >
               <img
-                src={`${baseUrl}brand/luxor-secure-icon.png?v=20260710`}
+                src={`${baseUrl}brand/luxor-secure-icon.png?v=20260711`}
                 alt=""
                 aria-hidden="true"
                 className="h-[52px] w-[52px] select-none drop-shadow-sm"
