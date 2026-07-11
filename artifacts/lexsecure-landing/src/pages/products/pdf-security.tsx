@@ -2,11 +2,21 @@ import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
 import {
   Lock, Shield, Eye, Clock, Key, Printer, KeyRound, Calendar,
   CheckCircle2, Link2, Copy, Sparkles, Globe, Zap, FileLock2,
-  Timer, Ban, Server, MousePointer2, Newspaper,
+  Timer, Ban, Server, MousePointer2, Newspaper, Download, Monitor,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const APP_URL = "/pdf-expiry/";
+const SECURE_INSTALLER_URL = "/api/downloads/luxor-pdf-secure-latest.exe";
+
+const systemRequirements = [
+  { label: "Operating system", value: "Windows 10 or Windows 11 (64-bit)" },
+  { label: "Memory", value: "4 GB RAM minimum · 8 GB recommended" },
+  { label: "Disk space", value: "250 MB free space for installation" },
+  { label: "Display", value: "1280 × 720 resolution or higher" },
+  { label: "Internet", value: "Needed for sharing, revoke, and sign-in — protecting a file works locally" },
+  { label: "Permissions", value: "No administrator rights required — installs for the current user" },
+];
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -341,10 +351,11 @@ export default function PdfSecurityPage() {
                   Protect a PDF — free →
                 </a>
                 <a
-                  href="#modes"
-                  className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 transition-colors backdrop-blur-sm"
+                  href="#download"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 transition-colors backdrop-blur-sm"
                 >
-                  See the four modes
+                  <Download className="w-4 h-4" strokeWidth={2.2} />
+                  Download for Windows
                 </a>
               </div>
               <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-blue-200/80">
@@ -577,6 +588,57 @@ export default function PdfSecurityPage() {
                 <p className="text-slate-600 text-sm leading-relaxed">{use}</p>
               </motion.div>
             ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* === Download === */}
+      <section id="download" className="py-20 bg-white">
+        <div className="container mx-auto px-6 max-w-3xl text-center">
+          <motion.div {...fadeUp}>
+            <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 text-blue-700 text-sm font-medium mb-5">
+              <Monitor className="w-4 h-4" strokeWidth={2.2} />
+              Desktop app for Windows
+            </div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-3">Download Luxor PDF Secure</h2>
+            <p className="text-slate-500 mb-8 max-w-xl mx-auto">
+              Prefer a desktop app? Install Luxor PDF Secure on Windows to protect and share files right from your PC — the same four protection modes, no browser tab required.
+            </p>
+            <div className="flex items-center justify-center">
+              <a
+                href={SECURE_INSTALLER_URL}
+                className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-xl shadow-blue-500/25 hover:-translate-y-0.5"
+                data-testid="download-secure-button"
+              >
+                <Download className="w-5 h-5" />
+                Download for Windows
+                <span className="text-xs font-normal text-white/70">· Free</span>
+              </a>
+            </div>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-500">
+              <span className="inline-flex items-center gap-1.5"><Monitor className="w-3.5 h-3.5" /> Windows 10/11 · 64-bit</span>
+              <span className="inline-flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Installs for the current user — no admin needed</span>
+            </div>
+            <p className="mt-4 text-xs text-slate-400 max-w-md mx-auto">
+              Windows may show a SmartScreen prompt on first launch — click “More info → Run anyway” to continue.
+            </p>
+
+            {/* System requirements */}
+            <div className="mt-12 text-left bg-slate-50 border border-slate-100 rounded-2xl p-8" data-testid="system-requirements">
+              <h3 className="text-lg font-bold text-slate-800 mb-1 text-center">System requirements</h3>
+              <p className="text-sm text-slate-500 mb-6 text-center">What your PC needs to install and run Luxor PDF Secure</p>
+              <dl className="grid sm:grid-cols-2 gap-x-8 gap-y-4">
+                {systemRequirements.map(({ label, value }) => (
+                  <div key={label} className="flex items-start gap-3">
+                    <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                    <div>
+                      <dt className="text-sm font-semibold text-slate-700">{label}</dt>
+                      <dd className="text-sm text-slate-500">{value}</dd>
+                    </div>
+                  </div>
+                ))}
+              </dl>
+            </div>
           </motion.div>
         </div>
       </section>
