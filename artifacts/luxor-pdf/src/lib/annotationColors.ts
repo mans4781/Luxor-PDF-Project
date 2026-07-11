@@ -36,21 +36,23 @@ export const SELECTION = {
  * exactly the configured color at the configured alpha.
  */
 /**
- * Fresh, vibrant fluorescent-marker highlight palette (Microsoft Edge
+ * Fresh, electric fluorescent-marker highlight palette (Microsoft Edge
  * highlighter feel): saturated neon hex values painted straight onto the
- * page at a marker-strength alpha so the color reads bright and crisp —
- * e.g. Green looks like true neon green rather than a muted pastel — while
- * the black text underneath stays sharp and readable. Yellow carries the
- * highest alpha because pure yellow on white washes out otherwise; the
- * darker primaries (Violet/Red) sit slightly lower so they don't dim the
- * text. Order is the user-specified order.
+ * page so the color reads bright and crisp — e.g. Green is an electric
+ * lime rather than a muted pastel.
+ *
+ * Alphas are tuned for a see-through marker look so the black letters
+ * underneath stay clear and readable: high-luminance hues (Yellow, Lime,
+ * Cyan) can carry a bit more alpha because they barely darken the text,
+ * while the darker hues (Violet, Red, Pink) sit lower so they don't muddy
+ * the words beneath them. Order is the user-specified order.
  */
 export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Green",  value: "#CCFF00", opacity: 0.50 },
-  { name: "Yellow", value: "#FFF200", opacity: 0.55 },
-  { name: "Red",    value: "#FF1A1A", opacity: 0.46 },
-  { name: "Violet", value: "#C400FF", opacity: 0.46 },
-  { name: "Grey",   value: "#9E9E9E", opacity: 0.32 },
+  { name: "Green",  value: "#CCFF00", opacity: 0.42 },
+  { name: "Yellow", value: "#FFF200", opacity: 0.46 },
+  { name: "Red",    value: "#FF1A1A", opacity: 0.34 },
+  { name: "Violet", value: "#C400FF", opacity: 0.32 },
+  { name: "Grey",   value: "#9E9E9E", opacity: 0.26 },
 ];
 
 /**
@@ -61,12 +63,12 @@ export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
  * sharp.
  */
 export const QUICK_HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Yellow", value: "#FFF200", opacity: 0.55 },
-  { name: "Green",  value: "#CCFF00", opacity: 0.50 },
-  { name: "Blue",   value: "#00E0FF", opacity: 0.50 },
-  { name: "Pink",   value: "#FF1FA8", opacity: 0.48 },
-  { name: "Violet", value: "#C400FF", opacity: 0.46 },
-  { name: "Red",    value: "#FF1A1A", opacity: 0.46 },
+  { name: "Yellow", value: "#FFF200", opacity: 0.46 },
+  { name: "Green",  value: "#CCFF00", opacity: 0.42 },
+  { name: "Blue",   value: "#00E0FF", opacity: 0.40 },
+  { name: "Pink",   value: "#FF1FA8", opacity: 0.34 },
+  { name: "Violet", value: "#C400FF", opacity: 0.32 },
+  { name: "Red",    value: "#FF1A1A", opacity: 0.34 },
 ];
 
 /** Fixed blue tint used by the live text-selection overlay (matches the
@@ -86,13 +88,13 @@ export const SELECTION_BLUE = "rgba(37, 99, 235, 0.28)";
 export const SELECTION_PREVIEW_DEFAULT = "rgba(0, 120, 255, 0.25)";
 
 export const SELECTION_PREVIEW_BY_HIGHLIGHT: Record<string, string> = {
-  "#CCFF00": "rgba(204, 255, 0, 0.50)",    // Green
-  "#FFF200": "rgba(255, 242, 0, 0.55)",   // Yellow
-  "#FF1A1A": "rgba(255, 26, 26, 0.46)",   // Red
-  "#C400FF": "rgba(196, 0, 255, 0.46)",   // Violet
-  "#9E9E9E": "rgba(158, 158, 158, 0.32)", // Grey
-  "#00E0FF": "rgba(0, 224, 255, 0.50)",   // Blue
-  "#FF1FA8": "rgba(255, 31, 168, 0.48)",  // Pink
+  "#CCFF00": "rgba(204, 255, 0, 0.42)",   // Green
+  "#FFF200": "rgba(255, 242, 0, 0.46)",   // Yellow
+  "#FF1A1A": "rgba(255, 26, 26, 0.34)",   // Red
+  "#C400FF": "rgba(196, 0, 255, 0.32)",   // Violet
+  "#9E9E9E": "rgba(158, 158, 158, 0.26)", // Grey
+  "#00E0FF": "rgba(0, 224, 255, 0.40)",   // Blue
+  "#FF1FA8": "rgba(255, 31, 168, 0.34)",  // Pink
 };
 
 /** Resolve a highlight hex to its soft selection-preview shade. */
