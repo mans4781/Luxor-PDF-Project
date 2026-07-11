@@ -44,11 +44,7 @@ Some features may operate entirely on your device, while other features may requ
 
 The organisation responsible for processing personal information under this Privacy Policy is:
 
-**Fairnova Labs Private Limited**
-Owner and operator of the Luxor PDF brand
-**Registered Office:** [Insert registered office address]
 **Privacy Email:** privacy@luxorpdf.com
-**Support Email:** hello@luxorpdf.com
 
 Depending on your location and the applicable law, Fairnova Labs Private Limited may act as a data fiduciary, data controller, business, service provider, or data processor.
 
@@ -658,7 +654,6 @@ Users may contact the designated grievance or privacy contact regarding:
 
 **Grievance Officer or Privacy Contact:** Privacy Team
 **Email:** privacy@luxorpdf.com
-**Address:** [Insert registered office address]
 
 We will acknowledge and address grievances within the period required by applicable law.
 
@@ -839,11 +834,7 @@ Continued use of Luxor PDF after the effective date of an updated Policy constit
 
 For questions, concerns, complaints, or privacy requests relating to this Privacy Policy, contact:
 
-**Fairnova Labs Private Limited**
-Owner and operator of Luxor PDF
-**Registered Office:** [Insert registered office address]
 **Privacy Email:** privacy@luxorpdf.com
-**Customer Support:** hello@luxorpdf.com
 **Website:** luxorpdf.com
 
 We will make reasonable efforts to respond within the period required under applicable law.
