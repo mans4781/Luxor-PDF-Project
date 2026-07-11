@@ -46,7 +46,7 @@ export const SELECTION = {
  * text. Order is the user-specified order.
  */
 export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Green",  value: "#16FF00", opacity: 0.50 },
+  { name: "Green",  value: "#CCFF00", opacity: 0.50 },
   { name: "Yellow", value: "#FFF200", opacity: 0.55 },
   { name: "Red",    value: "#FF1A1A", opacity: 0.46 },
   { name: "Violet", value: "#C400FF", opacity: 0.46 },
@@ -62,7 +62,7 @@ export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
  */
 export const QUICK_HIGHLIGHT_COLORS: HighlightSwatch[] = [
   { name: "Yellow", value: "#FFF200", opacity: 0.55 },
-  { name: "Green",  value: "#16FF00", opacity: 0.50 },
+  { name: "Green",  value: "#CCFF00", opacity: 0.50 },
   { name: "Blue",   value: "#00E0FF", opacity: 0.50 },
   { name: "Pink",   value: "#FF1FA8", opacity: 0.48 },
   { name: "Violet", value: "#C400FF", opacity: 0.46 },
@@ -86,7 +86,7 @@ export const SELECTION_BLUE = "rgba(37, 99, 235, 0.28)";
 export const SELECTION_PREVIEW_DEFAULT = "rgba(0, 120, 255, 0.25)";
 
 export const SELECTION_PREVIEW_BY_HIGHLIGHT: Record<string, string> = {
-  "#16FF00": "rgba(22, 255, 0, 0.50)",    // Green
+  "#CCFF00": "rgba(204, 255, 0, 0.50)",    // Green
   "#FFF200": "rgba(255, 242, 0, 0.55)",   // Yellow
   "#FF1A1A": "rgba(255, 26, 26, 0.46)",   // Red
   "#C400FF": "rgba(196, 0, 255, 0.46)",   // Violet
