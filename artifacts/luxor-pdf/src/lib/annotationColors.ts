@@ -46,11 +46,11 @@ export const SELECTION = {
  * text. Order is the user-specified order.
  */
 export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Green",  value: "#35FF12", opacity: 0.46 },
-  { name: "Yellow", value: "#FFEA00", opacity: 0.50 },
-  { name: "Red",    value: "#FF2D2D", opacity: 0.42 },
-  { name: "Violet", value: "#B23CFF", opacity: 0.42 },
-  { name: "Grey",   value: "#9E9E9E", opacity: 0.30 },
+  { name: "Green",  value: "#16FF00", opacity: 0.50 },
+  { name: "Yellow", value: "#FFF200", opacity: 0.55 },
+  { name: "Red",    value: "#FF1A1A", opacity: 0.46 },
+  { name: "Violet", value: "#C400FF", opacity: 0.46 },
+  { name: "Grey",   value: "#9E9E9E", opacity: 0.32 },
 ];
 
 /**
@@ -61,12 +61,12 @@ export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
  * sharp.
  */
 export const QUICK_HIGHLIGHT_COLORS: HighlightSwatch[] = [
-  { name: "Yellow", value: "#FFEA00", opacity: 0.50 },
-  { name: "Green",  value: "#35FF12", opacity: 0.46 },
-  { name: "Blue",   value: "#12CFFF", opacity: 0.46 },
-  { name: "Pink",   value: "#FF2E97", opacity: 0.44 },
-  { name: "Violet", value: "#B23CFF", opacity: 0.42 },
-  { name: "Red",    value: "#FF2D2D", opacity: 0.42 },
+  { name: "Yellow", value: "#FFF200", opacity: 0.55 },
+  { name: "Green",  value: "#16FF00", opacity: 0.50 },
+  { name: "Blue",   value: "#00E0FF", opacity: 0.50 },
+  { name: "Pink",   value: "#FF1FA8", opacity: 0.48 },
+  { name: "Violet", value: "#C400FF", opacity: 0.46 },
+  { name: "Red",    value: "#FF1A1A", opacity: 0.46 },
 ];
 
 /** Fixed blue tint used by the live text-selection overlay (matches the
@@ -86,13 +86,13 @@ export const SELECTION_BLUE = "rgba(37, 99, 235, 0.28)";
 export const SELECTION_PREVIEW_DEFAULT = "rgba(0, 120, 255, 0.25)";
 
 export const SELECTION_PREVIEW_BY_HIGHLIGHT: Record<string, string> = {
-  "#35FF12": "rgba(53, 255, 18, 0.46)",   // Green
-  "#FFEA00": "rgba(255, 234, 0, 0.50)",   // Yellow
-  "#FF2D2D": "rgba(255, 45, 45, 0.42)",   // Red
-  "#B23CFF": "rgba(178, 60, 255, 0.42)",  // Violet
-  "#9E9E9E": "rgba(158, 158, 158, 0.30)", // Grey
-  "#12CFFF": "rgba(18, 207, 255, 0.46)",  // Blue
-  "#FF2E97": "rgba(255, 46, 151, 0.44)",  // Pink
+  "#16FF00": "rgba(22, 255, 0, 0.50)",    // Green
+  "#FFF200": "rgba(255, 242, 0, 0.55)",   // Yellow
+  "#FF1A1A": "rgba(255, 26, 26, 0.46)",   // Red
+  "#C400FF": "rgba(196, 0, 255, 0.46)",   // Violet
+  "#9E9E9E": "rgba(158, 158, 158, 0.32)", // Grey
+  "#00E0FF": "rgba(0, 224, 255, 0.50)",   // Blue
+  "#FF1FA8": "rgba(255, 31, 168, 0.48)",  // Pink
 };
 
 /** Resolve a highlight hex to its soft selection-preview shade. */
