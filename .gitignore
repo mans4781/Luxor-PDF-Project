@@ -53,3 +53,8 @@ artifacts/api-server/uploads/
 
 # Electron app runtime data (generated at runtime)
 electron/.data/
+
+# Python
+.pythonlibs/
+__pycache__/
+*.pyc

@@ -2,6 +2,7 @@
 - [Teams licensing architecture](teams-licensing.md) — custom orgs/seats/invites layer (no Clerk org tenants); how Team access & device caps mirror the individual license flow.
 - [Stripe webhook patterns](stripe-webhook-patterns.md) — established idempotency + renewal-handling conventions in billing.ts; what is deliberately NOT handled.
 - [Secure upload enforcement](secure-upload-enforcement.md) — secure/expiry (Password & Expiry) is paid-only; gate it on POST /api/pdfs/upload itself, not the advisory endpoints.
+- [PDF→Word server conversion](pdf-to-word-server-conversion.md) — the one online-tool that runs server-side (pdf2docx via `python3 -c`); reserve concurrency slots synchronously to keep the cap race-free.
 - [Luxor PDF highlight model](luxor-pdf-highlights.md) — highlights use normalized-rect model (not <mark>/offsets); localStorage writes gated by hydratedKey.
 - [Luxor PDF text annotations](luxor-pdf-text-annotations.md) — Add-Text overlays are display-only (not flattened on export); only edittext/watermark/etc are burned into the PDF.
 - [Viewer stale-closure save bug](viewer-stale-closures.md) — memoized save/export callbacks must call the download handler via a latest-ref; stale closures silently export the unedited file.
