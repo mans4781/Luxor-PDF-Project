@@ -111,10 +111,11 @@ export default function ESignPage() {
               <p className="text-teal-200 text-lg leading-relaxed mb-8">
                 Send contracts, NDAs, and agreements for legally binding e-signatures in seconds. Track who has signed, send reminders, and download certified PDFs — all from your desktop.
               </p>
-              <div className="flex flex-wrap gap-4">
-                <a href="#download" className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-semibold transition-colors shadow-lg shadow-emerald-500/30">
-                  Start Free Trial
-                </a>
+              <div className="flex flex-wrap gap-4 items-center">
+                <span className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 font-semibold cursor-default select-none">
+                  <Clock className="w-4 h-4" strokeWidth={2} />
+                  Coming soon
+                </span>
                 <a href="#how-it-works" className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 transition-colors">
                   How It Works
                 </a>
@@ -185,10 +186,11 @@ export default function ESignPage() {
       <section className="py-16 bg-gradient-to-br from-emerald-900 to-teal-900 text-white text-center">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl font-bold mb-4">Stop chasing signatures by email</h2>
-          <p className="text-emerald-200 mb-8 max-w-md mx-auto">Try Luxor eSign free for 14 days. No credit card required.</p>
-          <a href="#download" className="inline-block px-8 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-bold transition-colors shadow-xl shadow-emerald-500/30">
-            Start Free Trial
-          </a>
+          <p className="text-emerald-200 mb-8 max-w-md mx-auto">Luxor eSign is launching soon. We're putting the finishing touches on it — check back shortly.</p>
+          <span className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-100 font-bold cursor-default select-none">
+            <Clock className="w-4 h-4" strokeWidth={2} />
+            Coming soon
+          </span>
         </div>
       </section>
     </ProductPageLayout>
