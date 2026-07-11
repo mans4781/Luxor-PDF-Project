@@ -1,33 +1,41 @@
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import LandingPage from "@/pages/landing";
-import WebAppPage from "@/pages/web-app";
-import PricingPage from "@/pages/pricing";
-import AboutPage from "@/pages/about";
-import PrivacyPage from "@/pages/privacy";
-import TermsPage from "@/pages/terms";
-import CookiesPage from "@/pages/cookies";
-import LicensingPage from "@/pages/licensing";
-import RefundPage from "@/pages/refund";
-import PdfReaderPage from "@/pages/products/pdf-reader";
-import PdfEditorPage from "@/pages/products/pdf-editor";
-import ESignPage from "@/pages/products/esign";
-import PdfSecurityPage from "@/pages/products/pdf-security";
-import AdminPage from "@/pages/admin";
-import FeaturesPage from "@/pages/features";
-import OnlineToolsPage from "@/pages/online-tools";
-import DownloadPage from "@/pages/download";
-import BrandPage from "@/pages/brand";
-import DeveloperLoginPage from "@/pages/developer/login";
-import DeveloperDashboardPage from "@/pages/developer/dashboard";
-import NotFound from "@/pages/not-found";
+const WebAppPage = lazy(() => import("@/pages/web-app"));
+const PricingPage = lazy(() => import("@/pages/pricing"));
+const AboutPage = lazy(() => import("@/pages/about"));
+const PrivacyPage = lazy(() => import("@/pages/privacy"));
+const TermsPage = lazy(() => import("@/pages/terms"));
+const CookiesPage = lazy(() => import("@/pages/cookies"));
+const LicensingPage = lazy(() => import("@/pages/licensing"));
+const RefundPage = lazy(() => import("@/pages/refund"));
+const PdfReaderPage = lazy(() => import("@/pages/products/pdf-reader"));
+const PdfEditorPage = lazy(() => import("@/pages/products/pdf-editor"));
+const ESignPage = lazy(() => import("@/pages/products/esign"));
+const PdfSecurityPage = lazy(() => import("@/pages/products/pdf-security"));
+const AdminPage = lazy(() => import("@/pages/admin"));
+const FeaturesPage = lazy(() => import("@/pages/features"));
+const OnlineToolsPage = lazy(() => import("@/pages/online-tools"));
+const DownloadPage = lazy(() => import("@/pages/download"));
+const BrandPage = lazy(() => import("@/pages/brand"));
+const DeveloperLoginPage = lazy(() => import("@/pages/developer/login"));
+const DeveloperDashboardPage = lazy(() => import("@/pages/developer/dashboard"));
+const NotFound = lazy(() => import("@/pages/not-found"));
 import { Chatbot } from "@/components/Chatbot";
 import { ScrollToTop } from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
+
+function RouteFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-[#DC2626]" />
+    </div>
+  );
+}
 
 function RouteScrollReset() {
   const [location] = useLocation();
@@ -73,7 +81,9 @@ function App() {
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <RouteScrollReset />
-          <Router />
+          <Suspense fallback={<RouteFallback />}>
+            <Router />
+          </Suspense>
         </WouterRouter>
         <Chatbot />
         <ScrollToTop />

@@ -105,8 +105,12 @@ export function Hero() {
           >
             <div className="aspect-[3/2] rounded-2xl overflow-hidden shadow-2xl shadow-slate-900/10 border border-slate-200 bg-gradient-to-br from-blue-50 to-rose-50">
               <img
-                src={`${import.meta.env.BASE_URL}hero-artwork.png?v=3`}
+                src={`${import.meta.env.BASE_URL}hero-artwork.webp?v=4`}
                 alt="Luxor PDF — secure document tools"
+                width={1200}
+                height={800}
+                fetchPriority="high"
+                decoding="async"
                 className="w-full h-full object-cover object-center"
               />
             </div>

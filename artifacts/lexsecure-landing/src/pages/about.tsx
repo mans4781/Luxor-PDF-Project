@@ -62,8 +62,10 @@ export default function AboutPage() {
               className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-2xl shadow-indigo-900/5 aspect-video max-w-4xl mx-auto bg-slate-50"
             >
               <img 
-                src={`${import.meta.env.BASE_URL}brand/about-hero-vault.png`} 
+                src={`${import.meta.env.BASE_URL}brand/about-hero-vault.webp`} 
                 alt="Abstract secure vault"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-80" />
@@ -101,8 +103,10 @@ export default function AboutPage() {
                 className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-xl shadow-slate-200/50 aspect-square lg:aspect-auto lg:h-[500px] bg-white"
               >
                 <img 
-                  src={`${import.meta.env.BASE_URL}brand/about-problem-void.png`} 
+                  src={`${import.meta.env.BASE_URL}brand/about-problem-void.webp`} 
                   alt="Digital void"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
               </motion.div>
@@ -179,8 +183,10 @@ export default function AboutPage() {
                 className="order-2 lg:order-1 relative rounded-2xl overflow-hidden border border-slate-200 shadow-xl shadow-slate-200/50 aspect-square lg:aspect-auto lg:h-[600px] bg-white"
               >
                 <img 
-                  src={`${import.meta.env.BASE_URL}brand/about-solution-shield.png`} 
+                  src={`${import.meta.env.BASE_URL}brand/about-solution-shield.webp`} 
                   alt="Crystal shield protection"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
               </motion.div>
