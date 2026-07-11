@@ -22,13 +22,12 @@ const RESOURCE_LINKS: LinkItem[] = [
   { label: "Help Center", href: "mailto:hello@luxorpdf.com" },
   { label: "Documentation", href: "/features" },
   { label: "Security Guide", href: "/#security" },
-  { label: "Brand Assets", href: "/brand" },
   { label: "Release Notes", href: "/about" },
 ];
 
-const LEGAL_LINKS: LinkItem[] = [
+const POLICY_LINKS: LinkItem[] = [
   { label: "Privacy Policy", href: "/privacy" },
-  { label: "Terms of Service", href: "/terms" },
+  { label: "Terms of Use", href: "/terms" },
   { label: "Cookie Policy", href: "/cookies" },
   { label: "Licensing", href: "/about" },
 ];
@@ -106,7 +105,7 @@ export function Footer() {
 
       <div className="relative mx-auto max-w-7xl">
         {/* Top grid */}
-        <div className="grid gap-10 border-b border-slate-200 pb-14 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_1.1fr]">
+        <div className="grid gap-10 border-b border-slate-200 pb-14 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_0.9fr_1.1fr]">
           {/* Brand column */}
           <div>
             <Link
@@ -215,6 +214,25 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* Company Policies column */}
+          <div>
+            <h3 className="text-xs font-black uppercase tracking-[0.22em] text-[#312E81]">
+              Company Policies
+            </h3>
+            <ul className="mt-5 space-y-3">
+              {POLICY_LINKS.map(({ label, href }) => (
+                <li key={label}>
+                  <Link
+                    href={href}
+                    className="block text-left text-sm font-semibold text-[#312E81] transition-colors hover:text-[#1E1B4B] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {/* Newsletter column */}
           <div>
             <h3 className="text-xs font-black uppercase tracking-[0.22em] text-[#312E81]">
@@ -280,20 +298,6 @@ export function Footer() {
                 : `${visitorCount.toLocaleString()} visitors`}
             </span>
           </div>
-          <nav
-            aria-label="Legal"
-            className="flex flex-wrap gap-x-5 gap-y-2 font-semibold text-[#312E81]"
-          >
-            {LEGAL_LINKS.map(({ label, href }) => (
-              <Link
-                key={label}
-                href={href}
-                className="transition-colors hover:text-[#1E1B4B] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E11D48] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
-              >
-                {label}
-              </Link>
-            ))}
-          </nav>
         </div>
       </div>
     </footer>
