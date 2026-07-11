@@ -24,14 +24,14 @@ export default function AboutPage() {
   return (
     <ProductPageLayout>
       <div 
-        className="min-h-screen bg-slate-950 text-slate-50 selection:bg-rose-500/30 selection:text-rose-200 font-sans overflow-hidden"
+        className="min-h-screen bg-white text-slate-900 selection:bg-rose-100 selection:text-rose-900 font-sans overflow-hidden"
       >
         
         {/* ── 1. HERO ── */}
         <section className="relative pt-32 pb-24 lg:pt-48 lg:pb-32 px-6">
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-indigo-600/20 rounded-full blur-[120px]" />
-            <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-rose-500/10 rounded-full blur-[100px]" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-indigo-100/60 rounded-full blur-[120px]" />
+            <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-rose-50/60 rounded-full blur-[100px]" />
           </div>
 
           <div className="container mx-auto max-w-5xl relative z-10 text-center">
@@ -40,17 +40,17 @@ export default function AboutPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="inline-flex items-center gap-2 border border-indigo-500/30 bg-indigo-500/10 px-4 py-2 rounded-full mb-8 text-sm font-medium text-indigo-200 tracking-wide">
-                <Lock className="w-4 h-4 text-rose-400" />
+              <div className="inline-flex items-center gap-2 border border-indigo-200 bg-indigo-50 px-4 py-2 rounded-full mb-8 text-sm font-medium text-indigo-700 tracking-wide">
+                <Lock className="w-4 h-4 text-rose-500" />
                 The New Standard in Document Control
               </div>
-              <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-white mb-8 leading-[1.1]">
+              <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-slate-950 mb-8 leading-[1.1]">
                 Sensitive documents <br className="hidden sm:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-indigo-400">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-indigo-600">
                   shouldn't live forever.
                 </span>
               </h1>
-              <p className="text-xl lg:text-2xl text-indigo-200/80 max-w-3xl mx-auto leading-relaxed mb-16">
+              <p className="text-xl lg:text-2xl text-slate-600 max-w-3xl mx-auto leading-relaxed mb-16">
                 We are building the definitive privacy-first PDF platform for professionals who demand absolute authority over their files. 
               </p>
             </motion.div>
@@ -59,20 +59,20 @@ export default function AboutPage() {
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-indigo-900/50 aspect-video max-w-4xl mx-auto bg-slate-900"
+              className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-2xl shadow-indigo-900/5 aspect-video max-w-4xl mx-auto bg-slate-50"
             >
               <img 
                 src={`${import.meta.env.BASE_URL}brand/about-hero-vault.png`} 
                 alt="Abstract secure vault"
-                className="w-full h-full object-cover opacity-90"
+                className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-80" />
             </motion.div>
           </div>
         </section>
 
         {/* ── 2. THE PROBLEM (MARKET DEMAND) ── */}
-        <section className="py-24 relative z-10 border-t border-white/5 bg-slate-950/50">
+        <section className="py-24 relative z-10 border-t border-slate-100 bg-slate-50/50">
           <div className="container mx-auto px-6 max-w-6xl">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
               <motion.div 
@@ -80,17 +80,17 @@ export default function AboutPage() {
                 initial="initial"
                 whileInView="whileInView"
               >
-                <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold mb-6 text-white leading-tight">
+                <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold mb-6 text-slate-900 leading-tight">
                   The illusion of control in the digital age.
                 </motion.h2>
-                <motion.div variants={fadeUp} className="space-y-6 text-lg text-indigo-200/70 leading-relaxed">
+                <motion.div variants={fadeUp} className="space-y-6 text-lg text-slate-600 leading-relaxed">
                   <p>
                     Every day, lawyers, founders, doctors, and finance teams send highly sensitive contracts, medical records, and financials into the void. Once a PDF leaves your outbox, you lose control. It gets forwarded, downloaded, left on shared drives, and forgotten.
                   </p>
                   <p>
                     Existing PDF tools were built for an era before privacy mattered. They bolt security on as an afterthought. They track your usage, process your files on their servers, and offer no way to pull a document back once it's out in the wild.
                   </p>
-                  <p className="text-rose-300 font-medium">
+                  <p className="text-rose-600 font-medium">
                     The demand for absolute privacy has never been higher, yet the tools haven't changed in twenty years. Until now.
                   </p>
                 </motion.div>
@@ -98,12 +98,12 @@ export default function AboutPage() {
               
               <motion.div 
                 variants={fadeUp}
-                className="relative rounded-2xl overflow-hidden border border-white/10 aspect-square lg:aspect-auto lg:h-[500px] bg-slate-900"
+                className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-xl shadow-slate-200/50 aspect-square lg:aspect-auto lg:h-[500px] bg-white"
               >
                 <img 
                   src={`${import.meta.env.BASE_URL}brand/about-problem-void.png`} 
                   alt="Digital void"
-                  className="w-full h-full object-cover mix-blend-screen opacity-80"
+                  className="w-full h-full object-cover"
                 />
               </motion.div>
             </div>
@@ -112,7 +112,7 @@ export default function AboutPage() {
 
         {/* ── 3. CORE PHILOSOPHY / UNIQUENESS ── */}
         <section className="py-32 relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/20 to-slate-950 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-50 to-white pointer-events-none" />
           
           <div className="container mx-auto px-6 max-w-5xl relative z-10">
             <motion.div 
@@ -121,8 +121,8 @@ export default function AboutPage() {
               whileInView="whileInView"
               className="text-center mb-20"
             >
-              <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">Built differently from day one.</h2>
-              <p className="text-xl text-indigo-200/80 max-w-2xl mx-auto">
+              <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">Built differently from day one.</h2>
+              <p className="text-xl text-slate-600 max-w-2xl mx-auto">
                 We aren't a generic document company. We are a security company that builds document tools. 
               </p>
             </motion.div>
@@ -153,13 +153,13 @@ export default function AboutPage() {
                 <motion.div 
                   key={i}
                   variants={fadeUp}
-                  className="bg-white/[0.02] border border-white/5 p-8 rounded-2xl hover:bg-white/[0.04] transition-colors"
+                  className="bg-white border border-slate-200 shadow-sm p-8 rounded-2xl hover:shadow-md hover:border-indigo-100 transition-all"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center mb-6 border border-indigo-500/30">
-                    <item.icon className="w-6 h-6 text-indigo-300" />
+                  <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-6 border border-indigo-100">
+                    <item.icon className="w-6 h-6 text-indigo-600" />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
-                  <p className="text-indigo-200/70 leading-relaxed">{item.desc}</p>
+                  <h3 className="text-xl font-bold text-slate-900 mb-3">{item.title}</h3>
+                  <p className="text-slate-600 leading-relaxed">{item.desc}</p>
                 </motion.div>
               ))}
             </motion.div>
@@ -167,8 +167,8 @@ export default function AboutPage() {
         </section>
 
         {/* ── 4. KEY FEATURE: CONTROL (EXPIRY & REVOKE) ── */}
-        <section className="py-24 bg-indigo-950/20 border-y border-indigo-500/10 relative overflow-hidden">
-          <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[600px] h-[600px] bg-rose-600/10 rounded-full blur-[120px] pointer-events-none" />
+        <section className="py-24 bg-indigo-50/50 border-y border-indigo-100 relative overflow-hidden">
+          <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[600px] h-[600px] bg-rose-100/50 rounded-full blur-[120px] pointer-events-none" />
           
           <div className="container mx-auto px-6 max-w-6xl relative z-10">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -176,12 +176,12 @@ export default function AboutPage() {
                 variants={fadeUp}
                 initial="initial"
                 whileInView="whileInView"
-                className="order-2 lg:order-1 relative rounded-2xl overflow-hidden border border-indigo-500/20 aspect-square lg:aspect-auto lg:h-[600px] bg-slate-900"
+                className="order-2 lg:order-1 relative rounded-2xl overflow-hidden border border-slate-200 shadow-xl shadow-slate-200/50 aspect-square lg:aspect-auto lg:h-[600px] bg-white"
               >
                 <img 
                   src={`${import.meta.env.BASE_URL}brand/about-solution-shield.png`} 
                   alt="Crystal shield protection"
-                  className="w-full h-full object-cover opacity-90"
+                  className="w-full h-full object-cover"
                 />
               </motion.div>
               
@@ -191,11 +191,11 @@ export default function AboutPage() {
                 whileInView="whileInView"
                 className="order-1 lg:order-2"
               >
-                <motion.div variants={fadeUp} className="inline-flex items-center gap-2 text-rose-400 font-semibold tracking-wide uppercase text-sm mb-6">
+                <motion.div variants={fadeUp} className="inline-flex items-center gap-2 text-rose-600 font-bold tracking-wide uppercase text-sm mb-6">
                   <Fingerprint className="w-4 h-4" />
                   Absolute Control
                 </motion.div>
-                <motion.h2 variants={fadeUp} className="text-3xl lg:text-5xl font-bold mb-8 text-white leading-tight">
+                <motion.h2 variants={fadeUp} className="text-3xl lg:text-5xl font-bold mb-8 text-slate-900 leading-tight">
                   Give your documents a lifespan.
                 </motion.h2>
                 
@@ -219,13 +219,13 @@ export default function AboutPage() {
                   ].map((feat, i) => (
                     <motion.div key={i} variants={fadeUp} className="flex gap-5">
                       <div className="shrink-0 mt-1">
-                        <div className="w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
-                          <feat.icon className="w-5 h-5 text-rose-400" />
+                        <div className="w-10 h-10 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center">
+                          <feat.icon className="w-5 h-5 text-rose-600" />
                         </div>
                       </div>
                       <div>
-                        <h4 className="text-xl font-bold text-white mb-2">{feat.title}</h4>
-                        <p className="text-indigo-200/70 leading-relaxed">{feat.desc}</p>
+                        <h4 className="text-xl font-bold text-slate-900 mb-2">{feat.title}</h4>
+                        <p className="text-slate-600 leading-relaxed">{feat.desc}</p>
                       </div>
                     </motion.div>
                   ))}
@@ -236,7 +236,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── 5. THE FULL SUITE ── */}
-        <section className="py-32 relative">
+        <section className="py-32 relative bg-white">
           <div className="container mx-auto px-6 max-w-5xl">
             <motion.div 
               variants={fadeUp} 
@@ -244,8 +244,8 @@ export default function AboutPage() {
               whileInView="whileInView"
               className="text-center mb-20"
             >
-              <h2 className="text-4xl font-bold text-white mb-6">A complete, uncompromising suite.</h2>
-              <p className="text-xl text-indigo-200/80 max-w-2xl mx-auto">
+              <h2 className="text-4xl font-bold text-slate-900 mb-6">A complete, uncompromising suite.</h2>
+              <p className="text-xl text-slate-600 max-w-2xl mx-auto">
                 Security shouldn't mean sacrificing capability. We provide every tool you need to work with PDFs, executed with rigorous privacy standards.
               </p>
             </motion.div>
@@ -256,26 +256,26 @@ export default function AboutPage() {
               whileInView="whileInView"
               className="grid md:grid-cols-3 gap-6"
             >
-              <motion.div variants={fadeUp} className="bg-gradient-to-br from-indigo-900/40 to-slate-900/40 border border-white/5 p-8 rounded-2xl">
-                <FileText className="w-8 h-8 text-indigo-400 mb-6" />
-                <h3 className="text-xl font-bold text-white mb-3">Flawless Reading</h3>
-                <p className="text-indigo-200/70">
+              <motion.div variants={fadeUp} className="bg-indigo-50/50 border border-indigo-100 p-8 rounded-2xl hover:bg-indigo-50 transition-colors">
+                <FileText className="w-8 h-8 text-indigo-600 mb-6" />
+                <h3 className="text-xl font-bold text-slate-900 mb-3">Flawless Reading</h3>
+                <p className="text-slate-600">
                   A high-performance virtualized reader that handles massive documents smoothly. Add annotations, highlights, and comments—all saved locally.
                 </p>
               </motion.div>
 
-              <motion.div variants={fadeUp} className="bg-gradient-to-br from-violet-900/40 to-slate-900/40 border border-white/5 p-8 rounded-2xl">
-                <PenTool className="w-8 h-8 text-violet-400 mb-6" />
-                <h3 className="text-xl font-bold text-white mb-3">Secure e-Signatures</h3>
-                <p className="text-indigo-200/70">
+              <motion.div variants={fadeUp} className="bg-violet-50/50 border border-violet-100 p-8 rounded-2xl hover:bg-violet-50 transition-colors">
+                <PenTool className="w-8 h-8 text-violet-600 mb-6" />
+                <h3 className="text-xl font-bold text-slate-900 mb-3">Secure e-Signatures</h3>
+                <p className="text-slate-600">
                   Sign contracts and request signatures with legally binding cryptographic proof, ensuring the document hasn't been tampered with.
                 </p>
               </motion.div>
 
-              <motion.div variants={fadeUp} className="bg-gradient-to-br from-rose-900/20 to-slate-900/40 border border-white/5 p-8 rounded-2xl">
-                <RefreshCw className="w-8 h-8 text-rose-400 mb-6" />
-                <h3 className="text-xl font-bold text-white mb-3">Offline Conversion</h3>
-                <p className="text-indigo-200/70">
+              <motion.div variants={fadeUp} className="bg-rose-50/50 border border-rose-100 p-8 rounded-2xl hover:bg-rose-50 transition-colors">
+                <RefreshCw className="w-8 h-8 text-rose-600 mb-6" />
+                <h3 className="text-xl font-bold text-slate-900 mb-3">Offline Conversion</h3>
+                <p className="text-slate-600">
                   Convert PDFs to Images, Word, or Excel entirely within your browser. The file never leaves your machine, preserving absolute confidentiality.
                 </p>
               </motion.div>
@@ -284,9 +284,9 @@ export default function AboutPage() {
         </section>
 
         {/* ── 6. CTA ── */}
-        <section className="py-32 relative overflow-hidden border-t border-white/5">
-          <div className="absolute inset-0 bg-indigo-950/30" />
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[400px] bg-rose-600/10 blur-[150px] pointer-events-none" />
+        <section className="py-32 relative overflow-hidden border-t border-slate-100 bg-slate-50">
+          <div className="absolute inset-0 bg-gradient-to-b from-indigo-50/50 to-white" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[400px] bg-rose-100/50 blur-[150px] pointer-events-none" />
           
           <div className="container mx-auto px-6 max-w-4xl relative z-10 text-center">
             <motion.div
@@ -294,25 +294,25 @@ export default function AboutPage() {
               initial="initial"
               whileInView="whileInView"
             >
-              <div className="w-20 h-20 mx-auto bg-slate-900 border border-indigo-500/30 rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-indigo-900/50">
-                <Shield className="w-10 h-10 text-indigo-400" />
+              <div className="w-20 h-20 mx-auto bg-white border border-indigo-100 rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-indigo-900/5">
+                <Shield className="w-10 h-10 text-indigo-600" />
               </div>
-              <h2 className="text-4xl lg:text-6xl font-bold text-white mb-8">
+              <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 mb-8">
                 Take back control of your documents.
               </h2>
-              <p className="text-xl text-indigo-200/80 mb-12 max-w-2xl mx-auto">
+              <p className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto">
                 Join the professionals who refuse to compromise on data privacy. Experience the first PDF platform built like a vault.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a 
                   href="/download" 
-                  className="inline-flex items-center justify-center px-8 py-4 text-sm font-bold bg-white text-slate-950 rounded-full hover:bg-indigo-50 transition-colors"
+                  className="inline-flex items-center justify-center px-8 py-4 text-sm font-bold bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-600/20 hover:shadow-lg hover:shadow-indigo-600/30"
                 >
                   Download the App
                 </a>
                 <a 
                   href="/pricing" 
-                  className="inline-flex items-center justify-center px-8 py-4 text-sm font-bold border border-white/20 text-white rounded-full hover:bg-white/5 transition-colors"
+                  className="inline-flex items-center justify-center px-8 py-4 text-sm font-bold border border-slate-300 bg-white text-slate-900 rounded-full hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   View Pricing
                 </a>

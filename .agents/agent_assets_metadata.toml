@@ -196,19 +196,19 @@ title = "generated_image"
 id = "6Kn2B7Waxw0QhlcFfoXAw"
 uri = "file://artifacts/lexsecure-landing/public/brand/about-hero-vault.png"
 type = "image"
-title = "Abstract glowing vault"
+title = "Light airy 3D secure vault"
 
 [[generated]]
 id = "D6tParDW9eOD8462KAJDW"
 uri = "file://artifacts/lexsecure-landing/public/brand/about-problem-void.png"
 type = "image"
-title = "Digital void with data"
+title = "Light airy 3D digital documents"
 
 [[generated]]
 id = "sOewnGI4CcNhKBLD1AobO"
 uri = "file://artifacts/lexsecure-landing/public/brand/about-solution-shield.png"
 type = "image"
-title = "Crystal shield glowing"
+title = "Light airy 3D crystal shield"
 
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
