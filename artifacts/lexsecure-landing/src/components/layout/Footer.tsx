@@ -8,8 +8,7 @@ type LinkItem = { label: string; href: string };
 const PRODUCT_LINKS: LinkItem[] = [
   { label: "PDF Reader", href: "/products/pdf-reader" },
   { label: "PDF Security", href: "/products/pdf-security" },
-  { label: "PDF Editor", href: "/products/pdf-editor" },
-  { label: "eSign", href: "/products/esign" },
+  { label: "PDF eSign", href: "/products/esign" },
 ];
 
 const COMPANY_LINKS: LinkItem[] = [
