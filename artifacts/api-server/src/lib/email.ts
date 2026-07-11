@@ -46,11 +46,17 @@ async function getResendCredentials(): Promise<ResendCredentials> {
   };
 }
 
+// Every outbound suite email sends from this single verified-domain address.
+// We deliberately ignore the connector's configured from_email so the sender
+// stays consistent as `noreply@luxorpdf.com` across all emails. Requires the
+// luxorpdf.com domain to be verified in Resend (DKIM/SPF), which it is.
+const FROM_ADDRESS = "Luxor PDF <noreply@luxorpdf.com>";
+
 async function getResendClient(): Promise<{ client: Resend; fromEmail: string }> {
-  const { apiKey, fromEmail } = await getResendCredentials();
+  const { apiKey } = await getResendCredentials();
   return {
     client: new Resend(apiKey),
-    fromEmail: fromEmail || "Luxor PDF Secure <licenses@luxorpdf.com>",
+    fromEmail: FROM_ADDRESS,
   };
 }
 
