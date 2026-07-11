@@ -10,7 +10,7 @@ type Plan = {
   /** Toggled plans expose monthly/yearly prices. */
   monthlyPrice?: number;
   yearlyPrice?: number;
-  /** Flat-rate plan (Business) — single price, not affected by the toggle. */
+  /** Flat-rate plan (Premium) — single price, not affected by the toggle. */
   flatPrice?: number;
   /** Non-priced plans (Enterprise) display this label instead of a number. */
   priceLabel?: string;
@@ -39,11 +39,11 @@ const CHECKOUT_BASE = "/pdf-expiry/checkout";
 const PLANS: Plan[] = [
   {
     id: "individual",
-    name: "Individual",
+    name: "Starter",
     tagline: "For solo professionals securing their own documents.",
     monthlyPrice: 9,
     yearlyPrice: 7,
-    cta: "Get Individual",
+    cta: "Get Starter",
     checkoutPlan: { monthly: "monthly", yearly: "yearly" },
     secureLimit: "10 secure actions / month",
     limits: "1 user · Commercial use",
@@ -57,20 +57,20 @@ const PLANS: Plan[] = [
   },
   {
     id: "team",
-    name: "Team",
+    name: "Pro",
     tagline: "For teams that share and protect documents together.",
     monthlyPrice: 29,
     yearlyPrice: 23,
-    cta: "Get Team",
+    cta: "Get Pro",
     checkoutPlan: "team",
     highlight: true,
     badge: "Most popular",
     secureLimit: "50 secure actions / month",
     limits: "Per seat · Commercial use",
     features: [
-      "Everything in Individual, plus:",
+      "Everything in Starter, plus:",
       "Shared monthly secure pool across the team",
-      "Team licenses & admin console",
+      "Pro licenses & admin console",
       "5 users · 10 devices",
       "SSO & audit logs",
       "Priority support",
@@ -78,15 +78,15 @@ const PLANS: Plan[] = [
   },
   {
     id: "business",
-    name: "Business",
+    name: "Premium",
     tagline: "Unlimited secure actions for high-volume orgs.",
     flatPrice: 99,
-    cta: "Get Business",
+    cta: "Get Premium",
     checkoutPlan: "business",
     secureLimit: "Unlimited secure actions",
     limits: "Per org · Commercial use",
     features: [
-      "Everything in Team, plus:",
+      "Everything in Pro, plus:",
       "Unlimited secure actions every month",
       "10 users · 20 devices",
       "Advanced admin & usage analytics",
@@ -104,7 +104,7 @@ const PLANS: Plan[] = [
     secureLimit: "Custom secure quota",
     limits: "Custom terms",
     features: [
-      "Everything in Business, plus:",
+      "Everything in Premium, plus:",
       "Custom monthly secure quota",
       "Custom contracts & invoicing",
       "Dedicated SSO & SAML",
@@ -114,8 +114,8 @@ const PLANS: Plan[] = [
   },
 ];
 
-/** Column order matches PLANS: Individual, Team, Business, Enterprise. */
-const COMPARE_COLUMNS = ["Individual", "Team", "Business", "Enterprise"] as const;
+/** Column order matches PLANS: Starter, Pro, Premium, Enterprise. */
+const COMPARE_COLUMNS = ["Starter", "Pro", "Premium", "Enterprise"] as const;
 
 type CompareValue = string;
 type CompareRow = { feature: string; values: [CompareValue, CompareValue, CompareValue, CompareValue]; emphasize?: boolean };
@@ -169,7 +169,7 @@ const COMPARE_GROUPS: CompareGroup[] = [
 const FAQS = [
   {
     q: "What counts as a secure action?",
-    a: "Secure actions are the metered premium operations: password-protecting a PDF, setting an expiry date, revoking access, and applying copy or print restrictions. They all draw from one shared monthly pool — Individual gets 10/month, Team 50/month, and Business is unlimited. General tools (convert, merge, split, view) are always unlimited on every paid plan.",
+    a: "Secure actions are the metered premium operations: password-protecting a PDF, setting an expiry date, revoking access, and applying copy or print restrictions. They all draw from one shared monthly pool — Starter gets 10/month, Pro 50/month, and Premium is unlimited. General tools (convert, merge, split, view) are always unlimited on every paid plan.",
   },
   {
     q: "When does my monthly quota reset?",
@@ -189,7 +189,7 @@ const FAQS = [
   },
   {
     q: "Do you offer Enterprise or custom quotas?",
-    a: "Yes. Business gives you unlimited secure actions out of the box. For custom monthly quotas, SSO/SAML, on-prem deployment, or procurement terms, contact our sales team for an Enterprise plan.",
+    a: "Yes. Premium gives you unlimited secure actions out of the box. For custom monthly quotas, SSO/SAML, on-prem deployment, or procurement terms, contact our sales team for an Enterprise plan.",
   },
   {
     q: "Which platforms are supported?",
@@ -240,7 +240,7 @@ function CompareGroupRows({ group }: { group: CompareGroup }) {
           {row.values.map((value, i) => (
             <td
               key={i}
-              className={`px-4 py-3 text-center ${COMPARE_COLUMNS[i] === "Team" ? "bg-[#EAF2FB]/40" : ""}`}
+              className={`px-4 py-3 text-center ${COMPARE_COLUMNS[i] === "Pro" ? "bg-[#EAF2FB]/40" : ""}`}
             >
               <CompareCell value={value} />
             </td>
@@ -453,11 +453,11 @@ export default function PricingPage() {
                     <th
                       key={col}
                       className={`text-center font-semibold px-4 py-4 ${
-                        col === "Team" ? "text-[#312E81] bg-[#EAF2FB]" : "text-slate-900"
+                        col === "Pro" ? "text-[#312E81] bg-[#EAF2FB]" : "text-slate-900"
                       }`}
                     >
                       {col}
-                      {col === "Team" && (
+                      {col === "Pro" && (
                         <span className="block text-[10px] font-bold uppercase tracking-wider text-[#FB7185]">
                           Most popular
                         </span>
