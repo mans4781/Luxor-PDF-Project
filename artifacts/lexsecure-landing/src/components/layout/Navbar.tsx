@@ -214,17 +214,27 @@ export function Navbar() {
                           {col.title}
                         </p>
                         <ul className="space-y-0.5">
-                          {col.tools.map((tool) => (
-                            <li key={tool.href}>
-                              <a
-                                href={tool.href}
-                                onClick={() => setToolsOpen(false)}
-                                className="block rounded-lg px-2 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-slate-50 hover:text-[#312E81] transition-colors truncate"
-                              >
-                                {tool.label}
-                              </a>
-                            </li>
-                          ))}
+                          {col.tools.map((tool) => {
+                            const Icon = tool.icon;
+                            return (
+                              <li key={tool.href}>
+                                <a
+                                  href={tool.href}
+                                  onClick={() => setToolsOpen(false)}
+                                  className="group/tool flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-slate-50 hover:text-[#312E81] transition-colors"
+                                >
+                                  <span
+                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset ring-black/5 transition-transform duration-150 group-hover/tool:scale-110"
+                                    style={{ backgroundColor: `${tool.color}1A`, color: tool.color }}
+                                    aria-hidden="true"
+                                  >
+                                    <Icon className="h-3.5 w-3.5" />
+                                  </span>
+                                  <span className="truncate">{tool.label}</span>
+                                </a>
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
                     ))}
