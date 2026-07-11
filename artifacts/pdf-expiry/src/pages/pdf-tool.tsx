@@ -70,7 +70,7 @@ function FileDropZone({
   const inputRef = useRef<HTMLInputElement>(null);
   const accentDrop = useAccentDrop();
   const c = accentDrop ? { ...accentDrop, icon: "text-white" } : dropColors[colorScheme];
-  const upload = useUploadAuthGate();
+  const upload = useUploadAuthGate({ bypass: true });
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -158,7 +158,7 @@ async function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
 
 function MergeTab() {
   const accentBtn = useAccentBtn("from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700");
-  const guard = useGuardedAction();
+  const guard = useGuardedAction({ bypass: true });
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -256,7 +256,7 @@ function MergeTab() {
 
 function SplitTab() {
   const accentBtn = useAccentBtn("from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700");
-  const guard = useGuardedAction();
+  const guard = useGuardedAction({ bypass: true });
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -383,7 +383,7 @@ function SplitTab() {
 
 function ExtractTab() {
   const accentBtn = useAccentBtn("from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700");
-  const guard = useGuardedAction();
+  const guard = useGuardedAction({ bypass: true });
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
@@ -597,7 +597,7 @@ function ExtractTab() {
 
 function DeleteTab() {
   const accentBtn = useAccentBtn("from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700");
-  const guard = useGuardedAction();
+  const guard = useGuardedAction({ bypass: true });
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
@@ -827,7 +827,7 @@ const PAGE_SIZES: Record<BlankSize, [number, number]> = {
 
 function AddTab() {
   const accentBtn = useAccentBtn("from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700");
-  const guard = useGuardedAction();
+  const guard = useGuardedAction({ bypass: true });
   const [hostFile, setHostFile] = useState<File | null>(null);
   const [hostPageCount, setHostPageCount] = useState<number | null>(null);
 

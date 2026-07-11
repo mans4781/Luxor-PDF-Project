@@ -86,7 +86,8 @@ export interface GuardedRunOptions {
  * Returns the action's resolved value, or `undefined` when the action was
  * blocked (a toast is shown automatically).
  */
-export function useGuardedAction() {
+export function useGuardedAction(options: { bypass?: boolean } = {}) {
+  const { bypass = false } = options;
   const { toast } = useToast();
   const qc = useQueryClient();
   const { signedIn, offline, status, clientLockReason } = useLicense();
@@ -99,6 +100,10 @@ export function useGuardedAction() {
       fn: ActionFn<T>,
       opts: GuardedRunOptions = {},
     ): Promise<T | undefined> => {
+      // Free tools run without any license check or usage recording.
+      if (bypass) {
+        return await fn();
+      }
       if (!signedIn) {
         toast({
           title: "Sign in required",
@@ -205,6 +210,7 @@ export function useGuardedAction() {
       return result;
     },
     [
+      bypass,
       signedIn,
       offline,
       status,

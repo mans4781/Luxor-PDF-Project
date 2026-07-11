@@ -30,13 +30,19 @@ import { basePath } from "@/lib/base-path";
  *   <input onChange={(e) => upload.requireAuth(() => handleChange(e))} />
  *   {upload.modal}
  */
-export function useUploadAuthGate() {
+export function useUploadAuthGate(options: { bypass?: boolean } = {}) {
+  const { bypass = false } = options;
   const { isLoaded, isSignedIn } = useUser();
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
 
   const requireAuth = useCallback(
     (fn: () => void) => {
+      // Free tools opt out of the sign-in gate entirely.
+      if (bypass) {
+        fn();
+        return;
+      }
       // While Clerk loads we treat the user as anon — safer to show
       // the modal than to allow an unauthenticated upload to slip
       // through.
@@ -46,7 +52,7 @@ export function useUploadAuthGate() {
       }
       fn();
     },
-    [isLoaded, isSignedIn],
+    [isLoaded, isSignedIn, bypass],
   );
 
   const redirectUrl =

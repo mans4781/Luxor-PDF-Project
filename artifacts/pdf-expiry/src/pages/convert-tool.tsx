@@ -122,7 +122,7 @@ function DropZone({
   const c = accentDrop
     ? { ...accentDrop, icon: "text-white" }
     : convertDropColors[colorScheme];
-  const upload = useUploadAuthGate();
+  const upload = useUploadAuthGate({ bypass: true });
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -191,7 +191,7 @@ const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "imag
 
 function ImagesToPdf() {
   const accentBtn = useAccentBtn("from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700");
-  const guard = useGuardedAction();
+  const guard = useGuardedAction({ bypass: true });
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -288,7 +288,7 @@ function ImagesToPdf() {
 
 function WordToPdf() {
   const accentBtn = useAccentBtn("from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800");
-  const guard = useGuardedAction();
+  const guard = useGuardedAction({ bypass: true });
   const [file, setFile] = useState<File | null>(null);
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -466,7 +466,7 @@ function WordToPdf() {
 
 function ExcelToPdf() {
   const accentBtn = useAccentBtn("from-lime-600 to-green-700 hover:from-lime-700 hover:to-green-800");
-  const guard = useGuardedAction();
+  const guard = useGuardedAction({ bypass: true });
   const [file, setFile] = useState<File | null>(null);
   const [sheetCount, setSheetCount] = useState<number | null>(null);
   const [done, setDone] = useState(false);
@@ -658,7 +658,7 @@ type ImageFormatValue = typeof IMAGE_FORMATS[number]["value"];
 
 function PdfToImages() {
   const accentBtn = useAccentBtn("from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600");
-  const guard = useGuardedAction();
+  const guard = useGuardedAction({ bypass: true });
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [scale, setScale] = useState<number>(2);
@@ -863,7 +863,7 @@ function PdfToImages() {
 // ─── PDF → Word ───────────────────────────────────────────────────────────────
 
 function PdfToWord() {
-  const guard = useGuardedAction();
+  const guard = useGuardedAction({ bypass: true });
   const accentBtn = useAccentBtn("from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600");
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
@@ -1110,7 +1110,7 @@ function PdfToWord() {
 // ─── PDF → Excel ──────────────────────────────────────────────────────────────
 
 function PdfToExcel() {
-  const guard = useGuardedAction();
+  const guard = useGuardedAction({ bypass: true });
   const accentBtn = useAccentBtn("from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800");
   const [file, setFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);

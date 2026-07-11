@@ -26,3 +26,16 @@ expiry-protected PDFs for free.
 **How to apply:** any future secure-only server action (new secure routes) must carry
 its own server-side paid check via `getLicenseStatus(userId).isPaid`, not rely on the
 usage endpoints.
+
+# Online tools (Edit/Convert/Compress) are FREE — no sign-in, no quota
+
+The client-side online tools (`pdf-tool`, `convert-tool`, `compress-pdf`) are free for
+everyone. They opt out of both gates by passing `{ bypass: true }` to
+`useUploadAuthGate` and `useGuardedAction` (both hooks default `bypass:false`).
+`secure-pdf` (Password & Expiry) deliberately does NOT bypass — it stays paid/gated.
+
+**Why:** these tools run fully in the browser (no server work), so gating them added no
+security value; only the secure/expiry flow (which writes server-side) needs enforcement.
+
+**How to apply:** never globally neuter the two gate hooks — flip `bypass` only at the
+free tools' call sites. Keep `secure-pdf` un-bypassed.

@@ -5,13 +5,11 @@ import {
   FileInput,
   Minimize2,
   ArrowRight,
-  Lock,
   Zap,
   ShieldCheck,
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { goToSignIn, goToSignUp } from "@/lib/authUrls";
 
 /**
  * Online Tools landing page.
@@ -21,11 +19,9 @@ import { goToSignIn, goToSignUp } from "@/lib/authUrls";
  * is reserved for the Luxor PDF Secure desktop app.
  *
  * Each "Open tool" CTA links to the corresponding route inside the
- * `pdf-expiry` artifact. That artifact enforces:
- *   - Sign-in is mandatory (anonymous users are redirected to /sign-in
- *     with a redirect_url back to the requested tool).
- *   - Free accounts get a 5-actions-per-day shared quota across all
- *     tools, enforced server-side in `getLicenseStatus` / `recordUsage`.
+ * `pdf-expiry` artifact. These tools are free for everyone: no sign-in
+ * and no usage quota (the upload/guard gates are bypassed for them).
+ * Only "Secure your PDF" (password & expiry) remains paid/gated.
  */
 
 const SUITE_BASE = "/pdf-expiry";
@@ -110,17 +106,16 @@ export default function OnlineToolsPage() {
               Online PDF Tools
             </h1>
             <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-              Edit, convert and compress your PDFs straight from the web.
-              Sign in to use any tool — your free account includes{" "}
+              Edit, convert and compress your PDFs straight from the web —{" "}
               <span className="font-semibold text-[#1E1B4B]">
-                2 free actions every 24 hours
-              </span>{" "}
-              across the whole suite.
+                free for everyone
+              </span>
+              , with no account or sign-in required.
             </p>
 
-            <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
-              <Lock className="w-3.5 h-3.5" />
-              Sign-in required · Free account is enough
+            <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <Zap className="w-3.5 h-3.5" />
+              Free to use · No sign-in needed
             </div>
           </motion.div>
         </section>
@@ -165,7 +160,7 @@ export default function OnlineToolsPage() {
           </div>
         </section>
 
-        {/* ── Why sign-in / quota strip ────────────────────────── */}
+        {/* ── Free & private strip ─────────────────────────────── */}
         <section className="container mx-auto px-6 max-w-5xl mt-20">
           <motion.div
             initial="hidden"
@@ -174,36 +169,16 @@ export default function OnlineToolsPage() {
             variants={FADE_UP}
             className="rounded-2xl bg-gradient-to-br from-[#312E81] via-[#3730A3] to-[#2563EB] p-8 md:p-10 text-white shadow-xl shadow-[#312E81]/20"
           >
-            <div className="grid md:grid-cols-3 gap-6 items-center">
-              <div className="md:col-span-2">
-                <h2 className="text-2xl font-bold">
-                  Why we ask you to sign in
-                </h2>
-                <p className="mt-2 text-white/80 leading-relaxed">
-                  Your account is what tracks the 2-action daily quota and
-                  keeps your work history available across devices. New
-                  here? Creating an account takes 30 seconds — no credit
-                  card required.
-                </p>
-              </div>
-              <div className="flex md:flex-col gap-3 md:items-end">
-                <button
-                  type="button"
-                  onClick={goToSignUp}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-white text-[#312E81] font-semibold px-5 py-2.5 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
-                  data-testid="online-tools-create-account"
-                >
-                  Create free account
-                </button>
-                <button
-                  type="button"
-                  onClick={goToSignIn}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-white/10 text-white font-semibold px-5 py-2.5 border border-white/30 hover:bg-white/20 transition-all"
-                  data-testid="online-tools-sign-in"
-                >
-                  I already have an account
-                </button>
-              </div>
+            <div className="max-w-2xl">
+              <h2 className="text-2xl font-bold">
+                Free, and it stays in your browser
+              </h2>
+              <p className="mt-2 text-white/80 leading-relaxed">
+                Every tool here is free to use — no account, no sign-in and
+                no daily limits. Your files are processed right in your
+                browser, so nothing is uploaded to a server just to edit,
+                convert or compress a PDF.
+              </p>
             </div>
           </motion.div>
         </section>
