@@ -235,7 +235,7 @@ export function Navbar() {
                       href="/online-tools"
                       onClick={() => setToolsOpen(false)}
                       data-testid="mega-link-all-tools"
-                      className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#312E81] hover:underline"
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1754F4] hover:underline"
                     >
                       <Grid3x3 className="w-4 h-4" />
                       Browse all tools
