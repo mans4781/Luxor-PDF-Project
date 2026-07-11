@@ -2118,6 +2118,8 @@ export default function PDFPage({
           data-quick-bar
           ref={quickBarRef}
           onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          onMouseUp={(e) => { e.stopPropagation(); }}
+          onTouchEnd={(e) => { e.stopPropagation(); }}
           style={{
             position: "absolute",
             left: quickBar.x,
