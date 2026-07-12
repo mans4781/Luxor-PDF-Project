@@ -415,6 +415,9 @@ export default function Home3Page() {
                   <br />
                   <span className="text-[#16A34A]">eSign</span>
                 </h3>
+                <span className="ml-auto self-start rounded-full bg-[#16A34A]/10 border border-[#16A34A]/25 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#15803D]">
+                  Coming soon
+                </span>
               </div>
               <p className="text-[13px] text-slate-600 mb-4">
                 Legally binding eSignatures made simple and secure.
