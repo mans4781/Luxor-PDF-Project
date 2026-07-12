@@ -21,6 +21,7 @@ const AdminPage = lazy(() => import("@/pages/admin"));
 const FeaturesPage = lazy(() => import("@/pages/features"));
 const DownloadPage = lazy(() => import("@/pages/download"));
 const BrandPage = lazy(() => import("@/pages/brand"));
+const ContactPage = lazy(() => import("@/pages/contact"));
 const DeveloperLoginPage = lazy(() => import("@/pages/developer/login"));
 const DeveloperDashboardPage = lazy(() => import("@/pages/developer/dashboard"));
 const NotFound = lazy(() => import("@/pages/not-found"));
@@ -54,6 +55,7 @@ function Router() {
       <Route path="/about-2" component={AboutPage} />
       <Route path="/web-app" component={WebAppPage} />
       <Route path="/about" component={AboutPage} />
+      <Route path="/contact" component={ContactPage} />
       <Route path="/privacy" component={PrivacyPage} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/cookies" component={CookiesPage} />

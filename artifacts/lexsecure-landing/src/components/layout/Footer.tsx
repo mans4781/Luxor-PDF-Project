@@ -214,7 +214,7 @@ export function Footer() {
         <div className="flex flex-col gap-4 border-t border-slate-200/80 py-7 text-sm md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-3 text-slate-700">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900">
-              <ShieldCheck className="h-4.5 w-4.5 h-[18px] w-[18px] text-white" />
+              <ShieldCheck className="h-[18px] w-[18px] text-white" />
             </span>
             <span className="font-semibold">Enterprise-grade security</span>
             <span aria-hidden="true" className="text-slate-300">

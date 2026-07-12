@@ -112,10 +112,10 @@ export function CTA() {
                 <Button
                   asChild
                   size="lg"
-                  className="h-13 rounded-xl bg-[#2563EB] px-7 text-base font-semibold text-white shadow-lg shadow-blue-600/25 hover:bg-[#1D4ED8]"
+                  className="h-[52px] rounded-xl bg-[#2563EB] px-7 text-base font-semibold text-white shadow-lg shadow-blue-600/25 hover:bg-[#1D4ED8]"
                 >
                   <Link href="/download">
-                    <Download className="mr-1 h-4.5 w-4.5 h-[18px] w-[18px]" />
+                    <Download className="mr-1 h-[18px] w-[18px]" />
                     Download Luxor PDF
                   </Link>
                 </Button>
@@ -123,7 +123,7 @@ export function CTA() {
                   asChild
                   size="lg"
                   variant="outline"
-                  className="h-13 rounded-xl border-[#bfd3f8] bg-white px-7 text-base font-semibold text-[#2563EB] hover:bg-blue-50 hover:text-[#1D4ED8]"
+                  className="h-[52px] rounded-xl border-[#bfd3f8] bg-white px-7 text-base font-semibold text-[#2563EB] hover:bg-blue-50 hover:text-[#1D4ED8]"
                 >
                   <Link href="/pricing">
                     <Crown className="mr-1 h-[18px] w-[18px]" />
