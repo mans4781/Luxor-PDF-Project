@@ -299,6 +299,14 @@ export default function Home3Page() {
 
         {/* ============================== PRODUCTS ============================== */}
         <section id="products" className="py-14 bg-white scroll-mt-20">
+          <motion.div {...fadeUp} className="container mx-auto max-w-6xl px-6 text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: NAVY }}>
+              One Suite. <span className="text-[#DC2626]">Three Powerful Apps.</span>
+            </h2>
+            <p className="mt-3 text-slate-600 text-base md:text-lg max-w-2xl mx-auto">
+              Read, eSign, and protect your PDFs with dedicated apps that work seamlessly under a single Luxor account.
+            </p>
+          </motion.div>
           <div className="container mx-auto max-w-6xl px-6 grid md:grid-cols-3 gap-6">
             {/* Reader */}
             <motion.div
