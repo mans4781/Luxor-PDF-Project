@@ -423,11 +423,11 @@ export default function Toolbar({
 
   const TABS: { key: RibbonTab; label: string; show?: boolean }[] = [
     { key: "home",    label: "Home" },
-    { key: "comment", label: "Comment" },
-    { key: "edit",    label: "Edit" },
     { key: "view",    label: "View" },
-    { key: "protect", label: "Protect" },
     { key: "tools",   label: "Tools" },
+    { key: "edit",    label: "Edit" },
+    { key: "comment", label: "Comment" },
+    { key: "protect", label: "Protect" },
     { key: "ai",      label: "AI Assistant", show: showAI },
   ];
 
