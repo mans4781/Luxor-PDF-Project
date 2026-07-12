@@ -151,7 +151,7 @@ export function Footer() {
             </p>
             <a
               href="mailto:support@luxorpdf.com"
-              className="mt-5 inline-flex items-center gap-2.5 rounded-lg text-sm text-slate-700 hover:text-[#DC2626] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DC2626] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="mt-5 inline-flex items-center gap-2.5 rounded-lg text-sm font-semibold text-[#DC2626] hover:text-[#B91C1C] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DC2626] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             >
               <span className="flex h-7 w-9 items-center justify-center rounded-md bg-[#fde2e2] ring-1 ring-[#f6c6c6]">
                 <Mail className="h-4 w-4 text-[#DC2626]" />
