@@ -44,25 +44,14 @@ function CheckItem({ text, color }: { text: string; color: string }) {
   );
 }
 
-function AppBadge({
-  bg,
-  label,
-  sub,
-  icon,
-}: {
-  bg: string;
-  label: string;
-  sub?: string;
-  icon?: React.ReactNode;
-}) {
+function AppIcon({ src, alt }: { src: string; alt: string }) {
   return (
-    <div
-      className="w-16 h-16 rounded-2xl shadow-lg flex flex-col items-center justify-center text-white shrink-0"
-      style={{ background: bg }}
-    >
-      {icon ?? <FileText className="w-5 h-5 mb-0.5" />}
-      <span className="text-[9px] font-extrabold leading-none mt-1">{label}</span>
-      {sub && <span className="text-[7px] font-bold opacity-90 leading-none mt-0.5">{sub}</span>}
+    <div className="w-16 h-16 rounded-2xl shadow-lg bg-white ring-1 ring-slate-900/5 overflow-hidden shrink-0 flex items-center justify-center">
+      <img
+        src={`${import.meta.env.BASE_URL}brand/${src}`}
+        alt={alt}
+        className="w-full h-full object-contain"
+      />
     </div>
   );
 }
@@ -148,36 +137,25 @@ export default function Home2Page() {
                             About <span className="text-[#DC2626]">LuxorPDF</span>
                           </div>
                           <div className="flex gap-3">
-                            <div className="flex-1 space-y-1.5 pt-1">
-                              {[100, 92, 96, 84, 90, 70].map((w, i) => (
-                                <div
-                                  key={i}
-                                  className="h-1.5 bg-slate-200 rounded-full"
-                                  style={{ width: `${w}%` }}
-                                />
-                              ))}
-                            </div>
-                            {/* red building visual */}
-                            <div className="w-20 h-24 rounded-md overflow-hidden shrink-0 relative bg-gradient-to-b from-sky-200 to-sky-100">
-                              <div className="absolute bottom-0 left-2 w-10 h-16 bg-gradient-to-b from-[#E05252] to-[#B91C1C] rounded-t-sm">
-                                <div className="grid grid-cols-3 gap-[3px] p-[3px] pt-1.5">
-                                  {Array.from({ length: 9 }).map((_, i) => (
-                                    <span key={i} className="h-[5px] bg-white/70 rounded-[1px]" />
-                                  ))}
-                                </div>
-                              </div>
-                              <div className="absolute bottom-0 right-1 w-5 h-9 bg-slate-300 rounded-t-sm" />
-                            </div>
+                            <p className="flex-1 text-[7px] leading-[1.6] text-slate-500 pt-0.5">
+                              LuxorPDF was founded with a single goal — to make working with
+                              documents effortless for everyone. From reading and annotating to
+                              securing and signing, our tools are designed to keep your workflow
+                              simple, fast, and safe. Today, teams in over 120 countries rely on
+                              LuxorPDF to move their most important documents forward with
+                              confidence.
+                            </p>
+                            {/* red building photo */}
+                            <img
+                              src={`${import.meta.env.BASE_URL}brand/home2-building.png`}
+                              alt="LuxorPDF headquarters building"
+                              className="w-20 h-24 rounded-md object-cover shrink-0"
+                            />
                           </div>
-                          <div className="mt-3 space-y-1.5">
-                            {[95, 88, 60].map((w, i) => (
-                              <div
-                                key={i}
-                                className="h-1.5 bg-slate-200 rounded-full"
-                                style={{ width: `${w}%` }}
-                              />
-                            ))}
-                          </div>
+                          <p className="mt-2.5 text-[7px] leading-[1.6] text-slate-500">
+                            Every product we ship follows one principle: powerful features should
+                            never come at the cost of simplicity. That is the LuxorPDF promise.
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -295,23 +273,18 @@ export default function Home2Page() {
                           <br />
                           <span className="text-[#DC2626]">Confidence</span>
                         </div>
-                        <div className="mt-3 space-y-1.5">
-                          {[90, 80, 85, 60].map((w, i) => (
-                            <div key={i} className="h-1.5 bg-slate-200 rounded-full" style={{ width: `${w}%` }} />
-                          ))}
-                        </div>
+                        <p className="mt-3 text-[7px] leading-[1.6] text-slate-500">
+                          Great documents deserve a great reader. Open any PDF instantly, mark it
+                          up with highlights and comments, and share it with your team — all in a
+                          clean, distraction-free workspace built for focus.
+                        </p>
                       </div>
-                      {/* mountain visual */}
-                      <div className="w-24 h-28 rounded-md overflow-hidden shrink-0 relative bg-gradient-to-b from-sky-300 via-sky-200 to-slate-100">
-                        <div
-                          className="absolute bottom-0 left-0 right-0 h-14 bg-slate-500"
-                          style={{ clipPath: "polygon(0 100%, 25% 30%, 45% 70%, 65% 10%, 85% 60%, 100% 35%, 100% 100%)" }}
-                        />
-                        <div
-                          className="absolute bottom-0 left-0 right-0 h-14 bg-white/80"
-                          style={{ clipPath: "polygon(60% 18%, 65% 10%, 70% 20%, 65% 26%)" }}
-                        />
-                      </div>
+                      {/* mountain photo */}
+                      <img
+                        src={`${import.meta.env.BASE_URL}brand/home2-mountain.png`}
+                        alt="Mountain landscape inside a PDF document"
+                        className="w-24 h-28 rounded-md object-cover shrink-0"
+                      />
                     </div>
                   </div>
                 </Laptop>
@@ -325,24 +298,21 @@ export default function Home2Page() {
                       <br />
                       <span className="text-[#DC2626]">Confidence</span>
                     </div>
-                    <div className="mt-1.5 space-y-1">
-                      {[100, 85, 70].map((w, i) => (
-                        <div key={i} className="h-1 bg-slate-200 rounded-full" style={{ width: `${w}%` }} />
-                      ))}
-                    </div>
-                    <div className="mt-2 h-10 rounded bg-gradient-to-b from-sky-300 to-slate-100 relative overflow-hidden">
-                      <div
-                        className="absolute bottom-0 left-0 right-0 h-6 bg-slate-500"
-                        style={{ clipPath: "polygon(0 100%, 30% 20%, 55% 65%, 75% 10%, 100% 50%, 100% 100%)" }}
-                      />
-                    </div>
+                    <p className="mt-1.5 text-[5px] leading-[1.6] text-slate-500">
+                      Read, annotate and share PDFs on the go with the same smooth experience.
+                    </p>
+                    <img
+                      src={`${import.meta.env.BASE_URL}brand/home2-mountain.png`}
+                      alt="Mountain landscape on mobile PDF"
+                      className="mt-2 h-10 w-full rounded object-cover"
+                    />
                   </div>
                 </div>
               </div>
 
               {/* copy */}
               <div>
-                <AppBadge bg="linear-gradient(135deg,#EF4444,#B91C1C)" label="LUXOR" sub="PDF" />
+                <AppIcon src="product-reader.png" alt="Luxor PDF Reader icon" />
                 <h3 className="text-2xl lg:text-3xl font-extrabold mt-5 mb-3" style={{ color: NAVY }}>
                   Luxor <span className="text-[#DC2626]">PDF Reader</span>
                 </h3>
@@ -379,7 +349,7 @@ export default function Home2Page() {
             >
               {/* copy */}
               <div className="order-2 lg:order-1">
-                <AppBadge bg="linear-gradient(135deg,#3B82F6,#1D4ED8)" label="LUXOR" sub="PDF SEC" icon={<Lock className="w-5 h-5" />} />
+                <AppIcon src="product-secure.png" alt="Luxor PDF Secure icon" />
                 <h3 className="text-2xl lg:text-3xl font-extrabold mt-5 mb-3" style={{ color: NAVY }}>
                   Luxor <span className="text-[#2563EB]">PDF Secure</span>
                 </h3>
@@ -492,11 +462,12 @@ export default function Home2Page() {
                       <div className="text-[7px] text-slate-500 mb-2">
                         This Sales Agreement (&quot;Agreement&quot;) is made and entered into…
                       </div>
-                      <div className="space-y-1.5 mb-3">
-                        {[100, 94, 88].map((w, i) => (
-                          <div key={i} className="h-1.5 bg-slate-200 rounded-full" style={{ width: `${w}%` }} />
-                        ))}
-                      </div>
+                      <p className="text-[7px] leading-[1.6] text-slate-500 mb-3">
+                        The Seller agrees to deliver the goods described herein, and the Buyer
+                        agrees to accept and pay for them under the terms set out below. Both
+                        parties confirm they are authorized to enter into this Agreement and that
+                        all schedules attached form part of it.
+                      </p>
                       <div className="text-[8px] text-slate-600 font-semibold mb-1">12 May 2026</div>
                       <div className="border-t border-slate-300 w-24 pt-1">
                         <svg viewBox="0 0 100 30" className="w-20 h-6 text-slate-800">
@@ -546,7 +517,7 @@ export default function Home2Page() {
 
               {/* copy */}
               <div>
-                <AppBadge bg="linear-gradient(135deg,#22C55E,#15803D)" label="eSign" icon={<PenLine className="w-5 h-5" />} />
+                <AppIcon src="product-esign.png" alt="Luxor PDF eSign icon" />
                 <h3 className="text-2xl lg:text-3xl font-extrabold mt-5 mb-3" style={{ color: NAVY }}>
                   Luxor <span className="text-[#16A34A]">PDF eSign</span>
                 </h3>

@@ -210,6 +210,18 @@ uri = "file://artifacts/lexsecure-landing/public/brand/about-solution-shield.png
 type = "image"
 title = "Light airy 3D crystal shield"
 
+[[generated]]
+id = "AcOXcQ-g4lLupMEQTFoLM"
+uri = "file://artifacts/lexsecure-landing/public/brand/home2-building.png"
+type = "image"
+title = "red office building photo"
+
+[[generated]]
+id = "epCueEOVFQkSLQBlrxxNW"
+uri = "file://artifacts/lexsecure-landing/public/brand/home2-mountain.png"
+type = "image"
+title = "mountain landscape photo"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
