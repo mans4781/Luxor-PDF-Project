@@ -92,7 +92,7 @@ export default function Home3Page() {
                   className="text-4xl lg:text-[46px] font-extrabold leading-[1.12] mb-5"
                   style={{ color: NAVY }}
                 >
-                  Smarter PDF Reading, Security &amp; eSigning —{" "}
+                  Smarter PDF Reading, Editing &amp; Security —{" "}
                   <span className="text-[#DC2626]">All in One Place</span>
                 </h1>
                 <p className="text-[16px] text-slate-600 leading-relaxed max-w-md mb-7">
