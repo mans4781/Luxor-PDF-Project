@@ -11,7 +11,7 @@ export default function InvestPage() {
       effectiveDate="12 July 2026"
       lastUpdated="12 July 2026"
       markdown={investmentMarkdown}
-      footNote="Luxor PDF is a brand of Fairnova Labs Private Limited."
+      footNote="Luxor PDF is a brand of Fairnova Labs."
     />
   );
 }

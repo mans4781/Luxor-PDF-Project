@@ -3,7 +3,7 @@ Luxor PDF is building a modern document platform designed to make PDF reading, e
 
 Our goal is to create an accessible, secure and user-friendly alternative to complicated and expensive document software.
 
-**Luxor PDF is a brand owned and operated by Fairnova Labs Private Limited.**
+**Luxor PDF is a brand owned and operated by Fairnova Labs.**
 
 ---
 
@@ -140,7 +140,7 @@ We value investors and strategic partners who:
 * Support international expansion; and
 * Contribute meaningful strategic value.
 
-Any potential investment opportunity will be considered carefully based on strategic alignment, long-term value and the interests of Luxor PDF, its users and Fairnova Labs Private Limited.
+Any potential investment opportunity will be considered carefully based on strategic alignment, long-term value and the interests of Luxor PDF, its users and Fairnova Labs.
 
 ---
 
