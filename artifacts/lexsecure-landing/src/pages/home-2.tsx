@@ -218,7 +218,7 @@ export default function Home2Page() {
                 { icon: BadgeCheck, label: "Trusted by\nThousands", color: "#9333EA", bg: "bg-purple-50", border: "border-purple-100" },
               ].map(({ icon: Icon, label, color, bg, border }) => (
                 <div key={label} className="flex flex-col items-center text-center gap-3">
-                  <div className={`w-14 h-14 rounded-2xl ${bg} border ${border} flex items-center justify-center`}>
+                  <div className={`w-14 h-14 rounded-lg ${bg} border ${border} flex items-center justify-center`}>
                     <Icon className="w-6 h-6" style={{ color }} />
                   </div>
                   <div className="text-[13px] font-semibold text-slate-800 whitespace-pre-line leading-snug">
