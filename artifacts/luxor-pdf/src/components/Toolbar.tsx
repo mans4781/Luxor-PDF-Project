@@ -299,7 +299,7 @@ const Icons = {
   compress: <svg {...S.common}><polyline points="4 9 9 9 9 4"/><polyline points="20 15 15 15 15 20"/><path d="M9 9L3 3"/><path d="M15 15l6 6"/></svg>,
   fitWidth: <svg {...S.common}><polyline points="7 8 3 12 7 16"/><polyline points="17 8 21 12 17 16"/><line x1="3" y1="12" x2="21" y2="12"/></svg>,
   fitPage: <svg {...S.common}><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>,
-  fullscreen: <svg {...S.common}><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>,
+  fullscreen: <svg {...S.common}><path d="M15 3h6v6"/><path d="M21 3l-6.5 6.5"/><path d="M9 3H3v6"/><path d="M3 3l6.5 6.5"/><path d="M15 21h6v-6"/><path d="M21 21l-6.5-6.5"/><path d="M9 21H3v-6"/><path d="M3 21l6.5-6.5"/></svg>,
   rotateCw: <svg {...S.common}><path d="M21 2v6h-6"/><path d="M21 8C19.6 5 16.8 3 13.5 3 8.8 3 5 6.8 5 11.5S8.8 20 13.5 20c3.3 0 6.2-2 7.6-5"/></svg>,
   rotateCcw: <svg {...S.common}><path d="M3 2v6h6"/><path d="M3 8c1.4-3 4.2-5 7.5-5C15.2 3 19 6.8 19 11.5S15.2 20 10.5 20c-3.3 0-6.2-2-7.6-5"/></svg>,
   info: <svg {...S.common}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>,
