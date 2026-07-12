@@ -78,7 +78,12 @@ export default function Home({ onFileLoad }: HomeProps) {
         <AuthMenu iconOnly variant="dark" onSignIn={beginSignIn} onSignUp={beginSignUp} />
       </div>
       <div className="home-logo-area">
-        <div className="home-logo">L</div>
+        <img
+          className="home-logo"
+          src={`${import.meta.env.BASE_URL}brand/luxor-icon.png`}
+          alt="Luxor PDF logo"
+          draggable={false}
+        />
         <div className="home-title">Luxor PDF Reader</div>
         <div className="home-sub">Professional annotations. Zero clutter.</div>
       </div>

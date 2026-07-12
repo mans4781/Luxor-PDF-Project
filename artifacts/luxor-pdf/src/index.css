@@ -290,17 +290,17 @@ html, body, #root {
   flex-shrink: 0;
 }
 
-.toolbar-brand-icon {
-  width: 20px;
-  height: 20px;
-  background: #DC2626;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  color: white;
-  font-weight: 800;
+.toolbar-brand-logo {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  border-radius: 5px;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.toolbar-brand-name {
+  letter-spacing: 0.2px;
 }
 
 .toolbar-menu-word {
@@ -834,11 +834,11 @@ mark.search-hl {
 
 .home-logo {
   width: 56px; height: 56px;
-  background: #DC2626;
+  object-fit: contain;
   border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 24px; color: white; font-weight: 800;
   box-shadow: 0 4px 20px rgba(220,38,38,0.4);
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .home-title { color: #fff; font-size: 26px; font-weight: 700; letter-spacing: -0.3px; }

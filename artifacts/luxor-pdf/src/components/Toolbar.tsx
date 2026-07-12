@@ -998,8 +998,13 @@ export default function Toolbar({
       {/* ── Row 1: menu strip ─────────────────────────────────── */}
       <div className="luxor-menu-strip">
         <div className="toolbar-brand">
-          <span className="toolbar-brand-icon">L</span>
-          Luxor PDF
+          <img
+            className="toolbar-brand-logo"
+            src={`${import.meta.env.BASE_URL}brand/luxor-icon.png`}
+            alt="Luxor PDF logo"
+            draggable={false}
+          />
+          <span className="toolbar-brand-name">Luxor PDF</span>
         </div>
 
         {/* File dropdown */}
