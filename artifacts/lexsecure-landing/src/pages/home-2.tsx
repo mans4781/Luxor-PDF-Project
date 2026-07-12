@@ -12,6 +12,8 @@ import {
   FileText,
   Type,
   Image as ImageIcon,
+  MousePointer2,
+  MoreHorizontal,
   Link2,
   Crop,
   Droplets,
@@ -91,71 +93,132 @@ export default function Home2Page() {
             }}
           />
           <div className="container mx-auto max-w-6xl px-6 pt-12 lg:pt-16 pb-16">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-12 items-center">
               {/* Left copy */}
               <motion.div {...fadeUp}>
-                <div className="text-xs font-extrabold tracking-[0.2em] text-[#DC2626] uppercase mb-4">
+                <div className="text-sm font-extrabold tracking-[0.2em] text-[#DC2626] uppercase mb-4">
                   About Us
                 </div>
                 <h1
-                  className="text-4xl lg:text-[44px] font-extrabold leading-[1.15] mb-6"
+                  className="text-[40px] lg:text-[52px] font-extrabold leading-[1.12] mb-6"
                   style={{ color: NAVY }}
                 >
                   Powerful PDF Solutions,
                   <br />
                   Built for Everyone
                 </h1>
-                <p className="text-[15px] text-slate-600 leading-relaxed max-w-md">
+                <p className="text-[17px] lg:text-lg text-slate-600 leading-relaxed max-w-lg">
                   At LuxorPDF, we believe PDFs should be simple, secure, and seamless. That&apos;s
                   why we build smart, reliable tools that help individuals and businesses work with
                   PDFs more efficiently — every day.
                 </p>
+
+                {/* Feature icon row */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-12">
+                  {[
+                    { icon: ShieldCheck, label: "Secure &\nReliable", color: "#DC2626", bg: "bg-red-50", border: "border-red-100" },
+                    { icon: Rocket, label: "Fast &\nEfficient", color: "#2563EB", bg: "bg-blue-50", border: "border-blue-100" },
+                    { icon: Users, label: "User First\nDesign", color: "#16A34A", bg: "bg-green-50", border: "border-green-100" },
+                    { icon: BadgeCheck, label: "Trusted by\nThousands", color: "#9333EA", bg: "bg-purple-50", border: "border-purple-100" },
+                  ].map(({ icon: Icon, label, color, bg, border }) => (
+                    <div key={label} className="flex flex-col items-start text-left gap-3">
+                      <div className={`w-[60px] h-[60px] rounded-lg ${bg} border ${border} flex items-center justify-center`}>
+                        <Icon className="w-7 h-7" style={{ color }} />
+                      </div>
+                      <div className="text-[15px] font-bold text-slate-800 whitespace-pre-line leading-snug">
+                        {label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </motion.div>
 
               {/* Right: laptop with editing tools */}
               <motion.div {...fadeUp} className="relative">
-                <Laptop className="max-w-lg mx-auto">
+                <Laptop className="max-w-2xl mx-auto">
                   <div className="aspect-[16/10] bg-slate-100 relative">
-                    {/* window chrome */}
-                    <div className="h-7 bg-white border-b border-slate-200 flex items-center px-3 gap-1.5">
+                    {/* window chrome + app toolbar */}
+                    <div className="h-8 bg-white border-b border-slate-200 flex items-center px-3 gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-red-400" />
                       <span className="w-2 h-2 rounded-full bg-amber-400" />
                       <span className="w-2 h-2 rounded-full bg-green-400" />
-                      <div className="ml-3 flex-1 max-w-[200px] h-3.5 bg-slate-100 rounded-full" />
+                      <span className="ml-3 text-[10px] font-extrabold tracking-tight text-[#DC2626]">
+                        LUXOR<span className="text-slate-800">PDF</span>
+                      </span>
+                      <div className="ml-4 hidden sm:flex items-center gap-3">
+                        {["Home", "Organize", "Convert", "Protect", "Share"].map((t, i) => (
+                          <span
+                            key={t}
+                            className={`text-[8px] font-semibold ${i === 0 ? "text-[#DC2626]" : "text-slate-500"}`}
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="ml-auto flex items-center gap-1.5">
+                        {[0, 1, 2, 3].map((i) => (
+                          <span key={i} className="w-3.5 h-3.5 rounded bg-slate-100 border border-slate-200" />
+                        ))}
+                      </div>
                     </div>
-                    <div className="absolute inset-x-0 top-7 bottom-0 flex">
-                      {/* thumbnails rail */}
-                      <div className="w-12 bg-white border-r border-slate-200 p-1.5 space-y-1.5 hidden sm:block">
-                        {[0, 1, 2].map((i) => (
-                          <div key={i} className="h-10 bg-slate-100 rounded border border-slate-200" />
+                    <div className="absolute inset-x-0 top-8 bottom-0 flex">
+                      {/* vertical tools rail */}
+                      <div className="w-14 bg-white border-r border-slate-200 py-2 flex-col items-center gap-2 hidden sm:flex">
+                        {[
+                          { icon: MousePointer2, label: "Edit", active: true },
+                          { icon: MessageSquare, label: "Comment" },
+                          { icon: Type, label: "Text" },
+                          { icon: ImageIcon, label: "Image" },
+                          { icon: PenLine, label: "Sign" },
+                          { icon: MoreHorizontal, label: "More" },
+                        ].map(({ icon: Icon, label, active }) => (
+                          <div key={label} className="flex flex-col items-center gap-0.5">
+                            <div
+                              className={`w-7 h-7 rounded-md flex items-center justify-center ${
+                                active ? "bg-red-50 border border-red-100" : ""
+                              }`}
+                            >
+                              <Icon className={`w-3.5 h-3.5 ${active ? "text-[#DC2626]" : "text-slate-400"}`} />
+                            </div>
+                            <span className={`text-[6px] font-semibold ${active ? "text-[#DC2626]" : "text-slate-400"}`}>
+                              {label}
+                            </span>
+                          </div>
                         ))}
                       </div>
                       {/* document */}
-                      <div className="flex-1 p-4 overflow-hidden">
-                        <div className="bg-white rounded-lg shadow-md h-full p-5">
-                          <div className="text-[13px] font-extrabold mb-2" style={{ color: NAVY }}>
-                            About <span className="text-[#DC2626]">LuxorPDF</span>
+                      <div className="flex-1 p-5 overflow-hidden">
+                        <div className="bg-white rounded-lg shadow-md h-full p-6">
+                          <div className="text-[15px] font-extrabold mb-0.5" style={{ color: NAVY }}>
+                            About
                           </div>
-                          <div className="flex gap-3">
-                            <p className="flex-1 text-[7px] leading-[1.6] text-slate-500 pt-0.5">
-                              LuxorPDF was founded with a single goal — to make working with
-                              documents effortless for everyone. From reading and annotating to
-                              securing and signing, our tools are designed to keep your workflow
-                              simple, fast, and safe. Today, teams in over 120 countries rely on
-                              LuxorPDF to move their most important documents forward with
-                              confidence.
-                            </p>
+                          <div className="text-[19px] font-extrabold text-[#DC2626] mb-2.5">LuxorPDF</div>
+                          <div className="flex gap-4">
+                            <div className="flex-1">
+                              <p className="text-[8px] leading-[1.7] text-slate-500">
+                                LuxorPDF was founded with a single goal — to make working with
+                                documents effortless for everyone. From reading and annotating to
+                                securing and signing, our tools are designed to keep your workflow
+                                simple, fast, and safe.
+                              </p>
+                              <p className="mt-2 text-[8px] leading-[1.7] text-slate-500">
+                                Today, teams in over 120 countries rely on LuxorPDF to move their
+                                most important documents forward with confidence — from small
+                                studios to global enterprises.
+                              </p>
+                              <p className="mt-2 text-[8px] leading-[1.7] text-slate-500">
+                                Every product we ship follows one principle: powerful features
+                                should never come at the cost of simplicity. That is the LuxorPDF
+                                promise.
+                              </p>
+                            </div>
                             {/* red building photo */}
                             <img
                               src={`${import.meta.env.BASE_URL}brand/home2-building.png`}
                               alt="LuxorPDF headquarters building"
-                              className="w-20 h-24 rounded-md object-cover shrink-0"
+                              className="w-28 h-36 rounded-md object-cover shrink-0"
                             />
                           </div>
-                          <p className="mt-2.5 text-[7px] leading-[1.6] text-slate-500">
-                            Every product we ship follows one principle: powerful features should
-                            never come at the cost of simplicity. That is the LuxorPDF promise.
-                          </p>
                         </div>
                       </div>
                     </div>
@@ -193,40 +256,20 @@ export default function Home2Page() {
                   transition={{ delay: 0.45, duration: 0.6 }}
                   className="absolute -bottom-3 right-8 bg-white rounded-xl shadow-xl border border-slate-100 px-3 py-2 flex items-center gap-2"
                 >
-                  <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <MessageSquare className="w-3 h-3 text-emerald-600" />
+                  <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
                   </div>
-                  <div>
-                    <div className="text-[10px] font-bold text-slate-800 leading-tight">
+                  <div className="pr-2">
+                    <div className="text-[11px] font-bold text-slate-800 leading-tight">
                       Team Comment
                     </div>
-                    <div className="text-[9px] text-slate-500 leading-tight">Great content!</div>
+                    <div className="text-[10px] text-slate-500 leading-tight">Great content!</div>
+                    <div className="text-[8px] text-slate-400 leading-tight mt-0.5">Just now</div>
                   </div>
+                  <span className="self-start text-slate-300 text-[10px] font-bold leading-none">✕</span>
                 </motion.div>
               </motion.div>
             </div>
-
-            {/* Feature icon row */}
-            <motion.div
-              {...fadeUp}
-              className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-14 max-w-3xl"
-            >
-              {[
-                { icon: ShieldCheck, label: "Secure &\nReliable", color: "#DC2626", bg: "bg-red-50", border: "border-red-100" },
-                { icon: Rocket, label: "Fast &\nEfficient", color: "#2563EB", bg: "bg-blue-50", border: "border-blue-100" },
-                { icon: Users, label: "User First\nDesign", color: "#16A34A", bg: "bg-green-50", border: "border-green-100" },
-                { icon: BadgeCheck, label: "Trusted by\nThousands", color: "#9333EA", bg: "bg-purple-50", border: "border-purple-100" },
-              ].map(({ icon: Icon, label, color, bg, border }) => (
-                <div key={label} className="flex flex-col items-center text-center gap-3">
-                  <div className={`w-14 h-14 rounded-lg ${bg} border ${border} flex items-center justify-center`}>
-                    <Icon className="w-6 h-6" style={{ color }} />
-                  </div>
-                  <div className="text-[13px] font-semibold text-slate-800 whitespace-pre-line leading-snug">
-                    {label}
-                  </div>
-                </div>
-              ))}
-            </motion.div>
           </div>
         </section>
 
