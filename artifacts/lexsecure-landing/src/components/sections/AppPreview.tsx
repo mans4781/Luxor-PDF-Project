@@ -105,7 +105,7 @@ function SecureAppMockup() {
           <img
             src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260712b`}
             alt=""
-            className="w-9 h-9 rounded-lg object-contain"
+            className="h-9 w-auto object-contain"
             draggable={false}
           />
           <div className="leading-tight">
@@ -289,7 +289,7 @@ function ReaderAppMockup() {
           <img
             src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260712b`}
             alt=""
-            className="w-9 h-9 rounded-lg object-contain"
+            className="h-9 w-auto object-contain"
             draggable={false}
           />
           <div className="leading-tight">

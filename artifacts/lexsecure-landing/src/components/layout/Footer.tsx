@@ -137,7 +137,7 @@ export function Footer() {
               <img
                 src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260712b`}
                 alt=""
-                className="h-11 w-11 select-none transition-transform duration-300 group-hover:scale-105"
+                className="h-11 w-auto select-none transition-transform duration-300 group-hover:scale-105"
                 draggable={false}
               />
               <div className="text-[28px] font-black tracking-tight">
