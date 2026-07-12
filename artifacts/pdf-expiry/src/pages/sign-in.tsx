@@ -290,7 +290,7 @@ export default function SignInPage() {
   return (
     <div className="min-h-[100dvh] bg-[#eef0f4] px-4 py-6 sm:px-8">
       {/* Back to home */}
-      <div className="mx-auto max-w-[1080px] mb-3">
+      <div className="w-full mb-3">
         <a
           href="/"
           className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 hover:text-[#DC2626] transition-colors"
@@ -302,7 +302,7 @@ export default function SignInPage() {
       </div>
 
       {/* ── Main rounded panel ─────────────────────────────────────────── */}
-      <div className="relative mx-auto max-w-[1080px] overflow-hidden rounded-[28px] bg-[#fafafc] shadow-xl shadow-slate-300/40 border border-white">
+      <div className="relative w-full overflow-hidden rounded-[28px] bg-[#fafafc] shadow-xl shadow-slate-300/40 border border-white">
         <DotGrid className="top-6 right-8" />
         <DotGrid className="bottom-8 left-6" />
         <div
@@ -751,7 +751,7 @@ export default function SignInPage() {
       </div>
 
       {/* ── Trust bar ──────────────────────────────────────────────────── */}
-      <div className="mx-auto mt-8 max-w-[900px]">
+      <div className="w-full mt-8">
         <div className="grid grid-cols-2 sm:grid-cols-4">
           {TRUST_ITEMS.map(({ icon: Icon, top, bottom }, i) => (
             <div
