@@ -226,15 +226,12 @@ export function Footer() {
           </div>
           <div className="text-center text-slate-600 md:text-right">
             <div>
-              © {new Date().getFullYear()} Fairnova Labs Private Limited. All
-              rights reserved.
+              Copyright © {new Date().getFullYear()}. Luxor PDF. All rights
+              reserved
             </div>
             <div className="mt-1">
               Luxor PDF is a brand of{" "}
-              <span className="font-bold text-[#2563EB]">
-                Fairnova Labs Private Limited
-              </span>
-              .
+              <span className="font-bold text-[#2563EB]">Fairnova Labs</span>
             </div>
           </div>
         </div>
