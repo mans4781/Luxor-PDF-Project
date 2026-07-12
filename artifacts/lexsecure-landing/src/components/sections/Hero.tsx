@@ -51,7 +51,7 @@ export function Hero() {
               <Button
                 size="lg"
                 onClick={goToSignUp}
-                className="w-full sm:w-auto h-12 px-7 text-base font-semibold bg-[#312E81] hover:bg-[#3730A3] text-white rounded-lg shadow-sm group"
+                className="w-full sm:w-auto h-12 px-7 text-base font-semibold bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded-lg shadow-sm group"
               >
                 Start free
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />

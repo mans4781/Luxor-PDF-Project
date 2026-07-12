@@ -277,7 +277,7 @@ export function Navbar() {
           </Button>
           <Button
             onClick={goToSignUp}
-            className="text-[15px] font-semibold bg-[#312E81] hover:bg-[#3730A3] text-white shadow-md shadow-[#312E81]/20 hover:shadow-lg hover:shadow-[#312E81]/30 hover:-translate-y-0.5 rounded-lg hidden sm:inline-flex transition-all duration-200"
+            className="text-[15px] font-semibold bg-[#DC2626] hover:bg-[#B91C1C] text-white shadow-md shadow-[#DC2626]/20 hover:shadow-lg hover:shadow-[#DC2626]/30 hover:-translate-y-0.5 rounded-lg hidden sm:inline-flex transition-all duration-200"
           >
             Start free →
           </Button>
