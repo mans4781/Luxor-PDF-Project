@@ -262,7 +262,7 @@ export default function Home({ onFileLoad }: HomeProps) {
           <div className="lxh-side-sep" />
           <button className="lxh-side-item">{Ic.grid()}Tools</button>
           <div className="lxh-side-brand">
-            <img src={`${import.meta.env.BASE_URL}brand/luxor-icon.png`} alt="" draggable={false} />
+            <img src={`${import.meta.env.BASE_URL}brand/luxor-shield.png`} alt="" draggable={false} />
             <div className="lxh-brand-name">LUXOR</div>
             <div className="lxh-brand-sub">PDF READER</div>
             <div className="lxh-brand-tag">Smart. Fast. Secure.</div>
