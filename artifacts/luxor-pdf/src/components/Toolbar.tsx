@@ -198,6 +198,8 @@ interface ToolbarProps {
   onToggleFullscreen: () => void;
   activePanel: PanelKey | null;
   onOpenPanel: (p: PanelKey) => void;
+  /** Comment ribbon: open the sticky-note comment popup on the current text selection. */
+  onAddComment: () => void;
   onOpenSettings: () => void;
   showOCR: boolean;
   showAI: boolean;
@@ -283,6 +285,7 @@ const Icons = {
   stop: <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>,
   screenshot: <svg {...S.common}><path d="M4 8V6a2 2 0 0 1 2-2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M20 16v2a2 2 0 0 1-2 2h-2"/><path d="M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>,
   notes: <svg {...S.common}><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="13" y2="12"/></svg>,
+  stickyNote: <svg {...S.common}><path d="M4 4h16v10l-6 6H4z"/><path d="M14 20v-6h6"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="12" y2="13"/></svg>,
   editText: <svg {...S.common}><path d="M4 7h12M10 7v12"/><path d="M16.5 14.5l3 3-3 3-3-0 0-3 3-3z"/></svg>,
   image: <svg {...S.common}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>,
   whiteout: <svg {...S.common}><rect x="3" y="6" width="18" height="12" rx="1" strokeDasharray="3 2.5"/></svg>,
@@ -382,7 +385,7 @@ export default function Toolbar({
   onFileSaveAs, onFileSaveCopy, onFileClose,
   theme, onThemeChange,
   onFitWidth, onFitPage, onRotateCw, onRotateCcw, isFullscreen, onToggleFullscreen,
-  activePanel, onOpenPanel, onOpenSettings, showOCR, showAI,
+  activePanel, onOpenPanel, onAddComment, onOpenSettings, showOCR, showAI,
 }: ToolbarProps) {
   const { beginSignIn, beginSignUp } = useAuthGate();
   const [popover, setPopover] = useState<PopoverType>(null);
@@ -833,6 +836,13 @@ export default function Toolbar({
           {eraseAllBtn}
         </RibbonGroup>
         <RibbonGroup label="Review">
+          <RibbonBtn
+            icon={Icons.stickyNote}
+            label="Comment"
+            title="Add a sticky-note comment to the selected text (or select text and right-click)"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={onAddComment}
+          />
           <RibbonBtn
             icon={Icons.notes}
             label="Notes"

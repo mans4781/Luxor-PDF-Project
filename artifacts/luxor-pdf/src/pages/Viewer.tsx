@@ -203,6 +203,30 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   const [pageNoOpen, setPageNoOpen] = useState(false);
   const [compressOpen, setCompressOpen] = useState(false);
   const [screenshotActive, setScreenshotActive] = useState(false);
+  /* Ribbon "Comment" button: bumping this counter tells the page that owns
+   * the current text selection to open the sticky-note comment popup. */
+  const [commentRequest, setCommentRequest] = useState(0);
+  const [commentHint, setCommentHint] = useState(false);
+  const commentHintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleAddComment = useCallback(() => {
+    const sel = window.getSelection();
+    const selText = sel?.toString().trim();
+    /* The selection must live inside a PDF page, otherwise no page would
+     * respond to the request and the button would silently do nothing. */
+    const anchor = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).commonAncestorContainer : null;
+    const anchorEl = anchor instanceof Element ? anchor : anchor?.parentElement ?? null;
+    const insidePage = !!anchorEl?.closest(".pdf-page-wrapper");
+    if (!selText || !insidePage) {
+      setCommentHint(true);
+      if (commentHintTimer.current) clearTimeout(commentHintTimer.current);
+      commentHintTimer.current = setTimeout(() => setCommentHint(false), 2800);
+      return;
+    }
+    setCommentRequest(n => n + 1);
+  }, []);
+  useEffect(() => () => {
+    if (commentHintTimer.current) clearTimeout(commentHintTimer.current);
+  }, []);
   const [downloading, setDownloading] = useState(false);
   const [sharing, setSharing] = useState(false);
   // Non-null when the browser lacks the system share sheet — holds the
@@ -1309,11 +1333,28 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         onToggleFullscreen={toggleFullscreen}
         activePanel={activePanel}
         onOpenPanel={handleOpenPanel}
+        onAddComment={handleAddComment}
         onOpenSettings={() => setSettingsOpen(true)}
         showOCR={settings.enableOCR}
         showAI={settings.enableAI}
       />
       <StatusBar viewControls={viewControls} fileName={file.name} />
+
+      {/* Transient hint when Comment ribbon button is used with no text selected. */}
+      {commentHint && (
+        <div
+          style={{
+            position: "fixed", top: 118, left: "50%", transform: "translateX(-50%)",
+            background: "var(--lux-surface, #2a2a2e)", color: "var(--lux-text, #e0e0e0)",
+            border: "1px solid rgba(128,128,128,0.35)",
+            borderRadius: 8, padding: "8px 14px", fontSize: 13,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.25)", zIndex: 300,
+            pointerEvents: "none",
+          }}
+        >
+          Select some text in the document first, then press Comment.
+        </div>
+      )}
 
       {/* Hidden file input for Edit → Add Image. */}
       <input
@@ -1616,6 +1657,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
                     onAnnotationRemove={removeAnnotation}
                     isCurrentPage={left === currentPage} onVisible={handlePageVisible}
                     onSearchTermChange={handleSearchFromContext}
+                    commentRequest={commentRequest}
                     watermark={watermarkCfg} pageNo={pageNoCfg}
                     totalPages={totalPages} currentPage={currentPage}
                     formFillMode={formFillMode}
@@ -1634,6 +1676,7 @@ defaultPageSize={defaultPageSize}
                       onAnnotationRemove={removeAnnotation}
                       isCurrentPage={right === currentPage} onVisible={handlePageVisible}
                       onSearchTermChange={handleSearchFromContext}
+                      commentRequest={commentRequest}
                       watermark={watermarkCfg} pageNo={pageNoCfg}
                       totalPages={totalPages} currentPage={currentPage}
                       formFillMode={formFillMode}
@@ -1658,6 +1701,7 @@ defaultPageSize={defaultPageSize}
                 onAnnotationRemove={removeAnnotation}
                 isCurrentPage={pageNum === currentPage} onVisible={handlePageVisible}
                 onSearchTermChange={handleSearchFromContext}
+                commentRequest={commentRequest}
                 watermark={watermarkCfg} pageNo={pageNoCfg}
                 totalPages={totalPages} currentPage={currentPage}
                 formFillMode={formFillMode}

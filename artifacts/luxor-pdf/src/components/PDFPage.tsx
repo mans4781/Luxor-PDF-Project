@@ -88,6 +88,10 @@ interface PDFPageProps {
   isCurrentPage: boolean;
   onVisible: (page: number) => void;
   onSearchTermChange?: (term: string) => void;
+  /** Increment to request the sticky-note comment popup to open on the
+   *  current text selection (ribbon "Comment" button). Only the page that
+   *  owns the selection responds. */
+  commentRequest?: number;
   watermark?: import("@/lib/editTypes").WatermarkConfig | null;
   pageNo?: import("@/lib/editTypes").PageNoConfig | null;
   totalPages?: number;
@@ -879,6 +883,7 @@ export default function PDFPage({
   watermark, pageNo, totalPages, currentPage,
   formFillMode,
   defaultPageSize,
+  commentRequest,
 }: PDFPageProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const pageCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -1014,6 +1019,32 @@ export default function PDFPage({
       document.removeEventListener("mousedown", onClickOutside);
     };
   }, [tool, pageSize, getSelectionRects]);
+
+  /* Ribbon "Comment" button: open the sticky-note comment popup on the
+   * current text selection. Only the page that owns the selection gets a
+   * non-null result from getSelectionRects, so exactly one page responds. */
+  const lastCommentReq = useRef(commentRequest ?? 0);
+  useEffect(() => {
+    const req = commentRequest ?? 0;
+    if (req === lastCommentReq.current) return;
+    lastCommentReq.current = req;
+    const wrapper = wrapperRef.current;
+    const sel = window.getSelection();
+    if (!wrapper || !sel || sel.rangeCount === 0) return;
+    const anchor = sel.getRangeAt(0).commonAncestorContainer;
+    if (!wrapper.contains(anchor)) return;
+    const result = getSelectionRects();
+    if (!result || !result.rects.length) return;
+    const first = result.rects[0];
+    setContextMenu({
+      x: Math.min(first.x * pageSize.w, Math.max(0, pageSize.w - 180)),
+      y: Math.min((first.y + first.height) * pageSize.h + 6, Math.max(0, pageSize.h - 200)),
+      selectedText: result.text,
+      rects: result.rects,
+    });
+    setHlSubmenuOpen(false);
+    setCommentInput({ open: true, text: "" });
+  }, [commentRequest, getSelectionRects, pageSize]);
 
   useEffect(() => {
     const el = wrapperRef.current;
