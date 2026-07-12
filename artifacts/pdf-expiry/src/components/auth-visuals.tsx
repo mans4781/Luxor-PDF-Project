@@ -117,14 +117,12 @@ export function LuxorLogoLockup() {
       aria-label="Luxor PDF — home"
       data-testid="link-logo-home"
     >
-      <span className="flex h-[53px] w-[53px] items-center justify-center rounded-xl bg-red-50 shadow-sm ring-1 ring-red-300">
-        <img
-          src={`${baseUrl}brand/luxor-icon.png?v=20260712b`}
-          alt=""
-          className="h-[39px] w-[39px] select-none"
-          draggable={false}
-        />
-      </span>
+      <img
+        src={`${baseUrl}brand/luxor-icon.png?v=20260712b`}
+        alt=""
+        className="h-[53px] w-auto select-none"
+        draggable={false}
+      />
       <span>
         <span className="block text-[26px] font-black tracking-tight leading-none">
           <span className="text-[#1e3a8a]">Luxor</span>{" "}
