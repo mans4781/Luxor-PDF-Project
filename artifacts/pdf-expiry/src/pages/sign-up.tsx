@@ -1,5 +1,5 @@
-import { FormEvent, useState } from "react";
-import { HandleSSOCallback, useSignUp } from "@clerk/react";
+import { FormEvent, useEffect, useState } from "react";
+import { HandleSSOCallback, useAuth, useSignUp } from "@clerk/react";
 import { Link, useLocation } from "wouter";
 import {
   ArrowRight,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { basePath } from "@/lib/base-path";
+import { authRedirectTarget } from "@/lib/auth-redirect";
 import {
   AppleIcon,
   AuthFooter,
@@ -47,10 +48,21 @@ function splitFullName(fullName: string): { firstName: string; lastName?: string
 
 export default function SignUpPage() {
   const { signUp, errors, fetchStatus } = useSignUp();
+  const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const [, setLocation] = useLocation();
   const isSsoCallback =
     typeof window !== "undefined" &&
     window.location.pathname.includes("/sign-up/sso-callback");
+
+  // Already signed in in this browser (e.g. the desktop-app handoff opened
+  // this page in a session that has an account) — skip the form and go
+  // straight to the redirect target so the flow can complete.
+  useEffect(() => {
+    if (isSsoCallback) return;
+    if (authLoaded && isSignedIn) {
+      window.location.replace(authRedirectTarget());
+    }
+  }, [authLoaded, isSignedIn, isSsoCallback]);
 
   const [tab, setTab] = useState<Tab>("email");
   const [fullName, setFullName] = useState("");
@@ -70,7 +82,7 @@ export default function SignUpPage() {
   const finishSignUp = async () => {
     await signUp.finalize({
       navigate: ({ decorateUrl }) => {
-        window.location.href = decorateUrl(basePath || "/");
+        window.location.href = decorateUrl(authRedirectTarget());
       },
     });
   };
@@ -154,10 +166,11 @@ export default function SignUpPage() {
     strategy: "oauth_google" | "oauth_microsoft" | "oauth_apple",
   ) => {
     setLocalError(null);
+    const target = authRedirectTarget();
     const { error } = await signUp.sso({
       strategy,
-      redirectUrl: `${window.location.origin}${basePath || "/"}`,
-      redirectCallbackUrl: `${window.location.origin}${basePath}/sign-up/sso-callback`,
+      redirectUrl: `${window.location.origin}${target}`,
+      redirectCallbackUrl: `${window.location.origin}${basePath}/sign-up/sso-callback?redirect_url=${encodeURIComponent(target)}`,
     });
     if (error) {
       setLocalError(
@@ -171,7 +184,7 @@ export default function SignUpPage() {
       <div className="min-h-[100dvh] flex items-center justify-center bg-[#fafafc]">
         <HandleSSOCallback
           navigateToApp={({ decorateUrl }) => {
-            window.location.href = decorateUrl(basePath || "/");
+            window.location.href = decorateUrl(authRedirectTarget());
           }}
           navigateToSignIn={() => setLocation("/sign-in")}
           navigateToSignUp={() => setLocation("/sign-up")}
