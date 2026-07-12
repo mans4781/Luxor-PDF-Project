@@ -151,7 +151,7 @@ export function AuthMenu({
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               title="Account"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#d9b24a] via-[#b8892e] to-[#8a6420] text-white shadow-md shadow-[#b8892e]/30 ring-2 ring-[#f3e3b3]/70 transition-all hover:shadow-lg hover:shadow-[#b8892e]/40 hover:scale-105"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e4e4e7] text-[#52525b] shadow-sm ring-1 ring-black/10 transition-all hover:bg-[#d4d4d8] hover:shadow-md hover:scale-105"
             >
               <UserRound className="h-[18px] w-[18px]" strokeWidth={2.4} />
             </button>
