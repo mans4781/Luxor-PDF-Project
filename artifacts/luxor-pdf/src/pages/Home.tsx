@@ -78,7 +78,28 @@ function HeroIllustration() {
   return (
     <div style={{ position: "relative", width: 230, height: 185, display: "flex", alignItems: "center", justifyContent: "center" }} aria-hidden="true">
       <svg width="230" height="185" viewBox="0 0 260 210" fill="none" style={{ position: "absolute", inset: 0 }}>
-        <ellipse cx="130" cy="118" rx="112" ry="78" fill="#fdecec" opacity="0.65"/>
+        <g opacity="0.55" fill="#fbdfe1">
+          <circle cx="130" cy="50" r="30"/>
+          <circle cx="186" cy="70" r="30"/>
+          <circle cx="210" cy="118" r="30"/>
+          <circle cx="186" cy="166" r="30"/>
+          <circle cx="130" cy="186" r="30"/>
+          <circle cx="74" cy="166" r="30"/>
+          <circle cx="50" cy="118" r="30"/>
+          <circle cx="74" cy="70" r="30"/>
+          <circle cx="130" cy="118" r="58"/>
+        </g>
+        <g opacity="0.65" fill="#fdecec">
+          <circle cx="130" cy="62" r="28"/>
+          <circle cx="178" cy="78" r="28"/>
+          <circle cx="198" cy="118" r="28"/>
+          <circle cx="178" cy="158" r="28"/>
+          <circle cx="130" cy="174" r="28"/>
+          <circle cx="82" cy="158" r="28"/>
+          <circle cx="62" cy="118" r="28"/>
+          <circle cx="82" cy="78" r="28"/>
+          <circle cx="130" cy="118" r="52"/>
+        </g>
         <path d="M40 150c18-30 8-52 28-64" stroke="#e6e9ee" strokeWidth="7" strokeLinecap="round" opacity="0.7"/>
         <path d="M215 155c-16-24-4-46-22-60" stroke="#e6e9ee" strokeWidth="7" strokeLinecap="round" opacity="0.7"/>
         <path d="M56 60l0 12M50 66l12 0" stroke="#eda6ac" strokeWidth="2.4" strokeLinecap="round"/>
