@@ -18,6 +18,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Rect { x: number; y: number; w: number; h: number; }
 
+interface Stroke {
+  color: string;
+  width: number;
+  points: { x: number; y: number }[];
+}
+
+/** Pen swatches for marking up a captured screenshot. */
+const PEN_COLORS = ["#E23636", "#0D62F2", "#12A150", "#F5A623", "#9B51E0", "#111111", "#FFFFFF"];
+
 interface ScreenshotOverlayProps {
   /** Original PDF file name, used to build the download filename. */
   fileName: string;
@@ -46,6 +55,117 @@ export default function ScreenshotOverlay({ fileName, currentPage, onClose }: Sc
   const [preview, setPreview] = useState<{ url: string; page: number } | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ── Markup (paint) state ───────────────────────────────────────────────
+  const [editMode, setEditMode] = useState(false);
+  const [penColor, setPenColor] = useState("#E23636");
+  const [penWidth, setPenWidth] = useState(4);
+  const [strokes, setStrokes] = useState<Stroke[]>([]);
+  // The captured PNG must be decoded before the canvas holds real pixels;
+  // export + drawing are gated on this so we never emit a blank canvas.
+  const [imageReady, setImageReady] = useState(false);
+  const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const previewImgRef = useRef<HTMLImageElement | null>(null);
+  const liveStrokeRef = useRef<Stroke | null>(null);
+
+  const drawStroke = useCallback((ctx: CanvasRenderingContext2D, s: Stroke) => {
+    if (s.points.length === 0) return;
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = s.width;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(s.points[0].x, s.points[0].y);
+    for (let i = 1; i < s.points.length; i++) ctx.lineTo(s.points[i].x, s.points[i].y);
+    if (s.points.length === 1) ctx.lineTo(s.points[0].x + 0.01, s.points[0].y + 0.01);
+    ctx.stroke();
+  }, []);
+
+  /** Repaint the preview canvas: base screenshot + all committed strokes. */
+  const redrawPreview = useCallback(() => {
+    const cv = previewCanvasRef.current;
+    const img = previewImgRef.current;
+    if (!cv || !img) return;
+    const ctx = cv.getContext("2d");
+    if (!ctx) return;
+    cv.width = img.naturalWidth;
+    cv.height = img.naturalHeight;
+    ctx.drawImage(img, 0, 0);
+    for (const s of strokes) drawStroke(ctx, s);
+  }, [strokes, drawStroke]);
+
+  // Load the captured PNG into an Image once per capture. The cancelled
+  // flag stops a late onload from an older capture clobbering a newer one.
+  useEffect(() => {
+    previewImgRef.current = null;
+    setImageReady(false);
+    setStrokes([]);
+    setEditMode(false);
+    if (!preview) return;
+    let cancelled = false;
+    const img = new Image();
+    img.onload = () => {
+      if (cancelled) return;
+      previewImgRef.current = img;
+      setImageReady(true);
+    };
+    img.src = preview.url;
+    return () => { cancelled = true; };
+  }, [preview]);
+
+  // Repaint whenever the base image becomes ready or strokes change.
+  useEffect(() => { if (imageReady) redrawPreview(); }, [imageReady, redrawPreview]);
+
+  /** Map a pointer event to canvas-bitmap coordinates. */
+  const toCanvasPoint = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const cv = previewCanvasRef.current!;
+    const r = cv.getBoundingClientRect();
+    return {
+      x: (e.clientX - r.left) * (cv.width / r.width),
+      y: (e.clientY - r.top) * (cv.height / r.height),
+    };
+  };
+
+  const onDrawDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!editMode || !imageReady || e.button !== 0) return;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    const p = toCanvasPoint(e);
+    liveStrokeRef.current = { color: penColor, width: penWidth, points: [p] };
+    const ctx = previewCanvasRef.current?.getContext("2d");
+    if (ctx && liveStrokeRef.current) drawStroke(ctx, liveStrokeRef.current);
+  };
+  const onDrawMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const s = liveStrokeRef.current;
+    if (!editMode || !s) return;
+    const p = toCanvasPoint(e);
+    const prev = s.points[s.points.length - 1];
+    s.points.push(p);
+    const ctx = previewCanvasRef.current?.getContext("2d");
+    if (ctx) {
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = s.width;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(prev.x, prev.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    }
+  };
+  const onDrawUp = () => {
+    const s = liveStrokeRef.current;
+    liveStrokeRef.current = null;
+    if (s && s.points.length > 0) setStrokes(list => [...list, s]);
+  };
+
+  /** Current preview (with markup) as a PNG data URL. */
+  const exportUrl = useCallback((): string | null => {
+    const cv = previewCanvasRef.current;
+    // Only trust the canvas once the base image has actually been painted;
+    // otherwise fall back to the raw capture so Save/Copy are never blank.
+    if (imageReady && cv && cv.width > 0) return cv.toDataURL("image/png");
+    return preview?.url ?? null;
+  }, [preview, imageReady]);
 
   const finishSelection = useCallback((rect: Rect) => {
     if (rect.w < MIN_SIZE || rect.h < MIN_SIZE) { setSel(null); return; }
@@ -174,16 +294,20 @@ export default function ScreenshotOverlay({ fileName, currentPage, onClose }: Sc
 
   const download = useCallback(() => {
     if (!preview) return;
+    const url = exportUrl();
+    if (!url) return;
     const a = document.createElement("a");
-    a.href = preview.url;
+    a.href = url;
     a.download = `${baseName(fileName)}-screenshot-p${preview.page}.png`;
     a.click();
-  }, [preview, fileName]);
+  }, [preview, fileName, exportUrl]);
 
   const copy = useCallback(async () => {
     if (!preview) return;
     try {
-      const blob = await (await fetch(preview.url)).blob();
+      const url = exportUrl();
+      if (!url) throw new Error("no-image");
+      const blob = await (await fetch(url)).blob();
       if (typeof ClipboardItem === "undefined" || !navigator.clipboard?.write) {
         throw new Error("unsupported");
       }
@@ -191,9 +315,9 @@ export default function ScreenshotOverlay({ fileName, currentPage, onClose }: Sc
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
     } catch {
-      setError("Copy isn't supported in this browser — use Download instead.");
+      setError("Copy isn't supported in this browser — use Save instead.");
     }
-  }, [preview]);
+  }, [preview, exportUrl]);
 
   return (
     <div
@@ -296,17 +420,113 @@ export default function ScreenshotOverlay({ fileName, currentPage, onClose }: Sc
             <div
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
-                maxHeight: "64vh", overflow: "auto",
-                background: "#f4f4f5", borderRadius: 8, padding: 10,
-                border: "1px solid rgba(0,0,0,0.08)",
+                maxHeight: "60vh", overflow: "auto",
               }}
             >
-              <img
-                src={preview.url}
-                alt={`Screenshot of page ${preview.page}`}
-                style={{ maxWidth: "100%", maxHeight: "60vh", display: "block", borderRadius: 4 }}
+              <canvas
+                ref={previewCanvasRef}
+                onPointerDown={onDrawDown}
+                onPointerMove={onDrawMove}
+                onPointerUp={onDrawUp}
+                onPointerCancel={onDrawUp}
+                aria-label={`Screenshot of page ${preview.page}`}
+                style={{
+                  maxWidth: "100%", maxHeight: "56vh", display: "block",
+                  cursor: editMode ? "crosshair" : "default",
+                  touchAction: editMode ? "none" : "auto",
+                  outline: editMode ? "2px dashed rgba(226,54,54,0.55)" : "none",
+                  outlineOffset: 2,
+                }}
               />
             </div>
+
+            {editMode && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+                  {PEN_COLORS.map(c => (
+                    <div
+                      key={c}
+                      onClick={() => setPenColor(c)}
+                      title={c}
+                      style={{
+                        width: 18, height: 18, borderRadius: "50%", background: c,
+                        cursor: "pointer", boxSizing: "border-box",
+                        border: penColor === c ? "2.5px solid #E23636" : "1.5px solid rgba(0,0,0,0.25)",
+                        boxShadow: penColor === c ? "0 0 0 2px #fff inset" : "none",
+                      }}
+                    />
+                  ))}
+                  <input
+                    type="color"
+                    value={penColor}
+                    onChange={e => setPenColor(e.target.value)}
+                    title="Custom pen color"
+                    style={{
+                      width: 24, height: 24, padding: 0, border: "1px solid rgba(0,0,0,0.2)",
+                      borderRadius: 5, background: "none", cursor: "pointer",
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 12, color: "#555" }}>Thickness</span>
+                  <input
+                    type="range" min={1} max={24} value={penWidth}
+                    onChange={e => setPenWidth(Number(e.target.value))}
+                    style={{ width: 90, cursor: "pointer" }}
+                  />
+                  <span
+                    style={{
+                      width: 26, height: 26, display: "inline-flex",
+                      alignItems: "center", justifyContent: "center",
+                    }}
+                  >
+                    <span style={{
+                      width: Math.min(24, penWidth + 2), height: Math.min(24, penWidth + 2),
+                      borderRadius: "50%", background: penColor,
+                      border: "1px solid rgba(0,0,0,0.15)",
+                    }} />
+                  </span>
+                </div>
+
+                <div style={{ flex: 1 }} />
+
+                <button
+                  onClick={() => setStrokes(list => list.slice(0, -1))}
+                  disabled={strokes.length === 0}
+                  title="Undo last stroke"
+                  style={{
+                    background: "#fff", color: strokes.length ? "#1a1a1a" : "#aaa",
+                    border: "1px solid rgba(0,0,0,0.2)", borderRadius: 6,
+                    padding: "6px 12px", fontSize: 12.5, fontWeight: 500,
+                    cursor: strokes.length ? "pointer" : "default",
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>
+                  Undo
+                </button>
+                <button
+                  onClick={() => setStrokes([])}
+                  disabled={strokes.length === 0}
+                  title="Clear all pen marks"
+                  style={{
+                    background: "#fff", color: strokes.length ? "#c0392b" : "#aaa",
+                    border: "1px solid rgba(0,0,0,0.2)", borderRadius: 6,
+                    padding: "6px 12px", fontSize: 12.5, fontWeight: 500,
+                    cursor: strokes.length ? "pointer" : "default",
+                  }}
+                >Clear</button>
+                <button
+                  onClick={() => setEditMode(false)}
+                  title="Finish editing"
+                  style={{
+                    background: "#12A150", color: "#fff", border: "none", borderRadius: 6,
+                    padding: "6px 14px", fontSize: 12.5, fontWeight: 600, cursor: "pointer",
+                  }}
+                >Done</button>
+              </div>
+            )}
 
             {error && (
               <div style={{ fontSize: 12.5, color: "#c0392b", fontWeight: 500 }}>{error}</div>
@@ -319,24 +539,51 @@ export default function ScreenshotOverlay({ fileName, currentPage, onClose }: Sc
                   background: "#fff", color: "#1a1a1a",
                   border: "1px solid rgba(0,0,0,0.2)", borderRadius: 6,
                   padding: "8px 14px", fontSize: 13, fontWeight: 500, cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", gap: 7,
                 }}
-              >Retake</button>
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><polyline points="3 4 3 9 8 9"/></svg>
+                Retake
+              </button>
+              <button
+                onClick={() => setEditMode(m => !m)}
+                title="Draw on the screenshot with a pen"
+                style={{
+                  background: editMode ? "rgba(226,54,54,0.1)" : "#fff",
+                  color: editMode ? "#E23636" : "#1a1a1a",
+                  border: editMode ? "1px solid rgba(226,54,54,0.55)" : "1px solid rgba(0,0,0,0.2)",
+                  borderRadius: 6,
+                  padding: "8px 14px", fontSize: 13, fontWeight: 500, cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", gap: 7,
+                }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                {editMode ? "Editing…" : "Edit"}
+              </button>
               <button
                 onClick={copy}
                 style={{
                   background: "#fff", color: "#0D62F2",
                   border: "1px solid rgba(13,98,242,0.4)", borderRadius: 6,
                   padding: "8px 14px", fontSize: 13, fontWeight: 500, cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", gap: 7,
                 }}
-              >{copied ? "Copied!" : "Copy image"}</button>
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                {copied ? "Copied!" : "Copy"}
+              </button>
               <button
                 onClick={download}
                 style={{
                   background: "#0D62F2", color: "#fff",
                   border: "none", borderRadius: 6,
                   padding: "8px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", gap: 7,
                 }}
-              >Download PNG</button>
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Save PNG
+              </button>
             </div>
           </div>
         </div>
