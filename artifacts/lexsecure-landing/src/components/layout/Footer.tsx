@@ -86,14 +86,14 @@ function FooterColumn({ title, links }: { title: string; links: LinkItem[] }) {
             {href.startsWith("/#") ? (
               <a
                 href={`${import.meta.env.BASE_URL}${href.slice(2) ? `#${href.slice(2)}` : ""}`}
-                className="block text-left text-sm text-slate-600 transition-colors hover:text-[#2563EB] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                className="block text-left text-sm text-slate-600 transition-colors hover:text-[#DC2626] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DC2626] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 {label}
               </a>
             ) : (
               <Link
                 href={href}
-                className="block text-left text-sm text-slate-600 transition-colors hover:text-[#2563EB] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                className="block text-left text-sm text-slate-600 transition-colors hover:text-[#DC2626] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DC2626] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 {label}
               </Link>
@@ -131,7 +131,7 @@ export function Footer() {
           <div>
             <Link
               href="/"
-              className="flex items-center gap-3 text-left group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="flex items-center gap-3 text-left group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DC2626] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               aria-label="Luxor PDF — home"
             >
               <img
@@ -142,7 +142,7 @@ export function Footer() {
               />
               <div className="text-[28px] font-black tracking-tight">
                 <span className="text-slate-900">Luxor</span>{" "}
-                <span className="text-[#2563EB]">PDF</span>
+                <span className="text-[#DC2626]">PDF</span>
               </div>
             </Link>
             <p className="mt-5 max-w-xs text-[15px] leading-7 text-slate-600">
@@ -151,10 +151,10 @@ export function Footer() {
             </p>
             <a
               href="mailto:support@luxorpdf.com"
-              className="mt-5 inline-flex items-center gap-2.5 rounded-lg text-sm text-slate-700 hover:text-[#2563EB] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="mt-5 inline-flex items-center gap-2.5 rounded-lg text-sm text-slate-700 hover:text-[#DC2626] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DC2626] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             >
-              <span className="flex h-7 w-9 items-center justify-center rounded-md bg-[#dbe7fd] ring-1 ring-[#bfd3f8]">
-                <Mail className="h-4 w-4 text-[#2563EB]" />
+              <span className="flex h-7 w-9 items-center justify-center rounded-md bg-[#fde2e2] ring-1 ring-[#f6c6c6]">
+                <Mail className="h-4 w-4 text-[#DC2626]" />
               </span>
               support@luxorpdf.com
             </a>
@@ -164,7 +164,7 @@ export function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-900 shadow-sm ring-1 ring-slate-200 transition-all duration-200 hover:scale-110 hover:shadow-md hover:ring-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-900 shadow-sm ring-1 ring-slate-200 transition-all duration-200 hover:scale-110 hover:shadow-md hover:ring-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DC2626] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   <svg
                     viewBox="0 0 24 24"
@@ -206,7 +206,7 @@ export function Footer() {
             </div>
             <div className="mt-1">
               Luxor PDF is a brand of{" "}
-              <span className="font-bold text-[#2563EB]">Fairnova Labs</span>
+              <span className="font-bold text-[#DC2626]">Fairnova Labs</span>
             </div>
           </div>
         </div>

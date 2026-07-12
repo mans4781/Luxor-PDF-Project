@@ -288,6 +288,12 @@ uri = "file://attached_assets/generated_images/footer_shield_new.png"
 type = "image"
 title = "footer shield padlock illustration"
 
+[[generated]]
+id = "GhkeHODsR0ixRfOLPjx5l"
+uri = "file://attached_assets/generated_images/footer_shield_red.png"
+type = "image"
+title = "red footer shield padlock"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
