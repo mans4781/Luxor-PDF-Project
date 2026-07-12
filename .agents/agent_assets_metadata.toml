@@ -264,6 +264,18 @@ uri = "file://artifacts/lexsecure-landing/public/brand/home3-illus-collab.png"
 type = "image"
 title = "collaboration 3d illustration"
 
+[[generated]]
+id = "wLkX0aROl8jG8h78f-bT0"
+uri = "file://artifacts/lexsecure-landing/public/brand/about2-team.png"
+type = "image"
+title = "team collaboration photo"
+
+[[generated]]
+id = "r-tf0UdS9Cmm2EAIkZmYj"
+uri = "file://artifacts/lexsecure-landing/public/brand/about2-workspace.png"
+type = "image"
+title = "workspace desk photo"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
