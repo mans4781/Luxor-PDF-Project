@@ -636,31 +636,6 @@ export default function Home3Page() {
                 </div>
               ))}
             </motion.div>
-
-            {/* logos */}
-            <motion.div {...fadeUp} className="mt-12 text-center">
-              <div className="text-xs text-slate-400 font-semibold mb-5">
-                Trusted by leading organizations
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-                {["NORTHWIND", "Vertex Corp", "BLUEPEAK", "Orbital", "Summit & Co", "HELIOS", "quantiva"].map(
-                  (name, i) => (
-                    <span
-                      key={name}
-                      className={`text-slate-400/80 ${
-                        i % 3 === 0
-                          ? "font-extrabold tracking-widest text-sm"
-                          : i % 3 === 1
-                            ? "font-bold text-[15px]"
-                            : "font-semibold italic text-[15px]"
-                      }`}
-                    >
-                      {name}
-                    </span>
-                  ),
-                )}
-              </div>
-            </motion.div>
           </div>
         </section>
       </main>
