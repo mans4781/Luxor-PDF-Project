@@ -11,7 +11,8 @@
   --toolbar-active-bg: rgba(13,98,242,0.18);
   --toolbar-active-fg: #0D62F2;
   --toolbar-sep: rgba(0,0,0,0.18);
-  --toolbar-height: 50px;
+  --toolbar-height: 110px;
+  --statusbar-height: 34px;
   /* Height of the document tab strip; set to 36px by App when at least
      one PDF is open, 0 otherwise. All fixed chrome offsets include it. */
   --tabbar-height: 0px;
@@ -185,9 +186,7 @@ html, body, #root {
   background: var(--toolbar-bg);
   height: var(--toolbar-height);
   display: flex;
-  align-items: center;
-  gap: 3px;
-  padding: 0 10px;
+  flex-direction: column;
   position: fixed;
   top: var(--tabbar-height, 0px); left: 0; right: 0;
   z-index: 100;
@@ -196,12 +195,95 @@ html, body, #root {
   user-select: none;
 }
 
+.luxor-menu-strip {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 10px;
+  gap: 2px;
+}
+
+.luxor-ribbon {
+  display: flex;
+  align-items: center;
+  height: 74px;
+  padding: 4px 10px;
+  gap: 4px;
+  background: color-mix(in srgb, var(--toolbar-bg) 96%, #000);
+}
+
+.ribbon-group {
+  display: flex;
+  align-items: flex-start;
+  height: 100%;
+  padding: 0 12px;
+  border-right: 1px solid var(--toolbar-sep);
+  position: relative;
+  gap: 2px;
+}
+.ribbon-group:last-child {
+  border-right: none;
+}
+
+.ribbon-group-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 9.5px;
+  color: var(--toolbar-fg-muted);
+  pointer-events: none;
+}
+
+.ribbon-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 6px 4px 14px;
+  min-width: 48px;
+  height: 100%;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--toolbar-fg);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  position: relative;
+}
+
+.ribbon-btn:hover { background: var(--toolbar-hover); }
+.ribbon-btn.active { background: var(--toolbar-active-bg); color: var(--toolbar-active-fg); }
+.ribbon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.ribbon-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-bottom: 4px;
+}
+
+.ribbon-btn-icon > svg {
+  width: 20px;
+  height: 20px;
+}
+
+.ribbon-btn-label {
+  font-size: 10.5px;
+  line-height: 1.1;
+  text-align: center;
+  font-weight: 500;
+}
+
 .toolbar-brand {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-right: 8px;
-  color: #fff;
+  margin-right: 12px;
+  color: var(--toolbar-fg);
   font-weight: 700;
   font-size: 14px;
   white-space: nowrap;
@@ -209,14 +291,14 @@ html, body, #root {
 }
 
 .toolbar-brand-icon {
-  width: 22px;
-  height: 22px;
-  background: var(--accent);
-  border-radius: 5px;
+  width: 20px;
+  height: 20px;
+  background: #DC2626;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 10px;
   color: white;
   font-weight: 800;
 }
@@ -224,51 +306,68 @@ html, body, #root {
 .toolbar-menu-word {
   display: flex;
   align-items: center;
-  height: 38px;
+  height: 28px;
   padding: 0 10px;
-  border-radius: 6px;
+  border-radius: 4px;
   border: none;
   background: transparent;
   color: var(--toolbar-fg);
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
-  font-size: 13px;
-  font-weight: 400;
+  font-size: 12.5px;
+  font-weight: 500;
   flex-shrink: 0;
   position: relative;
   letter-spacing: 0.2px;
 }
-.toolbar-menu-word:hover { background: var(--toolbar-hover); color: var(--toolbar-fg); }
+.toolbar-menu-word:hover { background: var(--toolbar-hover); }
 .toolbar-menu-word.active { background: var(--toolbar-active-bg); color: var(--toolbar-active-fg); }
+.toolbar-menu-word.selected { 
+  background: var(--toolbar-bg); 
+  border-bottom: 2px solid #DC2626; 
+  border-radius: 4px 4px 0 0; 
+  color: var(--toolbar-fg);
+}
 
-.toolbar-btn {
+.toolbar-icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 38px;
-  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
   border: none;
   background: transparent;
   color: var(--toolbar-fg);
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
-  font-size: 15px;
-  flex-shrink: 0;
-  position: relative;
+  transition: background 0.12s;
 }
+.toolbar-icon-btn:hover { background: var(--toolbar-hover); }
+.toolbar-icon-btn.active { background: var(--toolbar-active-bg); color: var(--toolbar-active-fg); }
 
-/* Force toolbar SVG icons to standard 20px — Adobe/Edge size */
-.toolbar-btn > svg,
-.toolbar-btn svg:not(.toolbar-tip svg) { width: 20px !important; height: 20px !important; }
+.ribbon-small-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--toolbar-fg);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  height: 26px;
+  transition: background 0.12s;
+}
+.ribbon-small-btn:hover { background: var(--toolbar-hover); }
+.ribbon-small-btn.active { background: var(--toolbar-active-bg); color: var(--toolbar-active-fg); }
 
-.toolbar-btn:hover { background: var(--toolbar-hover); color: var(--toolbar-fg); }
-.toolbar-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
-.toolbar-sep {
-  width: 1px; height: 22px;
-  background: var(--toolbar-sep);
-  margin: 0 3px; flex-shrink: 0;
+.ribbon-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: flex-start;
 }
 
 .toolbar-tip {
@@ -310,7 +409,8 @@ html, body, #root {
 
 .luxor-viewer {
   position: fixed;
-  top: calc(var(--tabbar-height, 0px) + var(--toolbar-height)); bottom: 0;
+  top: calc(var(--tabbar-height, 0px) + var(--toolbar-height));
+  bottom: var(--statusbar-height);
   left: 0; right: 0;
   overflow-y: auto; overflow-x: auto;
   background: var(--viewer-bg, #E6E6E6);
@@ -318,6 +418,29 @@ html, body, #root {
   align-items: center;
   padding: 20px 20px 80px;
   gap: 16px;
+}
+
+.luxor-statusbar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--statusbar-height);
+  background: var(--toolbar-bg);
+  border-top: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  z-index: 100;
+  color: var(--toolbar-fg-muted);
+}
+
+.statusbar-filename {
+  font-size: 11px;
+  font-weight: 500;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ── Search bar ──────────────────────────────────────────────────────────── */
@@ -407,7 +530,7 @@ mark.search-hl {
 
 .thumb-panel {
   position: fixed;
-  top: calc(var(--tabbar-height, 0px) + var(--toolbar-height)); bottom: 0; left: 0;
+  top: calc(var(--tabbar-height, 0px) + var(--toolbar-height)); bottom: var(--statusbar-height); left: 0;
   width: 164px;
   background: #1e1e1e;
   border-right: 1px solid rgba(255,255,255,0.07);

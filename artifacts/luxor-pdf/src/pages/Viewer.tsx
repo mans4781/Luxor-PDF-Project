@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/web/pdf_viewer.css";
+import StatusBar from "@/components/StatusBar";
 import Toolbar, { type ThemeKey } from "@/components/Toolbar";
 import PDFPage from "@/components/PDFPage";
 import ThumbnailPanel from "@/components/ThumbnailPanel";
@@ -1093,7 +1094,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   }
 
   /* ── View controls (zoom / page nav / rotate / fits) — rendered
-     inside the top toolbar via the `viewControls` prop ── */
+     in the bottom StatusBar via the `viewControls` prop ── */
   const viewControls = (
     <div className="view-bar">
       {/* Zoom controls */}
@@ -1247,7 +1248,6 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     <>
       <Toolbar
         fileName={file.name}
-        viewControls={viewControls}
         tool={tool}
         highlightColor={highlightColor}
         textColor={textColor}
@@ -1301,6 +1301,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         showOCR={settings.enableOCR}
         showAI={settings.enableAI}
       />
+      <StatusBar viewControls={viewControls} fileName={file.name} />
 
       {/* Hidden file input for Edit → Add Image. */}
       <input
