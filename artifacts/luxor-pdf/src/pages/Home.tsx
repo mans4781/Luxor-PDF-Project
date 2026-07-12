@@ -76,34 +76,29 @@ const SIDE_ITEMS = [
 /** Original Luxor illustration: document with red fold on a blush backdrop. */
 function HeroIllustration() {
   return (
-    <svg width="230" height="185" viewBox="0 0 260 210" fill="none" aria-hidden="true">
-      <ellipse cx="130" cy="118" rx="112" ry="78" fill="#fdecec" opacity="0.65"/>
-      <path d="M40 150c18-30 8-52 28-64" stroke="#e6e9ee" strokeWidth="7" strokeLinecap="round" opacity="0.7"/>
-      <path d="M215 155c-16-24-4-46-22-60" stroke="#e6e9ee" strokeWidth="7" strokeLinecap="round" opacity="0.7"/>
-      <g filter="url(#lxhShadow)">
-        <path d="M88 32a8 8 0 0 1 8-8h70l18 18v128a8 8 0 0 1-8 8H96a8 8 0 0 1-8-8V32z" fill="#fff"/>
-      </g>
-      <path d="M88 32a8 8 0 0 1 8-8h70l18 18v128a8 8 0 0 1-8 8H96a8 8 0 0 1-8-8V32z" stroke="#eceef2" strokeWidth="1.5"/>
-      <path d="M166 24l18 18h-14a4 4 0 0 1-4-4V24z" fill="#d21f2f"/>
-      <rect x="98" y="40" width="36" height="17" rx="3.5" fill="#d21f2f"/>
-      <text x="116" y="52.5" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700" fontFamily="Arial, sans-serif">PDF</text>
-      <rect x="98" y="70" width="66" height="6" rx="3" fill="#f5b8bd"/>
-      <rect x="98" y="84" width="76" height="6" rx="3" fill="#f9d4d7"/>
-      <rect x="98" y="98" width="58" height="6" rx="3" fill="#f9d4d7"/>
-      <rect x="98" y="112" width="70" height="6" rx="3" fill="#fbe3e5"/>
-      <rect x="98" y="126" width="48" height="6" rx="3" fill="#fbe3e5"/>
-      <path d="M56 60l0 12M50 66l12 0" stroke="#eda6ac" strokeWidth="2.4" strokeLinecap="round"/>
-      <path d="M208 78l0 10M203 83l10 0" stroke="#eda6ac" strokeWidth="2.2" strokeLinecap="round"/>
-      <path d="M196 38l0 8M192 42l8 0" stroke="#f0c3c7" strokeWidth="2" strokeLinecap="round"/>
-      <circle cx="66" cy="112" r="3" fill="#f2c6c9"/>
-      <circle cx="204" cy="130" r="3.4" fill="#f2c6c9"/>
-      <circle cx="78" cy="42" r="2.6" fill="#f6d8da"/>
-      <defs>
-        <filter id="lxhShadow" x="68" y="10" width="136" height="190" filterUnits="userSpaceOnUse">
-          <feDropShadow dx="0" dy="6" stdDeviation="9" floodColor="#8a2730" floodOpacity="0.13"/>
-        </filter>
-      </defs>
-    </svg>
+    <div style={{ position: "relative", width: 230, height: 185, display: "flex", alignItems: "center", justifyContent: "center" }} aria-hidden="true">
+      <svg width="230" height="185" viewBox="0 0 260 210" fill="none" style={{ position: "absolute", inset: 0 }}>
+        <ellipse cx="130" cy="118" rx="112" ry="78" fill="#fdecec" opacity="0.65"/>
+        <path d="M40 150c18-30 8-52 28-64" stroke="#e6e9ee" strokeWidth="7" strokeLinecap="round" opacity="0.7"/>
+        <path d="M215 155c-16-24-4-46-22-60" stroke="#e6e9ee" strokeWidth="7" strokeLinecap="round" opacity="0.7"/>
+        <path d="M56 60l0 12M50 66l12 0" stroke="#eda6ac" strokeWidth="2.4" strokeLinecap="round"/>
+        <path d="M208 78l0 10M203 83l10 0" stroke="#eda6ac" strokeWidth="2.2" strokeLinecap="round"/>
+        <path d="M196 38l0 8M192 42l8 0" stroke="#f0c3c7" strokeWidth="2" strokeLinecap="round"/>
+        <circle cx="66" cy="112" r="3" fill="#f2c6c9"/>
+        <circle cx="204" cy="130" r="3.4" fill="#f2c6c9"/>
+        <circle cx="78" cy="42" r="2.6" fill="#f6d8da"/>
+      </svg>
+      <img
+        src={`${import.meta.env.BASE_URL}brand/luxor-file.png`}
+        alt=""
+        draggable={false}
+        style={{
+          position: "relative", width: 122, height: 151, objectFit: "contain",
+          filter: "drop-shadow(0 6px 9px rgba(138,39,48,0.13))",
+          userSelect: "none",
+        }}
+      />
+    </div>
   );
 }
 
