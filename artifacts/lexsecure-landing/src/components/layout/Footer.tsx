@@ -111,7 +111,7 @@ export function Footer() {
       {/* Decorative shield with padlock, bottom-right */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-16 -right-8 hidden lg:block"
+        className="pointer-events-none absolute top-10 -right-8 hidden lg:block"
       >
         <img
           src={footerShield}
