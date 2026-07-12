@@ -188,14 +188,9 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col gap-4 border-t border-slate-200/80 py-7 text-sm md:flex-row md:items-center md:justify-between">
           <div className="text-center text-slate-600 md:text-right">
-            <div>
-              Copyright © {new Date().getFullYear()}. Luxor PDF. All rights
-              reserved
-            </div>
-            <div className="mt-1">
-              Luxor PDF is a brand of{" "}
-              <span className="font-bold text-[#DC2626]">Fairnova Labs</span>
-            </div>
+            Copyright © {new Date().getFullYear()}. Luxor PDF. All rights
+            reserved. Luxor PDF is a brand of{" "}
+            <span className="font-bold text-[#DC2626]">Fairnova Labs</span>
           </div>
         </div>
       </div>
