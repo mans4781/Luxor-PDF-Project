@@ -78,36 +78,31 @@ function HeroIllustration() {
   return (
     <div style={{ position: "relative", width: 230, height: 185, display: "flex", alignItems: "center", justifyContent: "center" }} aria-hidden="true">
       <svg width="230" height="185" viewBox="0 0 260 210" fill="none" style={{ position: "absolute", inset: 0 }}>
-        <g opacity="0.55" fill="#fbdfe1">
-          <circle cx="130" cy="50" r="30"/>
-          <circle cx="186" cy="70" r="30"/>
-          <circle cx="210" cy="118" r="30"/>
-          <circle cx="186" cy="166" r="30"/>
-          <circle cx="130" cy="186" r="30"/>
-          <circle cx="74" cy="166" r="30"/>
-          <circle cx="50" cy="118" r="30"/>
-          <circle cx="74" cy="70" r="30"/>
-          <circle cx="130" cy="118" r="58"/>
-        </g>
-        <g opacity="0.65" fill="#fdecec">
-          <circle cx="130" cy="62" r="28"/>
-          <circle cx="178" cy="78" r="28"/>
-          <circle cx="198" cy="118" r="28"/>
-          <circle cx="178" cy="158" r="28"/>
-          <circle cx="130" cy="174" r="28"/>
-          <circle cx="82" cy="158" r="28"/>
-          <circle cx="62" cy="118" r="28"/>
-          <circle cx="82" cy="78" r="28"/>
-          <circle cx="130" cy="118" r="52"/>
-        </g>
-        <path d="M40 150c18-30 8-52 28-64" stroke="#e6e9ee" strokeWidth="7" strokeLinecap="round" opacity="0.7"/>
-        <path d="M215 155c-16-24-4-46-22-60" stroke="#e6e9ee" strokeWidth="7" strokeLinecap="round" opacity="0.7"/>
-        <path d="M56 60l0 12M50 66l12 0" stroke="#eda6ac" strokeWidth="2.4" strokeLinecap="round"/>
-        <path d="M208 78l0 10M203 83l10 0" stroke="#eda6ac" strokeWidth="2.2" strokeLinecap="round"/>
-        <path d="M196 38l0 8M192 42l8 0" stroke="#f0c3c7" strokeWidth="2" strokeLinecap="round"/>
-        <circle cx="66" cy="112" r="3" fill="#f2c6c9"/>
-        <circle cx="204" cy="130" r="3.4" fill="#f2c6c9"/>
-        <circle cx="78" cy="42" r="2.6" fill="#f6d8da"/>
+        <defs>
+          <radialGradient id="lxhBlob" cx="42%" cy="38%" r="70%">
+            <stop offset="0%" stopColor="#fbe2e4"/>
+            <stop offset="60%" stopColor="#fceceD"/>
+            <stop offset="100%" stopColor="#fdf3f3"/>
+          </radialGradient>
+          <pattern id="lxhDots" width="8" height="8" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.5" fill="#eecdd0"/>
+          </pattern>
+          <filter id="lxhSoftShadow" x="-40%" y="-200%" width="180%" height="500%">
+            <feGaussianBlur stdDeviation="5"/>
+          </filter>
+        </defs>
+        <circle cx="128" cy="104" r="86" fill="url(#lxhBlob)"/>
+        <rect x="196" y="58" width="42" height="52" rx="14" fill="url(#lxhDots)" opacity="0.85"/>
+        <path d="M64 182c-8-36 6-70 32-88-2 40-10 72-32 88z" fill="#f2e6e7"/>
+        <path d="M78 184c-3-26 8-50 26-62-3 29-10 51-26 62z" fill="#ece0e1" opacity="0.9"/>
+        <path d="M170 172c30-6 50-26 56-54 2 34-18 58-52 62z" fill="#f6cfd2" opacity="0.85"/>
+        <ellipse cx="130" cy="196" rx="72" ry="7" fill="#cbb9ba" opacity="0.35" filter="url(#lxhSoftShadow)"/>
+        <path d="M56 52l0 12M50 58l12 0" stroke="#eda6ac" strokeWidth="2.4" strokeLinecap="round"/>
+        <path d="M36 118l0 8M32 122l8 0" stroke="#f0c3c7" strokeWidth="2" strokeLinecap="round"/>
+        <path d="M206 40l0 10M201 45l10 0" stroke="#f0c3c7" strokeWidth="2.2" strokeLinecap="round"/>
+        <path d="M230 142l0 10M225 147l10 0" stroke="#eda6ac" strokeWidth="2.2" strokeLinecap="round"/>
+        <circle cx="192" cy="26" r="2.6" fill="#f2c6c9"/>
+        <circle cx="48" cy="152" r="2.4" fill="#f2c6c9"/>
       </svg>
       <img
         src={`${import.meta.env.BASE_URL}brand/luxor-file.png`}
