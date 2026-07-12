@@ -153,7 +153,7 @@ export function Footer() {
             </Link>
             <p className="mt-5 max-w-xs text-justify text-[15px] leading-7 text-slate-600">
               Luxor PDF is a modern document suite for reading, annotating,
-              converting, organizing, and securely protecting PDFs—with simple,
+              converting, organizing, and securely protecting PDFs with simple,
               powerful eSigning capabilities coming soon.
             </p>
             <a
