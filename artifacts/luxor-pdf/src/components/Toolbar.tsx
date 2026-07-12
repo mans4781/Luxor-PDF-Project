@@ -188,6 +188,8 @@ interface ToolbarProps {
   // View menu
   onFitWidth: () => void;
   onFitPage: () => void;
+  onRotateCw: () => void;
+  onRotateCcw: () => void;
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
   activePanel: PanelKey | null;
@@ -291,6 +293,8 @@ const Icons = {
   fitWidth: <svg {...S.common}><polyline points="7 8 3 12 7 16"/><polyline points="17 8 21 12 17 16"/><line x1="3" y1="12" x2="21" y2="12"/></svg>,
   fitPage: <svg {...S.common}><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>,
   fullscreen: <svg {...S.common}><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>,
+  rotateCw: <svg {...S.common}><path d="M21 2v6h-6"/><path d="M21 8C19.6 5 16.8 3 13.5 3 8.8 3 5 6.8 5 11.5S8.8 20 13.5 20c3.3 0 6.2-2 7.6-5"/></svg>,
+  rotateCcw: <svg {...S.common}><path d="M3 2v6h6"/><path d="M3 8c1.4-3 4.2-5 7.5-5C15.2 3 19 6.8 19 11.5S15.2 20 10.5 20c-3.3 0-6.2-2-7.6-5"/></svg>,
   info: <svg {...S.common}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>,
   nav: <svg {...S.common}><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>,
   forms: <svg {...S.common}><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>,
@@ -373,7 +377,7 @@ export default function Toolbar({
   onShare, sharing,
   onFileSaveAs, onFileSaveCopy, onFileClose,
   theme, onThemeChange,
-  onFitWidth, onFitPage, isFullscreen, onToggleFullscreen,
+  onFitWidth, onFitPage, onRotateCw, onRotateCcw, isFullscreen, onToggleFullscreen,
   activePanel, onOpenPanel, onOpenSettings, showOCR, showAI,
 }: ToolbarProps) {
   const { beginSignIn, beginSignUp } = useAuthGate();
@@ -874,6 +878,13 @@ export default function Toolbar({
           />
           <RibbonBtn icon={Icons.split} label="Two Pages" active={splitView} title="Toggle two-page spread" onClick={onToggleSplit} />
           <RibbonBtn icon={Icons.thumbnails} label="Thumbnails" active={showContents} title="Page thumbnails" onClick={onToggleContents} />
+        </RibbonGroup>
+        <RibbonGroup label="Rotate">
+          <RibbonBtn icon={Icons.rotateCw} label="Rotate Right" title="Rotate clockwise (90°)" onClick={onRotateCw} />
+          <RibbonBtn icon={Icons.rotateCcw} label="Rotate Left" title="Rotate counter-clockwise (90°)" onClick={onRotateCcw} />
+        </RibbonGroup>
+        <RibbonGroup label="Capture">
+          <RibbonBtn icon={Icons.screenshot} label="Snapshot" title="Capture an area of the page as an image" onClick={onScreenshot} />
         </RibbonGroup>
         <RibbonGroup label="Panels">
           {infoBtn}

@@ -1293,6 +1293,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         onThemeChange={setTheme}
         onFitWidth={handleFitWidth}
         onFitPage={handleFitPage}
+        onRotateCw={() => setRotation(r => (r + 90) % 360)}
+        onRotateCcw={() => setRotation(r => (r + 270) % 360)}
         isFullscreen={isFullscreen}
         onToggleFullscreen={toggleFullscreen}
         activePanel={activePanel}
