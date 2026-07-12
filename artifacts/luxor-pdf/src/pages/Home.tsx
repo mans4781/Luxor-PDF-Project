@@ -202,7 +202,7 @@ export default function Home({ onFileLoad }: HomeProps) {
     <div className="lxh-root">
       {/* Title bar */}
       <div className="lxh-titlebar">
-        <img src={`${import.meta.env.BASE_URL}brand/luxor-icon.png`} alt="Luxor" draggable={false} />
+        <img src={`${import.meta.env.BASE_URL}brand/luxor-shield.png`} alt="Luxor" draggable={false} />
         <span className="lxh-title">Luxor PDF Reader</span>
         <div className="lxh-winbtns">
           <button className="lxh-winbtn" aria-disabled="true" title="Minimize" aria-label="Minimize">
