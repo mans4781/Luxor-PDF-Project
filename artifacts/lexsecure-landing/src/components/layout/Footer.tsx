@@ -109,23 +109,22 @@ function FooterColumn({ title, links }: { title: string; links: LinkItem[] }) {
 export function Footer() {
   return (
     <footer className="relative overflow-hidden bg-gradient-to-b from-[#f7f8fc] via-[#f1f4fa] to-[#e9edf7] px-6 pt-16 lg:px-8 border-t border-slate-200/70">
-      {/* Decorative shield with padlock, bottom-right */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute top-10 -right-8 hidden lg:block"
-      >
-        <img
-          src={footerShield}
-          alt=""
-          width={740}
-          height={860}
-          loading="lazy"
-          className="w-[300px] opacity-80 select-none"
-          draggable={false}
-        />
-      </div>
-
       <div className="relative mx-auto max-w-7xl">
+        {/* Decorative shield with padlock, aligned with the content's right edge */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute top-10 right-0 hidden lg:block"
+        >
+          <img
+            src={footerShield}
+            alt=""
+            width={740}
+            height={860}
+            loading="lazy"
+            className="w-[300px] opacity-80 select-none"
+            draggable={false}
+          />
+        </div>
         {/* Top grid */}
         <div className="grid gap-12 pb-14 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr]">
           {/* Brand column */}
