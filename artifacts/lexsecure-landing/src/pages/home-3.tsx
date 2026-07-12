@@ -248,18 +248,16 @@ export default function Home3Page() {
                   className="absolute -right-2 lg:-right-4 bottom-6 bg-white rounded-xl shadow-xl border border-slate-100 p-3.5 w-[168px]"
                 >
                   <div className="text-[10px] font-bold text-slate-700 mb-1.5">Digital Signature</div>
-                  <svg viewBox="0 0 120 30" className="w-24 h-7 text-slate-800">
-                    <path
-                      d="M6 22 C 16 6, 24 26, 34 16 S 52 8, 60 18 S 80 26, 90 12 S 106 10, 114 16"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                    />
-                  </svg>
+                  <div
+                    className="text-[22px] leading-[1.1] text-slate-800 -rotate-2 select-none"
+                    style={{ fontFamily: "'Great Vibes', cursive" }}
+                    aria-hidden="true"
+                  >
+                    David Spencer
+                  </div>
                   <div className="flex items-center justify-between mt-1.5">
                     <div>
-                      <div className="text-[9px] font-bold text-slate-800 leading-tight">John Doe</div>
+                      <div className="text-[9px] font-bold text-slate-800 leading-tight">David Spencer</div>
                       <div className="text-[7px] text-slate-400 leading-tight">
                         Apr 24, 2026 · 10:30 AM
                       </div>
