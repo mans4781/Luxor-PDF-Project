@@ -222,6 +222,48 @@ uri = "file://artifacts/lexsecure-landing/public/brand/home2-mountain.png"
 type = "image"
 title = "mountain landscape photo"
 
+[[generated]]
+id = "cNzRLPA44dxvM2YSo-_8j"
+uri = "file://artifacts/lexsecure-landing/public/brand/home3-avatar1.png"
+type = "image"
+title = "woman professional headshot"
+
+[[generated]]
+id = "wN_83MVz7j6ylmctUN5JH"
+uri = "file://artifacts/lexsecure-landing/public/brand/home3-avatar2.png"
+type = "image"
+title = "man professional headshot"
+
+[[generated]]
+id = "-hLd1p8Pct6DOmLSq8UxR"
+uri = "file://artifacts/lexsecure-landing/public/brand/home3-avatar3.png"
+type = "image"
+title = "indian woman headshot"
+
+[[generated]]
+id = "qdJ9jqJoE78k41pKy5E1M"
+uri = "file://artifacts/lexsecure-landing/public/brand/home3-office.png"
+type = "image"
+title = "office team photo"
+
+[[generated]]
+id = "uiLVrx_Rctu4oyPQduDIR"
+uri = "file://artifacts/lexsecure-landing/public/brand/home3-illus-protection.png"
+type = "image"
+title = "shield servers 3d illustration"
+
+[[generated]]
+id = "QY95kJb2pn92jiNyCT4xW"
+uri = "file://artifacts/lexsecure-landing/public/brand/home3-illus-productivity.png"
+type = "image"
+title = "productivity monitor 3d illustration"
+
+[[generated]]
+id = "067d5XNl0LzI4dNhvQrrH"
+uri = "file://artifacts/lexsecure-landing/public/brand/home3-illus-collab.png"
+type = "image"
+title = "collaboration 3d illustration"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
