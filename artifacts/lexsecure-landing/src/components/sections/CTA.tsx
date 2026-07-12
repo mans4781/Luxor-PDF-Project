@@ -11,8 +11,8 @@ function CtaIllustration() {
       <img
         src={ctaIllustration}
         alt=""
-        width={495}
-        height={345}
+        width={660}
+        height={610}
         loading="lazy"
         className="h-auto w-full rounded-2xl"
       />

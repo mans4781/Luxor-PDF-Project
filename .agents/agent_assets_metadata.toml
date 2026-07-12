@@ -276,6 +276,12 @@ uri = "file://artifacts/lexsecure-landing/public/brand/about2-workspace.png"
 type = "image"
 title = "workspace desk photo"
 
+[[generated]]
+id = "X08cmBSrGxWb8KOUMTl6Z"
+uri = "file://attached_assets/generated_images/cta_illustration_new.png"
+type = "image"
+title = "PDF suite CTA illustration"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
