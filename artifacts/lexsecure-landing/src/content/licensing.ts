@@ -5,7 +5,7 @@ Luxor PDF offers licensing options designed to make professional PDF tools acces
 
 Whether you need a powerful PDF reader, advanced document-security tools, or an electronic-signature solution, you can choose the licence that best suits your requirements.
 
-**Luxor PDF is a brand owned and operated by Fairnova Labs Private Limited.**
+**Luxor PDF is a brand owned and operated by Fairnova Labs.**
 
 ---
 
@@ -443,7 +443,7 @@ Purchasing a licence does not give you ownership of:
 * Interfaces;
 * Security technology;
 * Documentation; or
-* Other intellectual property belonging to Fairnova Labs Private Limited or its licensors.
+* Other intellectual property belonging to Fairnova Labs or its licensors.
 
 ---
 
@@ -495,7 +495,7 @@ For security and licence validity, Luxor PDF licences should be purchased only t
 * An authorised payment or application platform;
 * An approved reseller;
 * An official business quotation; or
-* Another source expressly authorised by Fairnova Labs Private Limited.
+* Another source expressly authorised by Fairnova Labs.
 
 We may be unable to activate, support, replace, or refund licences purchased from unauthorised sellers.
 
@@ -623,7 +623,7 @@ Choose the Luxor PDF product and licence that best meets your document requireme
 
 ### Brand Ownership Notice
 
-**Luxor PDF is a brand owned and operated by Fairnova Labs Private Limited.**
+**Luxor PDF is a brand owned and operated by Fairnova Labs.**
 
-All Luxor PDF products, applications, software licences, subscriptions, websites, trademarks, and related services are owned or operated by Fairnova Labs Private Limited unless expressly stated otherwise.
+All Luxor PDF products, applications, software licences, subscriptions, websites, trademarks, and related services are owned or operated by Fairnova Labs unless expressly stated otherwise.
 `;

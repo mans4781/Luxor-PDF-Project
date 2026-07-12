@@ -3,7 +3,7 @@ export const termsOfUseMarkdown = `
 
 Welcome to **Luxor PDF**.
 
-Luxor PDF is a brand owned and operated by **Fairnova Labs Private Limited**, a company incorporated under the laws of India.
+Luxor PDF is a brand owned and operated by **Fairnova Labs**, a company incorporated under the laws of India.
 
 These Terms of Use govern your access to and use of:
 
@@ -19,7 +19,7 @@ These Terms of Use govern your access to and use of:
 * Document security, sharing, conversion, and management services; and
 * Any related products, features, updates, support services, or integrations.
 
-In these Terms, **“Luxor PDF,” “Fairnova Labs,” “we,” “us,” or “our”** refers to Fairnova Labs Private Limited.
+In these Terms, **“Luxor PDF,” “Fairnova Labs,” “we,” “us,” or “our”** refers to Fairnova Labs.
 
 The words **“you” and “your”** refer to the person or organisation accessing or using Luxor PDF.
 
@@ -29,9 +29,9 @@ If you do not agree to these Terms, you must not access, install, or use Luxor P
 
 ## 2. Company and Brand Disclosure
 
-**Luxor PDF is a brand of Fairnova Labs Private Limited.**
+**Luxor PDF is a brand of Fairnova Labs.**
 
-Luxor PDF is not a separate legal entity. Unless expressly stated otherwise in a written agreement, all contracts, licences, subscriptions, purchases, services, and transactions relating to Luxor PDF are entered into with Fairnova Labs Private Limited.
+Luxor PDF is not a separate legal entity. Unless expressly stated otherwise in a written agreement, all contracts, licences, subscriptions, purchases, services, and transactions relating to Luxor PDF are entered into with Fairnova Labs.
 
 For questions concerning these Terms, contact:
 
@@ -139,7 +139,7 @@ We may require email, device, identity, licence, or payment verification before 
 
 ## 6. Software Licence
 
-Subject to your compliance with these Terms and payment of all applicable fees, Fairnova Labs Private Limited grants you a limited, non-exclusive, non-transferable, non-sublicensable, and revocable licence to install and use the applicable Luxor PDF software.
+Subject to your compliance with these Terms and payment of all applicable fees, Fairnova Labs grants you a limited, non-exclusive, non-transferable, non-sublicensable, and revocable licence to install and use the applicable Luxor PDF software.
 
 The licence is provided only:
 
@@ -272,7 +272,7 @@ We may investigate suspected misuse and take appropriate action, including restr
 
 You retain ownership of documents and content that you upload, create, edit, open, sign, share, or process through Luxor PDF.
 
-Using Luxor PDF does not transfer ownership of your documents to Fairnova Labs Private Limited.
+Using Luxor PDF does not transfer ownership of your documents to Fairnova Labs.
 
 You grant us a limited right to process your documents only as reasonably necessary to:
 
@@ -407,7 +407,7 @@ Audit trails may support transaction evidence but do not guarantee enforceabilit
 
 ### 13.6 Luxor PDF is not a party to your transaction
 
-Unless expressly agreed in writing, Fairnova Labs Private Limited:
+Unless expressly agreed in writing, Fairnova Labs:
 
 * Is not a party to the document being signed;
 * Does not negotiate, review, or approve its terms;
@@ -599,7 +599,7 @@ If a payment fails, is reversed, disputed, charged back, or remains unpaid, we m
 
 ## 23. Intellectual Property
 
-Luxor PDF and all related intellectual property are owned by Fairnova Labs Private Limited or its licensors.
+Luxor PDF and all related intellectual property are owned by Fairnova Labs or its licensors.
 
 This includes:
 
@@ -834,7 +834,7 @@ Termination does not affect:
 
 Luxor PDF is a software and document-technology service.
 
-Fairnova Labs Private Limited does not provide:
+Fairnova Labs does not provide:
 
 * Legal advice;
 * Tax advice;
@@ -872,7 +872,7 @@ Nothing in these Terms excludes warranties or rights that cannot lawfully be exc
 
 ## 37. Limitation of Liability
 
-To the fullest extent permitted by applicable law, Fairnova Labs Private Limited and its directors, employees, contractors, affiliates, and licensors will not be liable for:
+To the fullest extent permitted by applicable law, Fairnova Labs and its directors, employees, contractors, affiliates, and licensors will not be liable for:
 
 * Indirect, incidental, special, punitive, or consequential damages;
 * Lost profits or revenue;
@@ -895,7 +895,7 @@ These limitations do not apply where liability cannot legally be excluded or lim
 
 ## 38. Indemnification
 
-To the extent permitted by law, business and organisational users agree to indemnify Fairnova Labs Private Limited and its directors, employees, contractors, affiliates, and licensors against claims, damages, liabilities, penalties, and reasonable legal expenses arising from:
+To the extent permitted by law, business and organisational users agree to indemnify Fairnova Labs and its directors, employees, contractors, affiliates, and licensors against claims, damages, liabilities, penalties, and reasonable legal expenses arising from:
 
 * The user’s documents or content;
 * Unauthorised processing or sharing of documents;
@@ -951,7 +951,7 @@ Continued use of Luxor PDF after the revised Terms take effect constitutes accep
 
 You may not transfer or assign your rights or obligations under these Terms without our prior written consent.
 
-Fairnova Labs Private Limited may transfer or assign its rights and obligations as part of a merger, restructuring, financing, acquisition, sale of assets, or transfer of the Luxor PDF business.
+Fairnova Labs may transfer or assign its rights and obligations as part of a merger, restructuring, financing, acquisition, sale of assets, or transfer of the Luxor PDF business.
 
 ## 43. Severability
 
@@ -961,28 +961,28 @@ The remaining provisions will continue in full force and effect.
 
 ## 44. No Waiver
 
-Failure by Fairnova Labs Private Limited to enforce any provision of these Terms does not waive its right to enforce that provision later.
+Failure by Fairnova Labs to enforce any provision of these Terms does not waive its right to enforce that provision later.
 
 Any waiver must be expressly provided in writing.
 
 ## 45. Entire Agreement
 
-These Terms, together with the Luxor PDF Privacy Policy, applicable pricing terms, refund terms, subscription terms, order forms, and product-specific notices, constitute the entire agreement between you and Fairnova Labs Private Limited concerning your use of Luxor PDF.
+These Terms, together with the Luxor PDF Privacy Policy, applicable pricing terms, refund terms, subscription terms, order forms, and product-specific notices, constitute the entire agreement between you and Fairnova Labs concerning your use of Luxor PDF.
 
-A separate written agreement signed by Fairnova Labs Private Limited will take priority where it expressly conflicts with these Terms.
+A separate written agreement signed by Fairnova Labs will take priority where it expressly conflicts with these Terms.
 
 ## 46. Contact Us
 
 For questions about these Terms, your Luxor PDF account, licence, subscription, payment, or product usage, contact:
 
-**Fairnova Labs Private Limited**
+**Fairnova Labs**
 **Luxor PDF Support:** [support@luxorpdf.com](mailto:support@luxorpdf.com)
 
 ---
 
 ## Brand Ownership Notice
 
-**Luxor PDF is a brand owned and operated by Fairnova Labs Private Limited.**
+**Luxor PDF is a brand owned and operated by Fairnova Labs.**
 
-All Luxor PDF products, software applications, websites, subscriptions, licences, services, logos, trademarks, and related offerings are owned or operated by Fairnova Labs Private Limited unless expressly stated otherwise.
+All Luxor PDF products, software applications, websites, subscriptions, licences, services, logos, trademarks, and related offerings are owned or operated by Fairnova Labs unless expressly stated otherwise.
 `;

@@ -1,7 +1,7 @@
 export const cookiePolicyMarkdown = `
 ## 1. Introduction
 
-This Cookie Policy explains how **Fairnova Labs Private Limited**, operating under the brand name **Luxor PDF**, uses cookies and similar technologies when you visit or use:
+This Cookie Policy explains how **Fairnova Labs**, operating under the brand name **Luxor PDF**, uses cookies and similar technologies when you visit or use:
 
 * The Luxor PDF website;
 * Luxor PDF online services;
@@ -11,7 +11,7 @@ This Cookie Policy explains how **Fairnova Labs Private Limited**, operating und
 * Luxor PDF user accounts and dashboards; and
 * Other websites, applications, or services that link to this Cookie Policy.
 
-In this Cookie Policy, **“Luxor PDF,” “Fairnova Labs,” “we,” “us,” or “our”** refers to Fairnova Labs Private Limited.
+In this Cookie Policy, **“Luxor PDF,” “Fairnova Labs,” “we,” “us,” or “our”** refers to Fairnova Labs.
 
 This Cookie Policy should be read together with our Privacy Policy and Terms of Use.
 
@@ -450,14 +450,14 @@ Where changes are material, we may provide notice through the Luxor PDF website,
 
 For questions, concerns, or requests relating to this Cookie Policy or Luxor PDF’s use of cookies, contact:
 
-**Fairnova Labs Private Limited**
+**Fairnova Labs**
 **Luxor PDF Support:** [support@luxorpdf.com](mailto:support@luxorpdf.com)
 
 ---
 
 ## Brand Ownership Notice
 
-**Luxor PDF is a brand owned and operated by Fairnova Labs Private Limited.**
+**Luxor PDF is a brand owned and operated by Fairnova Labs.**
 
-All Luxor PDF websites, products, applications, subscriptions, licences, and related services are owned or operated by Fairnova Labs Private Limited unless expressly stated otherwise.
+All Luxor PDF websites, products, applications, subscriptions, licences, and related services are owned or operated by Fairnova Labs unless expressly stated otherwise.
 `;

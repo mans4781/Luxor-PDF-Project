@@ -3,9 +3,9 @@ export const refundMarkdown = `
 
 This Refund Policy explains when a customer may request a refund for a Luxor PDF product, software licence, subscription, or online service.
 
-**Luxor PDF is a brand owned and operated by Fairnova Labs Private Limited.**
+**Luxor PDF is a brand owned and operated by Fairnova Labs.**
 
-This Refund Policy applies to purchases made directly through the official Luxor PDF website or another sales channel operated by Fairnova Labs Private Limited.
+This Refund Policy applies to purchases made directly through the official Luxor PDF website or another sales channel operated by Fairnova Labs.
 
 By purchasing a Luxor PDF product or service, you agree to this Refund Policy, the Luxor PDF Terms of Use, Privacy Policy, and any product-specific conditions displayed at checkout.
 
@@ -554,14 +554,14 @@ The policy applicable on the original purchase date will generally govern that p
 
 For refund requests, billing issues, duplicate charges, subscription questions, or payment concerns, contact:
 
-**Fairnova Labs Private Limited**
+**Fairnova Labs**
 **Luxor PDF Support:** [support@luxorpdf.com](mailto:support@luxorpdf.com)
 
 ---
 
 ## Brand Ownership Notice
 
-**Luxor PDF is a brand owned and operated by Fairnova Labs Private Limited.**
+**Luxor PDF is a brand owned and operated by Fairnova Labs.**
 
-All Luxor PDF products, software applications, licences, subscriptions, websites, and related services are owned or operated by Fairnova Labs Private Limited unless expressly stated otherwise.
+All Luxor PDF products, software applications, licences, subscriptions, websites, and related services are owned or operated by Fairnova Labs unless expressly stated otherwise.
 `;

@@ -3,9 +3,9 @@ export const privacyPolicyMarkdown = `
 
 Welcome to **Luxor PDF**.
 
-Luxor PDF is a brand owned and operated by **Fairnova Labs Private Limited**, a company incorporated under the laws of India.
+Luxor PDF is a brand owned and operated by **Fairnova Labs**, a company incorporated under the laws of India.
 
-This Privacy Policy explains how Fairnova Labs Private Limited collects, uses, stores, shares, and protects personal information when you access or use:
+This Privacy Policy explains how Fairnova Labs collects, uses, stores, shares, and protects personal information when you access or use:
 
 * The Luxor PDF website;
 * Luxor PDF Reader;
@@ -18,7 +18,7 @@ This Privacy Policy explains how Fairnova Labs Private Limited collects, uses, s
 * Customer-support services; and
 * Other Luxor PDF products or services that link to this Privacy Policy.
 
-In this Privacy Policy, **“Luxor PDF,” “Fairnova Labs,” “we,” “us,” or “our”** refers to Fairnova Labs Private Limited.
+In this Privacy Policy, **“Luxor PDF,” “Fairnova Labs,” “we,” “us,” or “our”** refers to Fairnova Labs.
 
 The words **“you” and “your”** refer to the individual using or interacting with Luxor PDF.
 
@@ -26,9 +26,9 @@ By accessing or using Luxor PDF, you acknowledge that you have read and understo
 
 ## 2. Company and Brand Disclosure
 
-**Luxor PDF is a brand of Fairnova Labs Private Limited.**
+**Luxor PDF is a brand of Fairnova Labs.**
 
-Luxor PDF is not a separate legal entity. Fairnova Labs Private Limited is responsible for operating Luxor PDF and processing personal information under this Privacy Policy, unless another arrangement is expressly stated in writing.
+Luxor PDF is not a separate legal entity. Fairnova Labs is responsible for operating Luxor PDF and processing personal information under this Privacy Policy, unless another arrangement is expressly stated in writing.
 
 For privacy questions or requests, contact:
 
@@ -388,13 +388,13 @@ In limited circumstances, information may be processed to:
 * Prevent serious harm;
 * Investigate security incidents;
 * Establish or defend legal claims; or
-* Protect the rights and property of Fairnova Labs Private Limited.
+* Protect the rights and property of Fairnova Labs.
 
 ## 7. Ownership and Confidentiality of Documents
 
 You retain ownership of documents, content, annotations, signatures, and other materials that you upload, create, or process through Luxor PDF.
 
-Fairnova Labs Private Limited does not acquire ownership of a document merely because it is processed using Luxor PDF.
+Fairnova Labs does not acquire ownership of a document merely because it is processed using Luxor PDF.
 
 We may process document contents only as reasonably necessary to:
 
@@ -530,7 +530,7 @@ Where appropriate, the recipient will be required to continue protecting persona
 
 ## 10. International Processing and Transfers
 
-Fairnova Labs Private Limited is based in India.
+Fairnova Labs is based in India.
 
 Our users, service providers, and technology infrastructure may be located in different countries. As a result, personal information may be processed in India or another country where:
 
@@ -762,7 +762,7 @@ Users remain responsible for complying with professional, contractual, confident
 Where a company, institution, or organisation uses Luxor PDF to process information concerning its customers, employees, students, contractors, or other individuals:
 
 * The organisation may determine why and how the information is processed;
-* Fairnova Labs Private Limited may process information on behalf of the organisation;
+* Fairnova Labs may process information on behalf of the organisation;
 * The organisation is responsible for providing required privacy notices;
 * The organisation is responsible for obtaining an appropriate legal basis;
 * We may process information according to the organisation’s documented instructions;
@@ -787,7 +787,7 @@ Luxor PDF may link to or integrate with third-party services, including:
 
 Third parties operate under their own terms and privacy policies.
 
-Fairnova Labs Private Limited is not responsible for the independent privacy practices of third-party services that it does not control.
+Fairnova Labs is not responsible for the independent privacy practices of third-party services that it does not control.
 
 You should review the applicable third-party policies before enabling or using an integration.
 
@@ -855,14 +855,14 @@ Continued use of Luxor PDF after the revised Privacy Policy becomes effective co
 
 For questions, complaints, security concerns, or requests relating to this Privacy Policy or the processing of personal information, contact:
 
-**Fairnova Labs Private Limited**
+**Fairnova Labs**
 **Luxor PDF Support:** [support@luxorpdf.com](mailto:support@luxorpdf.com)
 
 ---
 
 ## Brand Ownership Notice
 
-**Luxor PDF is a brand owned and operated by Fairnova Labs Private Limited.**
+**Luxor PDF is a brand owned and operated by Fairnova Labs.**
 
-All Luxor PDF products, applications, websites, subscriptions, licences, and related services are owned or operated by Fairnova Labs Private Limited unless expressly stated otherwise.
+All Luxor PDF products, applications, websites, subscriptions, licences, and related services are owned or operated by Fairnova Labs unless expressly stated otherwise.
 `;

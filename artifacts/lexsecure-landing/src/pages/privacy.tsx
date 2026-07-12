@@ -7,11 +7,11 @@ export default function PrivacyPage() {
       badge="Legal & Privacy"
       titleLead="Privacy"
       titleAccent="Policy"
-      subtitle="How Fairnova Labs Private Limited — owner and operator of the Luxor PDF brand — collects, uses, and protects your information."
+      subtitle="How Fairnova Labs — owner and operator of the Luxor PDF brand — collects, uses, and protects your information."
       effectiveDate="11 July 2026"
       lastUpdated="11 July 2026"
       markdown={privacyPolicyMarkdown}
-      footNote="Luxor PDF is a brand of Fairnova Labs Private Limited."
+      footNote="Luxor PDF is a brand of Fairnova Labs."
     />
   );
 }

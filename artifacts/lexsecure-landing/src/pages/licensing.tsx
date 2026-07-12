@@ -11,7 +11,7 @@ export default function LicensingPage() {
       effectiveDate="11 July 2026"
       lastUpdated="11 July 2026"
       markdown={licensingMarkdown}
-      footNote="Luxor PDF is a brand of Fairnova Labs Private Limited."
+      footNote="Luxor PDF is a brand of Fairnova Labs."
     />
   );
 }
