@@ -96,8 +96,9 @@ export default function Home3Page() {
                   <span className="text-[#DC2626]">All in One Place</span>
                 </h1>
                 <p className="text-[16px] text-slate-600 leading-relaxed max-w-md mb-7">
-                  Read, annotate, edit, convert, protect, and sign PDFs with speed and confidence.
-                  Everything you need, designed to work beautifully together.
+                  Read, annotate, edit, convert, compress, organize, and protect PDFs with speed
+                  and confidence. Everything you need to work with documents &mdash; beautifully
+                  together.
                 </p>
                 <div className="flex flex-wrap items-center gap-3 mb-7">
                   <a
