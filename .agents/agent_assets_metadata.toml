@@ -282,6 +282,12 @@ uri = "file://attached_assets/generated_images/cta_illustration_new.png"
 type = "image"
 title = "PDF suite CTA illustration"
 
+[[generated]]
+id = "WTP_cvWlS2Te1e19djGL1"
+uri = "file://attached_assets/generated_images/footer_shield_new.png"
+type = "image"
+title = "footer shield padlock illustration"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"

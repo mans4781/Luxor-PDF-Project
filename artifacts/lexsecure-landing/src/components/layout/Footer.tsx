@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "wouter";
 import { Mail, ShieldCheck } from "lucide-react";
+import footerShield from "@/assets/footer-shield.png";
 
 type LinkItem = { label: string; href: string };
 
@@ -110,43 +111,17 @@ export function Footer() {
       {/* Decorative shield with padlock, bottom-right */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-10 right-0 hidden lg:block"
+        className="pointer-events-none absolute -bottom-16 -right-8 hidden lg:block"
       >
-        <svg width="300" height="280" viewBox="0 0 300 280" fill="none">
-          <g opacity="0.5" stroke="#c7d4ef" strokeWidth="1.2">
-            <path d="M20 250 C90 210 150 240 260 190" />
-            <path d="M40 275 C120 230 200 260 295 205" />
-            <circle cx="52" cy="243" r="3" fill="#c7d4ef" stroke="none" />
-            <circle cx="210" cy="212" r="3" fill="#c7d4ef" stroke="none" />
-            <circle cx="150" cy="252" r="2.4" fill="#d8e2f5" stroke="none" />
-          </g>
-          <g opacity="0.85">
-            <path
-              d="M195 40 L255 62 V132 C255 178 230 212 195 228 C160 212 135 178 135 132 V62 Z"
-              fill="url(#lxfShield)"
-            />
-            <path
-              d="M195 52 L245 70 V130 C245 170 224 200 195 214 C166 200 145 170 145 130 V70 Z"
-              fill="#e4eafb"
-              opacity="0.6"
-            />
-            <rect x="172" y="120" width="46" height="40" rx="8" fill="#b9c9ec" />
-            <path
-              d="M180 120 V108 C180 99 187 92 195 92 C203 92 210 99 210 108 V120"
-              stroke="#b9c9ec"
-              strokeWidth="8"
-              fill="none"
-            />
-            <circle cx="195" cy="136" r="6" fill="#eef2fb" />
-            <rect x="192.5" y="138" width="5" height="12" rx="2.5" fill="#eef2fb" />
-          </g>
-          <defs>
-            <linearGradient id="lxfShield" x1="135" y1="40" x2="255" y2="228" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#dce5f8" />
-              <stop offset="1" stopColor="#c3d1f0" />
-            </linearGradient>
-          </defs>
-        </svg>
+        <img
+          src={footerShield}
+          alt=""
+          width={740}
+          height={860}
+          loading="lazy"
+          className="w-[300px] opacity-80 select-none"
+          draggable={false}
+        />
       </div>
 
       <div className="relative mx-auto max-w-7xl">
