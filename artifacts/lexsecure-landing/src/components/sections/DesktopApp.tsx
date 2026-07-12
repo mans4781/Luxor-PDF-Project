@@ -7,7 +7,7 @@ export function DesktopApp() {
   return (
     <section id="desktop" className="py-24 md:py-32 bg-gradient-to-b from-slate-50 via-indigo-50/40 to-slate-50 border-t border-slate-200 overflow-hidden">
       <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}

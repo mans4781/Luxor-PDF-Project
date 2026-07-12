@@ -436,7 +436,7 @@ export default function PricingPage() {
 
       {/* Full comparison table */}
       <section className="pb-24 bg-white">
-        <div className="container mx-auto px-6 max-w-6xl">
+        <div className="container mx-auto px-6 max-w-7xl">
           <div className="text-center mb-10">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Compare plans</p>
             <h2 className="text-3xl md:text-4xl text-slate-900 tracking-[-0.02em]">
