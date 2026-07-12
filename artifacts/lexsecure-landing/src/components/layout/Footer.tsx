@@ -21,8 +21,8 @@ const RESOURCE_LINKS: LinkItem[] = [
 
 const COMPANY_LINKS: LinkItem[] = [
   { label: "About Us", href: "/about" },
+  { label: "Invest in Us", href: "/invest" },
   { label: "Contact Us", href: "/contact" },
-  { label: "Licensing", href: "/licensing" },
   { label: "Refund Policy", href: "/refund" },
 ];
 
@@ -30,6 +30,7 @@ const LEGAL_LINKS: LinkItem[] = [
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Use", href: "/terms" },
   { label: "Cookie Policy", href: "/cookies" },
+  { label: "Licensing", href: "/licensing" },
 ];
 
 type SocialLink = {

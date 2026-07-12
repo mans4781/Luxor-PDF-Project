@@ -13,6 +13,7 @@ const TermsPage = lazy(() => import("@/pages/terms"));
 const CookiesPage = lazy(() => import("@/pages/cookies"));
 const LicensingPage = lazy(() => import("@/pages/licensing"));
 const RefundPage = lazy(() => import("@/pages/refund"));
+const InvestPage = lazy(() => import("@/pages/invest"));
 const PdfReaderPage = lazy(() => import("@/pages/products/pdf-reader"));
 const PdfEditorPage = lazy(() => import("@/pages/products/pdf-editor"));
 const ESignPage = lazy(() => import("@/pages/products/esign"));
@@ -61,6 +62,7 @@ function Router() {
       <Route path="/cookies" component={CookiesPage} />
       <Route path="/licensing" component={LicensingPage} />
       <Route path="/refund" component={RefundPage} />
+      <Route path="/invest" component={InvestPage} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/products/pdf-reader" component={PdfReaderPage} />
       <Route path="/products/pdf-editor" component={PdfEditorPage} />
