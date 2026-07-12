@@ -256,7 +256,7 @@ export function ImagesToPdf({
         page.drawImage(embedded, { x: 0, y: 0, width: w, height: h });
       }
       const bytes = await pdf.save();
-      await saveFile(new Blob([bytes], { type: "application/pdf" }), "converted.pdf");
+      await saveFile(new Blob([bytes as BlobPart], { type: "application/pdf" }), "converted.pdf");
       scheduleAutoRefresh();
     } catch {
       setError("Conversion failed. Make sure all images are valid and not corrupted.");
@@ -732,7 +732,7 @@ export function PdfToImages({ fixedFormat }: { fixedFormat?: ImageFormatValue } 
         canvas.width = Math.round(viewport.width);
         canvas.height = Math.round(viewport.height);
         const ctx = canvas.getContext("2d")!;
-        await page.render({ canvasContext: ctx, viewport }).promise;
+        await page.render({ canvasContext: ctx, viewport, canvas }).promise;
 
         let fileBytes: ArrayBuffer;
         const pageSlug = `${baseName}_page${String(i).padStart(3, "0")}`;

@@ -356,7 +356,7 @@ function ExpiryTab() {
     if (!file) return;
     const name = file.name;
     try {
-      const data = await uploadMutation.mutateAsync({ data: { file, expiryDate: new Date(expiryDate).toISOString() } });
+      const data = await uploadMutation.mutateAsync({ data: { file, expiryDate: new Date(expiryDate).toISOString(), expiryAction: "revoke" } });
       setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null);
       saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
       queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
@@ -474,7 +474,7 @@ function PasswordTab() {
     }
 
     try {
-      const data = await uploadMutation.mutateAsync({ data: { file: encryptedFile, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd") } });
+      const data = await uploadMutation.mutateAsync({ data: { file: encryptedFile, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd"), expiryAction: "revoke" } });
       setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null); setPassword("");
       saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
       queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });
@@ -740,7 +740,7 @@ function PrintControlTab() {
     }
 
     try {
-      const data = await uploadMutation.mutateAsync({ data: { file: restrictedFile, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd") } });
+      const data = await uploadMutation.mutateAsync({ data: { file: restrictedFile, expiryDate: format(addDays(new Date(), 365), "yyyy-MM-dd"), expiryAction: "revoke" } });
       setUploadedId(data.id); setUploadedShareToken(data.shareToken); setUploadedName(name); setFile(null);
       saveToLocalHistory({ id: data.id, shareToken: data.shareToken, originalName: data.originalName, fileSize: data.fileSize, expiryDate: data.expiryDate, createdAt: data.createdAt, updatedAt: data.updatedAt });
       queryClient.invalidateQueries({ queryKey: getGetPdfStatsQueryKey() });

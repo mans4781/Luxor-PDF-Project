@@ -192,7 +192,7 @@ export function MergeTab() {
         pages.forEach((p) => merged.addPage(p));
       }
       const bytes = await merged.save();
-      await saveFile(new Blob([bytes], { type: "application/pdf" }), "merged.pdf");
+      await saveFile(new Blob([bytes as BlobPart], { type: "application/pdf" }), "merged.pdf");
       scheduleAutoRefresh();
     } catch (e) {
       setError("Failed to merge PDFs. Make sure all files are valid, non-encrypted PDFs.");
@@ -293,7 +293,7 @@ export function SplitTab() {
         const [page] = await newDoc.copyPages(srcDoc, [i]);
         newDoc.addPage(page);
         const bytes = await newDoc.save();
-        const blob = new Blob([bytes], { type: "application/pdf" });
+        const blob = new Blob([bytes as BlobPart], { type: "application/pdf" });
         const filename = `${baseName}-${i + 1}.pdf`;
         await saveFile(blob, filename);
       }
@@ -461,7 +461,7 @@ export function ExtractTab() {
       const bytes = await newDoc.save();
       const baseName = file.name.replace(/\.pdf$/i, "");
       await saveFile(
-        new Blob([bytes], { type: "application/pdf" }),
+        new Blob([bytes as BlobPart], { type: "application/pdf" }),
         `${baseName}_extracted.pdf`
       );
       scheduleAutoRefresh();
@@ -680,7 +680,7 @@ export function DeleteTab() {
       const bytes = await newDoc.save();
       const baseName = file.name.replace(/\.pdf$/i, "");
       await saveFile(
-        new Blob([bytes], { type: "application/pdf" }),
+        new Blob([bytes as BlobPart], { type: "application/pdf" }),
         `${baseName}_trimmed.pdf`
       );
       scheduleAutoRefresh();
@@ -924,7 +924,7 @@ export function AddTab() {
       const bytes = await hostDoc.save();
       const baseName = hostFile.name.replace(/\.pdf$/i, "");
       await saveFile(
-        new Blob([bytes], { type: "application/pdf" }),
+        new Blob([bytes as BlobPart], { type: "application/pdf" }),
         `${baseName}_with_added_pages.pdf`
       );
       scheduleAutoRefresh();
