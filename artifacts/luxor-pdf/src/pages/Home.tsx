@@ -92,19 +92,27 @@ function HeroIllustration() {
           </filter>
         </defs>
         <circle cx="128" cy="104" r="86" fill="url(#lxhBlob)"/>
-        <rect x="196" y="58" width="42" height="52" rx="14" fill="url(#lxhDots)" opacity="0.85"/>
-        <g transform="translate(0,-14)">
-          <path d="M64 182c-8-36 6-70 32-88-2 40-10 72-32 88z" fill="#f2e6e7"/>
-          <path d="M78 184c-3-26 8-50 26-62-3 29-10 51-26 62z" fill="#ece0e1" opacity="0.9"/>
-          <path d="M170 172c30-6 50-26 56-54 2 34-18 58-52 62z" fill="#f6cfd2" opacity="0.85"/>
+        <rect x="204" y="16" width="40" height="30" rx="10" fill="url(#lxhDots)" opacity="0.7"/>
+        <rect x="14" y="148" width="34" height="40" rx="10" fill="url(#lxhDots)" opacity="0.6"/>
+        <g>
+          <path d="M92 150 C64 132 52 104 58 76 C82 96 94 124 92 150 Z" fill="#f4f5f7"/>
+          <path d="M95 162 C60 160 34 138 30 104 C62 118 88 138 95 162 Z" fill="#eef0f3"/>
+          <path d="M96 170 C72 170 52 158 44 140 C70 144 88 156 96 170 Z" fill="#e6e8ec"/>
+        </g>
+        <g>
+          <path d="M170 152 C196 132 206 104 202 78 C180 100 168 128 170 152 Z" fill="#f8bcc2"/>
+          <path d="M168 164 C204 158 226 132 230 100 C198 116 174 138 168 164 Z" fill="#f2939e"/>
+          <path d="M166 172 C192 172 212 160 220 144 C194 148 176 160 166 172 Z" fill="#f4a6ae" opacity="0.92"/>
         </g>
         <ellipse cx="130" cy="178" rx="66" ry="6.5" fill="#cbb9ba" opacity="0.35" filter="url(#lxhSoftShadow)"/>
-        <path d="M56 52l0 12M50 58l12 0" stroke="#eda6ac" strokeWidth="2.4" strokeLinecap="round"/>
-        <path d="M36 118l0 8M32 122l8 0" stroke="#f0c3c7" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M206 40l0 10M201 45l10 0" stroke="#f0c3c7" strokeWidth="2.2" strokeLinecap="round"/>
-        <path d="M230 142l0 10M225 147l10 0" stroke="#eda6ac" strokeWidth="2.2" strokeLinecap="round"/>
-        <circle cx="192" cy="26" r="2.6" fill="#f2c6c9"/>
-        <circle cx="48" cy="152" r="2.4" fill="#f2c6c9"/>
+        <path d="M48 38l0 12M42 44l12 0" stroke="#e58691" strokeWidth="2.4" strokeLinecap="round"/>
+        <path d="M218 30l0 10M213 35l10 0" stroke="#e58691" strokeWidth="2.2" strokeLinecap="round"/>
+        <path d="M26 122l0 9M21.5 126.5l9 0" stroke="#eda6ac" strokeWidth="2.1" strokeLinecap="round"/>
+        <path d="M234 146l0 10M229 151l10 0" stroke="#eda6ac" strokeWidth="2.2" strokeLinecap="round"/>
+        <circle cx="196" cy="24" r="4" stroke="#eda6ac" strokeWidth="1.8" fill="none"/>
+        <circle cx="36" cy="170" r="3.5" stroke="#f0c3c7" strokeWidth="1.7" fill="none"/>
+        <circle cx="226" cy="118" r="3" stroke="#f0c3c7" strokeWidth="1.6" fill="none"/>
+        <circle cx="60" cy="24" r="2.4" fill="#f2c6c9"/>
       </svg>
       <img
         src={`${import.meta.env.BASE_URL}brand/luxor-file.png`}
