@@ -141,9 +141,14 @@ export function Footer() {
                 className="h-11 w-auto select-none transition-transform duration-300 group-hover:scale-105"
                 draggable={false}
               />
-              <div className="text-[28px] font-black tracking-tight">
-                <span className="text-slate-900">Luxor</span>{" "}
-                <span className="text-[#DC2626]">PDF</span>
+              <div className="flex flex-col leading-none">
+                <span className="text-[28px] font-black tracking-tight">
+                  <span className="text-slate-900">Luxor</span>{" "}
+                  <span className="text-[#DC2626]">PDF</span>
+                </span>
+                <span className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  Secure PDF Suite
+                </span>
               </div>
             </Link>
             <p className="mt-5 max-w-xs text-justify text-[15px] leading-7 text-slate-600">
