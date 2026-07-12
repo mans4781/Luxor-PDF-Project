@@ -64,7 +64,7 @@ function CheckItem({ children, color }: { children: React.ReactNode; color: stri
 
 function ProductIcon({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="w-14 h-14 rounded-2xl shadow-md bg-white ring-1 ring-slate-900/5 overflow-hidden shrink-0 flex items-center justify-center">
+    <div className="w-14 h-14 shrink-0 flex items-center justify-center">
       <img src={asset(src)} alt={alt} className="w-full h-full object-contain" />
     </div>
   );
