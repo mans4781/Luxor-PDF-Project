@@ -734,6 +734,13 @@ export default function SignInPage() {
               </button>
             </div>
 
+            <p
+              className="mt-3 text-center text-[12px] text-slate-400"
+              data-testid="text-social-coming-soon"
+            >
+              Social sign-in is coming soon — please use email for now.
+            </p>
+
             {/* Security note */}
             <p className="mt-7 flex items-center justify-center gap-2 text-[12px] text-slate-500">
               <ShieldCheck className="h-4 w-4 text-slate-400" strokeWidth={2} />
