@@ -184,7 +184,7 @@ export function Navbar() {
               data-testid="nav-online-tools"
             >
               <Wrench className={linkIconCls} strokeWidth={2.2} />
-              Online Tools
+              Free Tools
               <ChevronDown className={`w-4 h-4 ml-0.5 transition-transform duration-200 ${toolsOpen ? "rotate-180" : ""}`} />
             </button>
 
