@@ -141,7 +141,6 @@ const TRUST_ITEMS = [
   { icon: Headphones, top: "24/7", bottom: "Support" },
 ];
 
-type Tab = "email" | "otp";
 type View = "login" | "forgot-code" | "forgot-password";
 
 const inputBase =
@@ -165,14 +164,12 @@ export default function SignInPage() {
     }
   }, [authLoaded, isSignedIn, isSsoCallback]);
 
-  const [tab, setTab] = useState<Tab>("email");
   const [view, setView] = useState<View>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [code, setCode] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -186,16 +183,6 @@ export default function SignInPage() {
     });
   };
 
-  const switchTab = (next: Tab) => {
-    if (next === tab) return;
-    setTab(next);
-    setView("login");
-    setCode("");
-    setOtpSent(false);
-    setLocalError(null);
-    void signIn.reset();
-  };
-
   const handlePasswordLogin = async (e: FormEvent) => {
     e.preventDefault();
     setLocalError(null);
@@ -205,23 +192,6 @@ export default function SignInPage() {
       await finishSignIn();
     } else {
       setLocalError("Additional verification is required for this account.");
-    }
-  };
-
-  const handleSendOtp = async (e: FormEvent) => {
-    e.preventDefault();
-    setLocalError(null);
-    const { error } = await signIn.emailCode.sendCode({ emailAddress: email });
-    if (!error) setOtpSent(true);
-  };
-
-  const handleVerifyOtp = async (e: FormEvent) => {
-    e.preventDefault();
-    setLocalError(null);
-    const { error } = await signIn.emailCode.verifyCode({ code });
-    if (error) return;
-    if (signIn.status === "complete") {
-      await finishSignIn();
     }
   };
 
@@ -384,34 +354,6 @@ export default function SignInPage() {
               </Link>
             </p>
 
-            {/* Tabs */}
-            <div className="mt-6 grid grid-cols-2 text-center text-[14px] font-semibold">
-              <button
-                type="button"
-                onClick={() => switchTab("email")}
-                className={`pb-2.5 border-b-2 transition-colors ${
-                  tab === "email"
-                    ? "border-[#DC2626] text-[#DC2626]"
-                    : "border-slate-200 text-slate-500 hover:text-slate-700"
-                }`}
-                data-testid="tab-email-login"
-              >
-                Email Login
-              </button>
-              <button
-                type="button"
-                onClick={() => switchTab("otp")}
-                className={`pb-2.5 border-b-2 transition-colors ${
-                  tab === "otp"
-                    ? "border-[#DC2626] text-[#DC2626]"
-                    : "border-slate-200 text-slate-500 hover:text-slate-700"
-                }`}
-                data-testid="tab-otp-login"
-              >
-                OTP Login
-              </button>
-            </div>
-
             {globalError && (
               <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[13px] text-rose-700">
                 {globalError}
@@ -419,7 +361,7 @@ export default function SignInPage() {
             )}
 
             {/* ── Email + password ── */}
-            {tab === "email" && view === "login" && (
+            {view === "login" && (
               <form onSubmit={handlePasswordLogin} className="mt-6">
                 <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">
                   Email Address
@@ -513,7 +455,7 @@ export default function SignInPage() {
             )}
 
             {/* ── Forgot password: code step ── */}
-            {tab === "email" && view === "forgot-code" && (
+            {view === "forgot-code" && (
               <form onSubmit={handleVerifyResetCode} className="mt-6">
                 <p className="text-[13px] text-slate-500">
                   We sent a reset code to{" "}
@@ -562,7 +504,7 @@ export default function SignInPage() {
             )}
 
             {/* ── Forgot password: new password step ── */}
-            {tab === "email" && view === "forgot-password" && (
+            {view === "forgot-password" && (
               <form onSubmit={handleSubmitNewPassword} className="mt-6">
                 <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">
                   New Password
@@ -606,101 +548,6 @@ export default function SignInPage() {
                 >
                   Save Password &amp; Log In
                 </button>
-              </form>
-            )}
-
-            {/* ── OTP login ── */}
-            {tab === "otp" && !otpSent && (
-              <form onSubmit={handleSendOtp} className="mt-6">
-                <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <input
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className={inputBase}
-                    data-testid="input-otp-email"
-                  />
-                </div>
-                {fieldError("identifier") && (
-                  <p className="mt-1.5 text-[12px] text-rose-600">
-                    {fieldError("identifier")}
-                  </p>
-                )}
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="relative mt-6 w-full rounded-xl bg-gradient-to-r from-[#EF4444] to-[#B91C1C] py-3 text-[15px] font-bold text-white shadow-lg shadow-rose-300/50 transition-all hover:from-[#DC2626] hover:to-[#991B1B] disabled:opacity-60"
-                  data-testid="button-send-otp"
-                >
-                  Send One-Time Code
-                  <ArrowRight className="absolute right-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2" />
-                </button>
-              </form>
-            )}
-
-            {tab === "otp" && otpSent && (
-              <form onSubmit={handleVerifyOtp} className="mt-6">
-                <p className="text-[13px] text-slate-500">
-                  We sent a one-time code to{" "}
-                  <span className="font-semibold text-slate-700">{email}</span>.
-                </p>
-                <label className="mt-4 block text-[13px] font-semibold text-slate-700 mb-1.5">
-                  One-Time Code
-                </label>
-                <div className="relative">
-                  <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <input
-                    inputMode="numeric"
-                    required
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    placeholder="Enter the 6-digit code"
-                    className={inputBase}
-                    data-testid="input-otp-code"
-                  />
-                </div>
-                {fieldError("code") && (
-                  <p className="mt-1.5 text-[12px] text-rose-600">
-                    {fieldError("code")}
-                  </p>
-                )}
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="relative mt-6 w-full rounded-xl bg-gradient-to-r from-[#EF4444] to-[#B91C1C] py-3 text-[15px] font-bold text-white shadow-lg shadow-rose-300/50 transition-all hover:from-[#DC2626] hover:to-[#991B1B] disabled:opacity-60"
-                  data-testid="button-verify-otp"
-                >
-                  Log In
-                  <ArrowRight className="absolute right-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2" />
-                </button>
-                <div className="mt-3 flex items-center justify-between text-[13px] font-semibold">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOtpSent(false);
-                      setCode("");
-                      void signIn.reset();
-                    }}
-                    className="text-slate-500 hover:text-slate-700"
-                  >
-                    Use a different email
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void signIn.emailCode.sendCode({ emailAddress: email })}
-                    className="text-[#DC2626] hover:text-[#B91C1C]"
-                    data-testid="button-resend-otp"
-                  >
-                    Resend code
-                  </button>
-                </div>
               </form>
             )}
 

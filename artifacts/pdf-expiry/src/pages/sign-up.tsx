@@ -37,8 +37,6 @@ const FEATURES = [
   { icon: PenLine, label: "eSign and manage signatures" },
 ];
 
-type Tab = "email" | "otp";
-
 function splitFullName(fullName: string): { firstName: string; lastName?: string } {
   const parts = fullName.trim().split(/\s+/);
   const firstName = parts[0] ?? "";
@@ -64,7 +62,6 @@ export default function SignUpPage() {
     }
   }, [authLoaded, isSignedIn, isSsoCallback]);
 
-  const [tab, setTab] = useState<Tab>("email");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -85,14 +82,6 @@ export default function SignUpPage() {
         window.location.href = decorateUrl(authRedirectTarget());
       },
     });
-  };
-
-  const switchTab = (next: Tab) => {
-    if (next === tab) return;
-    setTab(next);
-    setCode("");
-    setAwaitingCode(false);
-    setLocalError(null);
   };
 
   const validateCommon = (): boolean => {
@@ -127,22 +116,6 @@ export default function SignUpPage() {
     const { error } = await signUp.password({
       emailAddress: email,
       password,
-      firstName,
-      lastName,
-      legalAccepted: true,
-      unsafeMetadata: { productUpdates },
-    });
-    if (error) return;
-    await afterCreateOrPassword();
-  };
-
-  const handleOtpSignUp = async (e: FormEvent) => {
-    e.preventDefault();
-    setLocalError(null);
-    if (!validateCommon()) return;
-    const { firstName, lastName } = splitFullName(fullName);
-    const { error } = await signUp.create({
-      emailAddress: email,
       firstName,
       lastName,
       legalAccepted: true,
@@ -265,34 +238,6 @@ export default function SignUpPage() {
               </Link>
             </p>
 
-            {/* Tabs */}
-            <div className="mt-6 grid grid-cols-2 text-center text-[14px] font-semibold">
-              <button
-                type="button"
-                onClick={() => switchTab("email")}
-                className={`pb-2.5 border-b-2 transition-colors ${
-                  tab === "email"
-                    ? "border-[#DC2626] text-[#DC2626]"
-                    : "border-slate-200 text-slate-500 hover:text-slate-700"
-                }`}
-                data-testid="tab-email-signup"
-              >
-                Email Sign Up
-              </button>
-              <button
-                type="button"
-                onClick={() => switchTab("otp")}
-                className={`pb-2.5 border-b-2 transition-colors ${
-                  tab === "otp"
-                    ? "border-[#DC2626] text-[#DC2626]"
-                    : "border-slate-200 text-slate-500 hover:text-slate-700"
-                }`}
-                data-testid="tab-otp-signup"
-              >
-                OTP Sign Up
-              </button>
-            </div>
-
             {globalError && (
               <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[13px] text-rose-700">
                 {globalError}
@@ -357,10 +302,7 @@ export default function SignUpPage() {
                 </div>
               </form>
             ) : (
-              <form
-                onSubmit={tab === "email" ? handleEmailSignUp : handleOtpSignUp}
-                className="mt-6"
-              >
+              <form onSubmit={handleEmailSignUp} className="mt-6">
                 <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">
                   Full Name
                 </label>
@@ -405,73 +347,69 @@ export default function SignUpPage() {
                   </p>
                 )}
 
-                {tab === "email" && (
-                  <>
-                    <label className="mt-4 block text-[13px] font-semibold text-slate-700 mb-1.5">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        autoComplete="new-password"
-                        required
-                        minLength={8}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Create a strong password"
-                        className={authInputClass}
-                        data-testid="input-password"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((v) => !v)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                        aria-label={showPassword ? "Hide password" : "Show password"}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </button>
-                    </div>
-                    {fieldError("password") && (
-                      <p className="mt-1.5 text-[12px] text-rose-600">
-                        {fieldError("password")}
-                      </p>
+                <label className="mt-4 block text-[13px] font-semibold text-slate-700 mb-1.5">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    required
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create a strong password"
+                    className={authInputClass}
+                    data-testid="input-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
                     )}
-
-                    <label className="mt-4 block text-[13px] font-semibold text-slate-700 mb-1.5">
-                      Confirm Password
-                    </label>
-                    <div className="relative">
-                      <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                      <input
-                        type={showConfirm ? "text" : "password"}
-                        autoComplete="new-password"
-                        required
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm your password"
-                        className={authInputClass}
-                        data-testid="input-confirm-password"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirm((v) => !v)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                        aria-label={showConfirm ? "Hide password" : "Show password"}
-                      >
-                        {showConfirm ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </button>
-                    </div>
-                  </>
+                  </button>
+                </div>
+                {fieldError("password") && (
+                  <p className="mt-1.5 text-[12px] text-rose-600">
+                    {fieldError("password")}
+                  </p>
                 )}
+
+                <label className="mt-4 block text-[13px] font-semibold text-slate-700 mb-1.5">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type={showConfirm ? "text" : "password"}
+                    autoComplete="new-password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm your password"
+                    className={authInputClass}
+                    data-testid="input-confirm-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm((v) => !v)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    aria-label={showConfirm ? "Hide password" : "Show password"}
+                  >
+                    {showConfirm ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
 
                 <label className="mt-5 flex items-start gap-2 cursor-pointer select-none">
                   <input
@@ -520,7 +458,7 @@ export default function SignUpPage() {
                   className={authButtonClass}
                   data-testid="button-create-account"
                 >
-                  {tab === "email" ? "Create Account" : "Send Verification Code"}
+                  Create Account
                   <ArrowRight className="absolute right-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2" />
                 </button>
               </form>
