@@ -3,9 +3,9 @@ import { Link } from "wouter";
 import {
   ArrowRight,
   Shield,
-  Zap,
-  Heart,
-  Award,
+  ShieldCheck,
+  Rocket,
+  BadgeCheck,
   Users,
   Download,
   Globe,
@@ -212,10 +212,10 @@ export default function Home2Page() {
               className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-14 max-w-3xl"
             >
               {[
-                { icon: Shield, label: "Secure &\nReliable", color: "#DC2626", bg: "bg-red-50", border: "border-red-100" },
-                { icon: Zap, label: "Fast &\nEfficient", color: "#2563EB", bg: "bg-blue-50", border: "border-blue-100" },
-                { icon: Heart, label: "User First\nDesign", color: "#16A34A", bg: "bg-green-50", border: "border-green-100" },
-                { icon: Award, label: "Trusted by\nThousands", color: "#9333EA", bg: "bg-purple-50", border: "border-purple-100" },
+                { icon: ShieldCheck, label: "Secure &\nReliable", color: "#DC2626", bg: "bg-red-50", border: "border-red-100" },
+                { icon: Rocket, label: "Fast &\nEfficient", color: "#2563EB", bg: "bg-blue-50", border: "border-blue-100" },
+                { icon: Users, label: "User First\nDesign", color: "#16A34A", bg: "bg-green-50", border: "border-green-100" },
+                { icon: BadgeCheck, label: "Trusted by\nThousands", color: "#9333EA", bg: "bg-purple-50", border: "border-purple-100" },
               ].map(({ icon: Icon, label, color, bg, border }) => (
                 <div key={label} className="flex flex-col items-center text-center gap-3">
                   <div className={`w-14 h-14 rounded-2xl ${bg} border ${border} flex items-center justify-center`}>
