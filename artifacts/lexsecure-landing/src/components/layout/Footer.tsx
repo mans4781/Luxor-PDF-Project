@@ -113,7 +113,7 @@ export function Footer() {
         {/* Decorative shield with padlock, aligned with the content's right edge */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-10 right-0 hidden lg:block"
+          className="pointer-events-none absolute top-10 -right-12 hidden lg:block"
         >
           <img
             src={footerShield}
@@ -121,7 +121,7 @@ export function Footer() {
             width={740}
             height={860}
             loading="lazy"
-            className="w-[300px] opacity-80 select-none"
+            className="w-[300px] rotate-6 opacity-80 select-none"
             draggable={false}
           />
         </div>
