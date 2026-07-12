@@ -145,7 +145,7 @@ export default function Home3Page() {
                 <img
                   src={asset("hero-app.webp")}
                   alt="LuxorPDF app showing a protected monthly report with PDF tools"
-                  className="w-full max-w-xl mx-auto select-none"
+                  className="w-full lg:scale-110 lg:origin-center select-none"
                   draggable={false}
                 />
               </motion.div>
