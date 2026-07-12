@@ -16,7 +16,6 @@ const COMPANY_LINKS: LinkItem[] = [
   { label: "Features", href: "/features" },
   { label: "Pricing", href: "/pricing" },
   { label: "Home 2", href: "/home-2" },
-  { label: "About 2", href: "/about-2" },
 ];
 
 const POLICY_LINKS: LinkItem[] = [

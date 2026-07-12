@@ -5,10 +5,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import LandingPage from "@/pages/home-3";
 const Home2Page = lazy(() => import("@/pages/home-2"));
-const About2Page = lazy(() => import("@/pages/about-2"));
+const AboutPage = lazy(() => import("@/pages/about-2"));
 const WebAppPage = lazy(() => import("@/pages/web-app"));
 const PricingPage = lazy(() => import("@/pages/pricing"));
-const AboutPage = lazy(() => import("@/pages/about"));
 const PrivacyPage = lazy(() => import("@/pages/privacy"));
 const TermsPage = lazy(() => import("@/pages/terms"));
 const CookiesPage = lazy(() => import("@/pages/cookies"));
@@ -52,7 +51,7 @@ function Router() {
       <Route path="/" component={LandingPage} />
       <Route path="/home-2" component={Home2Page} />
       <Route path="/home-3" component={LandingPage} />
-      <Route path="/about-2" component={About2Page} />
+      <Route path="/about-2" component={AboutPage} />
       <Route path="/web-app" component={WebAppPage} />
       <Route path="/about" component={AboutPage} />
       <Route path="/privacy" component={PrivacyPage} />
