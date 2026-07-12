@@ -101,16 +101,19 @@ const reachCards = [
     icon: Mail,
     title: "Email Support",
     desc: "For all inquiries and support, reach out to us via email.",
+    email: "support@luxorpdf.com",
   },
   {
     icon: Headphones,
     title: "General Inquiries",
     desc: "Have a general question about our products or services?",
+    email: "enquiry@luxorpdf.com",
   },
   {
     icon: Star,
     title: "Feedback & Suggestions",
     desc: "We value your feedback! Help us improve by sharing your thoughts.",
+    email: "feedback@luxorpdf.com",
   },
 ];
 
@@ -301,7 +304,7 @@ export default function ContactPage() {
             <p className="mt-4 text-sm text-slate-500">Choose the most convenient way to get in touch with us.</p>
           </motion.div>
           <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
-            {reachCards.map(({ icon: Icon, title, desc }, i) => (
+            {reachCards.map(({ icon: Icon, title, desc, email }, i) => (
               <motion.div
                 key={title}
                 {...fade(i * 0.08)}
@@ -312,8 +315,8 @@ export default function ContactPage() {
                 </div>
                 <h3 className="mb-2 font-bold text-slate-900">{title}</h3>
                 <p className="mb-4 text-[13px] leading-relaxed text-slate-500">{desc}</p>
-                <a href="mailto:support@luxorpdf.com" className="mt-auto text-sm font-semibold text-[#DC2626] hover:underline">
-                  support@luxorpdf.com
+                <a href={`mailto:${email}`} className="mt-auto text-sm font-semibold text-[#DC2626] hover:underline">
+                  {email}
                 </a>
               </motion.div>
             ))}
