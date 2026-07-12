@@ -214,7 +214,7 @@ export default function Home2Page() {
                             </div>
                             {/* red building photo */}
                             <img
-                              src={`${import.meta.env.BASE_URL}brand/home2-building.png`}
+                              src={`${import.meta.env.BASE_URL}brand/home2-building.webp`}
                               alt="LuxorPDF headquarters building"
                               className="w-28 h-36 rounded-md object-cover shrink-0"
                             />
@@ -324,7 +324,7 @@ export default function Home2Page() {
                       </div>
                       {/* mountain photo */}
                       <img
-                        src={`${import.meta.env.BASE_URL}brand/home2-mountain.png`}
+                        src={`${import.meta.env.BASE_URL}brand/home2-mountain.webp`}
                         alt="Mountain landscape inside a PDF document"
                         className="w-24 h-28 rounded-md object-cover shrink-0"
                       />
@@ -345,7 +345,7 @@ export default function Home2Page() {
                       Read, annotate and share PDFs on the go with the same smooth experience.
                     </p>
                     <img
-                      src={`${import.meta.env.BASE_URL}brand/home2-mountain.png`}
+                      src={`${import.meta.env.BASE_URL}brand/home2-mountain.webp`}
                       alt="Mountain landscape on mobile PDF"
                       className="mt-2 h-10 w-full rounded object-cover"
                     />
@@ -355,7 +355,7 @@ export default function Home2Page() {
 
               {/* copy */}
               <div>
-                <AppIcon src="product-reader.png" alt="Luxor PDF Reader icon" />
+                <AppIcon src="product-reader.webp" alt="Luxor PDF Reader icon" />
                 <h3 className="text-2xl lg:text-3xl font-extrabold mt-5 mb-3" style={{ color: NAVY }}>
                   Luxor <span className="text-[#DC2626]">PDF Reader</span>
                 </h3>
@@ -392,7 +392,7 @@ export default function Home2Page() {
             >
               {/* copy */}
               <div className="order-2 lg:order-1">
-                <AppIcon src="product-secure.png" alt="Luxor PDF Secure icon" />
+                <AppIcon src="product-secure.webp" alt="Luxor PDF Secure icon" />
                 <h3 className="text-2xl lg:text-3xl font-extrabold mt-5 mb-3" style={{ color: NAVY }}>
                   Luxor <span className="text-[#2563EB]">PDF Secure</span>
                 </h3>
@@ -560,7 +560,7 @@ export default function Home2Page() {
 
               {/* copy */}
               <div>
-                <AppIcon src="product-esign.png" alt="Luxor PDF eSign icon" />
+                <AppIcon src="product-esign.webp" alt="Luxor PDF eSign icon" />
                 <h3 className="text-2xl lg:text-3xl font-extrabold mt-5 mb-3" style={{ color: NAVY }}>
                   Luxor <span className="text-[#16A34A]">PDF eSign</span>
                 </h3>

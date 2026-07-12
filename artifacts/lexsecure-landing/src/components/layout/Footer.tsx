@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "wouter";
 import { Mail } from "lucide-react";
-import footerShield from "@/assets/footer-shield.png";
+import footerShield from "@/assets/footer-shield.webp";
 
 type LinkItem = { label: string; href: string };
 
@@ -135,7 +135,7 @@ export function Footer() {
               aria-label="Luxor PDF — home"
             >
               <img
-                src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260712b`}
+                src={`${import.meta.env.BASE_URL}brand/luxor-icon-nav.webp`}
                 alt=""
                 className="h-11 w-auto select-none transition-transform duration-300 group-hover:scale-105"
                 draggable={false}

@@ -99,7 +99,7 @@ export default function About2Page() {
 
               <motion.div {...fadeUp} className="relative">
                 <img
-                  src={asset("about2-team.png")}
+                  src={asset("about2-team.webp")}
                   alt="The people behind Luxor PDF collaborating"
                   className="rounded-3xl shadow-2xl w-full object-cover aspect-[4/3]"
                 />
@@ -158,7 +158,7 @@ export default function About2Page() {
             <motion.div {...fadeUp} className="grid md:grid-cols-3 gap-6">
               {[
                 {
-                  icon: "product-reader.png",
+                  icon: "product-reader.webp",
                   tint: "bg-[#FDECEC] border-red-100/60",
                   color: RED,
                   name: "Reader",
@@ -166,7 +166,7 @@ export default function About2Page() {
                   text: "A fast, reliable, and user-friendly PDF reader designed for comfortable everyday document viewing, navigation, annotation, printing, and management.",
                 },
                 {
-                  icon: "product-secure.png",
+                  icon: "product-secure.webp",
                   tint: "bg-[#EAF2FD] border-blue-100/60",
                   color: BLUE,
                   name: "Secure",
@@ -174,7 +174,7 @@ export default function About2Page() {
                   text: "A powerful PDF security and document-management solution to protect, organize, convert, compress, merge, split, watermark, and securely share PDF files.",
                 },
                 {
-                  icon: "product-esign.png",
+                  icon: "product-esign.webp",
                   tint: "bg-[#EAF7EF] border-green-100/60",
                   color: GREEN,
                   name: "eSign",
@@ -268,7 +268,7 @@ export default function About2Page() {
                               </div>
                             </div>
                             <img
-                              src={asset("home3-office.png")}
+                              src={asset("home3-office.webp")}
                               alt="Team reviewing documents in Luxor PDF"
                               className="w-32 rounded-md object-cover shrink-0 hidden sm:block"
                             />
@@ -432,17 +432,17 @@ export default function About2Page() {
               <motion.div {...fadeUp} className="grid sm:grid-cols-3 gap-6">
                 {[
                   {
-                    img: "home3-illus-protection.png",
+                    img: "home3-illus-protection.webp",
                     title: "Security-Focused Approach",
                     text: "Tools that help you maintain greater control over confidential and sensitive documents.",
                   },
                   {
-                    img: "home3-illus-productivity.png",
+                    img: "home3-illus-productivity.webp",
                     title: "Simple by Design",
                     text: "Advanced document functions made easier to understand and use — for first-timers and professionals alike.",
                   },
                   {
-                    img: "home3-illus-collab.png",
+                    img: "home3-illus-collab.webp",
                     title: "Flexible for Individuals & Teams",
                     text: "Designed to support personal productivity as well as professional business operations.",
                   },

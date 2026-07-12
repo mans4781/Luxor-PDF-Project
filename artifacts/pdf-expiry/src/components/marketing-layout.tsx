@@ -141,7 +141,7 @@ function MarketingFooter() {
               aria-label="Luxor PDF — home"
             >
               <img
-                src={`${basePath}/brand/luxor-icon.png?v=20260712b`}
+                src={`${basePath}/brand/luxor-icon-nav.webp`}
                 alt=""
                 className="h-[53px] w-auto select-none transition-transform duration-300 group-hover:scale-105"
                 draggable={false}
@@ -269,7 +269,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
           {/* Logo */}
           <a href="/" className="group flex items-center gap-3 shrink-0">
             <img
-              src={`${baseUrl}brand/luxor-icon.png?v=20260712b`}
+              src={`${baseUrl}brand/luxor-icon-nav.webp`}
               alt=""
               aria-hidden="true"
               className="h-[53px] w-[53px] select-none rounded-[15%] border border-[#DC2626]/40 bg-white shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:border-[#DC2626]/70 group-hover:shadow-md"

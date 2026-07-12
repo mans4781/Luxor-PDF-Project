@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Download, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import ctaIllustration from "@/assets/cta-illustration.png";
+import ctaIllustration from "@/assets/cta-illustration.webp";
 
 /** Illustration lifted from the user's own mockup image. */
 function CtaIllustration() {

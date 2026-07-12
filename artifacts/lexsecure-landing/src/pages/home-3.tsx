@@ -121,7 +121,7 @@ export default function Home3Page() {
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2">
-                    {["home3-avatar1.png", "home3-avatar2.png", "home3-avatar3.png"].map((a) => (
+                    {["home3-avatar1.webp", "home3-avatar2.webp", "home3-avatar3.webp"].map((a) => (
                       <img
                         key={a}
                         src={asset(a)}
@@ -198,7 +198,7 @@ export default function Home3Page() {
                           </div>
                           {/* office photo */}
                           <img
-                            src={asset("home3-office.png")}
+                            src={asset("home3-office.webp")}
                             alt="Team working with documents"
                             className="w-28 h-full max-h-44 rounded-md object-cover shrink-0 hidden sm:block"
                           />
@@ -314,7 +314,7 @@ export default function Home3Page() {
               className="rounded-3xl bg-[#FDECEC] border border-red-100/60 p-7 flex flex-col"
             >
               <div className="flex items-center gap-3 mb-1.5">
-                <ProductIcon src="product-reader.png" alt="Luxor PDF Reader icon" />
+                <ProductIcon src="product-reader.webp" alt="Luxor PDF Reader icon" />
                 <h3 className="text-lg font-extrabold leading-tight" style={{ color: NAVY }}>
                   Luxor PDF
                   <br />
@@ -343,7 +343,7 @@ export default function Home3Page() {
                         it with your team in a clean, distraction-free workspace.
                       </p>
                       <img
-                        src={asset("home2-mountain.png")}
+                        src={asset("home2-mountain.webp")}
                         alt="Sample PDF page"
                         className="w-9 h-11 rounded-sm object-cover shrink-0"
                       />
@@ -366,7 +366,7 @@ export default function Home3Page() {
               className="rounded-3xl bg-[#EAF2FD] border border-blue-100/60 p-7 flex flex-col"
             >
               <div className="flex items-center gap-3 mb-1.5">
-                <ProductIcon src="product-secure.png" alt="Luxor PDF Secure icon" />
+                <ProductIcon src="product-secure.webp" alt="Luxor PDF Secure icon" />
                 <h3 className="text-lg font-extrabold leading-tight" style={{ color: NAVY }}>
                   Luxor PDF
                   <br />
@@ -409,7 +409,7 @@ export default function Home3Page() {
               className="rounded-3xl bg-[#EAF7EF] border border-green-100/60 p-7 flex flex-col"
             >
               <div className="flex items-center gap-3 mb-1.5">
-                <ProductIcon src="product-esign.png" alt="Luxor PDF eSign icon" />
+                <ProductIcon src="product-esign.webp" alt="Luxor PDF eSign icon" />
                 <h3 className="text-lg font-extrabold leading-tight" style={{ color: NAVY }}>
                   Luxor PDF
                   <br />
@@ -560,17 +560,17 @@ export default function Home3Page() {
               <motion.div {...fadeUp} className="grid sm:grid-cols-3 gap-6">
                 {[
                   {
-                    img: "home3-illus-protection.png",
+                    img: "home3-illus-protection.webp",
                     title: "Enterprise-Grade Protection",
                     text: "Bank-level encryption, compliance standards and secure infrastructure to keep your data safe.",
                   },
                   {
-                    img: "home3-illus-productivity.png",
+                    img: "home3-illus-productivity.webp",
                     title: "Boost Productivity",
                     text: "Powerful tools, AI assistance and seamless workflows to save time and get more done.",
                   },
                   {
-                    img: "home3-illus-collab.png",
+                    img: "home3-illus-collab.webp",
                     title: "Simple Collaboration",
                     text: "Share, collaborate and collect signatures with complete transparency and control.",
                   },
@@ -607,21 +607,21 @@ export default function Home3Page() {
                     "Luxor PDF Reader is incredibly fast and the annotation tools are perfect for my daily work. Highly recommended!",
                   name: "Sarah Johnson",
                   role: "Project Manager",
-                  avatar: "home3-avatar1.png",
+                  avatar: "home3-avatar1.webp",
                 },
                 {
                   quote:
                     "The security features give me peace of mind. We protect sensitive documents with ease.",
                   name: "Michael Chen",
                   role: "IT Security Lead",
-                  avatar: "home3-avatar2.png",
+                  avatar: "home3-avatar2.webp",
                 },
                 {
                   quote:
                     "eSigning documents has never been easier. Our clients love the simple experience.",
                   name: "Priya Sharma",
                   role: "Legal Advisor",
-                  avatar: "home3-avatar3.png",
+                  avatar: "home3-avatar3.webp",
                 },
               ].map(({ quote, name, role, avatar }) => (
                 <div

@@ -10,7 +10,7 @@ const productItems = [
   {
     label: "Luxor PDF Reader",
     href: "/products/pdf-reader",
-    iconSrc: "brand/product-reader.png",
+    iconSrc: "brand/product-reader.webp",
     desc: "Flagship PDF reader",
     badge: "Flagship",
     iconBg: "bg-[#DC2626]/5 border-[#DC2626]/15 group-hover:bg-[#DC2626]/10",
@@ -19,7 +19,7 @@ const productItems = [
   {
     label: "Luxor PDF Secure",
     href: "/products/pdf-security",
-    iconSrc: "brand/product-secure.png",
+    iconSrc: "brand/product-secure.webp",
     desc: "Self-destructing documents",
     badge: "Add-on",
     iconBg: "bg-[#2563EB]/5 border-[#2563EB]/15 group-hover:bg-[#2563EB]/10",
@@ -28,7 +28,7 @@ const productItems = [
   {
     label: "Luxor PDF eSign",
     href: "/products/esign",
-    iconSrc: "brand/product-esign.png",
+    iconSrc: "brand/product-esign.webp",
     desc: "Legally-binding eSignatures",
     badge: "Add-on",
     iconBg: "bg-[#16A34A]/5 border-[#16A34A]/15 group-hover:bg-[#16A34A]/10",
@@ -78,7 +78,7 @@ export function Navbar() {
         {/* Logo */}
         <Link href={import.meta.env.BASE_URL} className="group flex items-center gap-3">
           <img
-            src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260712b`}
+            src={`${import.meta.env.BASE_URL}brand/luxor-icon-nav.webp`}
             alt=""
             aria-hidden="true"
             className="h-[53px] w-auto select-none transition-transform duration-300 group-hover:scale-105"

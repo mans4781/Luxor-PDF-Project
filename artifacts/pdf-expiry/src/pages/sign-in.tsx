@@ -311,7 +311,7 @@ export default function SignInPage() {
               data-testid="link-logo-home"
             >
               <img
-                src={`${baseUrl}brand/luxor-icon.png?v=20260712b`}
+                src={`${baseUrl}brand/luxor-icon-nav.webp`}
                 alt=""
                 className="h-[53px] w-auto select-none"
                 draggable={false}
