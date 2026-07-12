@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { motion } from "framer-motion";
+import { Link } from "wouter";
 import { Download, Palette, Image as ImageIcon, Sparkles } from "lucide-react";
 
 const BASE = import.meta.env.BASE_URL; // e.g. "/" or "/lexsecure-landing/"
@@ -191,7 +192,7 @@ export default function BrandPage() {
 
           <p className="mt-8 text-sm text-slate-500 text-center">
             Need a custom asset or have a partnership question?{" "}
-            <a href="/contact" className="text-[#2563EB] font-semibold hover:text-[#1d4ed8]">Contact us</a>.
+            <Link href="/contact" className="text-[#2563EB] font-semibold hover:text-[#1d4ed8]">Contact us</Link>.
           </p>
         </div>
       </section>

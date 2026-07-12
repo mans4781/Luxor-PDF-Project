@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Link } from "wouter";
 import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
 import {
-  Mail, Phone, MapPin, Clock, Send, MessageSquare,
-  Headphones, Building2, ChevronRight, CheckCircle2
+  Mail, Send, MessageSquare, Headphones, Star, Check,
+  ChevronDown, Plus, Minus, CheckCircle2,
 } from "lucide-react";
 
 const fade = (delay = 0) => ({
@@ -13,116 +14,145 @@ const fade = (delay = 0) => ({
   transition: { duration: 0.55, delay },
 });
 
-/* ── Decorative SVG ── */
-function ContactGraphic() {
+/* ── Decorative leaves (original) ── */
+function LeafCluster({ className = "", tone = "grey" }: { className?: string; tone?: "grey" | "blush" }) {
+  const fills = tone === "blush" ? ["#fbd5d5", "#f8c4c4", "#fce8e8"] : ["#e5e7eb", "#eef0f3", "#f4f5f7"];
   return (
-    <svg viewBox="0 0 400 340" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-      {/* Background rings */}
-      <circle cx="200" cy="170" r="155" stroke="white" strokeOpacity="0.06" strokeWidth="1" />
-      <circle cx="200" cy="170" r="115" stroke="white" strokeOpacity="0.09" strokeWidth="1" />
-      <circle cx="200" cy="170" r="75"  stroke="white" strokeOpacity="0.13" strokeWidth="1" />
-
-      {/* Main envelope */}
-      <rect x="110" y="110" width="180" height="120" rx="12" fill="white" fillOpacity="0.14" stroke="white" strokeOpacity="0.35" strokeWidth="1.5"/>
-      {/* Envelope flap */}
-      <path d="M110 122 L200 175 L290 122" stroke="white" strokeOpacity="0.5" strokeWidth="1.5" fill="none" strokeLinejoin="round"/>
-      {/* Envelope lines */}
-      <line x1="130" y1="190" x2="210" y2="190" stroke="white" strokeOpacity="0.3" strokeWidth="2" strokeLinecap="round"/>
-      <line x1="130" y1="205" x2="190" y2="205" stroke="white" strokeOpacity="0.2" strokeWidth="2" strokeLinecap="round"/>
-
-      {/* Send arrow bubble */}
-      <circle cx="268" cy="218" r="22" fill="white" fillOpacity="0.2" stroke="white" strokeOpacity="0.4" strokeWidth="1.5"/>
-      <path d="M258 218 L274 218 M268 211 L275 218 L268 225" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-
-      {/* Chat bubbles */}
-      <rect x="48" y="80" width="90" height="52" rx="14" fill="white" fillOpacity="0.12" stroke="white" strokeOpacity="0.3" strokeWidth="1"/>
-      <path d="M62 132 L58 145 L74 132" fill="white" fillOpacity="0.12" stroke="white" strokeOpacity="0.3" strokeWidth="1"/>
-      <rect x="58" y="94" width="60" height="7" rx="3" fill="white" fillOpacity="0.4"/>
-      <rect x="58" y="108" width="45" height="6" rx="3" fill="white" fillOpacity="0.25"/>
-
-      <rect x="262" y="60" width="90" height="52" rx="14" fill="white" fillOpacity="0.12" stroke="white" strokeOpacity="0.3" strokeWidth="1"/>
-      <path d="M338 112 L342 125 L326 112" fill="white" fillOpacity="0.12" stroke="white" strokeOpacity="0.3" strokeWidth="1"/>
-      <rect x="272" y="74" width="60" height="7" rx="3" fill="white" fillOpacity="0.4"/>
-      <rect x="272" y="88" width="42" height="6" rx="3" fill="white" fillOpacity="0.25"/>
-
-      {/* Floating contact pills */}
-      <rect x="55"  y="230" width="78" height="26" rx="13" fill="white" fillOpacity="0.14" stroke="white" strokeOpacity="0.3"/>
-      <text x="94" y="247" textAnchor="middle" fill="white" fontSize="9.5" fontWeight="600">📧 Email</text>
-      <rect x="150" y="265" width="100" height="26" rx="13" fill="white" fillOpacity="0.14" stroke="white" strokeOpacity="0.3"/>
-      <text x="200" y="282" textAnchor="middle" fill="white" fontSize="9.5" fontWeight="600">💬 Live Chat</text>
-      <rect x="268" y="240" width="78" height="26" rx="13" fill="white" fillOpacity="0.14" stroke="white" strokeOpacity="0.3"/>
-      <text x="307" y="257" textAnchor="middle" fill="white" fontSize="9.5" fontWeight="600">📞 Phone</text>
-
-      {/* Dots */}
-      <circle cx="70"  cy="60"  r="5" fill="white" fillOpacity="0.25"/>
-      <circle cx="340" cy="185" r="4" fill="white" fillOpacity="0.2"/>
-      <circle cx="50"  cy="185" r="3" fill="#a78bfa" fillOpacity="0.6"/>
-      <circle cx="355" cy="295" r="6" fill="#fbbf24" fillOpacity="0.3"/>
+    <svg viewBox="0 0 120 120" fill="none" className={className} aria-hidden="true">
+      <path d="M20 118 C22 70 40 40 78 22 C58 62 44 92 38 118 Z" fill={fills[0]} />
+      <path d="M42 118 C48 80 66 56 98 44 C80 78 64 100 58 118 Z" fill={fills[1]} />
+      <path d="M4 118 C6 86 14 64 34 48 C24 76 16 100 14 118 Z" fill={fills[2]} />
     </svg>
   );
 }
 
+/* ── Satisfaction illustration (original): laptop + chat bubble + envelope ── */
+function SatisfactionIllustration() {
+  return (
+    <div className="relative mx-auto w-full max-w-[420px]" aria-hidden="true">
+      <svg viewBox="0 0 420 320" fill="none" className="w-full h-auto">
+        <defs>
+          <linearGradient id="lxsBubble" x1="0" y1="0" x2="0" y2="1">
+            <stop stopColor="#ef4444" />
+            <stop offset="1" stopColor="#dc2626" />
+          </linearGradient>
+          <pattern id="lxsDots" width="10" height="10" patternUnits="userSpaceOnUse">
+            <circle cx="1.8" cy="1.8" r="1.8" fill="#f3c9c9" />
+          </pattern>
+        </defs>
+
+        {/* leaves behind */}
+        <path d="M60 268 C56 200 76 152 128 118 C102 180 84 232 80 268 Z" fill="#e8eaee" />
+        <path d="M92 268 C96 214 118 176 160 152 C136 204 112 240 106 268 Z" fill="#f6dcdc" />
+        <path d="M348 268 C352 216 338 178 306 154 C326 202 340 240 342 268 Z" fill="#eceef1" />
+        <path d="M322 268 C320 228 308 198 284 180 C300 218 312 246 314 268 Z" fill="#f8e3e3" />
+
+        {/* dots + sparkles */}
+        <rect x="34" y="96" width="44" height="40" rx="4" fill="url(#lxsDots)" />
+        <path d="M330 74 l0 20 M320 84 l20 0" stroke="#ef8b8b" strokeWidth="3.4" strokeLinecap="round" />
+        <path d="M108 60 l0 12 M102 66 l12 0" stroke="#f3b0b0" strokeWidth="2.6" strokeLinecap="round" />
+        <circle cx="356" cy="128" r="5" stroke="#f3b0b0" strokeWidth="2.6" />
+        <circle cx="76" cy="170" r="4" stroke="#e3e6ea" strokeWidth="2.4" />
+
+        {/* laptop */}
+        <g>
+          <rect x="112" y="128" width="184" height="122" rx="10" fill="#3f4756" />
+          <rect x="120" y="136" width="168" height="106" rx="6" fill="#ffffff" />
+          {/* screen content: support doc rows */}
+          <rect x="132" y="148" width="64" height="8" rx="4" fill="#e6414d" opacity="0.85" />
+          <rect x="132" y="166" width="140" height="7" rx="3.5" fill="#e5e9ef" />
+          <rect x="132" y="181" width="126" height="7" rx="3.5" fill="#edf0f4" />
+          <rect x="132" y="196" width="140" height="7" rx="3.5" fill="#e5e9ef" />
+          <rect x="132" y="211" width="96" height="7" rx="3.5" fill="#edf0f4" />
+          <rect x="132" y="226" width="52" height="9" rx="4.5" fill="#f6caca" />
+          {/* base */}
+          <path d="M92 250 H316 L302 266 C300 268.4 297 270 294 270 H114 C111 270 108 268.4 106 266 Z" fill="#4b5364" />
+          <rect x="186" y="252" width="36" height="5" rx="2.5" fill="#39404e" />
+        </g>
+
+        {/* chat bubble */}
+        <g>
+          <path
+            d="M132 46 C132 33 142.7 22 156 22 H208 C221.3 22 232 33 232 46 V74 C232 87 221.3 98 208 98 H172 L150 118 L154 98 H156 C142.7 98 132 87 132 74 Z"
+            fill="url(#lxsBubble)"
+          />
+          <circle cx="163" cy="60" r="6" fill="#ffffff" />
+          <circle cx="182" cy="60" r="6" fill="#ffffff" opacity="0.85" />
+          <circle cx="201" cy="60" r="6" fill="#ffffff" opacity="0.7" />
+        </g>
+
+        {/* envelope */}
+        <g transform="rotate(-6 262 236)">
+          <rect x="218" y="204" width="88" height="62" rx="8" fill="#ffffff" stroke="#e4e7ec" />
+          <path d="M220 210 L262 240 L304 210" stroke="#e6414d" strokeWidth="3" fill="none" strokeLinejoin="round" />
+          <path d="M218 262 L248 236 M306 262 L276 236" stroke="#eef0f4" strokeWidth="2.4" />
+        </g>
+
+        {/* ground shadow */}
+        <ellipse cx="204" cy="286" rx="130" ry="10" fill="#d9dde3" opacity="0.5" />
+      </svg>
+    </div>
+  );
+}
+
 /* ── Data ── */
-const channels = [
+const reachCards = [
   {
     icon: Mail,
     title: "Email Support",
-    desc: "For general questions, billing, and account issues.",
-    contact: "support@luxorpdf.com",
-    badge: "Replies within 24 hrs",
-    badgeColor: "bg-sky-100 text-sky-700",
-    gradient: "from-sky-500 to-blue-600",
-    bg: "bg-sky-50",
-    iconColor: "text-sky-600",
+    desc: "For all inquiries and support, reach out to us via email.",
   },
   {
     icon: Headphones,
-    title: "Priority Support",
-    desc: "For Professional & Enterprise plan holders.",
-    contact: "priority@luxorpdf.com",
-    badge: "Replies within 4 hrs",
-    badgeColor: "bg-violet-100 text-violet-700",
-    gradient: "from-violet-600 to-indigo-600",
-    bg: "bg-violet-50",
-    iconColor: "text-violet-600",
+    title: "General Inquiries",
+    desc: "Have a general question about our products or services?",
   },
   {
-    icon: Building2,
-    title: "Sales & Enterprise",
-    desc: "Custom plans, volume licensing, and demos.",
-    contact: "sales@luxorpdf.com",
-    badge: "Same-day response",
-    badgeColor: "bg-amber-100 text-amber-700",
-    gradient: "from-amber-500 to-orange-500",
-    bg: "bg-amber-50",
-    iconColor: "text-amber-600",
+    icon: Star,
+    title: "Feedback & Suggestions",
+    desc: "We value your feedback! Help us improve by sharing your thoughts.",
   },
 ];
 
-const info = [
-  { icon: MapPin, label: "Office", value: "12 Holborn Viaduct, London, EC1A 2BN, United Kingdom" },
-  { icon: Phone,  label: "Phone", value: "+44 20 7946 0321" },
-  { icon: Clock,  label: "Hours", value: "Mon–Fri 9 AM – 6 PM GMT · Emergency support 24 / 7 (Enterprise)" },
-  { icon: Mail,   label: "General", value: "hello@luxorpdf.com" },
+const satisfactionPoints = [
+  "Expert support from real people",
+  "Quick and helpful responses",
+  "We listen, we care, we improve",
 ];
 
-const topics = [
-  "General enquiry",
-  "Sales & pricing",
-  "Technical support",
-  "Bug report",
-  "Feature request",
-  "Partnership",
-  "Press & media",
-  "Other",
+const heroPoints = [
+  "We reply to all emails within 24 hours",
+  "Friendly and knowledgeable support",
+  "Committed to providing the best experience",
+];
+
+const products = ["Luxor PDF Reader", "Luxor PDF Secure", "Luxor PDF eSign", "Convert Tools", "Other"];
+
+const faqs = [
+  {
+    q: "How long does it take to get a response?",
+    a: "We reply to every email within 24 hours, and usually much faster during business days. Complex technical questions may take a little longer while we investigate properly.",
+  },
+  {
+    q: "What information should I include in my message?",
+    a: "Tell us which Luxor PDF product you're using, what you were trying to do, and what happened instead. Screenshots and your operating system version help us resolve things faster.",
+  },
+  {
+    q: "Do you offer technical support?",
+    a: "Yes — every Luxor PDF user gets technical support by email. Paid plan holders receive priority handling, and we'll walk you through any setup, licensing, or feature question.",
+  },
 ];
 
 type FormState = "idle" | "sending" | "sent";
 
+const inputCls =
+  "w-full h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/25 focus:border-red-400 transition-all";
+
 /* ── Component ── */
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: "", email: "", company: "", topic: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", subject: "", product: "", message: "" });
   const [status, setStatus] = useState<FormState>("idle");
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -137,311 +167,284 @@ export default function ContactPage() {
   return (
     <ProductPageLayout>
 
-      {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-violet-950 text-white py-20">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0    left-1/4  w-[480px] h-[480px] bg-violet-600/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-[380px] h-[380px] bg-indigo-600/10 rounded-full blur-3xl" />
-          <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
-            <defs><pattern id="cg" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="0.5"/>
-            </pattern></defs>
-            <rect width="100%" height="100%" fill="url(#cg)" />
-          </svg>
+      {/* ── Hero: intro + form card ── */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#fdf7f7] to-white py-16 lg:py-20">
+        {/* decorative backdrop */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -right-24 top-1/3 h-72 w-72 rounded-full bg-rose-100/60 blur-2xl" />
+          <LeafCluster className="absolute bottom-0 left-0 w-40 opacity-90" tone="blush" />
+          <LeafCluster className="absolute bottom-0 left-24 w-28 opacity-70" tone="grey" />
         </div>
 
-        <div className="container mx-auto px-6 relative">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="container relative mx-auto px-6">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            {/* Left copy */}
             <motion.div {...fade(0)}>
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
-                <MessageSquare className="w-3.5 h-3.5 text-violet-300" />
-                We're here to help
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-200 bg-white px-4 py-1.5 text-xs font-bold text-[#DC2626] shadow-sm">
+                <MessageSquare className="h-3.5 w-3.5" />
+                We'd Love to Hear From You
               </div>
-              <h1 className="text-5xl font-bold leading-tight mb-5 text-white">
-                Get in touch with{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-300 to-indigo-300">
-                  Luxor PDF
-                </span>
-              </h1>
-              <p className="text-indigo-200 text-lg leading-relaxed mb-8">
-                Whether you have a question about features, pricing, need a demo, or just want to say hello — our team is ready and happy to help.
+              <h1 className="mb-5 font-serif text-5xl font-bold leading-tight text-slate-900">Contact Us</h1>
+              <p className="mb-8 max-w-md text-[15px] leading-relaxed text-slate-600">
+                Have a question, feedback, or need support? Our team is here to help you with anything related
+                to <span className="font-semibold text-[#DC2626]">Luxor PDF</span>.
               </p>
-              <div className="flex flex-col gap-3">
-                {info.map(({ icon: Icon, label, value }) => (
-                  <div key={label} className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
-                      <Icon className="w-4 h-4 text-violet-300" />
-                    </div>
-                    <div>
-                      <span className="text-white/50 text-xs font-semibold uppercase tracking-wide">{label}</span>
-                      <p className="text-white/85 text-sm leading-snug">{value}</p>
-                    </div>
-                  </div>
+              <ul className="space-y-3">
+                {heroPoints.map(point => (
+                  <li key={point} className="flex items-center gap-3 text-sm text-slate-700">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-100">
+                      <Check className="h-3 w-3 text-[#DC2626]" strokeWidth={3} />
+                    </span>
+                    {point}
+                  </li>
                 ))}
-              </div>
+              </ul>
             </motion.div>
-            <motion.div {...fade(0.15)} className="flex items-center justify-center">
-              <div className="w-full max-w-sm aspect-[4/3.4]">
-                <ContactGraphic />
+
+            {/* Form card */}
+            <motion.div {...fade(0.12)}>
+              <div className="rounded-3xl border border-slate-100 bg-white p-7 shadow-xl shadow-rose-100/60 sm:p-9">
+                <div className="mb-6 text-center">
+                  <h2 className="font-serif text-2xl font-bold text-slate-900">Send us a Message</h2>
+                  <p className="mt-1.5 text-[13px] text-slate-500">
+                    Fill out the form below and our team will get back to you.
+                  </p>
+                </div>
+
+                {status === "sent" ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center justify-center rounded-2xl border border-red-100 bg-red-50/60 px-8 py-14 text-center"
+                  >
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100">
+                      <CheckCircle2 className="h-7 w-7 text-[#DC2626]" strokeWidth={1.8} />
+                    </div>
+                    <h3 className="mb-1.5 text-lg font-bold text-slate-900">Message sent!</h3>
+                    <p className="max-w-xs text-sm text-slate-500">
+                      Thanks for reaching out. Our team will get back to you within 24 hours.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setStatus("idle");
+                        setForm({ name: "", email: "", subject: "", product: "", message: "" });
+                      }}
+                      className="mt-5 text-sm font-semibold text-[#DC2626] hover:underline"
+                    >
+                      Send another message
+                    </button>
+                  </motion.div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <input
+                        type="text" name="name" required value={form.name} onChange={handleChange}
+                        placeholder="Full Name" aria-label="Full Name" className={inputCls}
+                      />
+                      <input
+                        type="email" name="email" required value={form.email} onChange={handleChange}
+                        placeholder="Email Address" aria-label="Email Address" className={inputCls}
+                      />
+                    </div>
+                    <input
+                      type="text" name="subject" required value={form.subject} onChange={handleChange}
+                      placeholder="Subject" aria-label="Subject" className={inputCls}
+                    />
+                    <div className="relative">
+                      <select
+                        name="product" required value={form.product} onChange={handleChange}
+                        aria-label="Product"
+                        className={`${inputCls} appearance-none pr-10 ${form.product ? "text-slate-700" : "text-slate-400"}`}
+                      >
+                        <option value="" disabled>Product</option>
+                        {products.map(p => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    </div>
+                    <textarea
+                      name="message" required value={form.message} onChange={handleChange}
+                      rows={5} placeholder="Message" aria-label="Message"
+                      className="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 transition-all focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500/25"
+                    />
+                    <button
+                      type="submit"
+                      disabled={status === "sending"}
+                      className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#ef4444] to-[#DC2626] text-sm font-bold text-white shadow-lg shadow-red-500/25 transition-all hover:from-[#e63c3c] hover:to-[#c81e1e] disabled:opacity-70"
+                    >
+                      {status === "sending" ? (
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                      ) : (
+                        <>
+                          Send Message
+                          <Send className="h-4 w-4" />
+                        </>
+                      )}
+                    </button>
+                    <p className="text-center text-[11px] text-slate-400">
+                      By submitting this form, you agree to our{" "}
+                      <Link href="/privacy" className="font-semibold text-[#DC2626] hover:underline">Privacy Policy</Link>.
+                    </p>
+                  </form>
+                )}
               </div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* ── Contact Channels ── */}
-      <section className="py-16 bg-slate-50">
+      {/* ── Other Ways to Reach Us ── */}
+      <section className="bg-white py-16 lg:py-20">
         <div className="container mx-auto px-6">
-          <motion.div {...fade()} className="text-center mb-12">
-            <span className="text-xs font-bold uppercase tracking-widest text-violet-600 bg-violet-50 px-3 py-1.5 rounded-full">Get Help Fast</span>
-            <h2 className="text-3xl font-bold text-slate-800 mt-4 mb-2">Choose your channel</h2>
-            <p className="text-slate-500">Pick the contact method that suits your need.</p>
+          <motion.div {...fade()} className="mb-12 text-center">
+            <h2 className="font-serif text-3xl font-bold text-slate-900">Other Ways to Reach Us</h2>
+            <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-[#DC2626]" />
+            <p className="mt-4 text-sm text-slate-500">Choose the most convenient way to get in touch with us.</p>
           </motion.div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {channels.map(({ icon: Icon, title, desc, contact, badge, badgeColor, gradient, bg, iconColor }, i) => (
+          <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
+            {reachCards.map(({ icon: Icon, title, desc }, i) => (
               <motion.div
                 key={title}
                 {...fade(i * 0.08)}
-                className="bg-white rounded-3xl p-7 border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4"
+                className="flex flex-col items-center rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm transition-shadow hover:shadow-md"
               >
-                <div className={`w-12 h-12 ${bg} rounded-2xl flex items-center justify-center`}>
-                  <Icon className={`w-5 h-5 ${iconColor}`} strokeWidth={2} />
+                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-b from-[#ef4444] to-[#DC2626] shadow-lg shadow-red-500/25">
+                  <Icon className="h-6 w-6 text-white" strokeWidth={2} />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <h3 className="font-bold text-slate-800">{title}</h3>
-                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${badgeColor}`}>{badge}</span>
-                  </div>
-                  <p className="text-slate-500 text-sm mb-3">{desc}</p>
-                  <a
-                    href={`mailto:${contact}`}
-                    className={`inline-flex items-center gap-2 text-sm font-semibold bg-gradient-to-r ${gradient} bg-clip-text text-transparent hover:opacity-80 transition-opacity`}
-                  >
-                    {contact}
-                    <ChevronRight className={`w-3.5 h-3.5 text-violet-600`} />
-                  </a>
-                </div>
+                <h3 className="mb-2 font-bold text-slate-900">{title}</h3>
+                <p className="mb-4 text-[13px] leading-relaxed text-slate-500">{desc}</p>
+                <a href="mailto:support@luxorpdf.com" className="mt-auto text-sm font-semibold text-[#DC2626] hover:underline">
+                  support@luxorpdf.com
+                </a>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Contact Form + Map ── */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-12 max-w-5xl mx-auto items-start">
-
-            {/* Form */}
+      {/* ── Satisfaction ── */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#fdf5f5] via-[#faf7f8] to-[#f7f4f5] py-16 lg:py-20">
+        <div className="container relative mx-auto px-6">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
             <motion.div {...fade(0)}>
-              <h2 className="text-3xl font-bold text-slate-800 mb-2">Send us a message</h2>
-              <p className="text-slate-500 text-sm mb-8">Fill out the form and we'll get back to you within one business day.</p>
-
-              {status === "sent" ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="flex flex-col items-center justify-center text-center py-16 px-8 bg-emerald-50 rounded-3xl border border-emerald-100"
-                >
-                  <div className="w-16 h-16 bg-emerald-100 rounded-3xl flex items-center justify-center mb-5">
-                    <CheckCircle2 className="w-8 h-8 text-emerald-600" strokeWidth={1.8} />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-800 mb-2">Message sent!</h3>
-                  <p className="text-slate-500 text-sm max-w-xs">Thanks for reaching out. A member of our team will get back to you within 24 hours.</p>
-                  <button
-                    onClick={() => { setStatus("idle"); setForm({ name: "", email: "", company: "", topic: "", message: "" }); }}
-                    className="mt-6 text-sm text-emerald-700 font-semibold hover:underline"
-                  >
-                    Send another message
-                  </button>
-                </motion.div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Full name <span className="text-rose-500">*</span></label>
-                      <input
-                        type="text" name="name" required value={form.name} onChange={handleChange}
-                        placeholder="Jane Doe"
-                        className="w-full h-11 px-4 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 transition-all bg-slate-50"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Email address <span className="text-rose-500">*</span></label>
-                      <input
-                        type="email" name="email" required value={form.email} onChange={handleChange}
-                        placeholder="you@company.com"
-                        className="w-full h-11 px-4 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 transition-all bg-slate-50"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Company / Organisation</label>
-                    <input
-                      type="text" name="company" value={form.company} onChange={handleChange}
-                      placeholder="Acme Legal Ltd. (optional)"
-                      className="w-full h-11 px-4 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 transition-all bg-slate-50"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Topic <span className="text-rose-500">*</span></label>
-                    <select
-                      name="topic" required value={form.topic} onChange={handleChange}
-                      className="w-full h-11 px-4 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 transition-all bg-slate-50 text-slate-700 appearance-none"
-                    >
-                      <option value="" disabled>Select a topic…</option>
-                      {topics.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Message <span className="text-rose-500">*</span></label>
-                    <textarea
-                      name="message" required value={form.message} onChange={handleChange}
-                      rows={5}
-                      placeholder="Tell us how we can help…"
-                      className="w-full px-4 py-3 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 transition-all bg-slate-50 resize-none"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={status === "sending"}
-                    className="w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-violet-500/25 transition-all duration-200 disabled:opacity-70"
-                  >
-                    {status === "sending" ? (
-                      <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        Send Message
-                        <Send className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-
-                  <p className="text-center text-xs text-slate-400">
-                    We respect your privacy. Your data is never sold or shared.
-                  </p>
-                </form>
-              )}
+              <SatisfactionIllustration />
             </motion.div>
-
-            {/* Info sidebar */}
-            <motion.div {...fade(0.12)} className="flex flex-col gap-6">
-              {/* Map placeholder */}
-              <div className="rounded-3xl overflow-hidden border border-slate-100 shadow-sm bg-gradient-to-br from-indigo-50 to-violet-50 relative" style={{ height: 240 }}>
-                <svg viewBox="0 0 520 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                  {/* Grid lines for map feel */}
-                  {[0,40,80,120,160,200].map(y => (
-                    <line key={`h${y}`} x1="0" y1={y} x2="520" y2={y} stroke="#e0e7ff" strokeWidth="1"/>
-                  ))}
-                  {[0,60,120,180,240,300,360,420,480].map(x => (
-                    <line key={`v${x}`} x1={x} y1="0" x2={x} y2="240" stroke="#e0e7ff" strokeWidth="1"/>
-                  ))}
-                  {/* Roads */}
-                  <path d="M0 120 Q130 100 260 120 Q390 140 520 120" stroke="#c7d2fe" strokeWidth="8" strokeLinecap="round"/>
-                  <path d="M200 0 Q210 120 220 240" stroke="#c7d2fe" strokeWidth="6" strokeLinecap="round"/>
-                  <path d="M0 60  Q200 70 520 50"  stroke="#e0e7ff" strokeWidth="4"/>
-                  <path d="M0 180 Q220 185 520 170" stroke="#e0e7ff" strokeWidth="4"/>
-                  {/* Blocks */}
-                  <rect x="30"  y="70"  width="80" height="40" rx="6" fill="#ddd6fe" fillOpacity="0.6"/>
-                  <rect x="310" y="50"  width="90" height="55" rx="6" fill="#ddd6fe" fillOpacity="0.5"/>
-                  <rect x="60"  y="145" width="60" height="50" rx="6" fill="#ddd6fe" fillOpacity="0.5"/>
-                  <rect x="340" y="145" width="100"height="60" rx="6" fill="#ddd6fe" fillOpacity="0.5"/>
-                  {/* Pin */}
-                  <circle cx="218" cy="118" r="18" fill="#6d28d9" fillOpacity="0.15"/>
-                  <circle cx="218" cy="118" r="10" fill="#6d28d9"/>
-                  <circle cx="218" cy="115" r="4"  fill="white"/>
-                  <path d="M218 128 L218 138" stroke="#6d28d9" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-                <div className="absolute inset-0 flex items-end p-4 pointer-events-none">
-                  <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-2.5 border border-slate-100 shadow-sm">
-                    <p className="text-xs font-bold text-slate-800">Luxor PDF HQ</p>
-                    <p className="text-[10px] text-slate-500">12 Holborn Viaduct, London, EC1A 2BN</p>
-                  </div>
-                </div>
+            <motion.div {...fade(0.12)}>
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-200 bg-white px-4 py-1.5 text-[11px] font-bold uppercase tracking-wide text-[#DC2626] shadow-sm">
+                <Headphones className="h-3.5 w-3.5" />
+                We Are Here to Help
               </div>
-
-              {/* Office hours */}
-              <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100">
-                <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-violet-600" /> Office Hours
-                </h3>
-                <div className="space-y-2">
-                  {[
-                    { days: "Monday – Friday", hours: "9:00 AM – 6:00 PM GMT", active: true },
-                    { days: "Saturday",        hours: "10:00 AM – 2:00 PM GMT", active: true },
-                    { days: "Sunday",          hours: "Closed", active: false },
-                  ].map(({ days, hours, active }) => (
-                    <div key={days} className="flex justify-between items-center text-sm">
-                      <span className="text-slate-600 font-medium">{days}</span>
-                      <span className={active ? "text-emerald-600 font-semibold" : "text-slate-400"}>{hours}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 pt-4 border-t border-slate-200">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-xs text-slate-500">Enterprise 24 / 7 emergency support always active</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Social links */}
-              <div className="bg-gradient-to-br from-violet-600 to-indigo-700 rounded-3xl p-6 text-white">
-                <h3 className="font-bold mb-1">Follow us</h3>
-                <p className="text-indigo-200 text-sm mb-4">Stay updated on new features, tips, and news.</p>
-                <div className="flex flex-wrap gap-3">
-                  {[
-                    { label: "Twitter / X",  href: "#", emoji: "𝕏" },
-                    { label: "LinkedIn",     href: "#", emoji: "in" },
-                    { label: "YouTube",      href: "#", emoji: "▶" },
-                    { label: "GitHub",       href: "#", emoji: "⌥" },
-                  ].map(({ label, href, emoji }) => (
-                    <a
-                      key={label}
-                      href={href}
-                      className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors"
-                    >
-                      <span>{emoji}</span> {label}
-                    </a>
-                  ))}
-                </div>
-              </div>
+              <h2 className="mb-5 font-serif text-4xl font-bold leading-tight text-slate-900">
+                Your Satisfaction
+                <br />
+                Is <span className="text-[#DC2626]">Our Priority</span>
+              </h2>
+              <p className="mb-7 max-w-md text-[15px] leading-relaxed text-slate-600">
+                At <span className="font-semibold">Luxor PDF</span>, we are committed to providing you with the best
+                possible experience. Whether you need help with our products, have a suggestion, or just want to say
+                hello, we're here for you.
+              </p>
+              <ul className="space-y-3">
+                {satisfactionPoints.map(point => (
+                  <li key={point} className="flex items-center gap-3 text-sm text-slate-700">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-100">
+                      <Check className="h-3 w-3 text-[#DC2626]" strokeWidth={3} />
+                    </span>
+                    {point}
+                  </li>
+                ))}
+              </ul>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* ── FAQ Teaser ── */}
-      <section className="py-14 bg-slate-50 border-t border-slate-100">
-        <div className="container mx-auto px-6 max-w-2xl text-center">
-          <motion.div {...fade()}>
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">Looking for quick answers?</h2>
-            <p className="text-slate-500 text-sm mb-6">Check our live chatbot (bottom-right) or browse our common questions.</p>
-            <div className="flex flex-wrap justify-center gap-3">
-              {[
-                "How does PDF expiry work?",
-                "Is there a free trial?",
-                "What platforms are supported?",
-                "How secure is my data?",
-              ].map(q => (
-                <span
-                  key={q}
-                  className="text-sm px-4 py-2 rounded-full bg-white border border-slate-200 text-slate-600 font-medium shadow-sm"
-                >
-                  {q}
-                </span>
-              ))}
+      {/* ── FAQ ── */}
+      <section className="bg-white py-16 lg:py-20">
+        <div className="container mx-auto max-w-3xl px-6">
+          <motion.div {...fade()} className="mb-10 text-center">
+            <h2 className="font-serif text-3xl font-bold text-slate-900">Frequently Asked Questions</h2>
+            <p className="mt-3 text-sm text-slate-500">Quick answers to common questions.</p>
+          </motion.div>
+
+          <motion.div {...fade(0.08)} className="space-y-3">
+            {faqs.map(({ q, a }, i) => {
+              const open = openFaq === i;
+              return (
+                <div key={q} className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+                  <button
+                    onClick={() => setOpenFaq(open ? null : i)}
+                    aria-expanded={open}
+                    className="flex w-full items-center gap-4 px-5 py-4 text-left"
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-50">
+                      <Headphones className="h-3.5 w-3.5 text-[#DC2626]" />
+                    </span>
+                    <span className="flex-1 text-sm font-semibold text-slate-800">{q}</span>
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center text-slate-400">
+                      {open ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                    </span>
+                  </button>
+                  {open && (
+                    <div className="px-5 pb-5 pl-16 text-[13px] leading-relaxed text-slate-500">{a}</div>
+                  )}
+                </div>
+              );
+            })}
+          </motion.div>
+
+          <motion.p {...fade(0.14)} className="mt-8 text-center text-sm text-slate-500">
+            Can't find what you're looking for?{" "}
+            <a href="mailto:support@luxorpdf.com" className="font-semibold text-[#DC2626] hover:underline">
+              Send us an email
+            </a>{" "}
+            and we'll be happy to help.
+          </motion.p>
+        </div>
+      </section>
+
+      {/* ── Email banner ── */}
+      <section className="bg-white pb-20">
+        <div className="container mx-auto px-6">
+          <motion.div
+            {...fade()}
+            className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-rose-100 bg-gradient-to-r from-[#fdf4f4] via-[#fbf6f6] to-[#f9f2f2] px-8 py-10 sm:px-12"
+          >
+            {/* right-side doc illustration */}
+            <div className="pointer-events-none absolute bottom-0 right-6 hidden items-end md:flex" aria-hidden="true">
+              <LeafCluster className="w-24 opacity-80" tone="blush" />
+              <svg viewBox="0 0 90 110" className="-ml-6 mb-2 w-20" fill="none">
+                <path d="M8 14 C8 8 12.5 4 18 4 H58 L82 28 V96 C82 102 77.5 106 72 106 H18 C12.5 106 8 102 8 96 Z" fill="#ffffff" stroke="#f0dede" />
+                <path d="M58 4 L82 28 H66 C61.6 28 58 24.4 58 20 Z" fill="#f5caca" />
+                <rect x="18" y="34" width="34" height="16" rx="5" fill="#DC2626" />
+                <text x="35" y="46" textAnchor="middle" fontFamily="Inter, system-ui, sans-serif" fontWeight="800" fontSize="9" fill="#ffffff">PDF</text>
+                <rect x="18" y="60" width="46" height="5" rx="2.5" fill="#f2d7d7" />
+                <rect x="18" y="72" width="40" height="5" rx="2.5" fill="#f7e3e3" />
+                <rect x="18" y="84" width="46" height="5" rx="2.5" fill="#f2d7d7" />
+              </svg>
             </div>
-            <a
-              href="/pricing"
-              className="inline-flex items-center gap-2 mt-8 px-6 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-violet-500/20 hover:from-violet-500 hover:to-indigo-500 transition-all"
-            >
-              View Pricing & Plans <ChevronRight className="w-4 h-4" />
-            </a>
+
+            <div className="relative flex flex-col items-start gap-6 sm:flex-row sm:items-center">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-b from-[#ef4444] to-[#DC2626] shadow-lg shadow-red-500/30">
+                <Mail className="h-7 w-7 text-white" strokeWidth={2} />
+              </div>
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-widest text-[#DC2626]/70">
+                  Still Have Questions?
+                </div>
+                <h2 className="mt-1 font-serif text-2xl font-bold text-slate-900 sm:text-3xl">
+                  We're Just an Email Away
+                </h2>
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-600">
+                  Email us at
+                  <a
+                    href="mailto:support@luxorpdf.com"
+                    className="rounded-full border border-red-100 bg-white px-4 py-1.5 text-sm font-semibold text-[#DC2626] shadow-sm hover:underline"
+                  >
+                    support@luxorpdf.com
+                  </a>
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
