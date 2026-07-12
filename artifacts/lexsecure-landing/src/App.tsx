@@ -3,9 +3,8 @@ import { useEffect, lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import LandingPage from "@/pages/landing";
+import LandingPage from "@/pages/home-3";
 const Home2Page = lazy(() => import("@/pages/home-2"));
-const Home3Page = lazy(() => import("@/pages/home-3"));
 const About2Page = lazy(() => import("@/pages/about-2"));
 const WebAppPage = lazy(() => import("@/pages/web-app"));
 const PricingPage = lazy(() => import("@/pages/pricing"));
@@ -52,7 +51,7 @@ function Router() {
     <Switch>
       <Route path="/" component={LandingPage} />
       <Route path="/home-2" component={Home2Page} />
-      <Route path="/home-3" component={Home3Page} />
+      <Route path="/home-3" component={LandingPage} />
       <Route path="/about-2" component={About2Page} />
       <Route path="/web-app" component={WebAppPage} />
       <Route path="/about" component={AboutPage} />
