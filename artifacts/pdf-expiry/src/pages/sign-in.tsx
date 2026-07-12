@@ -284,9 +284,9 @@ export default function SignInPage() {
           }}
         />
 
-        <div className="relative grid lg:grid-cols-[1fr_1.15fr] gap-10 px-8 sm:px-12 py-10 lg:py-12 lg:min-h-[100dvh]">
+        <div className="relative grid lg:grid-cols-[1fr_1.15fr] gap-10 px-8 sm:px-12 py-10 lg:py-0 lg:pr-0 lg:min-h-[100dvh]">
           {/* ── Left: brand pitch ─────────────────────────────────────── */}
-          <div>
+          <div className="lg:py-12">
             <a
               href="/"
               className="inline-flex items-center gap-3"
@@ -339,7 +339,7 @@ export default function SignInPage() {
           </div>
 
           {/* ── Right: login card ─────────────────────────────────────── */}
-          <div className="rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/60 px-7 sm:px-10 py-9 w-full flex flex-col justify-center">
+          <div className="rounded-3xl lg:rounded-none bg-white border border-slate-100 shadow-xl shadow-slate-200/60 px-7 sm:px-10 py-9 w-full flex flex-col justify-center">
             <h2 className="text-center text-[22px] font-extrabold tracking-tight text-slate-900">
               Log in to your account
             </h2>
