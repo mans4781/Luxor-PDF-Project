@@ -824,6 +824,7 @@ export default function Toolbar({
             title="Click existing PDF text to edit it"
             onClick={() => onToolChange(tool === "edittext" ? "hand" : "edittext")}
           />
+          {textBtn}
           <RibbonBtn icon={Icons.image} label="Add Image" title="Insert PNG, JPG or WEBP onto a page" onClick={onAddImage} />
           {whiteoutBtn}
         </RibbonGroup>
