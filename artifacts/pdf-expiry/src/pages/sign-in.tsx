@@ -773,11 +773,9 @@ export default function SignInPage() {
 
       {/* ── Copyright ──────────────────────────────────────────────────── */}
       <p className="mt-8 pb-4 text-center text-[12px] text-slate-500">
-        © {new Date().getFullYear()}{" "}
-        <span className="font-semibold text-[#DC2626]">
-          Fairnova Labs Private Limited.
-        </span>{" "}
-        All rights reserved.
+        Copyright © {new Date().getFullYear()}.{" "}
+        <span className="font-semibold text-[#DC2626]">Luxor PDF.</span>{" "}
+        All rights reserved
       </p>
     </div>
   );
