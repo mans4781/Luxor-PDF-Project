@@ -17,7 +17,7 @@ import {
   QUICK_HIGHLIGHT_COLORS,
   DEFAULTS as COLOR_DEFAULTS,
   highlightOpacityFor,
-  TEXT_FONTS,
+  allTextFonts,
   fontFamilyCss,
 } from "@/lib/annotationColors";
 
@@ -75,6 +75,8 @@ interface PDFPageProps {
   textColor: string;
   textSize: number;
   textFont: string;
+  textUnderline?: boolean;
+  textStrike?: boolean;
   drawThickness: number;
   drawColor: string;
   /** When true, oval/rectangle shapes are also filled with `drawColor`. */
@@ -376,8 +378,10 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
 
   const lineH = Math.round(ann.fontSize * 1.485);
   const maxW = Math.max(60, pageWidth - localPos.x - 4);
-  const initialW = Math.min(maxW, Math.max(288, ann.fontSize * 20));
+  const initialW = Math.min(maxW, Math.max(110, ann.fontSize * 7));
   const ls = ann.letterSpacing ?? 0;
+  const textDeco = [ann.underline && "underline", ann.strikethrough && "line-through"]
+    .filter(Boolean).join(" ") || undefined;
   const showControls = selected || editing || showColorPicker;
 
   const updateInputWidth = useCallback(() => {
@@ -465,7 +469,7 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
                 fontSize: 12, padding: "2px 4px", cursor: "pointer", maxWidth: 96,
               }}
             >
-              {TEXT_FONTS.map(f => (
+              {allTextFonts().map(f => (
                 <option key={f.key} value={f.key} style={{ color: "#000" }}>{f.label}</option>
               ))}
             </select>
@@ -501,6 +505,31 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
             </button>
+
+            <div style={{ width: 1, height: 18, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
+
+            <button
+              style={{
+                ...tbtnStyle,
+                textDecoration: "underline",
+                fontWeight: 700,
+                background: ann.underline ? "rgba(255,255,255,0.22)" : "none",
+              }}
+              title={ann.underline ? "Remove underline" : "Underline"}
+              onMouseDown={e => e.stopPropagation()}
+              onClick={e => { e.stopPropagation(); onUpdate({ underline: !ann.underline }); }}
+            >U</button>
+            <button
+              style={{
+                ...tbtnStyle,
+                textDecoration: "line-through",
+                fontWeight: 700,
+                background: ann.strikethrough ? "rgba(255,255,255,0.22)" : "none",
+              }}
+              title={ann.strikethrough ? "Remove strikethrough" : "Strikethrough"}
+              onMouseDown={e => e.stopPropagation()}
+              onClick={e => { e.stopPropagation(); onUpdate({ strikethrough: !ann.strikethrough }); }}
+            >S</button>
 
             <div style={{ width: 1, height: 18, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
 
@@ -566,6 +595,7 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
             color: ann.color,
             fontFamily: fontFamilyCss(ann.fontFamily),
             letterSpacing: ls,
+            textDecoration: textDeco,
             background: "rgba(255,255,255,0.97)",
             border: "2.5px dashed #4169E1",
             outline: "none",
@@ -608,6 +638,7 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
             color: ann.color,
             fontFamily: fontFamilyCss(ann.fontFamily),
             letterSpacing: ls,
+            textDecoration: textDeco,
             lineHeight: `${lineH}px`,
             minHeight: lineH,
             maxWidth: maxW,
@@ -630,18 +661,22 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
   );
 }
 
-function ActiveTextInput({ editingText, textSize, textColor, textFont, pageWidth, onCommit, onCancel }: {
+function ActiveTextInput({ editingText, textSize, textColor, textFont, textUnderline, textStrike, pageWidth, onCommit, onCancel }: {
   editingText: { id: string; x: number; y: number };
   textSize: number;
   textColor: string;
   textFont: string;
+  textUnderline?: boolean;
+  textStrike?: boolean;
   pageWidth: number;
   onCommit: (id: string, content: string, x: number, y: number) => void;
   onCancel: () => void;
 }) {
   const lineH = Math.round(textSize * 1.485);
   const maxW = Math.max(60, pageWidth - editingText.x - 4);
-  const initialW = Math.min(maxW, Math.max(288, textSize * 20));
+  const initialW = Math.min(maxW, Math.max(110, textSize * 7));
+  const textDeco = [textUnderline && "underline", textStrike && "line-through"]
+    .filter(Boolean).join(" ") || undefined;
   const [width, setWidth] = useState(initialW);
   const measureRef = useRef<HTMLSpanElement>(null);
 
@@ -674,6 +709,7 @@ function ActiveTextInput({ editingText, textSize, textColor, textFont, pageWidth
           left: editingText.x, top: editingText.y,
           fontSize: textSize, color: textColor,
           fontFamily: fontFamilyCss(textFont),
+          textDecoration: textDeco,
           background: "rgba(255,255,255,0.97)",
           border: "2.5px dashed #4169E1",
           outline: "none",
@@ -836,7 +872,7 @@ function drawShapeOnCtx(ctx: CanvasRenderingContext2D, annIn: ShapeAnnotation) {
 
 export default function PDFPage({
   pdfDocument, pageNum, zoom, rotation, searchTerm, tool, annotations,
-  highlightColor, textColor, textSize, textFont, drawThickness, drawColor,
+  highlightColor, textColor, textSize, textFont, textUnderline, textStrike, drawThickness, drawColor,
   shapeFill, shapeFillOpacity,
   onAnnotationAdd, onAnnotationUpdate, onAnnotationRemove,
   onVisible, onSearchTermChange,
@@ -1815,6 +1851,7 @@ export default function PDFPage({
       const ann: TextAnnotation = {
         id, type: "text", page: pageNum,
         x, y, content: content.trim(), fontSize: textSize, color: textColor, letterSpacing: 0, fontFamily: textFont,
+        underline: textUnderline || undefined, strikethrough: textStrike || undefined,
       };
       onAnnotationAdd(ann);
     }
@@ -2678,6 +2715,8 @@ export default function PDFPage({
         textSize={textSize}
         textColor={textColor}
         textFont={textFont}
+        textUnderline={textUnderline}
+        textStrike={textStrike}
         pageWidth={pageSize.w}
         onCommit={(id, content, x, y) => handleTextCommit(id, content, x, y)}
         onCancel={() => setEditingText(null)}

@@ -59,6 +59,8 @@ const LS_KEYS = {
   drawThickness: "luxor-pdf:drawThickness",
   textSize: "luxor-pdf:textSize",
   textFont: "luxor-pdf:textFont",
+  textUnderline: "luxor-pdf:textUnderline",
+  textStrike: "luxor-pdf:textStrike",
   shapeFill: "luxor-pdf:shapeFill",
   watermark: "luxor-pdf:watermark",
   pageNo: "luxor-pdf:pageNo",
@@ -154,6 +156,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   const [textColor, setTextColor] = useState(() => lsGet(LS_KEYS.text, COLOR_DEFAULTS.textColor));
   const [textSize, setTextSize] = useState(() => lsGetNum(LS_KEYS.textSize, COLOR_DEFAULTS.textSize));
   const [textFont, setTextFont] = useState(() => lsGet(LS_KEYS.textFont, COLOR_DEFAULTS.textFont));
+  const [textUnderline, setTextUnderline] = useState(() => lsGet(LS_KEYS.textUnderline, "0") === "1");
+  const [textStrike, setTextStrike] = useState(() => lsGet(LS_KEYS.textStrike, "0") === "1");
   const [drawColor, setDrawColor] = useState(() => lsGet(LS_KEYS.draw, COLOR_DEFAULTS.penColor));
   const [drawThickness, setDrawThickness] = useState(() => lsGetNum(LS_KEYS.drawThickness, COLOR_DEFAULTS.penWidth));
   const [shapeFill, setShapeFill] = useState<boolean>(() => {
@@ -188,6 +192,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   useEffect(() => { lsSet(LS_KEYS.drawThickness, drawThickness); }, [drawThickness]);
   useEffect(() => { lsSet(LS_KEYS.textSize, textSize); }, [textSize]);
   useEffect(() => { lsSet(LS_KEYS.textFont, textFont); }, [textFont]);
+  useEffect(() => { lsSet(LS_KEYS.textUnderline, textUnderline ? "1" : "0"); }, [textUnderline]);
+  useEffect(() => { lsSet(LS_KEYS.textStrike, textStrike ? "1" : "0"); }, [textStrike]);
   useEffect(() => { lsSet(LS_KEYS.shapeFill, shapeFill ? "1" : "0"); }, [shapeFill]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [splitView, setSplitView] = useState(false);
@@ -1253,6 +1259,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         textColor={textColor}
         textSize={textSize}
         textFont={textFont}
+        textUnderline={textUnderline}
+        textStrike={textStrike}
         isSpeaking={isSpeaking}
         showContents={showContents}
         searchOpen={searchOpen}
@@ -1265,6 +1273,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         onTextColorChange={setTextColor}
         onTextSizeChange={setTextSize}
         onTextFontChange={setTextFont}
+        onTextUnderlineChange={setTextUnderline}
+        onTextStrikeChange={setTextStrike}
         drawColor={drawColor}
         drawThickness={drawThickness}
         shapeFill={shapeFill}
@@ -1599,6 +1609,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
                     searchTerm={searchQuery.trim()} tool={tool}
                     annotations={getPageAnnotations(left)}
                     highlightColor={highlightColor} textColor={textColor} textSize={textSize} textFont={textFont}
+                    textUnderline={textUnderline} textStrike={textStrike}
                     drawColor={drawColor} drawThickness={drawThickness}
                     shapeFill={shapeFill}
                     onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
@@ -1616,6 +1627,7 @@ defaultPageSize={defaultPageSize}
                       searchTerm={searchQuery.trim()} tool={tool}
                       annotations={getPageAnnotations(right)}
                       highlightColor={highlightColor} textColor={textColor} textSize={textSize} textFont={textFont}
+                      textUnderline={textUnderline} textStrike={textStrike}
                       drawColor={drawColor} drawThickness={drawThickness}
                       shapeFill={shapeFill}
                       onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
@@ -1639,6 +1651,7 @@ defaultPageSize={defaultPageSize}
                 searchTerm={searchQuery.trim()} tool={tool}
                 annotations={getPageAnnotations(pageNum)}
                 highlightColor={highlightColor} textColor={textColor} textSize={textSize} textFont={textFont}
+                textUnderline={textUnderline} textStrike={textStrike}
                 drawColor={drawColor} drawThickness={drawThickness}
                 shapeFill={shapeFill}
                 onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}

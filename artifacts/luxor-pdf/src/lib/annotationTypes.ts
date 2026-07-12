@@ -61,6 +61,8 @@ export interface TextAnnotation {
   letterSpacing?: number;
   /** Font family key (see TEXT_FONTS); defaults to Times for back-compat. */
   fontFamily?: string;
+  underline?: boolean;
+  strikethrough?: boolean;
 }
 
 export interface CommentAnnotation {

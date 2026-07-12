@@ -179,9 +179,58 @@ export const TEXT_FONTS: FontSwatch[] = [
 /** Default font key — Times, matching the legacy hardcoded look. */
 export const DEFAULT_FONT_KEY = "times";
 
-/** Resolve a font key to its CSS font-family stack (falls back to Times). */
+/** Resolve a font key to its CSS font-family stack (falls back to Times).
+ *  Keys prefixed with `local:` refer to a font installed on the user's
+ *  device and resolve to that family name directly. */
 export function fontFamilyCss(key?: string): string {
+  if (key && key.startsWith("local:")) {
+    const family = key.slice(6).replace(/["'\\;{}()<>]/g, "").trim();
+    if (family) return `"${family}"`;
+    return TEXT_FONTS[0].css;
+  }
   return TEXT_FONTS.find((f) => f.key === key)?.css ?? TEXT_FONTS[0].css;
+}
+
+/** Common device fonts probed via the CSS Font Loading API. Only fonts
+ *  actually installed on this machine make it into the picker. */
+const SYSTEM_FONT_CANDIDATES = [
+  "Arial", "Arial Black", "Bahnschrift", "Book Antiqua", "Calibri", "Cambria",
+  "Candara", "Century Gothic", "Comic Sans MS", "Consolas", "Constantia",
+  "Corbel", "Franklin Gothic Medium", "Garamond", "Gill Sans", "Impact",
+  "Lucida Console", "Lucida Sans Unicode", "Monaco", "Menlo", "Optima",
+  "Palatino Linotype", "Rockwell", "Segoe Print", "Segoe Script", "Segoe UI",
+  "Sitka Text", "Tahoma", "Trebuchet MS", "Avenir", "Futura", "Baskerville",
+];
+
+let cachedSystemFonts: FontSwatch[] | null = null;
+
+/** Detect which common fonts are installed on the user's device. Cached
+ *  after the first call. Returns an empty list when detection is not
+ *  supported by the browser. */
+export function getSystemFonts(): FontSwatch[] {
+  if (cachedSystemFonts) return cachedSystemFonts;
+  if (typeof document === "undefined" || !document.fonts?.check) {
+    cachedSystemFonts = [];
+    return cachedSystemFonts;
+  }
+  const found: FontSwatch[] = [];
+  for (const name of SYSTEM_FONT_CANDIDATES) {
+    try {
+      if (document.fonts.check(`12px "${name}"`)) {
+        found.push({ key: `local:${name}`, label: name, css: `"${name}"` });
+      }
+    } catch {
+      /* unsupported probe — skip */
+    }
+  }
+  found.sort((a, b) => a.label.localeCompare(b.label));
+  cachedSystemFonts = found;
+  return cachedSystemFonts;
+}
+
+/** Built-in PDF-safe fonts followed by fonts detected on this device. */
+export function allTextFonts(): FontSwatch[] {
+  return [...TEXT_FONTS, ...getSystemFonts()];
 }
 
 /** Thickness slider range for every drawing tool. */

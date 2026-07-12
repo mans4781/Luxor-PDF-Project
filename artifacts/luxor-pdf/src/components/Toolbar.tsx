@@ -6,7 +6,7 @@ import type { PanelKey } from "@/pages/Viewer";
 import {
   DRAW_PALETTE as PALETTE_DRAW,
   DRAW_THICKNESS,
-  TEXT_FONTS,
+  allTextFonts,
 } from "@/lib/annotationColors";
 
 // Toolbar swatches are derived from the central palette in
@@ -145,6 +145,8 @@ interface ToolbarProps {
   textColor: string;
   textSize: number;
   textFont: string;
+  textUnderline: boolean;
+  textStrike: boolean;
   drawColor: string;
   drawThickness: number;
   shapeFill: boolean;
@@ -160,6 +162,8 @@ interface ToolbarProps {
   onTextColorChange: (c: string) => void;
   onTextSizeChange: (s: number) => void;
   onTextFontChange: (f: string) => void;
+  onTextUnderlineChange: (v: boolean) => void;
+  onTextStrikeChange: (v: boolean) => void;
   onDrawColorChange: (c: string) => void;
   onDrawThicknessChange: (t: number) => void;
   onShapeFillChange: (v: boolean) => void;
@@ -365,11 +369,11 @@ function OnDot() {
 
 export default function Toolbar({
   fileName: _fileName, tool,
-  highlightColor, textColor, textSize, textFont, drawColor, drawThickness, shapeFill, isSpeaking,
+  highlightColor, textColor, textSize, textFont, textUnderline, textStrike, drawColor, drawThickness, shapeFill, isSpeaking,
   showContents, searchOpen, splitView,
   onToggleContents, onToggleSearch, onToggleSplit,
   onToolChange,
-  onHighlightColorChange, onTextColorChange, onTextSizeChange, onTextFontChange, onDrawColorChange, onDrawThicknessChange, onShapeFillChange,
+  onHighlightColorChange, onTextColorChange, onTextSizeChange, onTextFontChange, onTextUnderlineChange, onTextStrikeChange, onDrawColorChange, onDrawThicknessChange, onShapeFillChange,
   onEraseAll, onReadAloud, onOpenFile, onPrint,
   onOpenWatermark, onOpenPageNo, onAddImage, onOpenCompress, onScreenshot,
   onClearWatermark, onClearPageNo,
@@ -472,7 +476,7 @@ export default function Toolbar({
               background: "#fff", color: "#222", fontSize: 12, cursor: "pointer",
             }}
           >
-            {TEXT_FONTS.map((f) => (
+            {allTextFonts().map((f) => (
               <option key={f.key} value={f.key} style={{ fontFamily: f.css }}>{f.label}</option>
             ))}
           </select>
@@ -487,6 +491,31 @@ export default function Toolbar({
               style={{ background: "rgba(0,0,0,0.08)", border: "none", color: "#222", borderRadius: 4, width: 22, height: 22, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}
               onClick={() => onTextSizeChange(Math.min(72, textSize + 2))}
             >+</button>
+          </div>
+          <div className="popover-label">Style</div>
+          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+            <button
+              title={textUnderline ? "Remove underline" : "Underline"}
+              onClick={() => onTextUnderlineChange(!textUnderline)}
+              style={{
+                background: textUnderline ? "rgba(226,54,54,0.14)" : "rgba(0,0,0,0.06)",
+                border: textUnderline ? "1px solid rgba(226,54,54,0.55)" : "1px solid rgba(0,0,0,0.12)",
+                color: "#222", borderRadius: 4, width: 26, height: 24, cursor: "pointer",
+                fontSize: 13, fontWeight: 700, textDecoration: "underline",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >U</button>
+            <button
+              title={textStrike ? "Remove strikethrough" : "Strikethrough"}
+              onClick={() => onTextStrikeChange(!textStrike)}
+              style={{
+                background: textStrike ? "rgba(226,54,54,0.14)" : "rgba(0,0,0,0.06)",
+                border: textStrike ? "1px solid rgba(226,54,54,0.55)" : "1px solid rgba(0,0,0,0.12)",
+                color: "#222", borderRadius: 4, width: 26, height: 24, cursor: "pointer",
+                fontSize: 13, fontWeight: 700, textDecoration: "line-through",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >S</button>
           </div>
           <div className="popover-label">Text Color</div>
           <ColorGrid
