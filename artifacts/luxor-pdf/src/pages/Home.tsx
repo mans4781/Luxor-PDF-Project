@@ -76,8 +76,8 @@ const SIDE_ITEMS = [
 /** Original Luxor illustration: document with red fold on a blush backdrop. */
 function HeroIllustration() {
   return (
-    <div style={{ position: "relative", width: 230, height: 185, display: "flex", alignItems: "center", justifyContent: "center" }} aria-hidden="true">
-      <svg width="230" height="185" viewBox="0 0 260 210" fill="none" style={{ position: "absolute", inset: 0 }}>
+    <div style={{ position: "relative", width: 300, height: 242, display: "flex", alignItems: "center", justifyContent: "center" }} aria-hidden="true">
+      <svg width="300" height="242" viewBox="0 0 260 210" fill="none" style={{ position: "absolute", inset: 0 }}>
         <defs>
           <radialGradient id="lxhBlob" cx="42%" cy="38%" r="70%">
             <stop offset="0%" stopColor="#fbe2e4"/>
@@ -93,10 +93,12 @@ function HeroIllustration() {
         </defs>
         <circle cx="128" cy="104" r="86" fill="url(#lxhBlob)"/>
         <rect x="196" y="58" width="42" height="52" rx="14" fill="url(#lxhDots)" opacity="0.85"/>
-        <path d="M64 182c-8-36 6-70 32-88-2 40-10 72-32 88z" fill="#f2e6e7"/>
-        <path d="M78 184c-3-26 8-50 26-62-3 29-10 51-26 62z" fill="#ece0e1" opacity="0.9"/>
-        <path d="M170 172c30-6 50-26 56-54 2 34-18 58-52 62z" fill="#f6cfd2" opacity="0.85"/>
-        <ellipse cx="130" cy="196" rx="72" ry="7" fill="#cbb9ba" opacity="0.35" filter="url(#lxhSoftShadow)"/>
+        <g transform="translate(0,-14)">
+          <path d="M64 182c-8-36 6-70 32-88-2 40-10 72-32 88z" fill="#f2e6e7"/>
+          <path d="M78 184c-3-26 8-50 26-62-3 29-10 51-26 62z" fill="#ece0e1" opacity="0.9"/>
+          <path d="M170 172c30-6 50-26 56-54 2 34-18 58-52 62z" fill="#f6cfd2" opacity="0.85"/>
+        </g>
+        <ellipse cx="130" cy="178" rx="66" ry="6.5" fill="#cbb9ba" opacity="0.35" filter="url(#lxhSoftShadow)"/>
         <path d="M56 52l0 12M50 58l12 0" stroke="#eda6ac" strokeWidth="2.4" strokeLinecap="round"/>
         <path d="M36 118l0 8M32 122l8 0" stroke="#f0c3c7" strokeWidth="2" strokeLinecap="round"/>
         <path d="M206 40l0 10M201 45l10 0" stroke="#f0c3c7" strokeWidth="2.2" strokeLinecap="round"/>
