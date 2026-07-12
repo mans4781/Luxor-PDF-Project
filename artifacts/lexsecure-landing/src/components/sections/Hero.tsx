@@ -12,7 +12,7 @@ const HERO_STATS = [
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const } }
 };
 
 export function Hero() {
@@ -99,7 +99,7 @@ export function Hero() {
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1.2 }}
-            transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] as const }}
             style={{ transformOrigin: "right center" }}
             className="lg:col-span-5 relative"
           >
@@ -128,7 +128,7 @@ export function Hero() {
             <motion.div
               initial={{ opacity: 0, y: -16, scale: 0.94 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.7, delay: 0.45, ease: [0.22, 1, 0.36, 1] as const }}
               aria-hidden="true"
               className="absolute -top-4 right-2 sm:-right-4 lg:-right-8 w-[210px] sm:w-[240px] lg:w-[260px] bg-white rounded-2xl shadow-2xl shadow-slate-900/10 border border-slate-100 overflow-hidden"
             >

@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import LandingPage from "@/pages/landing";
+const Home2Page = lazy(() => import("@/pages/home-2"));
 const WebAppPage = lazy(() => import("@/pages/web-app"));
 const PricingPage = lazy(() => import("@/pages/pricing"));
 const AboutPage = lazy(() => import("@/pages/about"));
@@ -48,6 +49,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
+      <Route path="/home-2" component={Home2Page} />
       <Route path="/web-app" component={WebAppPage} />
       <Route path="/about" component={AboutPage} />
       <Route path="/privacy" component={PrivacyPage} />
