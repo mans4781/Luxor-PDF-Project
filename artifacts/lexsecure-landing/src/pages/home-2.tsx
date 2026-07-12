@@ -1,370 +1,639 @@
 import { motion } from "framer-motion";
 import { Link } from "wouter";
-import { 
-  ArrowRight, Shield, PenTool, FileText, 
-  Users, Download, Globe, FileKey
+import {
+  ArrowRight,
+  Shield,
+  Zap,
+  Heart,
+  Award,
+  Users,
+  Download,
+  Globe,
+  FileText,
+  Type,
+  Image as ImageIcon,
+  Link2,
+  Crop,
+  Droplets,
+  Hash,
+  MessageSquare,
+  CheckCircle2,
+  Lock,
+  PenLine,
+  FileCheck2,
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 
 const fadeUp = {
-  initial: { opacity: 0, y: 30 },
+  initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-100px" },
-  transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+  viewport: { once: true, margin: "-80px" },
+  transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const },
 };
 
-const staggerContainer = {
-  initial: { opacity: 0 },
-  whileInView: { opacity: 1 },
-  viewport: { once: true, margin: "-100px" },
-  transition: { staggerChildren: 0.15 }
-};
+const NAVY = "#1E1B4B";
+
+function CheckItem({ text, color }: { text: string; color: string }) {
+  return (
+    <li className="flex items-start gap-3">
+      <CheckCircle2 className="w-5 h-5 mt-0.5 shrink-0" style={{ color }} />
+      <span className="text-[15px] text-slate-700">{text}</span>
+    </li>
+  );
+}
+
+function AppBadge({
+  bg,
+  label,
+  sub,
+  icon,
+}: {
+  bg: string;
+  label: string;
+  sub?: string;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div
+      className="w-16 h-16 rounded-2xl shadow-lg flex flex-col items-center justify-center text-white shrink-0"
+      style={{ background: bg }}
+    >
+      {icon ?? <FileText className="w-5 h-5 mb-0.5" />}
+      <span className="text-[9px] font-extrabold leading-none mt-1">{label}</span>
+      {sub && <span className="text-[7px] font-bold opacity-90 leading-none mt-0.5">{sub}</span>}
+    </div>
+  );
+}
+
+/* ------------------------------- Laptop shell ------------------------------ */
+
+function Laptop({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={className}>
+      <div className="rounded-t-xl border-[8px] border-slate-800 bg-white overflow-hidden shadow-2xl">
+        {children}
+      </div>
+      <div className="h-3.5 bg-slate-300 rounded-b-xl shadow-md mx-[-4%] flex justify-center">
+        <div className="w-20 h-1.5 bg-slate-400/60 rounded-b" />
+      </div>
+    </div>
+  );
+}
+
+/* --------------------------------- Page ----------------------------------- */
 
 export default function Home2Page() {
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
+    <div className="min-h-screen bg-white font-sans text-slate-900">
       <Navbar />
 
-      <main className="pt-24 lg:pt-32">
-        {/* HERO SECTION */}
-        <section className="relative px-6 pb-24 lg:pb-32 overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none z-0">
-            <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-red-100/40 rounded-full blur-[120px]" />
-            <div className="absolute top-[20%] right-[-10%] w-[600px] h-[600px] bg-blue-100/40 rounded-full blur-[120px]" />
-          </div>
-
-          <div className="container mx-auto max-w-6xl relative z-10">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="flex flex-col items-center"
-              >
-                <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-slate-200/50 border border-slate-300/50 text-sm font-semibold text-slate-700 mb-8 tracking-wide">
+      <main className="pt-20">
+        {/* ================================ HERO ================================ */}
+        <section className="relative overflow-hidden bg-white">
+          <div
+            className="absolute top-0 right-0 w-72 h-72 opacity-60 pointer-events-none"
+            style={{
+              backgroundImage: "radial-gradient(rgba(220,38,38,0.25) 1.5px, transparent 1.5px)",
+              backgroundSize: "16px 16px",
+              maskImage: "radial-gradient(circle at top right, black, transparent 70%)",
+              WebkitMaskImage: "radial-gradient(circle at top right, black, transparent 70%)",
+            }}
+          />
+          <div className="container mx-auto max-w-6xl px-6 pt-12 lg:pt-16 pb-16">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Left copy */}
+              <motion.div {...fadeUp}>
+                <div className="text-xs font-extrabold tracking-[0.2em] text-[#DC2626] uppercase mb-4">
                   About Us
                 </div>
-                
-                <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-slate-900 mb-6 leading-[1.1]">
-                  Powerful PDF Solutions,<br />Built for Everyone.
-                </h1>
-                
-                <p className="text-xl text-slate-600 leading-relaxed mb-10 max-w-2xl mx-auto">
-                  Discover the suite of tools designed to simplify your document management. Read, secure, and sign PDFs with ease.
-                </p>
-                
-                <Button 
-                  asChild
-                  size="lg" 
-                  className="bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded-full px-8 h-14 text-base font-bold shadow-lg shadow-red-600/20 transition-all hover:scale-105"
+                <h1
+                  className="text-4xl lg:text-[44px] font-extrabold leading-[1.15] mb-6"
+                  style={{ color: NAVY }}
                 >
-                  <a href="#products">
-                    Explore Our Products <ArrowRight className="ml-2 w-5 h-5" />
-                  </a>
-                </Button>
+                  Powerful PDF Solutions,
+                  <br />
+                  Built for Everyone
+                </h1>
+                <p className="text-[15px] text-slate-600 leading-relaxed max-w-md">
+                  At LuxorPDF, we believe PDFs should be simple, secure, and seamless. That&apos;s
+                  why we build smart, reliable tools that help individuals and businesses work with
+                  PDFs more efficiently — every day.
+                </p>
+              </motion.div>
+
+              {/* Right: laptop with editing tools */}
+              <motion.div {...fadeUp} className="relative">
+                <Laptop className="max-w-lg mx-auto">
+                  <div className="aspect-[16/10] bg-slate-100 relative">
+                    {/* window chrome */}
+                    <div className="h-7 bg-white border-b border-slate-200 flex items-center px-3 gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-red-400" />
+                      <span className="w-2 h-2 rounded-full bg-amber-400" />
+                      <span className="w-2 h-2 rounded-full bg-green-400" />
+                      <div className="ml-3 flex-1 max-w-[200px] h-3.5 bg-slate-100 rounded-full" />
+                    </div>
+                    <div className="absolute inset-x-0 top-7 bottom-0 flex">
+                      {/* thumbnails rail */}
+                      <div className="w-12 bg-white border-r border-slate-200 p-1.5 space-y-1.5 hidden sm:block">
+                        {[0, 1, 2].map((i) => (
+                          <div key={i} className="h-10 bg-slate-100 rounded border border-slate-200" />
+                        ))}
+                      </div>
+                      {/* document */}
+                      <div className="flex-1 p-4 overflow-hidden">
+                        <div className="bg-white rounded-lg shadow-md h-full p-5">
+                          <div className="text-[13px] font-extrabold mb-2" style={{ color: NAVY }}>
+                            About <span className="text-[#DC2626]">LuxorPDF</span>
+                          </div>
+                          <div className="flex gap-3">
+                            <div className="flex-1 space-y-1.5 pt-1">
+                              {[100, 92, 96, 84, 90, 70].map((w, i) => (
+                                <div
+                                  key={i}
+                                  className="h-1.5 bg-slate-200 rounded-full"
+                                  style={{ width: `${w}%` }}
+                                />
+                              ))}
+                            </div>
+                            {/* red building visual */}
+                            <div className="w-20 h-24 rounded-md overflow-hidden shrink-0 relative bg-gradient-to-b from-sky-200 to-sky-100">
+                              <div className="absolute bottom-0 left-2 w-10 h-16 bg-gradient-to-b from-[#E05252] to-[#B91C1C] rounded-t-sm">
+                                <div className="grid grid-cols-3 gap-[3px] p-[3px] pt-1.5">
+                                  {Array.from({ length: 9 }).map((_, i) => (
+                                    <span key={i} className="h-[5px] bg-white/70 rounded-[1px]" />
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="absolute bottom-0 right-1 w-5 h-9 bg-slate-300 rounded-t-sm" />
+                            </div>
+                          </div>
+                          <div className="mt-3 space-y-1.5">
+                            {[95, 88, 60].map((w, i) => (
+                              <div
+                                key={i}
+                                className="h-1.5 bg-slate-200 rounded-full"
+                                style={{ width: `${w}%` }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Laptop>
+
+                {/* floating tools panel */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="absolute -right-2 top-6 lg:-right-6 bg-white rounded-xl shadow-xl border border-slate-100 p-2.5 w-[124px]"
+                >
+                  {[
+                    { icon: Type, label: "Edit Text" },
+                    { icon: ImageIcon, label: "Add Image" },
+                    { icon: Link2, label: "Add Link" },
+                    { icon: Crop, label: "Crop Page" },
+                    { icon: Droplets, label: "Watermark" },
+                    { icon: Hash, label: "Page Number" },
+                  ].map(({ icon: Icon, label }) => (
+                    <div key={label} className="flex items-center gap-2 py-1">
+                      <Icon className="w-3.5 h-3.5 text-[#DC2626]" />
+                      <span className="text-[10px] font-semibold text-slate-700">{label}</span>
+                    </div>
+                  ))}
+                </motion.div>
+
+                {/* floating team comment chip */}
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.45, duration: 0.6 }}
+                  className="absolute -bottom-3 right-8 bg-white rounded-xl shadow-xl border border-slate-100 px-3 py-2 flex items-center gap-2"
+                >
+                  <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <MessageSquare className="w-3 h-3 text-emerald-600" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-800 leading-tight">
+                      Team Comment
+                    </div>
+                    <div className="text-[9px] text-slate-500 leading-tight">Great content!</div>
+                  </div>
+                </motion.div>
               </motion.div>
             </div>
 
-            {/* Laptop Mockup Visual */}
-            <motion.div 
-              initial={{ opacity: 0, y: 60 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="relative mx-auto max-w-5xl"
-            >
-              <div className="relative aspect-[16/10] bg-slate-800 rounded-t-3xl border-[12px] border-slate-800 shadow-2xl overflow-hidden ring-1 ring-white/10">
-                {/* Screen Content - Abstract UI */}
-                <div className="absolute inset-0 bg-slate-50 flex flex-col">
-                  {/* Fake Toolbar */}
-                  <div className="h-14 bg-white border-b border-slate-200 flex items-center px-4 gap-4">
-                    <div className="flex gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-red-400" />
-                      <div className="w-3 h-3 rounded-full bg-amber-400" />
-                      <div className="w-3 h-3 rounded-full bg-green-400" />
-                    </div>
-                    <div className="flex-1 max-w-xl mx-auto h-8 bg-slate-100 rounded-lg border border-slate-200 flex items-center px-3 gap-2">
-                      <Shield className="w-4 h-4 text-slate-400" />
-                      <div className="w-48 h-2 bg-slate-200 rounded-full" />
-                    </div>
-                  </div>
-                  {/* Fake Content */}
-                  <div className="flex-1 flex p-6 gap-6">
-                    <div className="w-64 shrink-0 flex flex-col gap-4">
-                      <div className="h-32 bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col gap-3">
-                        <div className="w-full h-3 bg-slate-100 rounded-full" />
-                        <div className="w-3/4 h-3 bg-slate-100 rounded-full" />
-                        <div className="w-5/6 h-3 bg-slate-100 rounded-full" />
-                      </div>
-                      <div className="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col gap-3">
-                        <div className="w-full h-8 bg-indigo-50 rounded-lg" />
-                        <div className="w-full h-8 bg-slate-50 rounded-lg" />
-                        <div className="w-full h-8 bg-slate-50 rounded-lg" />
-                      </div>
-                    </div>
-                    <div className="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-                      <div className="h-12 border-b border-slate-100 flex items-center px-4 gap-4">
-                        <div className="w-8 h-8 rounded bg-red-100 flex items-center justify-center">
-                          <FileText className="w-4 h-4 text-red-600" />
-                        </div>
-                        <div className="w-48 h-4 bg-slate-100 rounded" />
-                      </div>
-                      <div className="flex-1 p-8 flex flex-col gap-6">
-                        <div className="w-3/4 h-8 bg-slate-100 rounded-lg" />
-                        <div className="space-y-3">
-                          <div className="w-full h-3 bg-slate-50 rounded" />
-                          <div className="w-full h-3 bg-slate-50 rounded" />
-                          <div className="w-5/6 h-3 bg-slate-50 rounded" />
-                        </div>
-                        <div className="mt-8 space-y-3">
-                          <div className="w-full h-3 bg-slate-50 rounded" />
-                          <div className="w-full h-3 bg-slate-50 rounded" />
-                          <div className="w-4/6 h-3 bg-slate-50 rounded" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {/* Laptop Base */}
-              <div className="relative h-6 bg-slate-300 rounded-b-[2rem] shadow-xl border-t border-white/40 flex justify-center">
-                <div className="w-32 h-2 bg-slate-400/50 rounded-b-lg" />
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* PRODUCTS SECTION */}
-        <section id="products" className="py-24 bg-white border-y border-slate-100 scroll-mt-20">
-          <div className="container mx-auto px-6 max-w-6xl">
-            <motion.div 
-              variants={fadeUp}
-              initial="initial"
-              whileInView="whileInView"
-              className="text-center max-w-3xl mx-auto mb-20"
-            >
-              <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 mb-6">
-                Three Powerful Tools.<br />One Complete PDF Experience.
-              </h2>
-            </motion.div>
-
-            <div className="space-y-24">
-              {/* Product 1: Reader */}
-              <div className="grid lg:grid-cols-2 gap-12 items-center">
-                <motion.div 
-                  variants={fadeUp}
-                  initial="initial"
-                  whileInView="whileInView"
-                  className="order-2 lg:order-1"
-                >
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-red-50 text-red-700 font-bold text-sm tracking-wide mb-6 border border-red-100">
-                    <FileText className="w-4 h-4" /> Luxor PDF Reader
-                  </div>
-                  <h3 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-6">
-                    Your go-to reader for all PDF needs.
-                  </h3>
-                  <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                    Experience fast, smooth, and reliable PDF viewing with advanced annotation tools to help you review documents efficiently.
-                  </p>
-                  <Button asChild className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-6 h-12">
-                    <Link href="/products/pdf-reader">Download Reader</Link>
-                  </Button>
-                </motion.div>
-                <motion.div 
-                  variants={fadeUp}
-                  initial="initial"
-                  whileInView="whileInView"
-                  className="order-1 lg:order-2 bg-gradient-to-tr from-red-100 to-rose-50 rounded-3xl p-8 lg:p-12"
-                >
-                  <div className="bg-white rounded-2xl shadow-xl overflow-hidden aspect-[4/3] ring-1 ring-slate-900/5 relative">
-                    <img 
-                      src={`${import.meta.env.BASE_URL}brand/product-reader.png`} 
-                      alt="Luxor PDF Reader Interface" 
-                      className="w-full h-full object-cover object-left-top"
-                      onError={(e) => {
-                        // Fallback UI if image missing
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                    <div className="hidden absolute inset-0 bg-slate-50 p-6 flex flex-col">
-                      <div className="h-10 border-b border-slate-200 flex items-center gap-4 px-2">
-                         <div className="w-24 h-4 bg-slate-200 rounded" />
-                      </div>
-                      <div className="flex-1 flex mt-4 gap-4">
-                         <div className="w-16 bg-slate-100 rounded-lg" />
-                         <div className="flex-1 bg-white border border-slate-200 shadow-sm rounded-lg p-6">
-                           <div className="w-1/2 h-6 bg-red-100 rounded mb-4" />
-                           <div className="space-y-2">
-                             <div className="w-full h-3 bg-slate-100 rounded" />
-                             <div className="w-full h-3 bg-slate-100 rounded" />
-                             <div className="w-3/4 h-3 bg-slate-100 rounded" />
-                           </div>
-                         </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-
-              {/* Product 2: Secure */}
-              <div className="grid lg:grid-cols-2 gap-12 items-center">
-                <motion.div 
-                  variants={fadeUp}
-                  initial="initial"
-                  whileInView="whileInView"
-                  className="bg-gradient-to-tr from-blue-100 to-indigo-50 rounded-3xl p-8 lg:p-12"
-                >
-                  <div className="bg-white rounded-2xl shadow-xl overflow-hidden aspect-[4/3] ring-1 ring-slate-900/5 relative">
-                    <img 
-                      src={`${import.meta.env.BASE_URL}brand/product-secure.png`} 
-                      alt="Luxor PDF Secure Interface" 
-                      className="w-full h-full object-cover object-left-top"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                     <div className="hidden absolute inset-0 bg-slate-50 p-6 flex flex-col items-center justify-center">
-                        <Shield className="w-16 h-16 text-blue-500 mb-4 opacity-50" />
-                        <div className="w-48 h-8 bg-blue-100 rounded-full" />
-                     </div>
-                  </div>
-                </motion.div>
-                <motion.div 
-                  variants={fadeUp}
-                  initial="initial"
-                  whileInView="whileInView"
-                >
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-blue-50 text-blue-700 font-bold text-sm tracking-wide mb-6 border border-blue-100">
-                    <Shield className="w-4 h-4" /> Luxor PDF Secure
-                  </div>
-                  <h3 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-6">
-                    Protect your sensitive information.
-                  </h3>
-                  <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                    Add passwords, set expiration dates, and apply watermarks to ensure your documents stay safe and confidential.
-                  </p>
-                  <Button asChild className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-6 h-12">
-                    <Link href="/products/pdf-security">Learn More</Link>
-                  </Button>
-                </motion.div>
-              </div>
-
-              {/* Product 3: eSign */}
-              <div className="grid lg:grid-cols-2 gap-12 items-center">
-                <motion.div 
-                  variants={fadeUp}
-                  initial="initial"
-                  whileInView="whileInView"
-                  className="order-2 lg:order-1"
-                >
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-emerald-50 text-emerald-700 font-bold text-sm tracking-wide mb-6 border border-emerald-100">
-                    <PenTool className="w-4 h-4" /> Luxor PDF eSign
-                  </div>
-                  <h3 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-6">
-                    Sign documents digitally in seconds.
-                  </h3>
-                  <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                    Create, request, and manage legally-binding e-signatures to streamline your approval workflows.
-                  </p>
-                  <Button asChild className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-6 h-12">
-                    <Link href="/products/esign">Start Free Trial</Link>
-                  </Button>
-                </motion.div>
-                <motion.div 
-                  variants={fadeUp}
-                  initial="initial"
-                  whileInView="whileInView"
-                  className="order-1 lg:order-2 bg-gradient-to-tr from-emerald-100 to-green-50 rounded-3xl p-8 lg:p-12"
-                >
-                  <div className="bg-white rounded-2xl shadow-xl overflow-hidden aspect-[4/3] ring-1 ring-slate-900/5 relative">
-                    <img 
-                      src={`${import.meta.env.BASE_URL}brand/product-esign.png`} 
-                      alt="Luxor PDF eSign Interface" 
-                      className="w-full h-full object-cover object-left-top"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                    <div className="hidden absolute inset-0 bg-slate-50 p-6 flex flex-col items-center justify-center">
-                        <PenTool className="w-16 h-16 text-emerald-500 mb-4 opacity-50" />
-                        <div className="w-48 h-8 bg-emerald-100 rounded-full" />
-                     </div>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* STATS SECTION */}
-        <section className="py-20 bg-slate-50 border-b border-slate-200">
-          <div className="container mx-auto px-6 max-w-6xl">
-            <motion.div 
-              variants={fadeUp}
-              initial="initial"
-              whileInView="whileInView"
-              className="text-center mb-12"
-            >
-              <h2 className="text-2xl font-bold text-slate-800">Trusted by professionals worldwide.</h2>
-            </motion.div>
-
-            <motion.div 
-              variants={staggerContainer}
-              initial="initial"
-              whileInView="whileInView"
-              className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12"
+            {/* Feature icon row */}
+            <motion.div
+              {...fadeUp}
+              className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-14 max-w-3xl"
             >
               {[
-                { label: "Happy Users", value: "100K+", icon: Users },
-                { label: "Documents Secured", value: "1M+", icon: FileKey },
-                { label: "Downloads", value: "500K+", icon: Download },
-                { label: "Countries", value: "120+", icon: Globe }
-              ].map((stat, i) => (
-                <motion.div 
-                  key={i} 
-                  variants={fadeUp}
-                  className="flex flex-col items-center text-center"
-                >
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center mb-4 text-indigo-600">
-                    <stat.icon className="w-6 h-6" />
+                { icon: Shield, label: "Secure &\nReliable", color: "#DC2626", bg: "bg-red-50", border: "border-red-100" },
+                { icon: Zap, label: "Fast &\nEfficient", color: "#2563EB", bg: "bg-blue-50", border: "border-blue-100" },
+                { icon: Heart, label: "User First\nDesign", color: "#16A34A", bg: "bg-green-50", border: "border-green-100" },
+                { icon: Award, label: "Trusted by\nThousands", color: "#9333EA", bg: "bg-purple-50", border: "border-purple-100" },
+              ].map(({ icon: Icon, label, color, bg, border }) => (
+                <div key={label} className="flex flex-col items-center text-center gap-3">
+                  <div className={`w-14 h-14 rounded-2xl ${bg} border ${border} flex items-center justify-center`}>
+                    <Icon className="w-6 h-6" style={{ color }} />
                   </div>
-                  <div className="text-3xl lg:text-4xl font-black text-slate-900 mb-2">{stat.value}</div>
-                  <div className="text-sm font-semibold text-slate-500 uppercase tracking-wide">{stat.label}</div>
-                </motion.div>
+                  <div className="text-[13px] font-semibold text-slate-800 whitespace-pre-line leading-snug">
+                    {label}
+                  </div>
+                </div>
               ))}
             </motion.div>
           </div>
         </section>
 
-        {/* CTA SECTION */}
-        <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#DC2626]/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#2563EB]/20 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/3" />
-          </div>
+        {/* ========================== PRODUCTS HEADER ========================== */}
+        <section id="products" className="pt-16 pb-10 bg-white scroll-mt-20">
+          <motion.div {...fadeUp} className="container mx-auto max-w-3xl px-6 text-center">
+            <div className="text-xs font-extrabold tracking-[0.2em] text-[#DC2626] uppercase mb-3">
+              Our Products
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-extrabold mb-4" style={{ color: NAVY }}>
+              Three Powerful Tools. One Complete PDF Experience.
+            </h2>
+            <p className="text-[15px] text-slate-600 max-w-xl mx-auto">
+              Whether you&apos;re reading, securing, or signing —{" "}
+              <span className="font-semibold text-slate-800">LuxorPDF</span> has the perfect
+              solution for you.
+            </p>
+          </motion.div>
+        </section>
 
-          <div className="container mx-auto px-6 max-w-4xl relative z-10 text-center">
+        {/* =========================== READER PANEL ============================ */}
+        <section className="pb-10 bg-white">
+          <div className="container mx-auto max-w-6xl px-6">
             <motion.div
-              variants={fadeUp}
-              initial="initial"
-              whileInView="whileInView"
+              {...fadeUp}
+              className="rounded-3xl bg-[#FDECEC] border border-red-100/60 p-8 lg:p-12 grid lg:grid-cols-2 gap-10 items-center overflow-hidden"
             >
-              <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-                One Mission: Make PDF Simple, Secure & Smart.
+              {/* devices */}
+              <div className="relative">
+                <Laptop className="max-w-md">
+                  <div className="aspect-[16/10] bg-white relative">
+                    <div className="h-6 bg-slate-50 border-b border-slate-200 flex items-center px-2 gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                      <div className="ml-2 text-[8px] font-bold text-[#DC2626]">LUXOR PDF</div>
+                    </div>
+                    <div className="p-4 flex gap-4">
+                      <div className="flex-1">
+                        <div className="text-lg font-extrabold leading-tight" style={{ color: NAVY }}>
+                          Build
+                          <br />
+                          with
+                          <br />
+                          <span className="text-[#DC2626]">Confidence</span>
+                        </div>
+                        <div className="mt-3 space-y-1.5">
+                          {[90, 80, 85, 60].map((w, i) => (
+                            <div key={i} className="h-1.5 bg-slate-200 rounded-full" style={{ width: `${w}%` }} />
+                          ))}
+                        </div>
+                      </div>
+                      {/* mountain visual */}
+                      <div className="w-24 h-28 rounded-md overflow-hidden shrink-0 relative bg-gradient-to-b from-sky-300 via-sky-200 to-slate-100">
+                        <div
+                          className="absolute bottom-0 left-0 right-0 h-14 bg-slate-500"
+                          style={{ clipPath: "polygon(0 100%, 25% 30%, 45% 70%, 65% 10%, 85% 60%, 100% 35%, 100% 100%)" }}
+                        />
+                        <div
+                          className="absolute bottom-0 left-0 right-0 h-14 bg-white/80"
+                          style={{ clipPath: "polygon(60% 18%, 65% 10%, 70% 20%, 65% 26%)" }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </Laptop>
+                {/* phone */}
+                <div className="absolute -right-1 -bottom-2 w-24 rounded-[14px] border-[5px] border-slate-800 bg-white shadow-xl overflow-hidden">
+                  <div className="aspect-[9/16] p-2">
+                    <div className="text-[9px] font-extrabold leading-tight" style={{ color: NAVY }}>
+                      Build
+                      <br />
+                      with
+                      <br />
+                      <span className="text-[#DC2626]">Confidence</span>
+                    </div>
+                    <div className="mt-1.5 space-y-1">
+                      {[100, 85, 70].map((w, i) => (
+                        <div key={i} className="h-1 bg-slate-200 rounded-full" style={{ width: `${w}%` }} />
+                      ))}
+                    </div>
+                    <div className="mt-2 h-10 rounded bg-gradient-to-b from-sky-300 to-slate-100 relative overflow-hidden">
+                      <div
+                        className="absolute bottom-0 left-0 right-0 h-6 bg-slate-500"
+                        style={{ clipPath: "polygon(0 100%, 30% 20%, 55% 65%, 75% 10%, 100% 50%, 100% 100%)" }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* copy */}
+              <div>
+                <AppBadge bg="linear-gradient(135deg,#EF4444,#B91C1C)" label="LUXOR" sub="PDF" />
+                <h3 className="text-2xl lg:text-3xl font-extrabold mt-5 mb-3" style={{ color: NAVY }}>
+                  Luxor <span className="text-[#DC2626]">PDF Reader</span>
+                </h3>
+                <p className="text-[15px] text-slate-600 mb-6">
+                  Your everyday PDF reader — fast, lightweight, and feature-rich.
+                </p>
+                <ul className="space-y-3 mb-8">
+                  <CheckItem color="#DC2626" text="Open, view & annotate PDFs" />
+                  <CheckItem color="#DC2626" text="Add comments, highlights & shapes" />
+                  <CheckItem color="#DC2626" text="Fill and save PDF forms" />
+                  <CheckItem color="#DC2626" text="Print and share with ease" />
+                  <CheckItem color="#DC2626" text="Available for Windows" />
+                </ul>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="rounded-lg border-[#DC2626] text-[#DC2626] hover:bg-red-50 hover:text-[#B91C1C] font-bold px-6 h-11"
+                >
+                  <Link href="/products/pdf-reader">
+                    Learn More <ArrowRight className="ml-2 w-4 h-4" />
+                  </Link>
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* =========================== SECURE PANEL ============================ */}
+        <section className="pb-10 bg-white">
+          <div className="container mx-auto max-w-6xl px-6">
+            <motion.div
+              {...fadeUp}
+              className="rounded-3xl bg-[#EAF2FD] border border-blue-100/60 p-8 lg:p-12 grid lg:grid-cols-2 gap-10 items-center overflow-hidden"
+            >
+              {/* copy */}
+              <div className="order-2 lg:order-1">
+                <AppBadge bg="linear-gradient(135deg,#3B82F6,#1D4ED8)" label="LUXOR" sub="PDF SEC" icon={<Lock className="w-5 h-5" />} />
+                <h3 className="text-2xl lg:text-3xl font-extrabold mt-5 mb-3" style={{ color: NAVY }}>
+                  Luxor <span className="text-[#2563EB]">PDF Secure</span>
+                </h3>
+                <p className="text-[15px] text-slate-600 mb-6">
+                  Protect what matters. Secure your PDFs with powerful encryption and control.
+                </p>
+                <ul className="space-y-3 mb-8">
+                  <CheckItem color="#2563EB" text="Password protect & encrypt PDFs" />
+                  <CheckItem color="#2563EB" text="Restrict editing, printing & copying" />
+                  <CheckItem color="#2563EB" text="Add watermarks & redaction" />
+                  <CheckItem color="#2563EB" text="Merge, split, compress & convert PDFs" />
+                  <CheckItem color="#2563EB" text="Ensure document privacy & compliance" />
+                </ul>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="rounded-lg border-[#2563EB] text-[#2563EB] hover:bg-blue-50 hover:text-[#1D4ED8] font-bold px-6 h-11"
+                >
+                  <Link href="/products/pdf-security">
+                    Learn More <ArrowRight className="ml-2 w-4 h-4" />
+                  </Link>
+                </Button>
+              </div>
+
+              {/* devices */}
+              <div className="order-1 lg:order-2 relative">
+                <Laptop className="max-w-md ml-auto">
+                  <div className="aspect-[16/10] bg-white relative">
+                    <div className="h-6 bg-slate-50 border-b border-slate-200 flex items-center px-2 gap-2">
+                      <Shield className="w-3 h-3 text-[#2563EB]" />
+                      <span className="text-[9px] font-bold text-slate-700">Security</span>
+                    </div>
+                    <div className="p-3">
+                      {/* table header */}
+                      <div className="grid grid-cols-4 gap-2 px-2 py-1.5 bg-slate-50 rounded text-[7px] font-bold text-slate-500 uppercase">
+                        <span>Document</span>
+                        <span>Size</span>
+                        <span>Status</span>
+                        <span>Last Modified</span>
+                      </div>
+                      {[
+                        ["Project Proposal.pdf", "2.4 MB"],
+                        ["Financial Report.pdf", "1.1 MB"],
+                        ["Contract Draft.pdf", "860 KB"],
+                        ["Invoice Batch.pdf", "3.2 MB"],
+                        ["Board Notes.pdf", "540 KB"],
+                      ].map(([name, size], i) => (
+                        <div key={name} className="grid grid-cols-4 gap-2 px-2 py-1.5 border-b border-slate-100 items-center">
+                          <span className="text-[7px] font-semibold text-slate-700 truncate flex items-center gap-1">
+                            <FileText className="w-2.5 h-2.5 text-[#DC2626] shrink-0" />
+                            {name}
+                          </span>
+                          <span className="text-[7px] text-slate-500">{size}</span>
+                          <span className={`text-[6.5px] font-bold px-1.5 py-0.5 rounded-full w-fit ${i % 2 === 0 ? "bg-blue-100 text-blue-700" : "bg-emerald-100 text-emerald-700"}`}>
+                            {i % 2 === 0 ? "Encrypted" : "Protected"}
+                          </span>
+                          <span className="text-[7px] text-slate-400">May {12 + i}, 2026</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Laptop>
+
+                {/* shield lock */}
+                <div className="absolute -left-3 bottom-2 w-16 h-16 rounded-2xl bg-gradient-to-br from-[#3B82F6] to-[#1E40AF] shadow-xl flex items-center justify-center">
+                  <Lock className="w-7 h-7 text-white" />
+                </div>
+
+                {/* set password card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="absolute -right-2 -bottom-4 bg-white rounded-xl shadow-xl border border-slate-100 p-3 w-36"
+                >
+                  <div className="text-[10px] font-bold text-slate-800 mb-2">Set Password</div>
+                  <div className="h-6 rounded border border-slate-200 bg-slate-50 flex items-center px-2 mb-2">
+                    <span className="text-[10px] tracking-widest text-slate-400">••••••••</span>
+                  </div>
+                  <div className="text-[8px] font-semibold text-emerald-600 mb-2">Strong Password</div>
+                  <div className="h-6 rounded bg-[#2563EB] text-white text-[9px] font-bold flex items-center justify-center">
+                    Apply
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ============================ ESIGN PANEL ============================= */}
+        <section className="pb-16 bg-white">
+          <div className="container mx-auto max-w-6xl px-6">
+            <motion.div
+              {...fadeUp}
+              className="rounded-3xl bg-[#EAF7EF] border border-green-100/60 p-8 lg:p-12 grid lg:grid-cols-2 gap-10 items-center overflow-hidden"
+            >
+              {/* devices */}
+              <div className="relative">
+                <Laptop className="max-w-md">
+                  <div className="aspect-[16/10] bg-white relative">
+                    <div className="h-6 bg-slate-50 border-b border-slate-200 flex items-center px-2 gap-2">
+                      <PenLine className="w-3 h-3 text-[#16A34A]" />
+                      <span className="text-[9px] font-bold text-slate-700">LuxorSign</span>
+                    </div>
+                    <div className="p-4">
+                      <div className="text-[12px] font-extrabold mb-1" style={{ color: NAVY }}>
+                        Sales Agreement
+                      </div>
+                      <div className="text-[7px] text-slate-500 mb-2">
+                        This Sales Agreement (&quot;Agreement&quot;) is made and entered into…
+                      </div>
+                      <div className="space-y-1.5 mb-3">
+                        {[100, 94, 88].map((w, i) => (
+                          <div key={i} className="h-1.5 bg-slate-200 rounded-full" style={{ width: `${w}%` }} />
+                        ))}
+                      </div>
+                      <div className="text-[8px] text-slate-600 font-semibold mb-1">12 May 2026</div>
+                      <div className="border-t border-slate-300 w-24 pt-1">
+                        <svg viewBox="0 0 100 30" className="w-20 h-6 text-slate-800">
+                          <path
+                            d="M5 22 C 15 5, 25 28, 35 15 S 55 8, 62 18 S 82 25, 95 10"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.6"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </Laptop>
+
+                {/* signature widget */}
+                <motion.div
+                  initial={{ opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="absolute -right-2 -bottom-4 bg-white rounded-xl shadow-xl border border-slate-100 p-3 w-44"
+                >
+                  <div className="grid grid-cols-3 text-center text-[9px] font-bold border-b border-slate-100 pb-1.5 mb-2">
+                    <span className="text-slate-400">Type</span>
+                    <span className="text-[#16A34A] border-b-2 border-[#16A34A] pb-1 -mb-[7px]">Draw</span>
+                    <span className="text-slate-400">Upload</span>
+                  </div>
+                  <svg viewBox="0 0 140 40" className="w-full h-10 text-slate-800">
+                    <path
+                      d="M8 30 C 20 6, 34 38, 48 20 S 76 10, 86 24 S 116 34, 132 12"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="flex justify-between mt-2">
+                    <span className="text-[9px] font-semibold text-slate-400">Clear</span>
+                    <span className="text-[9px] font-bold text-white bg-[#16A34A] rounded px-2.5 py-1">
+                      Insert
+                    </span>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* copy */}
+              <div>
+                <AppBadge bg="linear-gradient(135deg,#22C55E,#15803D)" label="eSign" icon={<PenLine className="w-5 h-5" />} />
+                <h3 className="text-2xl lg:text-3xl font-extrabold mt-5 mb-3" style={{ color: NAVY }}>
+                  Luxor <span className="text-[#16A34A]">PDF eSign</span>
+                </h3>
+                <p className="text-[15px] text-slate-600 mb-6">
+                  Sign anything, anywhere. The easy and secure way to send and collect eSignatures.
+                </p>
+                <ul className="space-y-3 mb-8">
+                  <CheckItem color="#16A34A" text="Create & send documents for signature" />
+                  <CheckItem color="#16A34A" text="Legally valid eSignatures" />
+                  <CheckItem color="#16A34A" text="Track status in real-time" />
+                  <CheckItem color="#16A34A" text="Works on any device" />
+                  <CheckItem color="#16A34A" text="Secure & audit-ready" />
+                </ul>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="rounded-lg border-[#16A34A] text-[#16A34A] hover:bg-green-50 hover:text-[#15803D] font-bold px-6 h-11"
+                >
+                  <Link href="/products/esign">
+                    Learn More <ArrowRight className="ml-2 w-4 h-4" />
+                  </Link>
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* =============================== STATS =============================== */}
+        <section className="pb-16 bg-white">
+          <div className="container mx-auto max-w-5xl px-6">
+            <motion.div {...fadeUp} className="text-center mb-12">
+              <h2 className="text-2xl lg:text-3xl font-extrabold mb-3" style={{ color: NAVY }}>
+                Trusted by professionals and businesses worldwide
               </h2>
-              <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
-                Ready to elevate your document workflow? Join thousands of professionals today.
+              <p className="text-[15px] text-slate-600">
+                Join thousands of users who rely on LuxorPDF every day.
               </p>
-              <Button 
+            </motion.div>
+            <motion.div {...fadeUp} className="grid grid-cols-2 md:grid-cols-4 gap-10">
+              {[
+                { icon: Users, value: "100K+", label: "Happy Users", color: "#DC2626", bg: "bg-red-50", border: "border-red-100" },
+                { icon: FileCheck2, value: "1M+", label: "Documents Secured", color: "#2563EB", bg: "bg-blue-50", border: "border-blue-100" },
+                { icon: Download, value: "500K+", label: "Downloads", color: "#16A34A", bg: "bg-green-50", border: "border-green-100" },
+                { icon: Globe, value: "120+", label: "Countries", color: "#9333EA", bg: "bg-purple-50", border: "border-purple-100" },
+              ].map(({ icon: Icon, value, label, color, bg, border }) => (
+                <div key={label} className="flex flex-col items-center text-center gap-3">
+                  <div className={`w-14 h-14 rounded-2xl ${bg} border ${border} flex items-center justify-center`}>
+                    <Icon className="w-6 h-6" style={{ color }} />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-extrabold" style={{ color: NAVY }}>
+                      {value}
+                    </div>
+                    <div className="text-[13px] text-slate-600 mt-0.5">{label}</div>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ============================ MISSION CTA ============================= */}
+        <section className="pb-0 bg-white">
+          <div className="container mx-auto max-w-6xl px-6 pb-16">
+            <motion.div
+              {...fadeUp}
+              className="rounded-3xl px-8 lg:px-12 py-10 flex flex-col md:flex-row items-center justify-between gap-8"
+              style={{ background: "linear-gradient(120deg, #1E1B4B 0%, #27246B 100%)" }}
+            >
+              <div className="flex items-center gap-5">
+                <div className="w-14 h-14 rounded-2xl border border-white/20 bg-white/10 flex items-center justify-center shrink-0">
+                  <FileText className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <div className="text-lg lg:text-xl font-extrabold text-white">
+                    One Mission: Make PDF Simple, Secure &amp; Smart.
+                  </div>
+                  <div className="text-sm text-indigo-200 mt-1">
+                    Explore our products and experience the LuxorPDF difference.
+                  </div>
+                </div>
+              </div>
+              <Button
                 asChild
-                size="lg" 
-                className="bg-white text-slate-900 hover:bg-slate-100 rounded-full px-8 h-14 text-base font-bold shadow-xl transition-all hover:scale-105"
+                className="bg-[#DC2626] hover:bg-[#B91C1C] text-white font-bold rounded-lg px-6 h-12 shrink-0"
               >
-                <Link href="/pricing">Get Started Now</Link>
+                <Link href="/download">Download All Products</Link>
               </Button>
             </motion.div>
           </div>
