@@ -287,9 +287,9 @@ export default function SignInPage() {
     errors.fields[key]?.message ?? null;
 
   return (
-    <div className="min-h-[100dvh] bg-[#eef0f4] px-4 py-6 sm:px-8">
-      {/* ── Main rounded panel ─────────────────────────────────────────── */}
-      <div className="relative w-full overflow-hidden rounded-[28px] bg-[#fafafc] shadow-xl shadow-slate-300/40 border border-white">
+    <div className="min-h-[100dvh] bg-[#fafafc]">
+      {/* ── Main panel ─────────────────────────────────────────────────── */}
+      <div className="relative w-full overflow-hidden">
         <DotGrid className="top-6 right-8" />
         <DotGrid className="bottom-8 left-6" />
         <div
@@ -744,7 +744,7 @@ export default function SignInPage() {
       </div>
 
       {/* ── Trust bar ──────────────────────────────────────────────────── */}
-      <div className="w-full mt-8">
+      <div className="w-full mt-6 border-t border-slate-200 pt-8">
         <div className="grid grid-cols-2 sm:grid-cols-4">
           {TRUST_ITEMS.map(({ icon: Icon, top, bottom }, i) => (
             <div
