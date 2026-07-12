@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "wouter";
-import { Mail, ShieldCheck } from "lucide-react";
+import { Mail } from "lucide-react";
 import footerShield from "@/assets/footer-shield.png";
 
 type LinkItem = { label: string; href: string };
@@ -187,18 +187,6 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="flex flex-col gap-4 border-t border-slate-200/80 py-7 text-sm md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-wrap items-center gap-3 text-slate-700">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900">
-              <ShieldCheck className="h-[18px] w-[18px] text-white" />
-            </span>
-            <span className="font-semibold">Enterprise-grade security</span>
-            <span aria-hidden="true" className="text-slate-300">
-              |
-            </span>
-            <span className="text-slate-500">
-              Your documents are safe with us.
-            </span>
-          </div>
           <div className="text-center text-slate-600 md:text-right">
             <div>
               Copyright © {new Date().getFullYear()}. Luxor PDF. All rights
