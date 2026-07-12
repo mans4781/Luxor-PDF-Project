@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { HandleSSOCallback, useAuth, useSignUp } from "@clerk/react";
 import { Link, useLocation } from "wouter";
 import {
+  ArrowLeft,
   ArrowRight,
   Eye,
   EyeOff,
@@ -223,7 +224,14 @@ export default function SignUpPage() {
           </div>
 
           {/* ── Right: sign-up card ───────────────────────────────────── */}
-          <div className="rounded-3xl lg:rounded-none bg-white border border-slate-100 shadow-xl shadow-slate-200/60 px-7 sm:px-10 py-9 w-full flex flex-col justify-center">
+          <div className="relative rounded-3xl lg:rounded-none bg-white border border-slate-100 shadow-xl shadow-slate-200/60 px-7 sm:px-10 py-9 w-full flex flex-col justify-center">
+            <a
+              href="/"
+              className="absolute top-5 left-6 sm:left-8 inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 hover:text-red-600 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+              Back to Home
+            </a>
             <h2 className="text-center text-[22px] font-extrabold tracking-tight text-slate-900">
               Create your account
             </h2>
