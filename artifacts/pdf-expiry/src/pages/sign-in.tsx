@@ -13,7 +13,6 @@ import {
   RefreshCw,
   Repeat,
   ShieldCheck,
-  Undo2,
   Users,
 } from "lucide-react";
 
@@ -289,18 +288,6 @@ export default function SignInPage() {
 
   return (
     <div className="min-h-[100dvh] bg-[#eef0f4] px-4 py-6 sm:px-8">
-      {/* Back to home */}
-      <div className="w-full mb-3">
-        <a
-          href="/"
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 hover:text-[#DC2626] transition-colors"
-          data-testid="link-back-home"
-        >
-          <Undo2 className="w-4 h-4" strokeWidth={2.2} />
-          Back to Home
-        </a>
-      </div>
-
       {/* ── Main rounded panel ─────────────────────────────────────────── */}
       <div className="relative w-full overflow-hidden rounded-[28px] bg-[#fafafc] shadow-xl shadow-slate-300/40 border border-white">
         <DotGrid className="top-6 right-8" />
@@ -317,24 +304,30 @@ export default function SignInPage() {
         <div className="relative grid lg:grid-cols-[1fr_1.15fr] gap-10 px-8 sm:px-12 py-10 lg:py-12">
           {/* ── Left: brand pitch ─────────────────────────────────────── */}
           <div>
-            <div className="flex items-center gap-2.5">
-              <img
-                src={`${baseUrl}brand/luxor-icon.png?v=20260712`}
-                alt="Luxor PDF"
-                width={44}
-                height={44}
-                draggable={false}
-                className="h-11 w-11 rounded-xl select-none"
-              />
-              <div className="leading-none">
-                <div className="text-[22px] font-extrabold tracking-tight text-slate-900">
-                  LUXOR
-                </div>
-                <div className="mt-0.5 text-[12px] font-extrabold tracking-[0.22em] text-[#DC2626] border-b-2 border-[#DC2626] pb-0.5 inline-block">
-                  PDF
-                </div>
-              </div>
-            </div>
+            <a
+              href="/"
+              className="inline-flex items-center gap-3"
+              aria-label="Luxor PDF — home"
+              data-testid="link-logo-home"
+            >
+              <span className="flex h-[53px] w-[53px] items-center justify-center rounded-xl bg-red-50 shadow-sm ring-1 ring-red-300">
+                <img
+                  src={`${baseUrl}brand/luxor-icon.png?v=20260712`}
+                  alt=""
+                  className="h-[39px] w-[39px] select-none"
+                  draggable={false}
+                />
+              </span>
+              <span>
+                <span className="block text-[26px] font-black tracking-tight leading-none">
+                  <span className="text-[#1e3a8a]">Luxor</span>{" "}
+                  <span className="text-[#DC2626]">PDF</span>
+                </span>
+                <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500">
+                  Secure PDF Suite
+                </span>
+              </span>
+            </a>
 
             <h1 className="mt-10 text-[34px] leading-[1.15] font-extrabold tracking-tight text-slate-900">
               Welcome to
