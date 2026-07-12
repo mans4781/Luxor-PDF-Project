@@ -100,12 +100,15 @@ export default function Home3Page() {
                   Everything you need, designed to work beautifully together.
                 </p>
                 <div className="flex flex-wrap items-center gap-3 mb-7">
-                  <Link href="/features">
+                  <a
+                    href="/api/downloads/luxor-pdf-reader-latest"
+                    data-testid="hero-download-reader-button"
+                  >
                     <Button className="bg-[#DC2626] hover:bg-[#B91C1C] text-white font-bold rounded-xl px-6 h-11">
                       <Download className="w-4 h-4 mr-2" />
                       Download Now
                     </Button>
-                  </Link>
+                  </a>
                   <a href="#products">
                     <Button
                       variant="outline"
