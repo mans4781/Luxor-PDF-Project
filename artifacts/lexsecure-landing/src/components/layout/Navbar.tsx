@@ -78,7 +78,7 @@ export function Navbar() {
         {/* Logo */}
         <Link href={import.meta.env.BASE_URL} className="group flex items-center gap-3">
           <img
-            src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260627`}
+            src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260712b`}
             alt=""
             aria-hidden="true"
             className="h-[53px] w-[53px] select-none rounded-[15%] border border-[#DC2626]/40 bg-white shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:border-[#DC2626]/70 group-hover:shadow-md"

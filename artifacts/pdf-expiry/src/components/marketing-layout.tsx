@@ -142,7 +142,7 @@ function MarketingFooter() {
             >
               <span className="flex h-[53px] w-[53px] items-center justify-center rounded-xl bg-red-50 shadow-sm ring-1 ring-red-300 transition-transform duration-300 group-hover:scale-105">
                 <img
-                  src={`${basePath}/brand/luxor-icon.png?v=20260711`}
+                  src={`${basePath}/brand/luxor-icon.png?v=20260712b`}
                   alt=""
                   className="h-[39px] w-[39px] select-none"
                   draggable={false}
@@ -271,7 +271,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
           {/* Logo */}
           <a href="/" className="group flex items-center gap-3 shrink-0">
             <img
-              src={`${baseUrl}brand/luxor-icon.png?v=20260711`}
+              src={`${baseUrl}brand/luxor-icon.png?v=20260712b`}
               alt=""
               aria-hidden="true"
               className="h-[53px] w-[53px] select-none rounded-[15%] border border-[#DC2626]/40 bg-white shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:border-[#DC2626]/70 group-hover:shadow-md"

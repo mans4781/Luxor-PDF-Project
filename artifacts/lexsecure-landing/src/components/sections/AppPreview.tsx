@@ -103,7 +103,7 @@ function SecureAppMockup() {
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
           <img
-            src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260627`}
+            src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260712b`}
             alt=""
             className="w-9 h-9 rounded-lg object-contain"
             draggable={false}
@@ -287,7 +287,7 @@ function ReaderAppMockup() {
       <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100">
         <div className="flex items-center gap-3">
           <img
-            src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260627`}
+            src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260712b`}
             alt=""
             className="w-9 h-9 rounded-lg object-contain"
             draggable={false}

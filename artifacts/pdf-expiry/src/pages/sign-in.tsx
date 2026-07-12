@@ -312,7 +312,7 @@ export default function SignInPage() {
             >
               <span className="flex h-[53px] w-[53px] items-center justify-center rounded-xl bg-red-50 shadow-sm ring-1 ring-red-300">
                 <img
-                  src={`${baseUrl}brand/luxor-icon.png?v=20260712`}
+                  src={`${baseUrl}brand/luxor-icon.png?v=20260712b`}
                   alt=""
                   className="h-[39px] w-[39px] select-none"
                   draggable={false}

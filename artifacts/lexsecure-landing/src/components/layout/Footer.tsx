@@ -135,7 +135,7 @@ export function Footer() {
               aria-label="Luxor PDF — home"
             >
               <img
-                src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260627`}
+                src={`${import.meta.env.BASE_URL}brand/luxor-icon.png?v=20260712b`}
                 alt=""
                 className="h-11 w-11 select-none transition-transform duration-300 group-hover:scale-105"
                 draggable={false}
