@@ -56,7 +56,7 @@ export default function SettingsModal({ settings, onChange, onClose }: SettingsM
               onChange={(e) => set("defaultZoomPct", parseInt(e.target.value, 10))}
               style={selectStyle}
             >
-              {[50, 75, 100, 125, 150, 200].map(z => <option key={z} value={z}>{z}%</option>)}
+              {[50, 75, 100, 125, 150, 200, 250, 300, 400, 500].map(z => <option key={z} value={z}>{z}%</option>)}
             </select>
           </Row>
 

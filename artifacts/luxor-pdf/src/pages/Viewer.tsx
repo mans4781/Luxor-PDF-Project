@@ -111,7 +111,7 @@ const createDedicatedPdfWorker = () => {
 
 // Actual zoom values where 1.5 = "100%" (the new baseline)
 const ZOOM_BASE = 1.5;
-const ZOOM_PRESETS = [0.375, 0.75, 1.125, 1.5, 1.875, 2.25, 3.0];
+const ZOOM_PRESETS = [0.375, 0.75, 1.125, 1.5, 1.875, 2.25, 3.0, 3.75, 4.5, 6.0, 7.5];
 const zoomLabel = (z: number) => `${Math.round((z / ZOOM_BASE) * 100)}%`;
 
 interface ViewerProps {
@@ -329,7 +329,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
 
       // Apply user preferences for a freshly-opened document.
       const prefs = loadSettings();
-      setZoom(Math.min(5, Math.max(0.25, ZOOM_BASE * (prefs.defaultZoomPct / 100))));
+      setZoom(Math.min(7.5, Math.max(0.25, ZOOM_BASE * (prefs.defaultZoomPct / 100))));
       setSplitView(prefs.defaultView === "double");
       setShowContents(prefs.showThumbnails);
 
@@ -436,7 +436,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       if ((e.target as HTMLElement).tagName === "TEXTAREA" || (e.target as HTMLElement).tagName === "INPUT") return;
       if (e.key === "ArrowRight" || e.key === "ArrowDown") setCurrentPage(p => Math.min(totalPages, p + 1));
       if (e.key === "ArrowLeft" || e.key === "ArrowUp") setCurrentPage(p => Math.max(1, p - 1));
-      if (e.key === "+" || e.key === "=") setZoom(z => Math.min(5, z + 0.15));
+      if (e.key === "+" || e.key === "=") setZoom(z => Math.min(7.5, z + 0.15));
       if (e.key === "-") setZoom(z => Math.max(0.25, z - 0.15));
       if (e.key === "Escape") {
         if (searchOpen) { setSearchOpen(false); setSearchQuery(""); return; }
@@ -454,7 +454,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       if (!e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
       const delta = e.deltaY < 0 ? 0.1 : -0.1;
-      setZoom(z => Math.min(5, Math.max(0.25, parseFloat((z + delta).toFixed(2)))));
+      setZoom(z => Math.min(7.5, Math.max(0.25, parseFloat((z + delta).toFixed(2)))));
     };
     if (!active) return;
     window.addEventListener("wheel", handler, { passive: false });
@@ -548,7 +548,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     if (availW <= 0 || availH <= 0 || baseW <= 0 || baseH <= 0) return;
     const zW = availW / baseW;
     const z = mode === "width" ? zW : Math.min(zW, availH / baseH);
-    setZoom(Math.min(5, Math.max(0.25, parseFloat(z.toFixed(3)))));
+    setZoom(Math.min(7.5, Math.max(0.25, parseFloat(z.toFixed(3)))));
   }, [basePageSize, rotation]);
 
   const handleFitWidth = useCallback(() => applyFit("width"), [applyFit]);
@@ -1102,7 +1102,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         <button
           className="sidebar-btn"
           title="Zoom in"
-          onClick={() => setZoom(z => Math.min(5, parseFloat((z + 0.25).toFixed(2))))}
+          onClick={() => setZoom(z => Math.min(7.5, parseFloat((z + 0.25).toFixed(2))))}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
