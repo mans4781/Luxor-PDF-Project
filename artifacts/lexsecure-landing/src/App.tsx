@@ -24,7 +24,7 @@ const BrandPage = lazy(() => import("@/pages/brand"));
 const DeveloperLoginPage = lazy(() => import("@/pages/developer/login"));
 const DeveloperDashboardPage = lazy(() => import("@/pages/developer/dashboard"));
 const NotFound = lazy(() => import("@/pages/not-found"));
-import { Chatbot } from "@/components/Chatbot";
+// import { Chatbot } from "@/components/Chatbot"; // temporarily disabled
 import { ScrollToTop } from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -85,7 +85,8 @@ function App() {
             <Router />
           </Suspense>
         </WouterRouter>
-        <Chatbot />
+        {/* Chatbot temporarily disabled — re-enable by uncommenting */}
+        {/* <Chatbot /> */}
         <ScrollToTop />
         <Toaster />
       </TooltipProvider>
