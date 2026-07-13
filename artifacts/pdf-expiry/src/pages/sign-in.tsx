@@ -95,7 +95,7 @@ const TRUST_ITEMS = [
   { icon: Headphones, top: "24/7", bottom: "Support" },
 ];
 
-type View = "login" | "forgot-code" | "forgot-password";
+type View = "login" | "mfa-code" | "forgot-code" | "forgot-password";
 
 const inputBase =
   "w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-[14px] text-slate-800 placeholder:text-slate-400 outline-none transition-colors focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/15";
@@ -217,8 +217,38 @@ export default function SignInPage() {
     if (error) return;
     if (signIn.status === "complete") {
       await finishSignIn();
+    } else if (signIn.status === "needs_second_factor") {
+      // Clerk asks for an emailed verification code (e.g. signing in from a
+      // new device/browser). Send the code and show the code-entry step.
+      const { error: sendError } = await signIn.mfa.sendEmailCode();
+      if (sendError) {
+        setLocalError("We couldn't send a verification code. Please try again.");
+        return;
+      }
+      setCode("");
+      setView("mfa-code");
     } else {
       setLocalError("Additional verification is required for this account.");
+    }
+  };
+
+  const handleVerifyMfaCode = async (e: FormEvent) => {
+    e.preventDefault();
+    setLocalError(null);
+    const { error } = await signIn.mfa.verifyEmailCode({ code });
+    if (error) return;
+    if (signIn.status === "complete") {
+      await finishSignIn();
+    } else {
+      setLocalError("Verification didn't complete. Please try again.");
+    }
+  };
+
+  const resendMfaCode = async () => {
+    setLocalError(null);
+    const { error } = await signIn.mfa.sendEmailCode();
+    if (error) {
+      setLocalError("We couldn't resend the code. Please try again in a moment.");
     }
   };
 
@@ -552,6 +582,69 @@ export default function SignInPage() {
                   Log In
                   <ArrowRight className="absolute right-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2" />
                 </button>
+              </form>
+            )}
+
+            {/* ── Sign-in verification: emailed code step ── */}
+            {view === "mfa-code" && (
+              <form onSubmit={handleVerifyMfaCode} className="mt-6">
+                <p className="text-[13px] text-slate-500">
+                  To keep your account safe, we sent a verification code to{" "}
+                  <span className="font-semibold text-slate-700">{email}</span>.
+                  Enter it below to finish logging in.
+                </p>
+                <label className="mt-4 block text-[13px] font-semibold text-slate-700 mb-1.5">
+                  Verification Code
+                </label>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    inputMode="numeric"
+                    autoFocus
+                    required
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="Enter the code from your email"
+                    className={inputBase}
+                    data-testid="input-signin-code"
+                  />
+                </div>
+                {fieldError("code") && (
+                  <p className="mt-1.5 text-[12px] text-rose-600">
+                    {fieldError("code")}
+                  </p>
+                )}
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="mt-6 w-full rounded-xl bg-gradient-to-r from-[#EF4444] to-[#B91C1C] py-3 text-[15px] font-bold text-white shadow-lg shadow-rose-300/50 transition-all hover:from-[#DC2626] hover:to-[#991B1B] disabled:opacity-60"
+                  data-testid="button-verify-signin-code"
+                >
+                  Verify &amp; Log In
+                </button>
+                <div className="mt-3 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setView("login");
+                      setCode("");
+                      void signIn.reset();
+                    }}
+                    className="text-[13px] font-semibold text-slate-500 hover:text-slate-700"
+                    data-testid="button-back-to-login"
+                  >
+                    Back to login
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void resendMfaCode()}
+                    className="text-[13px] font-semibold text-[#DC2626] hover:text-[#B91C1C] transition-colors disabled:opacity-60"
+                    data-testid="button-resend-signin-code"
+                  >
+                    Resend code
+                  </button>
+                </div>
               </form>
             )}
 

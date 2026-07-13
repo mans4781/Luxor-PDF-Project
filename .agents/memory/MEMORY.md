@@ -18,5 +18,5 @@
 - [Developer passphrase gate](dev-passphrase-gate.md) — per-login passphrase for developer emails; must stay enforced both in sign-in UI (fail-closed) and API middleware.
 - [License enforcement](license-enforcement.md) — server-primary gate, LockOverlay, 7-day offline grace, clock-tamper defense.
 - [Landing brand & layout](landing-brand.md) — palette, section order, and component specifics of lexsecure-landing.
-- [Clerk sign-up constraints](clerk-signup-constraints.md) — Replit-managed Clerk can't disable email OTP; 422s are usually breached-password rejections; welcome email is server-side idempotent.
+- [Clerk sign-up constraints](clerk-signup-constraints.md) — managed Clerk can't disable OTP; sign-in may need a second-factor email code (handle in custom UI); +clerk_test/424242 for e2e.
 - [Online tools registry](online-tools-registry.md) — pdf-expiry exposes 32 client-side tools via one registry → mega menu + /tools/:slug pages; BMP/GIF encoders, ArrayBuffer/Blob TS gotcha.
