@@ -320,7 +320,7 @@ export default function Home3Page() {
                   <div className="text-[7px] font-semibold text-slate-500 mb-0.5">Sign here</div>
                   <svg viewBox="0 0 150 40" className="w-full h-9 text-[#1E3A8A]">
                     <motion.path
-                      d="M10 30 C 12 18, 18 10, 22 12 C 27 15, 20 32, 16 33 C 24 30, 30 20, 36 22 C 40 24, 36 31, 41 30 C 45 29, 47 22, 51 24 C 54 26, 53 30, 58 28 C 61 26, 63 21, 66 24 C 68 26, 70 29, 74 27 M 82 30 C 86 16, 92 12, 96 15 C 99 18, 92 30, 88 31 C 96 28, 102 20, 108 23 C 111 25, 108 30, 113 29 C 118 27, 122 20, 127 23 C 130 25, 132 28, 140 24"
+                      d="M30 31 C 34 16, 42 8, 47 11 C 52 15, 43 30, 38 32 C 48 28, 56 18, 63 21 C 67 23, 63 31, 69 30 C 74 29, 77 21, 82 23 C 86 25, 84 30, 90 28 C 95 26, 99 18, 104 21 C 107 23, 105 29, 111 28 C 116 27, 120 22, 126 24 M 40 36 C 60 39, 95 39, 118 34"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="1.8"
@@ -334,7 +334,7 @@ export default function Home3Page() {
                   </svg>
                   <div className="h-[3px] w-full bg-slate-300 rounded-full" />
                   <div className="mt-1.5 flex items-center justify-between">
-                    <span className="text-[6px] font-semibold text-slate-400">Alex Morrin</span>
+                    <span className="text-[6px] font-semibold text-slate-400">Amara</span>
                     <span className="text-[6px] font-bold text-white bg-[#16A34A] rounded px-1.5 py-0.5">
                       Done
                     </span>
