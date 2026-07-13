@@ -274,8 +274,12 @@ export default function Home3Page() {
                   alt="Luxor PDF Secure shield illustration"
                   className="w-48 h-48 object-contain drop-shadow-xl"
                   loading="lazy"
-                  animate={{ rotateY: 360 }}
-                  transition={{ duration: 8, ease: "linear", repeat: Infinity }}
+                  animate={{
+                    rotateY: [-32, 32, -32],
+                    rotateX: [6, -6, 6],
+                    y: [0, -6, 0],
+                  }}
+                  transition={{ duration: 7, ease: "easeInOut", repeat: Infinity }}
                   style={{ transformStyle: "preserve-3d" }}
                 />
               </div>
