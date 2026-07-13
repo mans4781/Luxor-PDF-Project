@@ -183,6 +183,100 @@ export async function sendLicenseEmail(params: LicenseEmailParams): Promise<bool
   }
 }
 
+export interface WelcomeEmailParams {
+  to: string;
+  firstName?: string | null;
+}
+
+/**
+ * Sends the one-time welcome email after a new account finishes sign-up.
+ * Best-effort: returns false on failure so an email problem never blocks
+ * the sign-up flow.
+ */
+export async function sendWelcomeEmail(params: WelcomeEmailParams): Promise<boolean> {
+  const { to, firstName } = params;
+
+  try {
+    const { client, fromEmail } = await getResendClient();
+
+    const greeting = firstName ? `Hi ${firstName},` : "Hi there,";
+
+    const html = `<!doctype html>
+<html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;margin:0;padding:32px 16px;color:#0f172a">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">
+    <tr><td style="padding:32px 32px 16px">
+      <div style="font-size:22px;font-weight:800;letter-spacing:-0.01em">
+        <span style="color:#1e3a8a">Luxor</span>
+        <span style="color:#dc2626">PDF</span>
+      </div>
+    </td></tr>
+    <tr><td style="padding:8px 32px 0">
+      <h1 style="margin:0 0 8px;font-size:24px;font-weight:700">Welcome to Luxor PDF!</h1>
+      <p style="margin:0 0 20px;color:#475569;line-height:1.55">
+        ${greeting} Your account is verified and ready. You now have one login
+        that works across the whole Luxor PDF suite.
+      </p>
+    </td></tr>
+    <tr><td style="padding:0 32px">
+      <h2 style="font-size:15px;margin:0 0 10px">What you can do right away</h2>
+      <ul style="margin:0;padding-left:20px;color:#475569;line-height:1.8;font-size:14px">
+        <li>Read, annotate, and organize PDFs in the Luxor PDF Reader</li>
+        <li>Convert PDFs to and from images, Word, and Excel</li>
+        <li>Protect documents with passwords and expiry dates</li>
+        <li>eSign documents and request signatures</li>
+      </ul>
+    </td></tr>
+    <tr><td style="padding:24px 32px 8px">
+      <a href="https://luxorpdf.com" style="display:block;background:#312e81;color:#fff;text-decoration:none;text-align:center;padding:14px 20px;border-radius:10px;font-weight:600;font-size:15px">
+        Open Luxor PDF
+      </a>
+    </td></tr>
+    <tr><td style="padding:24px 32px 32px">
+      <p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6">
+        Need help? Reply to this email or visit <a href="https://luxorpdf.com/contact" style="color:#312e81">luxorpdf.com/contact</a>.<br>
+        © ${new Date().getFullYear()} Luxor PDF.
+      </p>
+    </td></tr>
+  </table>
+</body></html>`;
+
+    const text = [
+      greeting,
+      "",
+      "Welcome to Luxor PDF! Your account is verified and ready.",
+      "",
+      "What you can do right away:",
+      "  - Read, annotate, and organize PDFs in the Luxor PDF Reader",
+      "  - Convert PDFs to and from images, Word, and Excel",
+      "  - Protect documents with passwords and expiry dates",
+      "  - eSign documents and request signatures",
+      "",
+      "Get started: https://luxorpdf.com",
+      "",
+      "Questions? Reply to this email or visit https://luxorpdf.com/contact",
+    ].join("\n");
+
+    const { data, error } = await client.emails.send({
+      from: fromEmail,
+      to: [to],
+      subject: "Welcome to Luxor PDF — your account is ready",
+      html,
+      text,
+    });
+
+    if (error) {
+      logger.error({ err: error, to }, "Resend rejected welcome email");
+      return false;
+    }
+
+    logger.info({ to, emailId: data?.id }, "Welcome email sent");
+    return true;
+  } catch (err) {
+    logger.error({ err, to }, "Failed to send welcome email");
+    return false;
+  }
+}
+
 export interface InviteEmailParams {
   to: string;
   orgName: string;

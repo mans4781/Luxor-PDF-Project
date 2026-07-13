@@ -4,6 +4,7 @@ import { Link, useLocation } from "wouter";
 import {
   ArrowLeft,
   ArrowRight,
+  Check,
   Eye,
   EyeOff,
   Lock,
@@ -41,6 +42,35 @@ function splitFullName(fullName: string): { firstName: string; lastName?: string
   return { firstName, lastName };
 }
 
+interface PasswordRule {
+  label: string;
+  test: (pw: string) => boolean;
+}
+
+const PASSWORD_RULES: PasswordRule[] = [
+  { label: "At least 8 characters", test: (pw) => pw.length >= 8 },
+  { label: "Contains a letter", test: (pw) => /[a-zA-Z]/.test(pw) },
+  { label: "Contains a number", test: (pw) => /[0-9]/.test(pw) },
+];
+
+/**
+ * Best-effort trigger for the one-time welcome email. The server is
+ * idempotent (sends at most once per new account), so calling this from
+ * every sign-up completion path is safe. Never blocks the redirect for
+ * long and never surfaces an error to the user.
+ */
+async function requestWelcomeEmail(): Promise<void> {
+  try {
+    await fetch("/api/account/welcome", {
+      method: "POST",
+      credentials: "include",
+      signal: AbortSignal.timeout(5000),
+    });
+  } catch {
+    // Welcome email is a nicety — never block or break sign-up over it.
+  }
+}
+
 export default function SignUpPage() {
   const { signUp, errors, fetchStatus } = useSignUp();
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
@@ -75,7 +105,8 @@ export default function SignUpPage() {
 
   const finishSignUp = async () => {
     await signUp.finalize({
-      navigate: ({ decorateUrl }) => {
+      navigate: async ({ decorateUrl }) => {
+        await requestWelcomeEmail();
         window.location.href = decorateUrl(authRedirectTarget());
       },
     });
@@ -105,6 +136,10 @@ export default function SignUpPage() {
     e.preventDefault();
     setLocalError(null);
     if (!validateCommon()) return;
+    if (!PASSWORD_RULES.every((rule) => rule.test(password))) {
+      setLocalError("Your password doesn't meet all the requirements listed below the password field.");
+      return;
+    }
     if (password !== confirmPassword) {
       setLocalError("Passwords don't match. Please re-enter them.");
       return;
@@ -136,7 +171,8 @@ export default function SignUpPage() {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-[#fafafc]">
         <HandleSSOCallback
-          navigateToApp={({ decorateUrl }) => {
+          navigateToApp={async ({ decorateUrl }) => {
+            await requestWelcomeEmail();
             window.location.href = decorateUrl(authRedirectTarget());
           }}
           navigateToSignIn={() => setLocation("/sign-in")}
@@ -368,6 +404,42 @@ export default function SignUpPage() {
                     {fieldError("password")}
                   </p>
                 )}
+                <ul className="mt-2 space-y-1" data-testid="password-rules">
+                  {PASSWORD_RULES.map((rule) => {
+                    const ok = rule.test(password);
+                    return (
+                      <li
+                        key={rule.label}
+                        className={`flex items-center gap-1.5 text-[12px] ${
+                          ok ? "text-emerald-600" : "text-slate-400"
+                        }`}
+                      >
+                        <Check
+                          className={`h-3.5 w-3.5 ${ok ? "text-emerald-600" : "text-slate-300"}`}
+                          strokeWidth={3}
+                        />
+                        {rule.label}
+                      </li>
+                    );
+                  })}
+                  <li
+                    className={`flex items-center gap-1.5 text-[12px] ${
+                      confirmPassword.length > 0 && password === confirmPassword
+                        ? "text-emerald-600"
+                        : "text-slate-400"
+                    }`}
+                  >
+                    <Check
+                      className={`h-3.5 w-3.5 ${
+                        confirmPassword.length > 0 && password === confirmPassword
+                          ? "text-emerald-600"
+                          : "text-slate-300"
+                      }`}
+                      strokeWidth={3}
+                    />
+                    Passwords match
+                  </li>
+                </ul>
 
                 <label className="mt-4 block text-[13px] font-semibold text-slate-700 mb-1.5">
                   Confirm Password

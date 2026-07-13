@@ -74,3 +74,4 @@ export * from "./verifyProductKeyBody";
 export * from "./verifyProductKeyResult";
 export * from "./verifyProductKeyResultReason";
 export * from "./verifyRevokeOtpBody";
+export * from "./welcomeEmailResult";

@@ -17,4 +17,5 @@
 - [Clerk suite SSO](clerk-suite-sso.md) — shared session across the 3 apps, pdf-expiry as auth host, luxor-auth-ui lib exports, CSS layer gotchas.
 - [License enforcement](license-enforcement.md) — server-primary gate, LockOverlay, 7-day offline grace, clock-tamper defense.
 - [Landing brand & layout](landing-brand.md) — palette, section order, and component specifics of lexsecure-landing.
+- [Clerk sign-up constraints](clerk-signup-constraints.md) — Replit-managed Clerk can't disable email OTP; 422s are usually breached-password rejections; welcome email is server-side idempotent.
 - [Online tools registry](online-tools-registry.md) — pdf-expiry exposes 32 client-side tools via one registry → mega menu + /tools/:slug pages; BMP/GIF encoders, ArrayBuffer/Blob TS gotcha.

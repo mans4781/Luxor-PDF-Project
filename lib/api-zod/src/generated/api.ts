@@ -304,6 +304,24 @@ export const GetLicenseStatusResponse = zod
   .describe("Single source of truth for whether the caller can use PDF tools.");
 
 /**
+ * Called by the sign-up page right after a new account is created and
+verified. Sends the branded welcome email (via Resend) exactly once
+per user — repeat calls are no-ops. Only sends for recently created
+accounts, so existing users who pass through the sign-up flow again
+never receive it. Requires a signed-in session.
+
+ * @summary Send the one-time welcome email to a newly signed-up user
+ */
+export const SendWelcomeEmailResponse = zod.object({
+  sent: zod
+    .boolean()
+    .describe("True when the welcome email was sent by this call."),
+  alreadySent: zod
+    .boolean()
+    .describe("True when the email had already been sent earlier."),
+});
+
+/**
  * Non-mutating gate. Returns `{ allowed, lockReason }` based on trial
 validity and today's usage count. The frontend should call this
 before starting an action; after a successful action it should call

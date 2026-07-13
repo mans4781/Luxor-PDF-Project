@@ -66,6 +66,7 @@ import type {
   VerifyProductKeyBody,
   VerifyProductKeyResult,
   VerifyRevokeOtpBody,
+  WelcomeEmailResult,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -961,6 +962,93 @@ export function useGetLicenseStatus<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * Called by the sign-up page right after a new account is created and
+verified. Sends the branded welcome email (via Resend) exactly once
+per user — repeat calls are no-ops. Only sends for recently created
+accounts, so existing users who pass through the sign-up flow again
+never receive it. Requires a signed-in session.
+
+ * @summary Send the one-time welcome email to a newly signed-up user
+ */
+export const getSendWelcomeEmailUrl = () => {
+  return `/api/account/welcome`;
+};
+
+export const sendWelcomeEmail = async (
+  options?: RequestInit,
+): Promise<WelcomeEmailResult> => {
+  return customFetch<WelcomeEmailResult>(getSendWelcomeEmailUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getSendWelcomeEmailMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof sendWelcomeEmail>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof sendWelcomeEmail>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["sendWelcomeEmail"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof sendWelcomeEmail>>,
+    void
+  > = () => {
+    return sendWelcomeEmail(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SendWelcomeEmailMutationResult = NonNullable<
+  Awaited<ReturnType<typeof sendWelcomeEmail>>
+>;
+
+export type SendWelcomeEmailMutationError = ErrorType<void>;
+
+/**
+ * @summary Send the one-time welcome email to a newly signed-up user
+ */
+export const useSendWelcomeEmail = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof sendWelcomeEmail>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof sendWelcomeEmail>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getSendWelcomeEmailMutationOptions(options));
+};
 
 /**
  * Non-mutating gate. Returns `{ allowed, lockReason }` based on trial

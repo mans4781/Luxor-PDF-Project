@@ -5,6 +5,13 @@
  * PDF Expiry Tool API
  * OpenAPI spec version: 0.1.0
  */
+export interface WelcomeEmailResult {
+  /** True when the welcome email was sent by this call. */
+  sent: boolean;
+  /** True when the email had already been sent earlier. */
+  alreadySent: boolean;
+}
+
 export interface HealthStatus {
   status: string;
 }

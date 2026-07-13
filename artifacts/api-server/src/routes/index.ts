@@ -11,6 +11,7 @@ import downloadsRouter from "./downloads";
 import desktopAuthRouter from "./desktop-auth";
 import aiRouter from "./ai";
 import convertRouter from "./convert";
+import accountRouter from "./account";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(downloadsRouter);
 router.use(desktopAuthRouter);
 router.use(aiRouter);
 router.use(convertRouter);
+router.use(accountRouter);
 
 export default router;
