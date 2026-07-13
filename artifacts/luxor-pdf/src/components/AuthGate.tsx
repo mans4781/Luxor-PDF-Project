@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -13,23 +14,30 @@ import { SUITE_AUTH_HOST_BASE } from "@workspace/luxor-auth-ui";
 import { isDesktopShell } from "../lib/desktopBridge";
 
 /**
- * Sign-in gate for non-reading features.
+ * Sign-in + subscription gate.
  *
- * Reading a PDF (open, scroll, zoom, navigate, search, themes, print,
- * download, read-aloud) is always free and works offline. Everything that
- * modifies or extracts content (annotation tools, Edit-menu features,
- * Save As / Save a Copy) calls `requireAuth(label)` first:
+ * Almost everything in the reader is free and needs no account: reading,
+ * search, themes, print, download, annotations, watermark, page numbers,
+ * compress, screenshots, form filling, sharing, save/export.
  *
- *   - Signed in            → returns true, feature proceeds.
- *   - Signed out / Clerk   → returns false and opens a sign-in prompt
- *     not loaded (offline)   (with an offline-specific message when the
- *                            browser reports no connectivity).
+ * Exactly two features are premium — Edit Text and the AI Assistant.
+ * They call `requirePremium(label)`:
+ *
+ *   - Signed out                 → sign-in prompt / redirect.
+ *   - Signed in, no active plan  → upgrade prompt linking to the plans page.
+ *   - Signed in, active plan     → returns true, feature proceeds.
+ *
+ * `requireAuth(label)` (sign-in only, no plan check) is kept for flows that
+ * merely need an account.
  */
 
 interface AuthGateContextValue {
   /** Returns true if the user may use the feature; otherwise shows the
    *  sign-in prompt (labelled with `label`) and returns false. */
   requireAuth: (label: string) => boolean;
+  /** Premium gate: like `requireAuth`, but additionally requires an active
+   *  paid plan. Shows an upgrade prompt for signed-in users without one. */
+  requirePremium: (label: string) => boolean;
   /** Explicitly start the sign-in flow (e.g. from the profile menu).
    *  Web: navigates to the suite sign-in page. Desktop: opens the system
    *  browser and waits for the handoff to complete. */
@@ -76,6 +84,12 @@ function desktopAuthUrl(kind: "sign-in" | "sign-up", state: string): string {
 /** Sentinel prompt label for explicit sign-in (no specific gated feature). */
 const GENERIC_PROMPT_LABEL = "\u0000generic";
 
+/** Where the "View plans" button in the upgrade prompt goes. */
+const PRICING_PATH = "/lexsecure-landing/pricing";
+
+/** Signed-in user's plan state, derived from GET /api/license/status. */
+type LicenseState = "unknown" | "active" | "none";
+
 const DESKTOP_POLL_INTERVAL_MS = 2500;
 const DESKTOP_POLL_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -83,6 +97,53 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
   const { isLoaded, isSignedIn } = useAuth();
   const { signIn, setActive } = useSignIn();
   const [promptLabel, setPromptLabel] = useState<string | null>(null);
+  // Which prompt the dialog shows: sign-in (no account) or upgrade (no plan).
+  const [promptMode, setPromptMode] = useState<"signin" | "upgrade">("signin");
+  const [licenseState, setLicenseState] = useState<LicenseState>("unknown");
+  const licenseRef = useRef<LicenseState>("unknown");
+  licenseRef.current = licenseState;
+
+  // Keep the plan state fresh while signed in: check on load, on sign-in,
+  // and whenever the window regains focus (e.g. after buying a plan in
+  // another tab). Fail closed — errors leave the previous state in place.
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!isSignedIn) {
+      setLicenseState("unknown");
+      return;
+    }
+    let cancelled = false;
+    const check = async () => {
+      try {
+        const res = await fetch("/api/license/status", {
+          credentials: "include",
+        });
+        if (!res.ok) return;
+        const data: { canUsePdfTools?: boolean } = await res.json();
+        if (!cancelled) {
+          setLicenseState(data.canUsePdfTools === true ? "active" : "none");
+        }
+      } catch {
+        // Offline / transient error — keep the previous state.
+      }
+    };
+    void check();
+    const onFocus = () => void check();
+    window.addEventListener("focus", onFocus);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [isLoaded, isSignedIn]);
+
+  // If the plan check resolves to "active" while the upgrade prompt is
+  // open (status was still loading when the user clicked), dismiss it.
+  useEffect(() => {
+    if (licenseState === "active" && promptMode === "upgrade") {
+      setPromptLabel(null);
+      setPromptMode("signin");
+    }
+  }, [licenseState, promptMode]);
   // Desktop browser-handoff state: null = not started.
   const [desktopWait, setDesktopWait] = useState<"waiting" | "failed" | null>(
     null,
@@ -174,12 +235,14 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
       if (isDesktopShell()) {
         // Desktop: show the dialog (it hosts the waiting/failed states) and
         // hand off to the system browser.
+        setPromptMode("signin");
         setPromptLabel(GENERIC_PROMPT_LABEL);
         if (!offlineNow) startDesktopAuth(kind);
         return;
       }
       if (offlineNow) {
         // The dialog can explain instead of navigating to a page that fails.
+        setPromptMode("signin");
         setPromptLabel(GENERIC_PROMPT_LABEL);
         return;
       }
@@ -200,6 +263,7 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
       if (!loaded || offlineNow) {
         // Auth state still resolving, or no connectivity — the dialog can
         // explain instead of navigating to a page that would fail.
+        setPromptMode("signin");
         setPromptLabel(label);
         return false;
       }
@@ -208,19 +272,38 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
       return false;
     }
     // Desktop: the dialog hosts the browser-handoff flow, so keep it.
+    setPromptMode("signin");
     setPromptLabel(label);
     return false;
   }, []);
 
+  const requirePremium = useCallback(
+    (label: string): boolean => {
+      if (DEV_BYPASS) return true;
+      const { isLoaded: loaded, isSignedIn: signedIn } = authRef.current;
+      // Step 1: must be signed in (reuses the sign-in prompt / redirect).
+      if (!loaded || !signedIn) return requireAuth(label);
+      // Step 2: must have an active paid plan. "unknown" fails closed —
+      // the focus/mount check is usually done long before a click, and if
+      // it resolves to "active" while the prompt is open it auto-closes.
+      if (licenseRef.current === "active") return true;
+      setPromptMode("upgrade");
+      setPromptLabel(label);
+      return false;
+    },
+    [requireAuth],
+  );
+
   const value = useMemo(
     () => ({
       requireAuth,
+      requirePremium,
       beginSignIn,
       beginSignUp,
       isLoaded: DEV_BYPASS || isLoaded,
       isSignedIn: DEV_BYPASS || isSignedIn === true,
     }),
-    [requireAuth, beginSignIn, beginSignUp, isLoaded, isSignedIn],
+    [requireAuth, requirePremium, beginSignIn, beginSignUp, isLoaded, isSignedIn],
   );
 
   const offline = typeof navigator !== "undefined" && !navigator.onLine;
@@ -247,12 +330,14 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
             if (e.target === e.currentTarget) {
               stopDesktopFlow();
               setPromptLabel(null);
+              setPromptMode("signin");
             }
           }}
           onKeyDown={(e) => {
             if (e.key === "Escape") {
               stopDesktopFlow();
               setPromptLabel(null);
+              setPromptMode("signin");
             }
           }}
         >
@@ -286,18 +371,22 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
               </svg>
             </div>
             <h2 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 700 }}>
-              {promptLabel === GENERIC_PROMPT_LABEL
-                ? "Sign in to Luxor PDF"
-                : `Sign in to use ${promptLabel}`}
+              {promptMode === "upgrade"
+                ? `Upgrade to use ${promptLabel}`
+                : promptLabel === GENERIC_PROMPT_LABEL
+                  ? "Sign in to Luxor PDF"
+                  : `Sign in to use ${promptLabel}`}
             </h2>
             <p style={{ margin: "0 0 18px", fontSize: 13.5, lineHeight: 1.55, color: "#475569" }}>
-              {offline
-                ? "You're offline right now. Reading works without internet, but you'll need to connect and sign in to use this feature."
-                : desktopWait === "waiting"
-                  ? "We've opened your web browser. Sign in (or create an account) there — this app will finish signing you in automatically."
-                  : desktopWait === "failed"
-                    ? "That sign-in attempt didn't complete. Please try again."
-                    : "Reading PDFs is always free. Create a free account or sign in to unlock annotations, editing and export tools."}
+              {promptMode === "upgrade"
+                ? "This feature is part of the Luxor PDF paid plans. Everything else in the reader stays free — pick a plan to unlock text editing and the AI Assistant."
+                : offline
+                  ? "You're offline right now. Reading works without internet, but you'll need to connect and sign in to use this feature."
+                  : desktopWait === "waiting"
+                    ? "We've opened your web browser. Sign in (or create an account) there — this app will finish signing you in automatically."
+                    : desktopWait === "failed"
+                      ? "That sign-in attempt didn't complete. Please try again."
+                      : "Reading and everyday tools are free. Sign in to use text editing and the AI Assistant with a Luxor PDF plan."}
             </p>
             {desktopWait === "waiting" && (
               <div
@@ -313,57 +402,91 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
               </div>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <button
-                type="button"
-                onClick={() => {
-                  if (isDesktopShell()) {
-                    startDesktopAuth("sign-in");
-                  } else {
-                    window.location.assign(suiteAuthUrl("sign-in"));
-                  }
-                }}
-                disabled={offline || desktopWait === "waiting"}
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: 9,
-                  border: "none",
-                  background: offline ? "#94a3b8" : "#2563eb",
-                  color: "#fff",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: offline ? "not-allowed" : "pointer",
-                }}
-              >
-                Sign in
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (isDesktopShell()) {
-                    startDesktopAuth("sign-up");
-                  } else {
-                    window.location.assign(suiteAuthUrl("sign-up"));
-                  }
-                }}
-                disabled={offline || desktopWait === "waiting"}
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: 9,
-                  border: "1px solid #cbd5e1",
-                  background: "#fff",
-                  color: offline ? "#94a3b8" : "#0f172a",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: offline ? "not-allowed" : "pointer",
-                }}
-              >
-                Create free account
-              </button>
+              {promptMode === "upgrade" ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isDesktopShell()) {
+                      // Desktop shell routes window.open to the system browser.
+                      window.open(
+                        `${window.location.origin}${PRICING_PATH}`,
+                        "_blank",
+                        "noopener",
+                      );
+                    } else {
+                      window.location.assign(PRICING_PATH);
+                    }
+                  }}
+                  disabled={offline}
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: 9,
+                    border: "none",
+                    background: offline ? "#94a3b8" : "#2563eb",
+                    color: "#fff",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: offline ? "not-allowed" : "pointer",
+                  }}
+                >
+                  View plans
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isDesktopShell()) {
+                        startDesktopAuth("sign-in");
+                      } else {
+                        window.location.assign(suiteAuthUrl("sign-in"));
+                      }
+                    }}
+                    disabled={offline || desktopWait === "waiting"}
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: 9,
+                      border: "none",
+                      background: offline ? "#94a3b8" : "#2563eb",
+                      color: "#fff",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: offline ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    Sign in
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isDesktopShell()) {
+                        startDesktopAuth("sign-up");
+                      } else {
+                        window.location.assign(suiteAuthUrl("sign-up"));
+                      }
+                    }}
+                    disabled={offline || desktopWait === "waiting"}
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: 9,
+                      border: "1px solid #cbd5e1",
+                      background: "#fff",
+                      color: offline ? "#94a3b8" : "#0f172a",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: offline ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    Create free account
+                  </button>
+                </>
+              )}
               <button
                 type="button"
                 onClick={() => {
                   stopDesktopFlow();
                   setPromptLabel(null);
+                  setPromptMode("signin");
                 }}
                 style={{
                   padding: "8px 14px",
@@ -375,7 +498,7 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
                   cursor: "pointer",
                 }}
               >
-                Keep reading without an account
+                {promptMode === "upgrade" ? "Not now" : "Keep reading without an account"}
               </button>
             </div>
           </div>

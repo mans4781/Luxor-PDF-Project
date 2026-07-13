@@ -2,6 +2,7 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { getAuth } from "@clerk/express";
 import { SummarizePdfBody } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { getLicenseStatus } from "../lib/license";
 
 const router: IRouter = Router();
 
@@ -49,6 +50,24 @@ router.post("/ai/summarize", async (req: Request, res: Response): Promise<void> 
   const auth = getAuth(req);
   if (!auth.userId) {
     res.status(401).json({ error: "Not signed in" });
+    return;
+  }
+
+  // The AI Assistant is a premium feature — require an active paid plan.
+  // Fail closed if the plan lookup itself errors.
+  try {
+    const license = await getLicenseStatus(auth.userId);
+    if (!license.canUsePdfTools) {
+      res.status(403).json({
+        error: "The AI Assistant requires an active Luxor PDF plan. Visit the pricing page to upgrade.",
+      });
+      return;
+    }
+  } catch (err) {
+    req.log.error({ err, userId: auth.userId }, "ai/summarize license check failed");
+    res.status(403).json({
+      error: "We couldn't verify your plan right now. Please try again shortly.",
+    });
     return;
   }
 

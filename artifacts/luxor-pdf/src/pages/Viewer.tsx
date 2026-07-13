@@ -264,27 +264,17 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
 
   const { annotations, addAnnotation, updateAnnotation, removeAnnotation, clearHighlights, undo, getPageAnnotations, replaceHighlights } = useAnnotations();
 
-  // Sign-in gate: reading stays free; annotation/edit/export features
-  // require a signed-in user (requireAuth shows the prompt when not).
-  const { requireAuth, isLoaded: authLoaded, isSignedIn } = useAuthGate();
+  // Premium gate: everything is free except Edit Text and the AI
+  // Assistant, which require a signed-in user with an active paid plan
+  // (requirePremium shows the sign-in / upgrade prompt when not).
+  const { requirePremium } = useAuthGate();
 
   const handleToolChange = useCallback((t: ToolType) => {
-    // Freehand pen drawing is free for everyone; other annotation tools
-    // require sign-in. (Exports with edits stay gated at the export point.)
-    if (t !== "hand" && t !== "freehand" && !requireAuth(TOOL_LABELS[t])) return;
+    // All annotation tools are free except Edit Text, which is premium.
+    // (Exports containing text edits stay gated at the export point.)
+    if (t === "edittext" && !requirePremium(TOOL_LABELS.edittext)) return;
     setTool(t);
-  }, [requireAuth]);
-
-  // Signed-out users must not carry premium edit configs hydrated from
-  // localStorage — otherwise the free download path would happily burn a
-  // previously-saved watermark / page numbers into the exported PDF.
-  useEffect(() => {
-    if (authLoaded && !isSignedIn) {
-      setWatermarkCfg(null);
-      setPageNoCfg(null);
-      setFormFillMode(false);
-    }
-  }, [authLoaded, isSignedIn]);
+  }, [requirePremium]);
 
   // Stable per-document key for persisting highlights across reloads.
   const docKey = useMemo(
@@ -616,11 +606,11 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     });
   }, []);
 
-  // Open a right-hand panel (AI tools are sign-in gated).
+  // Open a right-hand panel (the AI Assistant is a premium feature).
   const handleOpenPanel = useCallback((panel: PanelKey) => {
-    if (panel === "ai" && !requireAuth("AI tools")) return;
+    if (panel === "ai" && !requirePremium("the AI Assistant")) return;
     setActivePanel(p => (p === panel ? null : panel));
-  }, [requireAuth]);
+  }, [requirePremium]);
 
   const handlePageVisible = useCallback((page: number) => setCurrentPage(page), []);
 
@@ -674,19 +664,20 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   const handleFileSaveAs = useCallback(() => {
     // Browsers can't truly "save as" — handleDownload already prompts a
     // save dialog on Windows when downloads.always_ask is enabled and
-    // exports the PDF with all current edits burned in.
-    if (!requireAuth("Save As")) return;
+    // exports the PDF with all current edits burned in. (Text-edit
+    // exports are premium-gated inside handleDownload itself.)
     if (!file) { alert("No PDF is currently open."); return; }
     handleDownloadRef.current();
-  }, [file, requireAuth]);
+  }, [file]);
 
   const handleFileSaveCopy = useCallback(async () => {
-    if (!requireAuth("Save a Copy")) return;
     if (!file) { alert("No PDF is currently open."); return; }
     if (downloading || sharing) return;
     const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
     const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
     const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
+    // Burning text edits into the copy is the premium Edit Text feature.
+    if (editTexts.length > 0 && !requirePremium(TOOL_LABELS.edittext)) return;
     const dot = file.name.lastIndexOf(".");
     const base = dot > 0 ? file.name.slice(0, dot) : file.name;
     const copyName = `${base} - Copy.pdf`;
@@ -714,7 +705,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     } finally {
       setDownloading(false);
     }
-  }, [file, downloading, sharing, annotations, watermarkCfg, pageNoCfg, currentPage, requireAuth]);
+  }, [file, downloading, sharing, annotations, watermarkCfg, pageNoCfg, currentPage, requirePremium]);
 
   // ── Interactive form filling (AcroForm) ────────────────────
   const handleToggleFormFill = useCallback(() => {
@@ -731,9 +722,14 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   // (held in pdfDoc.annotationStorage) into a real filled PDF. If other edit
   // features are also active, overlay them on top of the filled bytes.
   const handleDownloadFilledForm = useCallback(async () => {
-    if (!requireAuth("Download filled PDF")) return;
     if (!file || !pdfDoc) { alert("No PDF is currently open."); return; }
     if (downloading || sharing) return;
+    // Filled-form export is free, but burning text edits into it is the
+    // premium Edit Text feature.
+    if (
+      annotations.some((a) => a.type === "edittext") &&
+      !requirePremium(TOOL_LABELS.edittext)
+    ) return;
     setDownloading(true);
     try {
       const filled: Uint8Array = await pdfDoc.saveDocument();
@@ -761,7 +757,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     } finally {
       setDownloading(false);
     }
-  }, [file, pdfDoc, downloading, sharing, annotations, watermarkCfg, pageNoCfg, currentPage, requireAuth]);
+  }, [file, pdfDoc, downloading, sharing, annotations, watermarkCfg, pageNoCfg, currentPage, requirePremium]);
 
   // ── Share (system share sheet, with fallback menu) ─────────
   const handleShare = useCallback(async () => {
@@ -772,10 +768,9 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
     const needsExport = watermarkCfg !== null || pageNoCfg !== null ||
       redactions.length > 0 || images.length > 0 || editTexts.length > 0;
-    // Sharing an EDITED PDF produces the same burned-in export as Save,
-    // so it is gated behind sign-in exactly like the Save actions.
-    // Sharing the untouched original stays free, like reading.
-    if (needsExport && !requireAuth("sharing edited PDFs")) return;
+    // Sharing is free — but burning text edits into the shared copy is
+    // the premium Edit Text feature, same as the Save/export paths.
+    if (editTexts.length > 0 && !requirePremium(TOOL_LABELS.edittext)) return;
     setSharing(true);
     try {
       const blob: Blob = needsExport
@@ -803,7 +798,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     } finally {
       setSharing(false);
     }
-  }, [file, sharing, downloading, annotations, watermarkCfg, pageNoCfg, currentPage, requireAuth]);
+  }, [file, sharing, downloading, annotations, watermarkCfg, pageNoCfg, currentPage, requirePremium]);
 
   const downloadShareFile = useCallback((f: File) => {
     const url = URL.createObjectURL(f);
@@ -832,14 +827,11 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       setCloseIntent(null);
     };
     if (choice === "save") {
-      // Saving with edits burned in is a signed-in feature. Gate BEFORE
-      // proceeding so a signed-out user isn't left with their edits
-      // silently discarded after the sign-in prompt appears.
-      const hasExportEdits =
-        watermarkCfg !== null ||
-        pageNoCfg !== null ||
-        annotations.some((a) => a.type === "redact" || a.type === "image" || a.type === "edittext");
-      if (hasExportEdits && !requireAuth("saving edited PDFs")) {
+      // Saving is free, but burning text edits in is the premium Edit
+      // Text feature. Gate BEFORE proceeding so a non-premium user isn't
+      // left with their edits silently discarded after the prompt appears.
+      const hasTextEdits = annotations.some((a) => a.type === "edittext");
+      if (hasTextEdits && !requirePremium(TOOL_LABELS.edittext)) {
         setCloseIntent(null);
         return;
       }
@@ -848,7 +840,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     } else {
       proceed();
     }
-  }, [closeIntent, onClose, onFileLoad, watermarkCfg, pageNoCfg, annotations, requireAuth]);
+  }, [closeIntent, onClose, onFileLoad, annotations, requirePremium]);
 
   // Tab-strip close button → run the same close flow (with the
   // unsaved-changes confirmation) as File → Close. A ref keeps the
@@ -988,10 +980,10 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
       return;
     }
-    // Downloading the untouched original (above) is always free, but
-    // exporting with edits burned in requires a signed-in user — this also
-    // covers indirect callers (Save As shortcut, unsaved-changes dialog).
-    if (!requireAuth("exporting edited PDFs")) return;
+    // Exporting is free — except burning text edits in, which is the
+    // premium Edit Text feature. Gating here also covers indirect callers
+    // (Save As shortcut, unsaved-changes dialog).
+    if (editTexts.length > 0 && !requirePremium(TOOL_LABELS.edittext)) return;
     setDownloading(true);
     try {
       const blob = await exportPdfWithEdits(file, {
@@ -1299,17 +1291,17 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         onDrawColorChange={setDrawColor}
         onDrawThicknessChange={setDrawThickness}
         onShapeFillChange={setShapeFill}
-        onEraseAll={() => { if (requireAuth("Erase All")) clearHighlights(); }}
+        onEraseAll={clearHighlights}
         onReadAloud={handleReadAloud}
         onOpenFile={handleOpenFile}
         onPrint={handlePrint}
-        onOpenWatermark={() => { if (requireAuth("Watermark")) setWatermarkOpen(true); }}
-        onOpenPageNo={() => { if (requireAuth("Page Numbers")) setPageNoOpen(true); }}
-        onAddImage={() => { if (requireAuth("Add Image")) handleAddImage(); }}
-        onOpenCompress={() => { if (requireAuth("Compress")) setCompressOpen(true); }}
-        onScreenshot={() => { if (requireAuth("Screenshot")) setScreenshotActive(true); }}
-        onClearWatermark={() => { if (requireAuth("Watermark")) setWatermarkCfg(null); }}
-        onClearPageNo={() => { if (requireAuth("Page Numbers")) setPageNoCfg(null); }}
+        onOpenWatermark={() => setWatermarkOpen(true)}
+        onOpenPageNo={() => setPageNoOpen(true)}
+        onAddImage={handleAddImage}
+        onOpenCompress={() => setCompressOpen(true)}
+        onScreenshot={() => setScreenshotActive(true)}
+        onClearWatermark={() => setWatermarkCfg(null)}
+        onClearPageNo={() => setPageNoCfg(null)}
         watermarkActive={!!watermarkCfg}
         pageNoActive={!!pageNoCfg}
         onShare={handleShare}
@@ -1444,7 +1436,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
           pdfDoc={pdfDoc}
           onClose={() => setActivePanel(null)}
           onSelectTool={handleToolChange}
-          onAddImage={() => { if (requireAuth("Add Image")) handleAddImage(); }}
+          onAddImage={handleAddImage}
           formFillMode={formFillMode}
           onToggleFormFill={handleToggleFormFill}
           onDownloadFilled={handleDownloadFilledForm}
