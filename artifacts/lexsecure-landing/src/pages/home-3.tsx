@@ -25,7 +25,7 @@ import {
   FileText,
   Download,
 } from "lucide-react";
-import secureNet from "@/assets/secure-net.webp";
+import secureShield from "@/assets/secure-shield.webp";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -267,8 +267,8 @@ export default function Home3Page() {
               {/* 3D vault visual */}
               <div className="mt-auto mb-5 flex items-center justify-center py-1">
                 <img
-                  src={secureNet}
-                  alt="Luxor PDF Secure internet security illustration"
+                  src={secureShield}
+                  alt="Luxor PDF Secure shield illustration"
                   className="w-36 h-36 object-contain drop-shadow-xl"
                   loading="lazy"
                 />
