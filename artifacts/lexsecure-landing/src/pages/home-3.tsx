@@ -269,18 +269,12 @@ export default function Home3Page() {
                 className="mt-auto mb-5 flex items-center justify-center py-1"
                 style={{ perspective: 900 }}
               >
-                <motion.img
+                <img
                   src={secureShield}
                   alt="Luxor PDF Secure shield illustration"
                   className="w-48 h-48 object-contain drop-shadow-xl"
                   loading="lazy"
-                  animate={{
-                    rotateY: [-32, 32, -32],
-                    rotateX: [6, -6, 6],
-                    y: [0, -6, 0],
-                  }}
-                  transition={{ duration: 7, ease: "easeInOut", repeat: Infinity }}
-                  style={{ transformStyle: "preserve-3d" }}
+                  style={{ transform: "rotateY(-24deg) rotateX(5deg)" }}
                 />
               </div>
               <Link
