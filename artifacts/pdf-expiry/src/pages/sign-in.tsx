@@ -22,53 +22,6 @@ import { authRedirectTarget } from "@/lib/auth-redirect";
 
 const baseUrl = import.meta.env.BASE_URL;
 
-/* ─── Small brand SVGs for the social buttons ────────────────────────── */
-
-function GoogleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="w-[18px] h-[18px]" aria-hidden="true">
-      <path
-        fill="#4285F4"
-        d="M23.49 12.27c0-.79-.07-1.54-.2-2.27H12v4.51h6.47a5.57 5.57 0 0 1-2.4 3.58v2.98h3.87c2.26-2.09 3.55-5.17 3.55-8.8z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 24c3.24 0 5.95-1.08 7.94-2.93l-3.87-2.98c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.07A11.99 11.99 0 0 0 12 24z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M5.27 14.29A7.19 7.19 0 0 1 4.89 12c0-.8.14-1.57.38-2.29V6.64H1.29a11.97 11.97 0 0 0 0 10.72l3.98-3.07z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.94 1.19 15.24 0 12 0 7.31 0 3.26 2.69 1.29 6.64l3.98 3.07C6.22 6.86 8.87 4.75 12 4.75z"
-      />
-    </svg>
-  );
-}
-
-function MicrosoftIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="w-[18px] h-[18px]" aria-hidden="true">
-      <rect x="1" y="1" width="10.5" height="10.5" fill="#F25022" />
-      <rect x="12.5" y="1" width="10.5" height="10.5" fill="#7FBA00" />
-      <rect x="1" y="12.5" width="10.5" height="10.5" fill="#00A4EF" />
-      <rect x="12.5" y="12.5" width="10.5" height="10.5" fill="#FFB900" />
-    </svg>
-  );
-}
-
-function AppleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="w-[18px] h-[18px]" aria-hidden="true">
-      <path
-        fill="#111111"
-        d="M17.05 12.54c-.03-2.89 2.36-4.27 2.47-4.34-1.35-1.97-3.44-2.24-4.18-2.27-1.78-.18-3.47 1.05-4.37 1.05-.9 0-2.29-1.02-3.77-1-1.94.03-3.72 1.13-4.72 2.86-2.01 3.49-.51 8.66 1.45 11.49.96 1.39 2.1 2.94 3.6 2.88 1.44-.06 1.99-.93 3.73-.93s2.23.93 3.76.9c1.55-.03 2.53-1.41 3.48-2.8 1.1-1.61 1.55-3.17 1.58-3.25-.04-.02-3.02-1.16-3.03-4.59zM14.16 4.06c.8-.97 1.33-2.31 1.19-3.65-1.15.05-2.53.76-3.36 1.73-.73.85-1.38 2.22-1.2 3.53 1.27.1 2.58-.65 3.37-1.61z"
-      />
-    </svg>
-  );
-}
-
 /* ─── Left panel illustration (original Luxor art) ───────────────────── */
 
 function DocIllustration() {
@@ -227,23 +180,6 @@ export default function SignInPage() {
     if (error) return;
     if (signIn.status === "complete") {
       await finishSignIn();
-    }
-  };
-
-  const handleSocial = async (
-    strategy: "oauth_google" | "oauth_microsoft" | "oauth_apple",
-  ) => {
-    setLocalError(null);
-    const target = authRedirectTarget();
-    const { error } = await signIn.sso({
-      strategy,
-      redirectUrl: `${window.location.origin}${target}`,
-      redirectCallbackUrl: `${window.location.origin}${basePath}/sign-in/sso-callback?redirect_url=${encodeURIComponent(target)}`,
-    });
-    if (error) {
-      setLocalError(
-        "This sign-in provider isn't available right now. Please try another option.",
-      );
     }
   };
 
@@ -558,54 +494,6 @@ export default function SignInPage() {
                 </button>
               </form>
             )}
-
-            {/* Divider */}
-            <div className="mt-7 flex items-center gap-3">
-              <span className="h-px flex-1 bg-slate-200" />
-              <span className="text-[12px] text-slate-400">or continue with</span>
-              <span className="h-px flex-1 bg-slate-200" />
-            </div>
-
-            {/* Social buttons */}
-            <div className="mt-5 grid grid-cols-3 gap-3">
-              <button
-                type="button"
-                onClick={() => handleSocial("oauth_google")}
-                disabled={busy}
-                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2.5 text-[13px] font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-300 disabled:opacity-60"
-                data-testid="button-google-login"
-              >
-                <GoogleIcon />
-                Google
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSocial("oauth_microsoft")}
-                disabled={busy}
-                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2.5 text-[13px] font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-300 disabled:opacity-60"
-                data-testid="button-microsoft-login"
-              >
-                <MicrosoftIcon />
-                Microsoft
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSocial("oauth_apple")}
-                disabled={busy}
-                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2.5 text-[13px] font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-300 disabled:opacity-60"
-                data-testid="button-apple-login"
-              >
-                <AppleIcon />
-                Apple
-              </button>
-            </div>
-
-            <p
-              className="mt-3 text-center text-[12px] text-slate-400"
-              data-testid="text-social-coming-soon"
-            >
-              Social sign-in is coming soon — please use email for now.
-            </p>
 
             {/* Security note */}
             <p className="mt-7 flex items-center justify-center gap-2 text-[12px] text-slate-500">

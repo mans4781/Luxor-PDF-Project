@@ -18,16 +18,12 @@ import {
 import { basePath } from "@/lib/base-path";
 import { authRedirectTarget } from "@/lib/auth-redirect";
 import {
-  AppleIcon,
   AuthFooter,
   DocIllustration,
   DotGrid,
-  GoogleIcon,
   LuxorLogoLockup,
-  MicrosoftIcon,
   authButtonClass,
   authInputClass,
-  socialButtonClass,
 } from "@/components/auth-visuals";
 
 const FEATURES = [
@@ -133,23 +129,6 @@ export default function SignUpPage() {
     if (error) return;
     if (signUp.status === "complete") {
       await finishSignUp();
-    }
-  };
-
-  const handleSocial = async (
-    strategy: "oauth_google" | "oauth_microsoft" | "oauth_apple",
-  ) => {
-    setLocalError(null);
-    const target = authRedirectTarget();
-    const { error } = await signUp.sso({
-      strategy,
-      redirectUrl: `${window.location.origin}${target}`,
-      redirectCallbackUrl: `${window.location.origin}${basePath}/sign-up/sso-callback?redirect_url=${encodeURIComponent(target)}`,
-    });
-    if (error) {
-      setLocalError(
-        "This sign-up provider isn't available right now. Please try another option.",
-      );
     }
   };
 
@@ -471,54 +450,6 @@ export default function SignUpPage() {
                 </button>
               </form>
             )}
-
-            {/* Divider */}
-            <div className="mt-7 flex items-center gap-3">
-              <span className="h-px flex-1 bg-slate-200" />
-              <span className="text-[12px] text-slate-400">or continue with</span>
-              <span className="h-px flex-1 bg-slate-200" />
-            </div>
-
-            {/* Social buttons */}
-            <div className="mt-5 grid grid-cols-3 gap-3">
-              <button
-                type="button"
-                onClick={() => handleSocial("oauth_google")}
-                disabled={busy}
-                className={socialButtonClass}
-                data-testid="button-google-signup"
-              >
-                <GoogleIcon />
-                Google
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSocial("oauth_microsoft")}
-                disabled={busy}
-                className={socialButtonClass}
-                data-testid="button-microsoft-signup"
-              >
-                <MicrosoftIcon />
-                Microsoft
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSocial("oauth_apple")}
-                disabled={busy}
-                className={socialButtonClass}
-                data-testid="button-apple-signup"
-              >
-                <AppleIcon />
-                Apple
-              </button>
-            </div>
-
-            <p
-              className="mt-3 text-center text-[12px] text-slate-400"
-              data-testid="text-social-coming-soon"
-            >
-              Social sign-up is coming soon — please use email for now.
-            </p>
 
             {/* Security note */}
             <p className="mt-7 flex items-center justify-center gap-2 text-[12px] text-slate-500">
