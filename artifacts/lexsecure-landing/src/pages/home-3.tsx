@@ -265,12 +265,18 @@ export default function Home3Page() {
                 <CheckItem color="#2563EB">Digital certificate support</CheckItem>
               </ul>
               {/* 3D vault visual */}
-              <div className="mt-auto mb-5 flex items-center justify-center py-1">
-                <img
+              <div
+                className="mt-auto mb-5 flex items-center justify-center py-1"
+                style={{ perspective: 900 }}
+              >
+                <motion.img
                   src={secureShield}
                   alt="Luxor PDF Secure shield illustration"
-                  className="w-36 h-36 object-contain drop-shadow-xl"
+                  className="w-48 h-48 object-contain drop-shadow-xl"
                   loading="lazy"
+                  animate={{ rotateY: 360 }}
+                  transition={{ duration: 8, ease: "linear", repeat: Infinity }}
+                  style={{ transformStyle: "preserve-3d" }}
                 />
               </div>
               <Link
