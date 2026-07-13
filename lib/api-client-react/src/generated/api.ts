@@ -37,6 +37,9 @@ import type {
   DeactivateDeviceResult,
   DeactivateOrgDeviceBody,
   DeletePdfParams,
+  DevStatus,
+  DevVerifyRequest,
+  DevVerifyResult,
   DownloadPdfParams,
   ErrorResponse,
   GetPdfParams,
@@ -1048,6 +1051,171 @@ export const useSendWelcomeEmail = <
   TContext
 > => {
   return useMutation(getSendWelcomeEmailMutationOptions(options));
+};
+
+/**
+ * Called by the sign-in flow right after login. Regular users get
+`isDeveloper: false` and proceed normally. Developer accounts must
+pass the passphrase step once per login session.
+
+ * @summary Check whether the signed-in user is a developer and has passed the passphrase step
+ */
+export const getGetDevStatusUrl = () => {
+  return `/api/account/dev-status`;
+};
+
+export const getDevStatus = async (
+  options?: RequestInit,
+): Promise<DevStatus> => {
+  return customFetch<DevStatus>(getGetDevStatusUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetDevStatusQueryKey = () => {
+  return [`/api/account/dev-status`] as const;
+};
+
+export const getGetDevStatusQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDevStatus>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDevStatus>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetDevStatusQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getDevStatus>>> = ({
+    signal,
+  }) => getDevStatus({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDevStatus>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetDevStatusQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getDevStatus>>
+>;
+export type GetDevStatusQueryError = ErrorType<void>;
+
+/**
+ * @summary Check whether the signed-in user is a developer and has passed the passphrase step
+ */
+
+export function useGetDevStatus<
+  TData = Awaited<ReturnType<typeof getDevStatus>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDevStatus>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetDevStatusQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Submit the developer passphrase for the current login session
+ */
+export const getVerifyDevPassphraseUrl = () => {
+  return `/api/account/dev-verify`;
+};
+
+export const verifyDevPassphrase = async (
+  devVerifyRequest: DevVerifyRequest,
+  options?: RequestInit,
+): Promise<DevVerifyResult> => {
+  return customFetch<DevVerifyResult>(getVerifyDevPassphraseUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(devVerifyRequest),
+  });
+};
+
+export const getVerifyDevPassphraseMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof verifyDevPassphrase>>,
+    TError,
+    { data: BodyType<DevVerifyRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof verifyDevPassphrase>>,
+  TError,
+  { data: BodyType<DevVerifyRequest> },
+  TContext
+> => {
+  const mutationKey = ["verifyDevPassphrase"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof verifyDevPassphrase>>,
+    { data: BodyType<DevVerifyRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return verifyDevPassphrase(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type VerifyDevPassphraseMutationResult = NonNullable<
+  Awaited<ReturnType<typeof verifyDevPassphrase>>
+>;
+export type VerifyDevPassphraseMutationBody = BodyType<DevVerifyRequest>;
+export type VerifyDevPassphraseMutationError = ErrorType<void>;
+
+/**
+ * @summary Submit the developer passphrase for the current login session
+ */
+export const useVerifyDevPassphrase = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof verifyDevPassphrase>>,
+    TError,
+    { data: BodyType<DevVerifyRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof verifyDevPassphrase>>,
+  TError,
+  { data: BodyType<DevVerifyRequest> },
+  TContext
+> => {
+  return useMutation(getVerifyDevPassphraseMutationOptions(options));
 };
 
 /**

@@ -12,6 +12,26 @@ export interface WelcomeEmailResult {
   alreadySent: boolean;
 }
 
+export interface DevStatus {
+  /** True when the signed-in account is a developer account. */
+  isDeveloper: boolean;
+  /** True when this login session already passed the passphrase step. */
+  verified: boolean;
+}
+
+export interface DevVerifyRequest {
+  /**
+   * @minLength 1
+   * @maxLength 512
+   */
+  passphrase: string;
+}
+
+export interface DevVerifyResult {
+  /** True when the passphrase was correct and the session is now verified. */
+  verified: boolean;
+}
+
 export interface HealthStatus {
   status: string;
 }

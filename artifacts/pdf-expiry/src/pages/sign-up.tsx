@@ -82,7 +82,8 @@ export default function SignUpPage() {
     }
   }, [authLoaded, isSignedIn, isSsoCallback]);
 
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -140,11 +141,18 @@ export default function SignUpPage() {
     // This Clerk instance has the first/last name attributes disabled, so
     // passing firstName/lastName is rejected with 422 "is unknown". Store
     // the name in unsafeMetadata instead — always accepted.
+    const cleanFirst = firstName.trim();
+    const cleanLast = lastName.trim();
     const { error } = await signUp.password({
       emailAddress: email,
       password,
       legalAccepted: true,
-      unsafeMetadata: { fullName: fullName.trim(), productUpdates },
+      unsafeMetadata: {
+        firstName: cleanFirst,
+        lastName: cleanLast,
+        fullName: [cleanFirst, cleanLast].filter(Boolean).join(" "),
+        productUpdates,
+      },
     });
     if (error) return;
     await afterCreateOrPassword();
@@ -319,21 +327,43 @@ export default function SignUpPage() {
               </form>
             ) : (
               <form onSubmit={handleEmailSignUp} className="mt-6">
-                <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <User className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <input
-                    type="text"
-                    autoComplete="name"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Enter your full name"
-                    className={authInputClass}
-                    data-testid="input-full-name"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">
+                      First Name
+                    </label>
+                    <div className="relative">
+                      <User className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <input
+                        type="text"
+                        autoComplete="given-name"
+                        required
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="First name"
+                        className={authInputClass}
+                        data-testid="input-first-name"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">
+                      Last Name
+                    </label>
+                    <div className="relative">
+                      <User className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <input
+                        type="text"
+                        autoComplete="family-name"
+                        required
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="Last name"
+                        className={authInputClass}
+                        data-testid="input-last-name"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <label className="mt-4 block text-[13px] font-semibold text-slate-700 mb-1.5">
                   Email Address

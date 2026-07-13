@@ -433,6 +433,48 @@ paths:
         "401":
           description: Not signed in.
 
+  /account/dev-status:
+    get:
+      operationId: getDevStatus
+      tags: [account]
+      summary: Check whether the signed-in user is a developer and has passed the passphrase step
+      description: |
+        Called by the sign-in flow right after login. Regular users get
+        `isDeveloper: false` and proceed normally. Developer accounts must
+        pass the passphrase step once per login session.
+      responses:
+        "200":
+          description: Developer status for the current session.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DevStatus"
+        "401":
+          description: Not signed in.
+
+  /account/dev-verify:
+    post:
+      operationId: verifyDevPassphrase
+      tags: [account]
+      summary: Submit the developer passphrase for the current login session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DevVerifyRequest"
+      responses:
+        "200":
+          description: Result of the passphrase check.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DevVerifyResult"
+        "401":
+          description: Not signed in.
+        "429":
+          description: Too many failed attempts — try again later.
+
   /usage/check:
     post:
       operationId: checkUsage
@@ -1081,6 +1123,38 @@ components:
       required:
         - sent
         - alreadySent
+
+    DevStatus:
+      type: object
+      properties:
+        isDeveloper:
+          type: boolean
+          description: True when the signed-in account is a developer account.
+        verified:
+          type: boolean
+          description: True when this login session already passed the passphrase step.
+      required:
+        - isDeveloper
+        - verified
+
+    DevVerifyRequest:
+      type: object
+      properties:
+        passphrase:
+          type: string
+          minLength: 1
+          maxLength: 512
+      required:
+        - passphrase
+
+    DevVerifyResult:
+      type: object
+      properties:
+        verified:
+          type: boolean
+          description: True when the passphrase was correct and the session is now verified.
+      required:
+        - verified
 
     HealthStatus:
       type: object

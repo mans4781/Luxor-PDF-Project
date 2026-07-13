@@ -1,10 +1,22 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { getAuth, clerkClient } from "@clerk/express";
 import { sql } from "drizzle-orm";
-import { db, welcomeEmailsTable } from "@workspace/db";
+import { createHash, timingSafeEqual } from "crypto";
+import { db, welcomeEmailsTable, developerVerificationsTable } from "@workspace/db";
 import { sendWelcomeEmail } from "../lib/email";
+import {
+  isDeveloperUser,
+  isSessionDevVerified,
+  markSessionDevVerified,
+} from "../middlewares/devVerification";
 
 const router: IRouter = Router();
+
+function safeEqual(a: string, b: string): boolean {
+  const ha = createHash("sha256").update(a).digest();
+  const hb = createHash("sha256").update(b).digest();
+  return timingSafeEqual(ha, hb);
+}
 
 /**
  * Only accounts created within this window are eligible for the welcome
@@ -31,7 +43,119 @@ export async function runWelcomeMigrations(): Promise<void> {
       sent_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
     )
   `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS developers (
+      email TEXT PRIMARY KEY,
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    )
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS developer_verifications (
+      session_id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      verified_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    )
+  `);
 }
+
+// ─── Developer passphrase gate ────────────────────────────────────────────────
+
+const DEV_PASSPHRASE = process.env["ADMIN_PASSPHRASE"];
+
+/** Per-user throttle for failed passphrase attempts. */
+const DEV_ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
+const DEV_MAX_ATTEMPTS = 5;
+const devAttempts = new Map<string, { count: number; windowStart: number }>();
+
+function tooManyDevAttempts(userId: string): boolean {
+  const now = Date.now();
+  const entry = devAttempts.get(userId);
+  if (!entry || now - entry.windowStart > DEV_ATTEMPT_WINDOW_MS) {
+    return false;
+  }
+  return entry.count >= DEV_MAX_ATTEMPTS;
+}
+
+function recordDevAttempt(userId: string): void {
+  const now = Date.now();
+  const entry = devAttempts.get(userId);
+  if (!entry || now - entry.windowStart > DEV_ATTEMPT_WINDOW_MS) {
+    devAttempts.set(userId, { count: 1, windowStart: now });
+    return;
+  }
+  entry.count += 1;
+}
+
+/**
+ * GET /account/dev-status — is the signed-in user a developer, and has the
+ * current login session already passed the passphrase step?
+ */
+router.get("/account/dev-status", async (req: Request, res: Response): Promise<void> => {
+  const auth = getAuth(req);
+  if (!auth.userId || !auth.sessionId) {
+    res.status(401).json({ error: "Not signed in" });
+    return;
+  }
+  try {
+    const isDeveloper = await isDeveloperUser(auth.userId);
+    if (!isDeveloper) {
+      res.json({ isDeveloper: false, verified: false });
+      return;
+    }
+    const verified = await isSessionDevVerified(auth.sessionId);
+    res.json({ isDeveloper: true, verified });
+  } catch (err) {
+    req.log.error({ err, userId: auth.userId }, "dev-status check failed");
+    res.status(500).json({ error: "Failed to check developer status" });
+  }
+});
+
+/**
+ * POST /account/dev-verify — submit the developer passphrase. On success the
+ * current login session is marked verified; a new login requires it again.
+ */
+router.post("/account/dev-verify", async (req: Request, res: Response): Promise<void> => {
+  const auth = getAuth(req);
+  if (!auth.userId || !auth.sessionId) {
+    res.status(401).json({ error: "Not signed in" });
+    return;
+  }
+  if (!DEV_PASSPHRASE) {
+    req.log.error("ADMIN_PASSPHRASE is not configured");
+    res.status(500).json({ error: "Developer verification is not configured" });
+    return;
+  }
+  if (tooManyDevAttempts(auth.userId)) {
+    res.status(429).json({ error: "Too many attempts. Try again in 15 minutes." });
+    return;
+  }
+
+  const passphrase = (req.body as { passphrase?: unknown })?.passphrase;
+  if (typeof passphrase !== "string" || passphrase.length === 0 || passphrase.length > 512) {
+    recordDevAttempt(auth.userId);
+    res.json({ verified: false });
+    return;
+  }
+
+  try {
+    const isDeveloper = await isDeveloperUser(auth.userId);
+    if (!isDeveloper || !safeEqual(passphrase, DEV_PASSPHRASE)) {
+      recordDevAttempt(auth.userId);
+      res.json({ verified: false });
+      return;
+    }
+    await db
+      .insert(developerVerificationsTable)
+      .values({ sessionId: auth.sessionId, userId: auth.userId })
+      .onConflictDoNothing();
+    markSessionDevVerified(auth.sessionId);
+    devAttempts.delete(auth.userId);
+    res.json({ verified: true });
+  } catch (err) {
+    req.log.error({ err, userId: auth.userId }, "dev-verify failed");
+    res.status(500).json({ error: "Failed to verify passphrase" });
+  }
+});
 
 /**
  * POST /account/welcome — send the one-time welcome email to a newly

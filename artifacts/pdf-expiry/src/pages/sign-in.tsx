@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { HandleSSOCallback, useAuth, useSignIn } from "@clerk/react";
 import { Link, useLocation } from "wouter";
 import {
@@ -108,16 +108,6 @@ export default function SignInPage() {
     typeof window !== "undefined" &&
     window.location.pathname.includes("/sign-in/sso-callback");
 
-  // Already signed in in this browser (e.g. the desktop-app handoff opened
-  // this page in a session that has an account) — skip the form and go
-  // straight to the redirect target so the flow can complete.
-  useEffect(() => {
-    if (isSsoCallback) return;
-    if (authLoaded && isSignedIn) {
-      window.location.replace(authRedirectTarget());
-    }
-  }, [authLoaded, isSignedIn, isSsoCallback]);
-
   const [view, setView] = useState<View>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -127,14 +117,97 @@ export default function SignInPage() {
   const [newPassword, setNewPassword] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
 
+  // Developer passphrase gate: developer accounts must enter the passphrase
+  // once per login session before being redirected into the apps.
+  const [devGateTarget, setDevGateTarget] = useState<string | null>(null);
+  const [devPassphrase, setDevPassphrase] = useState("");
+  const [devError, setDevError] = useState<string | null>(null);
+  const [devBusy, setDevBusy] = useState(false);
+  const [statusCheckFailed, setStatusCheckFailed] = useState<string | null>(null);
+  const [statusRetrying, setStatusRetrying] = useState(false);
+  const routedOnLoad = useRef(false);
+
+  /**
+   * After the session is active, either redirect normally or — for
+   * developer accounts that haven't verified this session — show the
+   * passphrase step. Fails closed: if the status check cannot be completed
+   * (server error / timeout) a retry screen is shown instead of redirecting,
+   * so the developer gate can't be skipped by a network hiccup. The server
+   * additionally enforces the gate on every API call.
+   */
+  const routeAfterAuth = async (target: string) => {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch("/api/account/dev-status", {
+          credentials: "include",
+          signal: AbortSignal.timeout(8000),
+        });
+        if (res.ok) {
+          const data = (await res.json()) as { isDeveloper: boolean; verified: boolean };
+          if (data.isDeveloper && !data.verified) {
+            setDevGateTarget(target);
+          } else {
+            window.location.href = target;
+          }
+          return;
+        }
+      } catch {
+        // Retry once, then fall through to the retry screen.
+      }
+    }
+    setStatusCheckFailed(target);
+  };
+
+  // Already signed in in this browser (e.g. the desktop-app handoff opened
+  // this page in a session that has an account) — skip the form and go
+  // straight to the redirect target so the flow can complete.
+  useEffect(() => {
+    if (isSsoCallback) return;
+    if (authLoaded && isSignedIn && !routedOnLoad.current) {
+      routedOnLoad.current = true;
+      void routeAfterAuth(authRedirectTarget());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoaded, isSignedIn, isSsoCallback]);
+
   const busy = fetchStatus === "fetching";
 
   const finishSignIn = async () => {
     await signIn.finalize({
-      navigate: ({ decorateUrl }) => {
-        window.location.href = decorateUrl(authRedirectTarget());
+      navigate: async ({ decorateUrl }) => {
+        await routeAfterAuth(decorateUrl(authRedirectTarget()));
       },
     });
+  };
+
+  const handleDevVerify = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!devGateTarget || devBusy) return;
+    setDevError(null);
+    setDevBusy(true);
+    try {
+      const res = await fetch("/api/account/dev-verify", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passphrase: devPassphrase }),
+        signal: AbortSignal.timeout(10000),
+      });
+      if (res.status === 429) {
+        setDevError("Too many attempts. Please wait 15 minutes and try again.");
+        return;
+      }
+      const data = (await res.json()) as { verified?: boolean };
+      if (data.verified) {
+        window.location.href = devGateTarget;
+        return;
+      }
+      setDevError("Incorrect passphrase. Please try again.");
+    } catch {
+      setDevError("Something went wrong. Please try again.");
+    } finally {
+      setDevBusy(false);
+    }
   };
 
   const handlePasswordLogin = async (e: FormEvent) => {
@@ -183,12 +256,96 @@ export default function SignInPage() {
     }
   };
 
+  // Post-login status check failed — offer a retry instead of silently
+  // letting the session through (keeps the developer gate fail-closed).
+  if (statusCheckFailed) {
+    return (
+      <div className="min-h-[100dvh] flex items-center justify-center bg-[#eef0f4] px-4">
+        <div className="w-full max-w-sm rounded-2xl bg-white border border-slate-200 shadow-xl p-7 text-center">
+          <h1 className="text-[19px] font-bold text-slate-900">Almost there</h1>
+          <p className="mt-1.5 text-[13px] text-slate-500">
+            You're signed in, but we couldn't finish checking your account.
+            Please try again.
+          </p>
+          <button
+            type="button"
+            disabled={statusRetrying}
+            onClick={async () => {
+              const target = statusCheckFailed;
+              setStatusRetrying(true);
+              setStatusCheckFailed(null);
+              await routeAfterAuth(target);
+              setStatusRetrying(false);
+            }}
+            className="mt-4 w-full rounded-lg bg-[#DC2626] py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-[#b91c1c] disabled:opacity-60"
+            data-testid="button-retry-status"
+          >
+            {statusRetrying ? "Checking…" : "Try again"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Developer passphrase step — shown after login for developer accounts
+  // only. Rendered before the SSO-callback branch so it covers both the
+  // password flow and the Google/SSO flow.
+  if (devGateTarget) {
+    return (
+      <div className="min-h-[100dvh] flex items-center justify-center bg-[#eef0f4] px-4">
+        <div className="w-full max-w-sm rounded-2xl bg-white border border-slate-200 shadow-xl p-7">
+          <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-[#DC2626]/10 mx-auto">
+            <ShieldCheck className="h-5.5 w-5.5 text-[#DC2626]" aria-hidden="true" />
+          </div>
+          <h1 className="mt-4 text-center text-[19px] font-bold text-slate-900">
+            Developer verification
+          </h1>
+          <p className="mt-1.5 text-center text-[13px] text-slate-500">
+            This account has developer access. Enter your passphrase to continue.
+          </p>
+          <form onSubmit={handleDevVerify} className="mt-5">
+            <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">
+              Passphrase
+            </label>
+            <div className="relative">
+              <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                type="password"
+                autoComplete="off"
+                autoFocus
+                required
+                value={devPassphrase}
+                onChange={(e) => setDevPassphrase(e.target.value)}
+                placeholder="Enter developer passphrase"
+                className={inputBase}
+                data-testid="input-dev-passphrase"
+              />
+            </div>
+            {devError && (
+              <p className="mt-2.5 text-[13px] text-[#DC2626]" data-testid="text-dev-error">
+                {devError}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={devBusy || devPassphrase.length === 0}
+              className="mt-4 w-full rounded-lg bg-[#DC2626] py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-[#b91c1c] disabled:opacity-60"
+              data-testid="button-dev-verify"
+            >
+              {devBusy ? "Verifying…" : "Continue"}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   if (isSsoCallback) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-[#eef0f4]">
         <HandleSSOCallback
-          navigateToApp={({ decorateUrl }) => {
-            window.location.href = decorateUrl(authRedirectTarget());
+          navigateToApp={async ({ decorateUrl }) => {
+            await routeAfterAuth(decorateUrl(authRedirectTarget()));
           }}
           navigateToSignIn={() => setLocation("/sign-in")}
           navigateToSignUp={() => setLocation("/sign-up")}

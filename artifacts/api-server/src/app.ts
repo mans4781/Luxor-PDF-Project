@@ -9,6 +9,7 @@ import {
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
 import { blockReservedAdminEmail } from "./middlewares/reservedAdminEmail";
+import { requireDevVerification } from "./middlewares/devVerification";
 import router from "./routes";
 import { billingWebhookRouter, razorpayWebhookRouter } from "./routes/billing";
 import { logger } from "./lib/logger";
@@ -67,6 +68,10 @@ app.use(
 
 // The admin email must never work as a regular signed-in user.
 app.use("/api", blockReservedAdminEmail());
+
+// Developer accounts must pass the passphrase step once per login session
+// before any authenticated API feature works.
+app.use("/api", requireDevVerification());
 
 app.use("/api", router);
 

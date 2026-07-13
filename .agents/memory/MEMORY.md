@@ -15,6 +15,7 @@
 - [Windows CI vs pnpm template](windows-ci-pnpm.md) — template's Linux-only overrides + brace-expansion pin break Windows runners; strip them in CI before install.
 - [Billing details](billing-details.md) — Stripe/Razorpay provider registry, Razorpay payment-link flow + signed-body idempotency, applyPaidPlan pipeline, checkout wiring.
 - [Clerk suite SSO](clerk-suite-sso.md) — shared session across the 3 apps, pdf-expiry as auth host, luxor-auth-ui lib exports, CSS layer gotchas.
+- [Developer passphrase gate](dev-passphrase-gate.md) — per-login passphrase for developer emails; must stay enforced both in sign-in UI (fail-closed) and API middleware.
 - [License enforcement](license-enforcement.md) — server-primary gate, LockOverlay, 7-day offline grace, clock-tamper defense.
 - [Landing brand & layout](landing-brand.md) — palette, section order, and component specifics of lexsecure-landing.
 - [Clerk sign-up constraints](clerk-signup-constraints.md) — Replit-managed Clerk can't disable email OTP; 422s are usually breached-password rejections; welcome email is server-side idempotent.

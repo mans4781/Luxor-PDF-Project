@@ -322,6 +322,41 @@ export const SendWelcomeEmailResponse = zod.object({
 });
 
 /**
+ * Called by the sign-in flow right after login. Regular users get
+`isDeveloper: false` and proceed normally. Developer accounts must
+pass the passphrase step once per login session.
+
+ * @summary Check whether the signed-in user is a developer and has passed the passphrase step
+ */
+export const GetDevStatusResponse = zod.object({
+  isDeveloper: zod
+    .boolean()
+    .describe("True when the signed-in account is a developer account."),
+  verified: zod
+    .boolean()
+    .describe(
+      "True when this login session already passed the passphrase step.",
+    ),
+});
+
+/**
+ * @summary Submit the developer passphrase for the current login session
+ */
+export const verifyDevPassphraseBodyPassphraseMax = 512;
+
+export const VerifyDevPassphraseBody = zod.object({
+  passphrase: zod.string().min(1).max(verifyDevPassphraseBodyPassphraseMax),
+});
+
+export const VerifyDevPassphraseResponse = zod.object({
+  verified: zod
+    .boolean()
+    .describe(
+      "True when the passphrase was correct and the session is now verified.",
+    ),
+});
+
+/**
  * Non-mutating gate. Returns `{ allowed, lockReason }` based on trial
 validity and today's usage count. The frontend should call this
 before starting an action; after a successful action it should call
