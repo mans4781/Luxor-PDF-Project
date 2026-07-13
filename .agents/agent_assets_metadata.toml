@@ -300,6 +300,12 @@ uri = "file://artifacts/lexsecure-landing/src/assets/secure-vault.png"
 type = "image"
 title = "blue 3D vault lock"
 
+[[generated]]
+id = "JlGj-FCffGpmrxMXBDUn_"
+uri = "file://artifacts/lexsecure-landing/src/assets/secure-net.png"
+type = "image"
+title = "blue internet security shield"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
