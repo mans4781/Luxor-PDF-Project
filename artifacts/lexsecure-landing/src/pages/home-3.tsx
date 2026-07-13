@@ -25,6 +25,7 @@ import {
   FileText,
   Download,
 } from "lucide-react";
+import secureVault from "@/assets/secure-vault.webp";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -263,18 +264,14 @@ export default function Home3Page() {
                 <CheckItem color="#2563EB">Redaction &amp; permissions</CheckItem>
                 <CheckItem color="#2563EB">Digital certificate support</CheckItem>
               </ul>
-              {/* shield + lock visual */}
-              <div className="mt-auto mb-5 flex items-center justify-center py-3">
-                <div className="relative">
-                  <div className="w-28 h-28 rounded-full bg-blue-100/80 flex items-center justify-center">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-b from-[#3B82F6] to-[#1D4ED8] shadow-xl flex items-center justify-center">
-                      <Lock className="w-9 h-9 text-white" />
-                    </div>
-                  </div>
-                  <div className="absolute -bottom-1 -right-2 w-9 h-9 rounded-full bg-white shadow-lg flex items-center justify-center">
-                    <KeyRound className="w-4 h-4 text-[#2563EB]" />
-                  </div>
-                </div>
+              {/* 3D vault visual */}
+              <div className="mt-auto mb-5 flex items-center justify-center py-1">
+                <img
+                  src={secureVault}
+                  alt="Luxor PDF Secure vault illustration"
+                  className="w-36 h-36 object-contain drop-shadow-xl"
+                  loading="lazy"
+                />
               </div>
               <Link
                 href="/products/pdf-security"
@@ -309,21 +306,35 @@ export default function Home3Page() {
                 <CheckItem color="#16A34A">Audit trail &amp; verification</CheckItem>
                 <CheckItem color="#16A34A">Cloud compliant</CheckItem>
               </ul>
-              {/* tablet visual */}
+              {/* tablet visual with live signature */}
               <div className="mt-auto mb-5 flex items-center justify-center py-2">
-                <div className="w-36 rounded-xl border-[5px] border-slate-800 bg-white shadow-lg p-2.5 rotate-[-4deg]">
-                  <div className="text-[7px] font-bold text-slate-700 mb-1">Sign here</div>
-                  <svg viewBox="0 0 120 34" className="w-full h-8 text-slate-800">
-                    <path
-                      d="M8 24 C 20 6, 30 30, 42 18 S 62 8, 72 20 S 94 28, 112 12"
+                <div className="w-44 rounded-xl border-[5px] border-slate-800 bg-white shadow-lg p-3 rotate-[-4deg]">
+                  <div className="text-[8px] font-extrabold text-slate-800 mb-1">
+                    Service Agreement
+                  </div>
+                  <div className="space-y-[3px] mb-2">
+                    <div className="h-[3px] w-full bg-slate-200 rounded-full" />
+                    <div className="h-[3px] w-[92%] bg-slate-200 rounded-full" />
+                    <div className="h-[3px] w-[78%] bg-slate-200 rounded-full" />
+                  </div>
+                  <div className="text-[7px] font-semibold text-slate-500 mb-0.5">Sign here</div>
+                  <svg viewBox="0 0 150 40" className="w-full h-9 text-[#1E3A8A]">
+                    <motion.path
+                      d="M10 30 C 12 18, 18 10, 22 12 C 27 15, 20 32, 16 33 C 24 30, 30 20, 36 22 C 40 24, 36 31, 41 30 C 45 29, 47 22, 51 24 C 54 26, 53 30, 58 28 C 61 26, 63 21, 66 24 C 68 26, 70 29, 74 27 M 82 30 C 86 16, 92 12, 96 15 C 99 18, 92 30, 88 31 C 96 28, 102 20, 108 23 C 111 25, 108 30, 113 29 C 118 27, 122 20, 127 23 C 130 25, 132 28, 140 24"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2"
+                      strokeWidth="1.8"
                       strokeLinecap="round"
+                      strokeLinejoin="round"
+                      initial={{ pathLength: 0 }}
+                      whileInView={{ pathLength: 1 }}
+                      viewport={{ once: true, amount: 0.6 }}
+                      transition={{ duration: 2.2, ease: "easeInOut", delay: 0.4 }}
                     />
                   </svg>
-                  <div className="mt-1 h-[3px] w-full bg-slate-200 rounded-full" />
-                  <div className="mt-1.5 flex justify-end">
+                  <div className="h-[3px] w-full bg-slate-300 rounded-full" />
+                  <div className="mt-1.5 flex items-center justify-between">
+                    <span className="text-[6px] font-semibold text-slate-400">Alex Morrin</span>
                     <span className="text-[6px] font-bold text-white bg-[#16A34A] rounded px-1.5 py-0.5">
                       Done
                     </span>
