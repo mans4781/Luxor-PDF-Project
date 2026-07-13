@@ -82,7 +82,16 @@ router.post("/account/welcome", async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    const sent = await sendWelcomeEmail({ to: email, firstName: user.firstName });
+    // The Clerk instance has name attributes disabled, so user.firstName is
+    // usually null — the sign-up form stores the name in unsafeMetadata.
+    const metadataFullName =
+      typeof user.unsafeMetadata?.["fullName"] === "string"
+        ? (user.unsafeMetadata["fullName"] as string).trim()
+        : "";
+    const firstName =
+      user.firstName ?? (metadataFullName ? metadataFullName.split(/\s+/)[0] : null);
+
+    const sent = await sendWelcomeEmail({ to: email, firstName });
     if (!sent) {
       // Release the claim so a later retry can attempt the send again,
       // but hold a short cooldown to prevent hot-retry loops.

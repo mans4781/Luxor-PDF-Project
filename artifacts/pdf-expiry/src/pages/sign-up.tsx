@@ -35,13 +35,6 @@ const FEATURES = [
   { icon: PenLine, label: "eSign and manage signatures" },
 ];
 
-function splitFullName(fullName: string): { firstName: string; lastName?: string } {
-  const parts = fullName.trim().split(/\s+/);
-  const firstName = parts[0] ?? "";
-  const lastName = parts.slice(1).join(" ") || undefined;
-  return { firstName, lastName };
-}
-
 interface PasswordRule {
   label: string;
   test: (pw: string) => boolean;
@@ -144,14 +137,14 @@ export default function SignUpPage() {
       setLocalError("Passwords don't match. Please re-enter them.");
       return;
     }
-    const { firstName, lastName } = splitFullName(fullName);
+    // This Clerk instance has the first/last name attributes disabled, so
+    // passing firstName/lastName is rejected with 422 "is unknown". Store
+    // the name in unsafeMetadata instead — always accepted.
     const { error } = await signUp.password({
       emailAddress: email,
       password,
-      firstName,
-      lastName,
       legalAccepted: true,
-      unsafeMetadata: { productUpdates },
+      unsafeMetadata: { fullName: fullName.trim(), productUpdates },
     });
     if (error) return;
     await afterCreateOrPassword();
@@ -187,7 +180,7 @@ export default function SignUpPage() {
     localError ?? errors.global?.[0]?.message ?? errors.fields.captcha?.message ?? null;
 
   const fieldError = (
-    key: "firstName" | "lastName" | "emailAddress" | "password" | "code" | "legalAccepted",
+    key: "emailAddress" | "password" | "code" | "legalAccepted",
   ) => errors.fields[key]?.message ?? null;
 
   return (
@@ -342,12 +335,6 @@ export default function SignUpPage() {
                     data-testid="input-full-name"
                   />
                 </div>
-                {(fieldError("firstName") ?? fieldError("lastName")) && (
-                  <p className="mt-1.5 text-[12px] text-rose-600">
-                    {fieldError("firstName") ?? fieldError("lastName")}
-                  </p>
-                )}
-
                 <label className="mt-4 block text-[13px] font-semibold text-slate-700 mb-1.5">
                   Email Address
                 </label>
