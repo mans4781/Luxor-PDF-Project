@@ -301,7 +301,7 @@ export default function PricingPage() {
       {/* Pricing cards */}
       <section className="pb-20 bg-white">
         <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-[88rem] mx-auto">
             {PLANS.map((plan, i) => {
               const href = checkoutHref(plan, yearly);
               const isCustom = plan.priceLabel !== undefined;
@@ -436,7 +436,7 @@ export default function PricingPage() {
 
       {/* Full comparison table */}
       <section className="pb-24 bg-white">
-        <div className="container mx-auto px-6 max-w-7xl">
+        <div className="container mx-auto px-6 max-w-[88rem]">
           <div className="text-center mb-10">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Compare plans</p>
             <h2 className="text-3xl md:text-4xl text-slate-900 tracking-[-0.02em]">

@@ -56,7 +56,7 @@ export default function About2Page() {
       <main className="pt-20">
         {/* ================================ HERO ================================ */}
         <section className="relative overflow-hidden bg-gradient-to-br from-red-50/70 via-white to-rose-50/50">
-          <div className="container mx-auto max-w-7xl px-6 pt-12 lg:pt-16 pb-16">
+          <div className="container mx-auto max-w-[88rem] px-6 pt-12 lg:pt-16 pb-16">
             <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
               <motion.div {...fadeUp}>
                 <div className="inline-flex items-center gap-1.5 bg-white border border-red-100 text-[#DC2626] rounded-full px-3.5 py-1.5 text-xs font-bold shadow-sm mb-5">
@@ -145,7 +145,7 @@ export default function About2Page() {
 
         {/* ============================ PRODUCT SUITE ============================ */}
         <section id="products" className="py-16 bg-white scroll-mt-20">
-          <div className="container mx-auto max-w-7xl px-6">
+          <div className="container mx-auto max-w-[88rem] px-6">
             <motion.div {...fadeUp}>
               <SectionLabel>One Connected Ecosystem</SectionLabel>
               <h2
@@ -213,7 +213,7 @@ export default function About2Page() {
 
         {/* ============================= WHAT WE DO ============================= */}
         <section className="py-16 bg-slate-50">
-          <div className="container mx-auto max-w-7xl px-6">
+          <div className="container mx-auto max-w-[88rem] px-6">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <motion.div {...fadeUp} className="relative order-2 lg:order-1">
                 {/* laptop mockup with readable LuxorPDF document */}
@@ -327,7 +327,7 @@ export default function About2Page() {
 
         {/* =========================== MISSION & VISION ========================== */}
         <section className="py-16 bg-white">
-          <div className="container mx-auto max-w-7xl px-6">
+          <div className="container mx-auto max-w-[88rem] px-6">
             <motion.div {...fadeUp} className="grid md:grid-cols-2 gap-6">
               <div className="rounded-3xl bg-[#FDECEC] border border-red-100/60 p-8">
                 <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-4">
@@ -367,7 +367,7 @@ export default function About2Page() {
 
         {/* ========================== PROBLEMS WE SOLVE ========================== */}
         <section className="py-16 bg-slate-50">
-          <div className="container mx-auto max-w-7xl px-6">
+          <div className="container mx-auto max-w-[88rem] px-6">
             <motion.div {...fadeUp}>
               <SectionLabel>The Problems We Solve</SectionLabel>
               <h2
@@ -406,7 +406,7 @@ export default function About2Page() {
 
         {/* ============================= WHY CHOOSE ============================= */}
         <section className="py-16 bg-white">
-          <div className="container mx-auto max-w-7xl px-6">
+          <div className="container mx-auto max-w-[88rem] px-6">
             <div className="grid lg:grid-cols-[0.85fr_2fr] gap-10 items-start">
               <motion.div {...fadeUp}>
                 <div className="text-xs font-extrabold tracking-[0.2em] text-[#DC2626] uppercase mb-3">
@@ -464,7 +464,7 @@ export default function About2Page() {
 
         {/* ============================ WHO IT'S FOR ============================ */}
         <section className="py-16 bg-slate-50">
-          <div className="container mx-auto max-w-7xl px-6 text-center">
+          <div className="container mx-auto max-w-[88rem] px-6 text-center">
             <motion.div {...fadeUp}>
               <SectionLabel>Built for Modern Document Work</SectionLabel>
               <h2

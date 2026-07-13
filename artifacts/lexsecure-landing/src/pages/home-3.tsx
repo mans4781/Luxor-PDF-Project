@@ -80,7 +80,7 @@ export default function Home3Page() {
       <main className="pt-20">
         {/* ================================ HERO ================================ */}
         <section className="relative overflow-hidden bg-gradient-to-br from-red-50/70 via-white to-rose-50/50">
-          <div className="container mx-auto max-w-7xl px-6 pt-12 lg:pt-16 pb-14">
+          <div className="container mx-auto max-w-[88rem] px-6 pt-12 lg:pt-16 pb-14">
             <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-12 items-center">
               {/* Left copy */}
               <motion.div {...fadeUp}>
@@ -180,7 +180,7 @@ export default function Home3Page() {
 
         {/* ============================== PRODUCTS ============================== */}
         <section id="products" className="py-14 bg-white scroll-mt-20">
-          <motion.div {...fadeUp} className="container mx-auto max-w-7xl px-6 text-center mb-10">
+          <motion.div {...fadeUp} className="container mx-auto max-w-[88rem] px-6 text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: NAVY }}>
               One Suite. <span className="text-[#DC2626]">Three Powerful Apps.</span>
             </h2>
@@ -188,7 +188,7 @@ export default function Home3Page() {
               Read, eSign, and protect your PDFs with dedicated apps that work seamlessly under a single Luxor account.
             </p>
           </motion.div>
-          <div className="container mx-auto max-w-7xl px-6 grid md:grid-cols-3 gap-6">
+          <div className="container mx-auto max-w-[88rem] px-6 grid md:grid-cols-3 gap-6">
             {/* Reader */}
             <motion.div
               {...fadeUp}
@@ -342,7 +342,7 @@ export default function Home3Page() {
 
         {/* ============================ FEATURE GRID ============================ */}
         <section className="py-14 bg-white">
-          <div className="container mx-auto max-w-7xl px-6">
+          <div className="container mx-auto max-w-[88rem] px-6">
             <motion.h2
               {...fadeUp}
               className="text-2xl lg:text-[28px] font-extrabold text-center mb-10"
@@ -380,7 +380,7 @@ export default function Home3Page() {
 
         {/* =============================== 4 STEPS ============================== */}
         <section className="py-14 bg-white">
-          <div className="container mx-auto max-w-7xl px-6">
+          <div className="container mx-auto max-w-[88rem] px-6">
             <motion.h2
               {...fadeUp}
               className="text-2xl lg:text-[28px] font-extrabold text-center mb-10"
@@ -418,7 +418,7 @@ export default function Home3Page() {
 
         {/* =========================== PRODUCTIVITY BAND ======================== */}
         <section className="py-16 bg-slate-50">
-          <div className="container mx-auto max-w-7xl px-6">
+          <div className="container mx-auto max-w-[88rem] px-6">
             <div className="grid lg:grid-cols-[0.85fr_2fr] gap-10 items-start">
               <motion.div {...fadeUp}>
                 <div className="text-xs font-extrabold tracking-[0.2em] text-[#DC2626] uppercase mb-3">
@@ -476,7 +476,7 @@ export default function Home3Page() {
 
         {/* ============================ TESTIMONIALS ============================ */}
         <section className="py-14 bg-white">
-          <div className="container mx-auto max-w-7xl px-6">
+          <div className="container mx-auto max-w-[88rem] px-6">
             <motion.h2
               {...fadeUp}
               className="text-2xl lg:text-[28px] font-extrabold text-center mb-10"

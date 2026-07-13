@@ -109,7 +109,7 @@ function FooterColumn({ title, links }: { title: string; links: LinkItem[] }) {
 export function Footer() {
   return (
     <footer className="relative overflow-hidden bg-gradient-to-b from-[#f7f8fc] via-[#f1f4fa] to-[#e9edf7] px-6 pt-16 lg:px-8 border-t border-slate-200/70">
-      <div className="relative mx-auto max-w-7xl">
+      <div className="relative mx-auto max-w-[88rem]">
         {/* Decorative shield with padlock, aligned with the content's right edge */}
         <div
           aria-hidden="true"

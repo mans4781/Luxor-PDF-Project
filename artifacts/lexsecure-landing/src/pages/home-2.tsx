@@ -92,7 +92,7 @@ export default function Home2Page() {
               WebkitMaskImage: "radial-gradient(circle at top right, black, transparent 70%)",
             }}
           />
-          <div className="container mx-auto max-w-7xl px-6 pt-12 lg:pt-16 pb-16">
+          <div className="container mx-auto max-w-[88rem] px-6 pt-12 lg:pt-16 pb-16">
             <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-12 items-center">
               {/* Left copy */}
               <motion.div {...fadeUp}>
@@ -292,7 +292,7 @@ export default function Home2Page() {
 
         {/* =========================== READER PANEL ============================ */}
         <section className="pb-10 bg-white">
-          <div className="container mx-auto max-w-7xl px-6">
+          <div className="container mx-auto max-w-[88rem] px-6">
             <motion.div
               {...fadeUp}
               className="rounded-3xl bg-[#FDECEC] border border-red-100/60 p-8 lg:p-12 grid lg:grid-cols-2 gap-10 items-center overflow-hidden"
@@ -385,7 +385,7 @@ export default function Home2Page() {
 
         {/* =========================== SECURE PANEL ============================ */}
         <section className="pb-10 bg-white">
-          <div className="container mx-auto max-w-7xl px-6">
+          <div className="container mx-auto max-w-[88rem] px-6">
             <motion.div
               {...fadeUp}
               className="rounded-3xl bg-[#EAF2FD] border border-blue-100/60 p-8 lg:p-12 grid lg:grid-cols-2 gap-10 items-center overflow-hidden"
@@ -485,7 +485,7 @@ export default function Home2Page() {
 
         {/* ============================ ESIGN PANEL ============================= */}
         <section className="pb-16 bg-white">
-          <div className="container mx-auto max-w-7xl px-6">
+          <div className="container mx-auto max-w-[88rem] px-6">
             <motion.div
               {...fadeUp}
               className="rounded-3xl bg-[#EAF7EF] border border-green-100/60 p-8 lg:p-12 grid lg:grid-cols-2 gap-10 items-center overflow-hidden"
@@ -624,7 +624,7 @@ export default function Home2Page() {
 
         {/* ============================ MISSION CTA ============================= */}
         <section className="pb-0 bg-white">
-          <div className="container mx-auto max-w-7xl px-6 pb-16">
+          <div className="container mx-auto max-w-[88rem] px-6 pb-16">
             <motion.div
               {...fadeUp}
               className="rounded-3xl px-8 lg:px-12 py-10 flex flex-col md:flex-row items-center justify-between gap-8"

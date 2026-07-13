@@ -108,7 +108,7 @@ export function LegalDocPage({
 
         {/* ── BODY ── */}
         <section className="px-6 pb-28">
-          <div className="container mx-auto max-w-7xl">
+          <div className="container mx-auto max-w-[88rem]">
             <div className="grid gap-12 lg:grid-cols-[260px_minmax(0,1fr)]">
               {/* Table of contents */}
               <aside className="hidden lg:block">

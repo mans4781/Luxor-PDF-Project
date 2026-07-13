@@ -92,7 +92,7 @@ export default function BrandPage() {
 
       {/* ── Logo assets ────────────────────────────────────────────── */}
       <section className="py-16 bg-white">
-        <div className="container mx-auto px-6 max-w-7xl">
+        <div className="container mx-auto px-6 max-w-[88rem]">
           <div className="flex items-center gap-2 mb-6">
             <ImageIcon className="w-4 h-4 text-[#312E81]" />
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">Logos</h2>
@@ -144,7 +144,7 @@ export default function BrandPage() {
 
       {/* ── Colors ─────────────────────────────────────────────────── */}
       <section className="py-16 bg-gradient-to-b from-slate-50 via-white to-slate-50 border-t border-slate-100">
-        <div className="container mx-auto px-6 max-w-7xl">
+        <div className="container mx-auto px-6 max-w-[88rem]">
           <div className="flex items-center gap-2 mb-6">
             <Palette className="w-4 h-4 text-[#DC2626]" />
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">Color palette</h2>
