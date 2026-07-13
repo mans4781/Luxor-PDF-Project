@@ -57,7 +57,7 @@ function CheckItem({ children, color }: { children: React.ReactNode; color: stri
   return (
     <li className="flex items-start gap-2">
       <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" style={{ color }} />
-      <span className="text-[13px] text-slate-600">{children}</span>
+      <span className="text-[14px] text-slate-600">{children}</span>
     </li>
   );
 }
@@ -84,7 +84,7 @@ export default function Home3Page() {
             <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-12 items-center">
               {/* Left copy */}
               <motion.div {...fadeUp}>
-                <div className="inline-flex items-center gap-1.5 bg-white border border-red-100 text-[#DC2626] rounded-full px-3.5 py-1.5 text-xs font-bold shadow-sm mb-5">
+                <div className="inline-flex items-center gap-1.5 bg-white border border-red-100 text-[#DC2626] rounded-full px-3.5 py-1.5 text-[13px] font-bold shadow-sm mb-5">
                   <Sparkles className="w-3.5 h-3.5" />
                   All-in-One PDF Solution
                 </div>
@@ -133,7 +133,7 @@ export default function Home3Page() {
                   </div>
                   <div>
                     <Stars />
-                    <div className="text-xs text-slate-500 mt-0.5">
+                    <div className="text-[13px] text-slate-500 mt-0.5">
                       Trusted by 50,000+ professionals worldwide
                     </div>
                   </div>
@@ -171,7 +171,7 @@ export default function Home3Page() {
                   className={`flex flex-col items-center gap-2 ${i < 7 ? "md:border-r md:border-slate-100" : ""}`}
                 >
                   <Icon className="w-5 h-5 text-[#DC2626]" />
-                  <span className="text-xs font-semibold text-slate-700">{label}</span>
+                  <span className="text-[13px] font-semibold text-slate-700">{label}</span>
                 </div>
               ))}
             </motion.div>
@@ -181,7 +181,7 @@ export default function Home3Page() {
         {/* ============================== PRODUCTS ============================== */}
         <section id="products" className="py-14 bg-white scroll-mt-20">
           <motion.div {...fadeUp} className="container mx-auto max-w-[88rem] px-6 text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: NAVY }}>
+            <h2 className="text-[34px] md:text-[40px] font-extrabold tracking-tight" style={{ color: NAVY }}>
               One Suite. <span className="text-[#DC2626]">Three Powerful Apps.</span>
             </h2>
             <p className="mt-3 text-slate-600 text-base md:text-lg max-w-2xl mx-auto">
@@ -202,7 +202,7 @@ export default function Home3Page() {
                   <span className="text-[#DC2626]">Reader</span>
                 </h3>
               </div>
-              <p className="text-[13px] text-slate-600 mb-4">
+              <p className="text-[14px] text-slate-600 mb-4">
                 A fast, lightweight PDF reader with powerful annotation tools.
               </p>
               <ul className="space-y-2 mb-5">
@@ -235,7 +235,7 @@ export default function Home3Page() {
               </div>
               <Link
                 href="/products/pdf-reader"
-                className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#DC2626]"
+                className="inline-flex items-center gap-1.5 text-[14px] font-bold text-[#DC2626]"
               >
                 Learn more <ArrowRight className="w-3.5 h-3.5" />
               </Link>
@@ -254,7 +254,7 @@ export default function Home3Page() {
                   <span className="text-[#2563EB]">Secure</span>
                 </h3>
               </div>
-              <p className="text-[13px] text-slate-600 mb-4">
+              <p className="text-[14px] text-slate-600 mb-4">
                 Advanced PDF protection to keep your documents safe.
               </p>
               <ul className="space-y-2 mb-5">
@@ -278,7 +278,7 @@ export default function Home3Page() {
               </div>
               <Link
                 href="/products/pdf-security"
-                className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#2563EB]"
+                className="inline-flex items-center gap-1.5 text-[14px] font-bold text-[#2563EB]"
               >
                 Learn more <ArrowRight className="w-3.5 h-3.5" />
               </Link>
@@ -300,7 +300,7 @@ export default function Home3Page() {
                   Coming soon
                 </span>
               </div>
-              <p className="text-[13px] text-slate-600 mb-4">
+              <p className="text-[14px] text-slate-600 mb-4">
                 Legally binding eSignatures made simple and secure.
               </p>
               <ul className="space-y-2 mb-5">
@@ -332,7 +332,7 @@ export default function Home3Page() {
               </div>
               <Link
                 href="/products/esign"
-                className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#16A34A]"
+                className="inline-flex items-center gap-1.5 text-[14px] font-bold text-[#16A34A]"
               >
                 Learn more <ArrowRight className="w-3.5 h-3.5" />
               </Link>
@@ -345,7 +345,7 @@ export default function Home3Page() {
           <div className="container mx-auto max-w-[88rem] px-6">
             <motion.h2
               {...fadeUp}
-              className="text-2xl lg:text-[28px] font-extrabold text-center mb-10"
+              className="text-[26px] lg:text-[30px] font-extrabold text-center mb-10"
               style={{ color: NAVY }}
             >
               Everything You Need in One Powerful PDF Suite
@@ -369,8 +369,8 @@ export default function Home3Page() {
                     <Icon className="w-5 h-5" style={{ color }} />
                   </div>
                   <div>
-                    <div className="text-[14px] font-bold text-slate-800 mb-0.5">{title}</div>
-                    <div className="text-xs text-slate-500 leading-relaxed">{text}</div>
+                    <div className="text-[15px] font-bold text-slate-800 mb-0.5">{title}</div>
+                    <div className="text-[13px] text-slate-500 leading-relaxed">{text}</div>
                   </div>
                 </div>
               ))}
@@ -383,7 +383,7 @@ export default function Home3Page() {
           <div className="container mx-auto max-w-[88rem] px-6">
             <motion.h2
               {...fadeUp}
-              className="text-2xl lg:text-[28px] font-extrabold text-center mb-10"
+              className="text-[26px] lg:text-[30px] font-extrabold text-center mb-10"
               style={{ color: NAVY }}
             >
               Work Smarter. In 4 Simple Steps.
@@ -400,7 +400,7 @@ export default function Home3Page() {
                   className="rounded-2xl border border-slate-100 shadow-sm bg-white p-6 relative"
                 >
                   <div
-                    className="absolute -top-3 left-6 w-7 h-7 rounded-full text-white text-xs font-extrabold flex items-center justify-center shadow"
+                    className="absolute -top-3 left-6 w-7 h-7 rounded-full text-white text-[13px] font-extrabold flex items-center justify-center shadow"
                     style={{ background: color }}
                   >
                     {n}
@@ -409,7 +409,7 @@ export default function Home3Page() {
                     <Icon className="w-6 h-6" style={{ color }} />
                   </div>
                   <div className="text-[15px] font-bold text-slate-800 mb-1">{title}</div>
-                  <div className="text-xs text-slate-500 leading-relaxed">{text}</div>
+                  <div className="text-[13px] text-slate-500 leading-relaxed">{text}</div>
                 </div>
               ))}
             </motion.div>
@@ -421,15 +421,15 @@ export default function Home3Page() {
           <div className="container mx-auto max-w-[88rem] px-6">
             <div className="grid lg:grid-cols-[0.85fr_2fr] gap-10 items-start">
               <motion.div {...fadeUp}>
-                <div className="text-xs font-extrabold tracking-[0.2em] text-[#DC2626] uppercase mb-3">
+                <div className="text-[13px] font-extrabold tracking-[0.2em] text-[#DC2626] uppercase mb-3">
                   Why Choose Luxor PDF
                 </div>
-                <h2 className="text-2xl lg:text-[30px] font-extrabold leading-tight mb-4" style={{ color: NAVY }}>
+                <h2 className="text-[26px] lg:text-[32px] font-extrabold leading-tight mb-4" style={{ color: NAVY }}>
                   Built for Productivity.
                   <br />
                   Trusted for Security.
                 </h2>
-                <p className="text-sm text-slate-600 leading-relaxed mb-6">
+                <p className="text-[15px] text-slate-600 leading-relaxed mb-6">
                   Luxor PDF combines powerful features with a beautiful experience to help
                   individuals and teams do more, faster and safer.
                 </p>
@@ -466,7 +466,7 @@ export default function Home3Page() {
                       className="w-36 h-36 object-contain mx-auto sm:mx-0 mb-3"
                     />
                     <div className="text-[15px] font-bold text-slate-800 mb-1.5">{title}</div>
-                    <div className="text-xs text-slate-500 leading-relaxed">{text}</div>
+                    <div className="text-[13px] text-slate-500 leading-relaxed">{text}</div>
                   </div>
                 ))}
               </motion.div>
@@ -479,7 +479,7 @@ export default function Home3Page() {
           <div className="container mx-auto max-w-[88rem] px-6">
             <motion.h2
               {...fadeUp}
-              className="text-2xl lg:text-[28px] font-extrabold text-center mb-10"
+              className="text-[26px] lg:text-[30px] font-extrabold text-center mb-10"
               style={{ color: NAVY }}
             >
               Loved by Professionals Worldwide
@@ -513,7 +513,7 @@ export default function Home3Page() {
                   className="rounded-2xl border border-slate-100 shadow-sm bg-white p-6 flex flex-col"
                 >
                   <div className="text-3xl leading-none text-[#DC2626] font-serif mb-3">&ldquo;</div>
-                  <p className="text-[13px] text-slate-600 leading-relaxed mb-5">{quote}</p>
+                  <p className="text-[14px] text-slate-600 leading-relaxed mb-5">{quote}</p>
                   <div className="mt-auto flex items-center gap-3">
                     <img
                       src={asset(avatar)}
@@ -521,7 +521,7 @@ export default function Home3Page() {
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div className="flex-1">
-                      <div className="text-[13px] font-bold text-slate-800 leading-tight">{name}</div>
+                      <div className="text-[14px] font-bold text-slate-800 leading-tight">{name}</div>
                       <div className="text-[11px] text-slate-500 leading-tight">{role}</div>
                     </div>
                     <Stars className="w-3 h-3" />
