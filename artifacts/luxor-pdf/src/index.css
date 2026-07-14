@@ -41,16 +41,16 @@
   --toolbar-sep: rgba(74,63,42,0.25);
 }
 
-/* Navy — light navy blue chrome and surround; page stays true white. */
+/* Navy — clear sky-blue chrome and surround; page stays true white. */
 :root[data-theme="navy"] {
-  --viewer-bg: #dbe4f3;
+  --viewer-bg: #d8efff;
   --page-bg: #ffffff;
   --page-filter: none;
-  --toolbar-bg: #c9d6ec;
-  --toolbar-fg: #1e2f52;
-  --toolbar-fg-muted: #45577c;
-  --toolbar-hover: rgba(30,47,82,0.10);
-  --toolbar-sep: rgba(30,47,82,0.22);
+  --toolbar-bg: #bde3fb;
+  --toolbar-fg: #123c5e;
+  --toolbar-fg-muted: #3a648a;
+  --toolbar-hover: rgba(18,60,94,0.10);
+  --toolbar-sep: rgba(18,60,94,0.22);
 }
 
 /* Dark — dark UI chrome, but the document page stays true white. */

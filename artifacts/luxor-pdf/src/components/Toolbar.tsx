@@ -210,7 +210,7 @@ export type ThemeKey = "light" | "sepia" | "navy" | "dark";
 const THEMES: { key: ThemeKey; label: string; swatch: string; ring: string }[] = [
   { key: "light", label: "Light", swatch: "#ffffff", ring: "rgba(0,0,0,0.18)" },
   { key: "sepia", label: "Sepia", swatch: "#f4ecd8", ring: "rgba(74,63,42,0.35)" },
-  { key: "navy",  label: "Navy",  swatch: "#c9d6ec", ring: "rgba(30,47,82,0.35)" },
+  { key: "navy",  label: "Navy",  swatch: "#bde3fb", ring: "rgba(18,60,94,0.35)" },
   { key: "dark",  label: "Dark",  swatch: "#2b2b2b", ring: "rgba(255,255,255,0.25)" },
 ];
 
