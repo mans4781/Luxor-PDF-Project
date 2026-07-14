@@ -41,6 +41,18 @@
   --toolbar-sep: rgba(74,63,42,0.25);
 }
 
+/* Navy — light navy blue chrome and surround; page stays true white. */
+:root[data-theme="navy"] {
+  --viewer-bg: #dbe4f3;
+  --page-bg: #ffffff;
+  --page-filter: none;
+  --toolbar-bg: #c9d6ec;
+  --toolbar-fg: #1e2f52;
+  --toolbar-fg-muted: #45577c;
+  --toolbar-hover: rgba(30,47,82,0.10);
+  --toolbar-sep: rgba(30,47,82,0.22);
+}
+
 /* Dark — dark UI chrome, but the document page stays true white. */
 :root[data-theme="dark"] {
   --viewer-bg: #2b2b2b;
