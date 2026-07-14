@@ -17,10 +17,10 @@ import { isDesktopShell } from "../lib/desktopBridge";
  * Sign-in + subscription gate.
  *
  * Almost everything in the reader is free and needs no account: reading,
- * search, themes, print, download, annotations, watermark, page numbers,
+ * search, themes, print, download, annotations, edit text, page numbers,
  * compress, screenshots, form filling, sharing, save/export.
  *
- * Exactly two features are premium — Edit Text and the AI Assistant.
+ * Premium features: the AI Assistant and the Protect tools (Redact, Whiteout, Watermark).
  * They call `requirePremium(label)`:
  *
  *   - Signed out                 → sign-in prompt / redirect.

@@ -264,15 +264,17 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
 
   const { annotations, addAnnotation, updateAnnotation, removeAnnotation, clearHighlights, undo, getPageAnnotations, replaceHighlights } = useAnnotations();
 
-  // Premium gate: everything is free except Edit Text and the AI
-  // Assistant, which require a signed-in user with an active paid plan
-  // (requirePremium shows the sign-in / upgrade prompt when not).
+  // Premium gate: everything is free except the AI Assistant and the
+  // Protect features (Redact, Whiteout, Watermark), which require a
+  // signed-in user with an active paid plan (requirePremium shows the
+  // sign-in / upgrade prompt when not).
   const { requirePremium } = useAuthGate();
 
   const handleToolChange = useCallback((t: ToolType) => {
-    // All annotation tools are free except Edit Text, which is premium.
-    // (Exports containing text edits stay gated at the export point.)
-    if (t === "edittext" && !requirePremium(TOOL_LABELS.edittext)) return;
+    // All annotation tools are free except the Protect tools (Redact and
+    // Whiteout), which are premium. (Exports containing Protect edits
+    // stay gated at the export point.)
+    if ((t === "redact" || t === "whiteout") && !requirePremium(TOOL_LABELS[t])) return;
     setTool(t);
   }, [requirePremium]);
 
@@ -676,8 +678,9 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
     const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
     const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
-    // Burning text edits into the copy is the premium Edit Text feature.
-    if (editTexts.length > 0 && !requirePremium(TOOL_LABELS.edittext)) return;
+    // Burning Protect edits (redactions/whiteout/watermark) into the copy
+    // is a premium feature.
+    if ((redactions.length > 0 || watermarkCfg !== null) && !requirePremium("Protect features")) return;
     const dot = file.name.lastIndexOf(".");
     const base = dot > 0 ? file.name.slice(0, dot) : file.name;
     const copyName = `${base} - Copy.pdf`;
@@ -724,11 +727,11 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   const handleDownloadFilledForm = useCallback(async () => {
     if (!file || !pdfDoc) { alert("No PDF is currently open."); return; }
     if (downloading || sharing) return;
-    // Filled-form export is free, but burning text edits into it is the
-    // premium Edit Text feature.
+    // Filled-form export is free, but burning Protect edits (redactions/
+    // whiteout/watermark) into it is a premium feature.
     if (
-      annotations.some((a) => a.type === "edittext") &&
-      !requirePremium(TOOL_LABELS.edittext)
+      (annotations.some((a) => a.type === "redact") || watermarkCfg !== null) &&
+      !requirePremium("Protect features")
     ) return;
     setDownloading(true);
     try {
@@ -768,9 +771,9 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
     const needsExport = watermarkCfg !== null || pageNoCfg !== null ||
       redactions.length > 0 || images.length > 0 || editTexts.length > 0;
-    // Sharing is free — but burning text edits into the shared copy is
-    // the premium Edit Text feature, same as the Save/export paths.
-    if (editTexts.length > 0 && !requirePremium(TOOL_LABELS.edittext)) return;
+    // Sharing is free — but burning Protect edits (redactions/whiteout/
+    // watermark) into the shared copy is premium, same as Save/export.
+    if ((redactions.length > 0 || watermarkCfg !== null) && !requirePremium("Protect features")) return;
     setSharing(true);
     try {
       const blob: Blob = needsExport
@@ -827,11 +830,12 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       setCloseIntent(null);
     };
     if (choice === "save") {
-      // Saving is free, but burning text edits in is the premium Edit
-      // Text feature. Gate BEFORE proceeding so a non-premium user isn't
-      // left with their edits silently discarded after the prompt appears.
-      const hasTextEdits = annotations.some((a) => a.type === "edittext");
-      if (hasTextEdits && !requirePremium(TOOL_LABELS.edittext)) {
+      // Saving is free, but burning Protect edits (redactions/whiteout/
+      // watermark) in is premium. Gate BEFORE proceeding so a non-premium
+      // user isn't left with edits silently discarded after the prompt.
+      const hasProtectEdits =
+        annotations.some((a) => a.type === "redact") || watermarkCfg !== null;
+      if (hasProtectEdits && !requirePremium("Protect features")) {
         setCloseIntent(null);
         return;
       }
@@ -840,7 +844,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     } else {
       proceed();
     }
-  }, [closeIntent, onClose, onFileLoad, annotations, requirePremium]);
+  }, [closeIntent, onClose, onFileLoad, annotations, watermarkCfg, requirePremium]);
 
   // Tab-strip close button → run the same close flow (with the
   // unsaved-changes confirmation) as File → Close. A ref keeps the
@@ -980,10 +984,10 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
       return;
     }
-    // Exporting is free — except burning text edits in, which is the
-    // premium Edit Text feature. Gating here also covers indirect callers
-    // (Save As shortcut, unsaved-changes dialog).
-    if (editTexts.length > 0 && !requirePremium(TOOL_LABELS.edittext)) return;
+    // Exporting is free — except burning Protect edits (redactions/
+    // whiteout/watermark) in, which is premium. Gating here also covers
+    // indirect callers (Save As shortcut, unsaved-changes dialog).
+    if ((redactions.length > 0 || watermarkCfg !== null) && !requirePremium("Protect features")) return;
     setDownloading(true);
     try {
       const blob = await exportPdfWithEdits(file, {
@@ -1356,7 +1360,11 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
           initial={watermarkCfg}
           totalPages={totalPages}
           currentPage={currentPage}
-          onApply={(cfg) => { setWatermarkCfg(cfg); setWatermarkOpen(false); }}
+          onApply={(cfg) => {
+            // Watermark is a Protect feature — premium only.
+            if (!requirePremium("Watermark")) return;
+            setWatermarkCfg(cfg); setWatermarkOpen(false);
+          }}
           onClear={() => { setWatermarkCfg(null); setWatermarkOpen(false); }}
           onClose={() => setWatermarkOpen(false)}
         />
