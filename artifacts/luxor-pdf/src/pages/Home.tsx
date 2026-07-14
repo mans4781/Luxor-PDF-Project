@@ -227,13 +227,13 @@ export default function Home({ onFileLoad }: HomeProps) {
         <span className="lxh-title">Luxor PDF Reader</span>
         <div className="lxh-winbtns">
           <button className="lxh-winbtn" aria-disabled="true" title="Minimize" aria-label="Minimize">
-            <svg width="11" height="11" viewBox="0 0 24 24" {...sw}><path d="M5 12h14"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" {...sw}><path d="M5 12h14"/></svg>
           </button>
           <button className="lxh-winbtn" title="Maximize" aria-label="Maximize" onClick={toggleMaximize}>
-            <svg width="10" height="10" viewBox="0 0 24 24" {...sw}><rect x="5" y="5" width="14" height="14" rx="1.5"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" {...sw}><rect x="5" y="5" width="14" height="14" rx="1.5"/></svg>
           </button>
           <button className="lxh-winbtn close" aria-disabled="true" title="Close" aria-label="Close">
-            <svg width="11" height="11" viewBox="0 0 24 24" {...sw}><path d="M6 6l12 12M18 6L6 18"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" {...sw}><path d="M6 6l12 12M18 6L6 18"/></svg>
           </button>
         </div>
       </div>
