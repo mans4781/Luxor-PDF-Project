@@ -51,7 +51,7 @@ export const HIGHLIGHT_COLORS: HighlightSwatch[] = [
   { name: "Orange", value: "#FF8000", opacity: 0.50 },
   { name: "Lime",   value: "#80FF00", opacity: 0.50 },
   { name: "Green",  value: "#00FF80", opacity: 0.50 },
-  { name: "Cyan",   value: "#00AEFF", opacity: 0.50 },
+  { name: "Blue",   value: "#007FFF", opacity: 0.50 },
   { name: "Lavender", value: "#FB98FA", opacity: 0.50 },
   { name: "Red",      value: "#FF3E3E", opacity: 0.50 },
 ];
@@ -66,7 +66,7 @@ export const QUICK_HIGHLIGHT_COLORS: HighlightSwatch[] = [
   { name: "Orange", value: "#FF8000", opacity: 0.50 },
   { name: "Lime",   value: "#80FF00", opacity: 0.50 },
   { name: "Green",  value: "#00FF80", opacity: 0.50 },
-  { name: "Cyan",   value: "#00AEFF", opacity: 0.50 },
+  { name: "Blue",   value: "#007FFF", opacity: 0.50 },
   { name: "Lavender", value: "#FB98FA", opacity: 0.50 },
   { name: "Red",      value: "#FF3E3E", opacity: 0.50 },
 ];
@@ -92,7 +92,8 @@ export const SELECTION_PREVIEW_BY_HIGHLIGHT: Record<string, string> = {
   "#FF8000": "rgba(255, 128, 0, 0.50)",   // Orange
   "#80FF00": "rgba(128, 255, 0, 0.50)",   // Lime
   "#00FF80": "rgba(0, 255, 128, 0.50)",   // Green
-  "#00AEFF": "rgba(0, 174, 255, 0.50)",   // Cyan
+  "#00AEFF": "rgba(0, 174, 255, 0.50)",   // Cyan (legacy saved highlights)
+  "#007FFF": "rgba(0, 127, 255, 0.50)",   // Blue (selection blue)
   "#FB98FA": "rgba(251, 152, 250, 0.50)", // Lavender
   "#FF3E3E": "rgba(255, 62, 62, 0.50)",   // Red
 };
