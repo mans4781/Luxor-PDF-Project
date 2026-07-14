@@ -1,0 +1,1145 @@
+# Build the Luxor PDF Unified Post-Login Dashboard
+
+Create a premium, responsive and fully functional post-login dashboard for **Luxor PDF**, closely matching the supplied reference image.
+
+This dashboard must become the default page users see after signing in.
+
+Do not redirect users directly to Luxor PDF Secure.
+
+After successful login, redirect users to:
+
+```text
+/dashboard
+```
+
+Luxor PDF currently has:
+
+1. Luxor PDF Reader — Available
+2. Luxor PDF Secure — Available
+3. Luxor PDF eSign — Coming Soon
+
+Luxor PDF eSign is still under development. It must be displayed on the dashboard for product awareness, but users must not be allowed to open or use it yet.
+
+---
+
+# 1. Recommended Technology
+
+Use the existing project technology wherever possible.
+
+When a new frontend structure is required, use:
+
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+* Lucide React icons
+* React Router
+* Existing authentication and backend services
+* Supabase or PostgreSQL when no backend is currently available
+
+Use reusable components and production-quality code.
+
+Suggested component structure:
+
+```text
+src/
+  components/
+    dashboard/
+      Sidebar.tsx
+      TopHeader.tsx
+      SubscriptionBanner.tsx
+      ProductCard.tsx
+      ComingSoonProductCard.tsx
+      ProfileCard.tsx
+      RecentActivity.tsx
+      QuickActions.tsx
+      ActiveSessions.tsx
+      UpgradeCard.tsx
+      ProductSwitcher.tsx
+      StatusBadge.tsx
+  pages/
+    Dashboard.tsx
+    Products.tsx
+    Billing.tsx
+    Profile.tsx
+    Security.tsx
+    Sessions.tsx
+    Notifications.tsx
+  layouts/
+    DashboardLayout.tsx
+  data/
+    dashboardData.ts
+  types/
+    dashboard.ts
+```
+
+Do not place the entire dashboard inside a single component.
+
+---
+
+# 2. Overall Design Style
+
+Match the reference image as closely as possible.
+
+The dashboard must feel:
+
+* Premium
+* Modern
+* Minimal
+* Professional
+* Spacious
+* Easy to navigate
+* Suitable for a commercial SaaS product
+
+Use:
+
+* White cards
+* Light-grey page background
+* Subtle borders
+* Soft shadows
+* Rounded corners
+* Clean typography
+* Restrained gradients
+* Smooth hover effects
+* Clear status badges
+
+Suggested design tokens:
+
+```css
+--page-background: #f8fafc;
+--card-background: #ffffff;
+--sidebar-background: #ffffff;
+--text-primary: #111827;
+--text-secondary: #64748b;
+--border-color: #e5e7eb;
+
+--luxor-red: #ef233c;
+--luxor-red-dark: #dc1f36;
+--luxor-red-light: #fff1f2;
+
+--reader-red: #ef233c;
+--secure-blue: #2563eb;
+--esign-green: #16a34a;
+
+--success-green: #22c55e;
+--warning-orange: #f97316;
+--purple: #8b5cf6;
+```
+
+Use `Inter` as the primary font.
+
+Do not use a dark sidebar or generic Bootstrap admin-dashboard appearance.
+
+---
+
+# 3. Desktop Page Layout
+
+Use a fixed left sidebar and a fluid main content area.
+
+Recommended desktop dimensions:
+
+* Sidebar width: approximately 265px
+* Main page padding: 24–32px
+* Large cards: 16–20px border radius
+* Smaller controls: 10–14px border radius
+
+Dashboard structure:
+
+```text
+----------------------------------------------------------
+| Sidebar | Header                                       |
+|         |----------------------------------------------|
+|         | Subscription Summary                         |
+|         |----------------------------------------------|
+|         | Reader | Secure | eSign Coming Soon | Profile|
+|         |----------------------------------------------|
+|         | Recent Activity | Quick Actions | Sessions   |
+----------------------------------------------------------
+```
+
+---
+
+# 4. Left Sidebar
+
+Create a white left sidebar with a subtle right border.
+
+At the top, show:
+
+* Luxor PDF logo
+* Red Luxor icon
+* Dark text reading `Luxor PDF`
+
+Add navigation items:
+
+1. Dashboard
+2. My Products
+3. Subscription & Billing
+4. Profile
+5. Security
+6. Devices & Sessions
+7. Notifications
+8. Help & Support
+9. Sign Out
+
+Use Lucide icons:
+
+* Dashboard: `LayoutDashboard`
+* My Products: `Box`
+* Subscription & Billing: `CreditCard`
+* Profile: `UserRound`
+* Security: `ShieldCheck`
+* Devices & Sessions: `MonitorSmartphone`
+* Notifications: `Bell`
+* Help & Support: `CircleHelp`
+* Sign Out: `LogOut`
+
+The selected Dashboard menu item must have:
+
+* Pale red background
+* Red icon
+* Red text
+* Rounded corners
+* Medium font weight
+
+Add a red notification badge showing `3` beside Notifications.
+
+Add a divider before Sign Out.
+
+---
+
+# 5. Sidebar Upgrade Card
+
+At the bottom of the sidebar, create a premium upgrade card.
+
+Heading:
+
+`Unlock more with Luxor PDF Suite – Pro`
+
+Description:
+
+`Advanced tools. Maximum productivity.`
+
+Include:
+
+* Red `Upgrade Plan` button
+* Small red or pink geometric illustration
+* Pale-pink background
+* Rounded border
+* Subtle shadow
+
+The upgrade card must remain near the bottom of the sidebar on large screens.
+
+---
+
+# 6. Top Header
+
+Create a horizontal header inside the main dashboard area.
+
+On the left, show:
+
+```text
+Welcome back, Alex 👋
+Here’s what’s happening with your account today.
+```
+
+The name must be loaded dynamically from the authenticated user profile.
+
+On the right, show:
+
+1. Search field
+2. Notification bell
+3. Help icon
+4. Product switcher
+5. User avatar
+
+## Search Field
+
+Placeholder:
+
+`Search tools, files, help...`
+
+Include:
+
+* Search icon
+* `Ctrl + K` keyboard hint
+* Rounded border
+* White background
+* Command-palette behaviour
+
+Search results may include:
+
+* Open PDF
+* Secure PDF
+* Merge PDFs
+* Convert PDF
+* Profile
+* Billing
+* Security
+* Notifications
+* Luxor PDF Reader
+* Luxor PDF Secure
+* Luxor PDF eSign — Coming Soon
+
+When eSign appears in search results, show a `Coming Soon` badge and do not navigate to an unfinished application.
+
+## Product Switcher
+
+Show:
+
+`Luxor PDF Suite`
+
+Dropdown options:
+
+* Account Dashboard
+* Luxor PDF Reader
+* Luxor PDF Secure
+* Luxor PDF eSign — Coming Soon
+
+Reader and Secure should be clickable.
+
+eSign must appear disabled or open a coming-soon information modal.
+
+Do not route the user to an incomplete eSign application.
+
+## User Avatar
+
+Display:
+
+* Circular profile image or avatar
+* Green online-status dot
+* Account dropdown
+
+Dropdown options:
+
+* View Profile
+* Account Settings
+* Subscription
+* Security
+* Sign Out
+
+---
+
+# 7. Subscription Summary Banner
+
+Below the header, create a large subscription card spanning the main content width.
+
+Use:
+
+* White-to-soft-pink background
+* Pale-red border
+* Rounded corners
+* Subtle shadow
+* Red subscription icon
+* Premium geometric illustration on the right
+
+Show:
+
+Small label:
+
+`Your Subscription`
+
+Main title example:
+
+`Luxor PDF Suite – Pro`
+
+The plan name must come from subscription data.
+
+Below the title, show:
+
+## Billing Plan
+
+```text
+Billing Plan
+Annual Plan
+```
+
+## Renewal Date
+
+```text
+Renewal Date
+Jun 22, 2027
+```
+
+Use dynamic subscription data and do not hard-code expired dates.
+
+## Status
+
+Show a pill such as:
+
+* Active
+* Trial
+* Expired
+* Cancelled
+* Payment Due
+
+## Included Products
+
+Clearly distinguish between available products and upcoming products.
+
+For example:
+
+```text
+Included Now:
+Reader
+PDF Secure
+
+Coming Soon:
+eSign
+```
+
+Alternatively, show three product icons with these labels:
+
+* Reader — Active
+* Secure — Active
+* eSign — Coming Soon
+
+Do not describe eSign as fully accessible or currently included for use.
+
+Add buttons on the right:
+
+1. Upgrade Plan
+2. Manage Billing
+
+The buttons must navigate to working billing screens or modals.
+
+---
+
+# 8. Product Cards
+
+Below the subscription banner, create three equal-height product cards.
+
+The cards should visually match the reference image.
+
+Each card should contain:
+
+* Product icon
+* Product name
+* Product description
+* Access status
+* Main action
+* Decorative background element
+* Hover behaviour
+
+---
+
+# 9. Luxor PDF Reader Card
+
+Accent colour: red.
+
+Icon:
+
+* Red rounded square
+* White PDF document icon
+
+Title:
+
+`Luxor PDF Reader`
+
+Description:
+
+`View, annotate and organize PDFs with ease.`
+
+Status:
+
+* Green check icon
+* `Full Access`
+
+Button:
+
+`Open App`
+
+Button styling:
+
+* White or pale-red background
+* Red border
+* Red text
+* External-link icon
+
+Route:
+
+```text
+/reader
+```
+
+The button must be functional.
+
+---
+
+# 10. Luxor PDF Secure Card
+
+Accent colour: blue.
+
+Icon:
+
+* Blue rounded square
+* White shield-lock icon
+
+Title:
+
+`Luxor PDF Secure`
+
+Description:
+
+`Protect your PDFs and sensitive documents.`
+
+Status:
+
+* Green check icon
+* `Full Access`
+
+Button:
+
+`Open App`
+
+Button styling:
+
+* White background
+* Blue border
+* Blue text
+* External-link icon
+
+Route:
+
+```text
+/secure
+```
+
+Add a faint shield or lock illustration in the card background.
+
+The button must be functional.
+
+---
+
+# 11. Luxor PDF eSign Coming Soon Card
+
+Accent colour: green.
+
+This product is not currently launched.
+
+The card must be visually attractive but clearly unavailable.
+
+Icon:
+
+* Green rounded square
+* White pen, signature or document-signing icon
+
+Title:
+
+`Luxor PDF eSign`
+
+Description:
+
+`Send, sign and manage documents digitally from anywhere.`
+
+Add a prominent top-right badge:
+
+`Coming Soon`
+
+Add a secondary status badge:
+
+`In Development`
+
+Do not show:
+
+* Full Access
+* Active
+* Open App
+* Start Signing
+* Launch App
+
+Use one of these buttons:
+
+* `Notify Me`
+* `Join Waitlist`
+* `Get Launch Updates`
+
+Recommended primary button:
+
+`Notify Me`
+
+Button style:
+
+* Pale-green or white background
+* Green border
+* Green text
+* Bell icon
+
+When clicked, open a coming-soon modal.
+
+The modal should contain:
+
+Heading:
+
+`Luxor PDF eSign is Coming Soon`
+
+Description:
+
+`We are building a secure and simple digital-signature experience for Luxor PDF users. Join the launch list to receive an update when eSign becomes available.`
+
+Form fields:
+
+* Name
+* Email address
+* Optional company name
+
+Button:
+
+`Notify Me at Launch`
+
+Add a success message after submission.
+
+Do not create a working `/esign` application page yet.
+
+When `/esign` is visited directly, redirect the user to either:
+
+```text
+/dashboard
+```
+
+or a dedicated informational page:
+
+```text
+/esign-coming-soon
+```
+
+The coming-soon page may include:
+
+* Product overview
+* Planned features
+* Launch notification form
+* Back to Dashboard button
+
+Do not expose unfinished product functionality.
+
+---
+
+# 12. Profile Card
+
+Place the profile card beside the product cards on large screens.
+
+Heading:
+
+`Your Profile`
+
+Subtitle:
+
+`View and manage your account details.`
+
+Display:
+
+* Circular profile photo
+* Full name
+* Email address
+* Member-since date
+
+Below the profile details, show three actions:
+
+1. Upload Photo
+2. Choose Avatar
+3. Change Password
+
+Use:
+
+* Camera icon
+* Smile icon
+* Lock icon
+
+## Upload Photo
+
+Allow:
+
+* JPG
+* JPEG
+* PNG
+* WebP
+* Maximum 5MB
+* Image cropping
+* Preview before saving
+
+The uploaded image must update across:
+
+* Dashboard
+* Reader
+* Secure
+* Future eSign account profile
+* Header account menu
+* Product switcher
+
+## Choose Avatar
+
+Open a modal with at least 20 pre-built avatars.
+
+Include:
+
+* Initial-based avatars
+* Abstract avatars
+* Neutral illustrated avatars
+* Professional avatars
+
+## Change Password
+
+Open a secure password-change modal or navigate to:
+
+```text
+/security
+```
+
+Fields:
+
+* Current password
+* New password
+* Confirm new password
+
+Add password-strength validation.
+
+---
+
+# 13. Recent Activity Panel
+
+Create a white card titled:
+
+`Recent Activity`
+
+Add a `View All` link.
+
+Example activity entries:
+
+1. Opened PDF
+   `Project_Proposal.pdf`
+   `Today, 10:24 AM`
+
+2. Secured File
+   `Financial_Report_2026.pdf`
+   `Today, 9:15 AM`
+
+3. Updated Password
+   `Password was changed successfully`
+
+4. Subscription Renewed
+   `Luxor PDF Suite – Pro (Annual)`
+
+Do not show eSign activity because eSign has not launched.
+
+Do not show:
+
+* Signed Document
+* Signature Requested
+* eSign Completed
+* eSign Audit Trail
+
+Use dynamic recent activity data where available.
+
+---
+
+# 14. Quick Actions Panel
+
+Create a card titled:
+
+`Quick Actions`
+
+Add functional action buttons:
+
+1. Open PDF
+2. Secure PDF
+3. Merge PDFs
+4. Convert PDF
+5. Manage Subscription
+
+Suggested colours:
+
+* Open PDF: red
+* Secure PDF: blue
+* Merge PDFs: purple
+* Convert PDF: orange
+* Manage Subscription: pink or red
+
+Do not include:
+
+* Sign Document
+* Request Signature
+* Open eSign
+* Create Signature
+
+Optionally show a disabled eSign preview action at the bottom:
+
+```text
+eSign Documents
+Coming Soon
+```
+
+If displayed, it must be visibly disabled and must not launch an unfinished tool.
+
+---
+
+# 15. Active Sessions Panel
+
+Create a card titled:
+
+`Active Sessions`
+
+Add a `View All` link.
+
+Show current device information such as:
+
+```text
+Windows • Chrome
+This Device
+Kolkata, India • Active now
+```
+
+Show another active or recent device when available.
+
+At the bottom, include:
+
+`Sign out all devices`
+
+When clicked:
+
+* Open confirmation modal
+* Revoke other active sessions
+* Show success feedback
+
+Do not permanently hard-code device locations.
+
+---
+
+# 16. Coming-Soon Behaviour Across the Dashboard
+
+Apply these rules everywhere:
+
+* eSign must always display a `Coming Soon` status.
+* eSign must not show `Full Access`.
+* eSign must not show an active product entitlement.
+* eSign must not have an `Open App` button.
+* eSign must not appear in recent product activity.
+* eSign must not appear as an available quick action.
+* eSign routes must not expose unfinished functionality.
+* eSign may be shown in navigation, search and product switching for awareness.
+* Clicking eSign should open a coming-soon modal or informational page.
+* Users may join a waitlist or request launch notifications.
+* The system should store waitlist consent and submission date.
+* Prevent duplicate waitlist submissions for the same email.
+* Show a confirmation when the user is already registered.
+
+---
+
+# 17. Product Access Data
+
+Use product data such as:
+
+```ts
+type ProductAccess = {
+  id: "reader" | "secure" | "esign";
+  name: string;
+  status:
+    | "full_access"
+    | "trial"
+    | "upgrade_required"
+    | "coming_soon";
+  route?: string;
+  isLaunchAvailable: boolean;
+};
+```
+
+Example:
+
+```ts
+const products: ProductAccess[] = [
+  {
+    id: "reader",
+    name: "Luxor PDF Reader",
+    status: "full_access",
+    route: "/reader",
+    isLaunchAvailable: true,
+  },
+  {
+    id: "secure",
+    name: "Luxor PDF Secure",
+    status: "full_access",
+    route: "/secure",
+    isLaunchAvailable: true,
+  },
+  {
+    id: "esign",
+    name: "Luxor PDF eSign",
+    status: "coming_soon",
+    route: "/esign-coming-soon",
+    isLaunchAvailable: false,
+  },
+];
+```
+
+Always check `isLaunchAvailable` before allowing product navigation.
+
+---
+
+# 18. eSign Waitlist Data
+
+Create a simple waitlist data model:
+
+```ts
+type ESignWaitlistEntry = {
+  id: string;
+  userId?: string;
+  name: string;
+  email: string;
+  companyName?: string;
+  source: "dashboard" | "product_switcher" | "coming_soon_page";
+  createdAt: string;
+  consentToLaunchUpdates: boolean;
+};
+```
+
+Create a secure endpoint such as:
+
+```text
+POST /api/esign/waitlist
+```
+
+Requirements:
+
+* Validate the email address
+* Prevent duplicates
+* Associate the entry with the logged-in user when available
+* Store consent
+* Return clear success and error messages
+* Do not automatically subscribe users to unrelated marketing
+
+---
+
+# 19. Routes
+
+Create or connect:
+
+```text
+/dashboard
+/products
+/billing
+/profile
+/security
+/sessions
+/notifications
+/support
+/reader
+/secure
+/esign-coming-soon
+```
+
+Do not create a functional eSign product route yet.
+
+When a user attempts to visit:
+
+```text
+/esign
+```
+
+redirect them to:
+
+```text
+/esign-coming-soon
+```
+
+Unauthenticated users must be redirected to:
+
+```text
+/login
+```
+
+After login, always redirect to:
+
+```text
+/dashboard
+```
+
+---
+
+# 20. Shared Account and Authentication
+
+Use one Luxor PDF account across all current and future products.
+
+The same user account should work across:
+
+* Account Dashboard
+* Luxor PDF Reader
+* Luxor PDF Secure
+* Luxor PDF eSign when launched
+
+Use a single unique user ID.
+
+Synchronize:
+
+* User name
+* Email
+* Profile image
+* Selected avatar
+* Subscription
+* Product entitlements
+* Security settings
+* Sessions
+* Notification preferences
+
+Do not create separate accounts for each Luxor PDF product.
+
+---
+
+# 21. Responsive Design
+
+## Large Desktop
+
+* Sidebar visible
+* Product cards and profile card aligned in one row
+* Lower cards aligned horizontally
+
+## Laptop
+
+* Product cards may wrap
+* Profile card may move below the products
+
+## Tablet
+
+* Sidebar becomes collapsible
+* Two product cards per row
+
+## Mobile
+
+* Sidebar becomes a slide-out drawer
+* Cards stack vertically
+* Buttons become full width
+* Subscription details stack
+* Search becomes compact
+* eSign still clearly displays `Coming Soon`
+
+All touch targets should be at least 44px high.
+
+---
+
+# 22. Required Modals
+
+Create polished modals for:
+
+* Upload profile photo
+* Choose avatar
+* Change password
+* Upgrade plan
+* Sign out all devices
+* Logout confirmation
+* eSign coming soon
+* eSign launch notification signup
+
+All modals must support:
+
+* Escape key
+* Focus trapping
+* Click-outside closing
+* Accessible labels
+* Loading state
+* Success state
+* Error state
+
+---
+
+# 23. Loading and Error States
+
+Add:
+
+* Dashboard skeleton loader
+* Product-card skeletons
+* Profile-loading state
+* Subscription-loading state
+* Empty recent-activity state
+* Session-loading state
+* Retry buttons
+* Toast notifications
+* Form-validation messages
+
+Do not leave blank areas when information is unavailable.
+
+---
+
+# 24. Accessibility
+
+Implement:
+
+* Semantic HTML
+* Keyboard navigation
+* Visible focus states
+* ARIA labels
+* Accessible modal behaviour
+* Screen-reader-friendly badges
+* Sufficient colour contrast
+* Tooltips for icon-only buttons
+* Proper disabled states
+
+The disabled or coming-soon eSign controls must be understandable to screen readers.
+
+---
+
+# 25. Exact Visual Requirements
+
+Closely match the supplied dashboard reference image:
+
+* White sidebar
+* Pale-red selected Dashboard item
+* Luxor PDF logo at the top-left
+* Greeting and search bar in the header
+* Large subscription banner
+* Reader card in red
+* Secure card in blue
+* eSign card in green
+* Profile card beside the product cards
+* Recent Activity panel
+* Quick Actions panel
+* Active Sessions panel
+* Rounded cards
+* Soft shadows
+* Thin borders
+* Light background
+* Premium spacing
+* Clean typography
+
+The eSign card must retain the same visual importance as the other products, but it must clearly look unavailable because it is still in development.
+
+Use a green `Coming Soon` badge and a `Notify Me` button instead of an `Open App` button.
+
+---
+
+# 26. Final Development Requirements
+
+The completed dashboard must:
+
+* Compile without errors
+* Use TypeScript
+* Use reusable components
+* Redirect users to `/dashboard` after login
+* Never redirect users directly to `/secure`
+* Keep Reader and Secure fully accessible
+* Keep eSign unavailable
+* Show eSign as Coming Soon
+* Prevent access to unfinished eSign functionality
+* Provide an eSign launch-notification form
+* Synchronize profile images across all applications
+* Support uploaded photos and pre-built avatars
+* Display subscription information
+* Support password changes
+* Support billing management
+* Support device-session management
+* Work on desktop, tablet and mobile
+* Closely match the supplied reference image
+
+Before completing, test:
+
+* Login redirect
+* Reader launch
+* Secure launch
+* eSign disabled state
+* eSign coming-soon modal
+* eSign waitlist submission
+* Duplicate waitlist handling
+* Direct `/esign` redirect
+* Profile photo upload
+* Avatar selection
+* Password-change form
+* Billing navigation
+* Product switcher
+* Responsive layouts
+* Keyboard navigation
