@@ -828,31 +828,34 @@ mark.search-hl {
   z-index: 10;
 }
 
-/* Title bar */
+/* Title bar — deep blue banner with white text */
 .lxh-titlebar {
   height: 42px; flex: 0 0 auto;
   display: flex; align-items: center;
   padding: 0 12px 0 14px;
-  border-bottom: 1px solid #ececef;
+  background: #185ABD;
+  border-bottom: 1px solid #12489c;
   gap: 10px;
+  color: #ffffff;
 }
 .lxh-titlebar img { width: 20px; height: 24px; object-fit: contain; user-select: none; -webkit-user-drag: none; }
-.lxh-title { font-size: 13.5px; font-weight: 600; }
+.lxh-title { font-size: 13.5px; font-weight: 600; color: #ffffff; }
 .lxh-winbtns { margin-left: auto; display: flex; gap: 4px; }
 .lxh-winbtn {
   width: 30px; height: 26px; border: none; background: transparent;
-  border-radius: 6px; color: #5c6270; cursor: pointer;
+  border-radius: 6px; color: rgba(255,255,255,0.85); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
 }
-.lxh-winbtn:hover { background: #f2f3f5; }
-.lxh-winbtn.close:hover { background: #fdecec; color: #d21f2f; }
+.lxh-winbtn:hover { background: rgba(255,255,255,0.18); color: #fff; }
+.lxh-winbtn.close:hover { background: #d21f2f; color: #fff; }
 
-/* Toolbar */
+/* Toolbar — light 5% grey band */
 .lxh-toolbar {
   height: 52px; flex: 0 0 auto;
   display: flex; align-items: center; gap: 6px;
   padding: 0 14px;
-  border-bottom: 1px solid #ececef;
+  background: #F2F2F2;
+  border-bottom: 1px solid #e3e3e5;
 }
 .lxh-open {
   display: flex; align-items: stretch; flex: 0 0 auto;
