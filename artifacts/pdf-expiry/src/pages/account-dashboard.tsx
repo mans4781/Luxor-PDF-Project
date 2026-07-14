@@ -238,7 +238,7 @@ export default function AccountDashboardPage() {
   };
 
   const signOut = () => {
-    void clerk.signOut({ redirectUrl: `${basePath}/` });
+    void clerk.signOut({ redirectUrl: "/" });
   };
 
   const openProfile = () => clerk.openUserProfile();

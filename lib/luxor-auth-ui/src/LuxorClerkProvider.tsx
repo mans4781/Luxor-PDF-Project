@@ -49,6 +49,7 @@ export function LuxorClerkProvider({
       localization={clerkLocalization}
       signInUrl={signInUrl}
       signUpUrl={signUpUrl}
+      afterSignOutUrl="/"
       routerPush={routerPush}
       routerReplace={routerReplace}
     >
