@@ -42,6 +42,7 @@ import type {
   DevVerifyResult,
   DownloadPdfParams,
   ErrorResponse,
+  EsignWaitlistStatus,
   GetPdfParams,
   HealthStatus,
   InviteMemberBody,
@@ -1216,6 +1217,166 @@ export const useVerifyDevPassphrase = <
   TContext
 > => {
   return useMutation(getVerifyDevPassphraseMutationOptions(options));
+};
+
+/**
+ * @summary Check whether the signed-in user is on the eSign early-access waitlist
+ */
+export const getGetEsignWaitlistStatusUrl = () => {
+  return `/api/esign/waitlist`;
+};
+
+export const getEsignWaitlistStatus = async (
+  options?: RequestInit,
+): Promise<EsignWaitlistStatus> => {
+  return customFetch<EsignWaitlistStatus>(getGetEsignWaitlistStatusUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetEsignWaitlistStatusQueryKey = () => {
+  return [`/api/esign/waitlist`] as const;
+};
+
+export const getGetEsignWaitlistStatusQueryOptions = <
+  TData = Awaited<ReturnType<typeof getEsignWaitlistStatus>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getEsignWaitlistStatus>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetEsignWaitlistStatusQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getEsignWaitlistStatus>>
+  > = ({ signal }) => getEsignWaitlistStatus({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getEsignWaitlistStatus>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetEsignWaitlistStatusQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getEsignWaitlistStatus>>
+>;
+export type GetEsignWaitlistStatusQueryError = ErrorType<void>;
+
+/**
+ * @summary Check whether the signed-in user is on the eSign early-access waitlist
+ */
+
+export function useGetEsignWaitlistStatus<
+  TData = Awaited<ReturnType<typeof getEsignWaitlistStatus>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getEsignWaitlistStatus>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetEsignWaitlistStatusQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Adds the signed-in user to the Luxor PDF eSign waitlist. Idempotent —
+repeat calls are no-ops and simply return `joined: true`.
+
+ * @summary Join the eSign early-access waitlist
+ */
+export const getJoinEsignWaitlistUrl = () => {
+  return `/api/esign/waitlist`;
+};
+
+export const joinEsignWaitlist = async (
+  options?: RequestInit,
+): Promise<EsignWaitlistStatus> => {
+  return customFetch<EsignWaitlistStatus>(getJoinEsignWaitlistUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getJoinEsignWaitlistMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof joinEsignWaitlist>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof joinEsignWaitlist>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["joinEsignWaitlist"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof joinEsignWaitlist>>,
+    void
+  > = () => {
+    return joinEsignWaitlist(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type JoinEsignWaitlistMutationResult = NonNullable<
+  Awaited<ReturnType<typeof joinEsignWaitlist>>
+>;
+
+export type JoinEsignWaitlistMutationError = ErrorType<void>;
+
+/**
+ * @summary Join the eSign early-access waitlist
+ */
+export const useJoinEsignWaitlist = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof joinEsignWaitlist>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof joinEsignWaitlist>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getJoinEsignWaitlistMutationOptions(options));
 };
 
 /**

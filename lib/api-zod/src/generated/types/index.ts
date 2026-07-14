@@ -37,6 +37,7 @@ export * from "./devVerifyRequest";
 export * from "./devVerifyResult";
 export * from "./downloadPdfParams";
 export * from "./errorResponse";
+export * from "./esignWaitlistStatus";
 export * from "./getPdfParams";
 export * from "./healthStatus";
 export * from "./inviteMemberBody";

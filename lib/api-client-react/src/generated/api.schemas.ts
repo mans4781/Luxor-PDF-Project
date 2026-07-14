@@ -32,6 +32,11 @@ export interface DevVerifyResult {
   verified: boolean;
 }
 
+export interface EsignWaitlistStatus {
+  /** True when the current user is on the eSign waitlist. */
+  joined: boolean;
+}
+
 export interface HealthStatus {
   status: string;
 }

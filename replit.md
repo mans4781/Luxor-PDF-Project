@@ -9,6 +9,7 @@
 
 Luxor PDF Suite — a family of PDF products sharing one domain, one Clerk sign-on, and one API:
 
+- **Account Dashboard** (`pdf-expiry` at `/pdf-expiry/dashboard`) — unified post-login hub: real Clerk profile + sessions (revoke other devices), live license/plan banner, product cards (Reader/Secure/eSign waitlist via `/api/esign/waitlist`), recent secured-file activity, quick actions. Sign-in default landing.
 - **PDF Expiry Tool** (`pdf-expiry` at `/`) — upload PDFs, set an exact expiry date+time, pick a post-expiry behavior (**corrupt**: file overwritten with random bytes, served as broken PDF; **revoke**: file deleted, download returns 410). Also has fully client-side Convert tools (PDF↔Images/Word/Excel).
 - **Luxor PDF Reader** (`luxor-pdf`) — high-performance PDF reader (virtualized rendering, themes, annotations, panels). Reading is free; editing/export features require sign-in.
 - **eSign App** (`esign-app`) — LexSign e-signing app.

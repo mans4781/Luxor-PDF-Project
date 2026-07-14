@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
+import AccountDashboardPage from "@/pages/account-dashboard";
 import History from "@/pages/history";
 import PdfTool from "@/pages/pdf-tool";
 import ConvertTool from "@/pages/convert-tool";
@@ -71,6 +72,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/dashboard" component={AccountDashboardPage} />
       <Route path="/history" component={History} />
       <Route path="/pdf-tool" component={PdfTool} />
       <Route path="/convert" component={ConvertTool} />

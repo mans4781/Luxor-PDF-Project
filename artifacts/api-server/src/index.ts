@@ -5,6 +5,7 @@ import { runLicenseMigrations } from "./lib/license";
 import { runBillingMigrations } from "./lib/billing";
 import { runOrgMigrations } from "./lib/org";
 import { runWelcomeMigrations } from "./routes/account";
+import { runEsignMigrations } from "./routes/esign";
 
 const rawPort = process.env["PORT"];
 
@@ -29,6 +30,7 @@ Promise.all([
   runBillingMigrations(),
   runOrgMigrations(),
   runWelcomeMigrations(),
+  runEsignMigrations(),
 ])
   .then(() => {
     app.listen(port, (err) => {

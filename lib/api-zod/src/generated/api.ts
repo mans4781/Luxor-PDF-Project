@@ -357,6 +357,27 @@ export const VerifyDevPassphraseResponse = zod.object({
 });
 
 /**
+ * @summary Check whether the signed-in user is on the eSign early-access waitlist
+ */
+export const GetEsignWaitlistStatusResponse = zod.object({
+  joined: zod
+    .boolean()
+    .describe("True when the current user is on the eSign waitlist."),
+});
+
+/**
+ * Adds the signed-in user to the Luxor PDF eSign waitlist. Idempotent —
+repeat calls are no-ops and simply return `joined: true`.
+
+ * @summary Join the eSign early-access waitlist
+ */
+export const JoinEsignWaitlistResponse = zod.object({
+  joined: zod
+    .boolean()
+    .describe("True when the current user is on the eSign waitlist."),
+});
+
+/**
  * Non-mutating gate. Returns `{ allowed, lockReason }` based on trial
 validity and today's usage count. The frontend should call this
 before starting an action; after a successful action it should call

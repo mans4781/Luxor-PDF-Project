@@ -33,3 +33,4 @@ export * from "./organization-invites";
 export * from "./desktop-auth-handoffs";
 export * from "./welcome-emails";
 export * from "./developers";
+export * from "./esign-waitlist";

@@ -475,6 +475,37 @@ paths:
         "429":
           description: Too many failed attempts — try again later.
 
+  /esign/waitlist:
+    get:
+      operationId: getEsignWaitlistStatus
+      tags: [account]
+      summary: Check whether the signed-in user is on the eSign early-access waitlist
+      responses:
+        "200":
+          description: Waitlist membership for the current user.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EsignWaitlistStatus"
+        "401":
+          description: Not signed in.
+    post:
+      operationId: joinEsignWaitlist
+      tags: [account]
+      summary: Join the eSign early-access waitlist
+      description: |
+        Adds the signed-in user to the Luxor PDF eSign waitlist. Idempotent —
+        repeat calls are no-ops and simply return `joined: true`.
+      responses:
+        "200":
+          description: Result of the join (idempotent).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EsignWaitlistStatus"
+        "401":
+          description: Not signed in.
+
   /usage/check:
     post:
       operationId: checkUsage
@@ -1155,6 +1186,15 @@ components:
           description: True when the passphrase was correct and the session is now verified.
       required:
         - verified
+
+    EsignWaitlistStatus:
+      type: object
+      properties:
+        joined:
+          type: boolean
+          description: True when the current user is on the eSign waitlist.
+      required:
+        - joined
 
     HealthStatus:
       type: object

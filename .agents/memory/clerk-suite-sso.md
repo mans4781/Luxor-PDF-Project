@@ -17,3 +17,5 @@ description: How pdf-expiry/luxor-pdf/esign-app share one Clerk session; lib/lux
 - Landing (`/`) stays public — no auth gate.
 - Custom sign-in flows: `@clerk/react` ≥6.5's `useSignIn` returns the new signals API (no `setActive`, `create` returns `{error}`); import `useSignIn` from `@clerk/react/legacy` for ticket-strategy custom flows.
 - Desktop shell sign-in: browser handoff via one-time 64-hex state + Clerk signInTokens ticket stored server-side, claim-once poll. Ticket is single-use — if Clerk isn't loaded when it arrives, fail visibly, don't retry.
+- Post-login landing: sign-in/up fallback (no redirect_url) is `${basePath}/dashboard` — the unified account dashboard (pdf-expiry `/dashboard`). Desktop handoff unaffected (redirect_url preserved).
+- Clerk session types: `@clerk/types` isn't installed/hoisted; derive from the hook instead — `type SessionEntry = Awaited<ReturnType<NonNullable<ReturnType<typeof useUser>["user"]>["getSessions"]>>[number]` (compile-checks `.revoke()`, `latestActivity`).

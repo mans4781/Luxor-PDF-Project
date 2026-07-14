@@ -10,10 +10,9 @@ import { basePath } from "@/lib/base-path";
  * when the browser is already signed in.
  */
 export function authRedirectTarget(): string {
-  // Always include the trailing slash: in dev, Vite only serves paths under
-  // its base ("/pdf-expiry/"), and a redirect to the bare "/pdf-expiry"
-  // shows a "server is configured with a public base URL" hint page.
-  const fallback = basePath ? `${basePath}/` : "/";
+  // With no explicit redirect target, land the user on their account
+  // dashboard after signing in.
+  const fallback = `${basePath}/dashboard`;
   try {
     const raw = new URLSearchParams(window.location.search).get("redirect_url");
     if (!raw) return fallback;

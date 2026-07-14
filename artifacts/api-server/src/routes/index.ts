@@ -12,6 +12,7 @@ import desktopAuthRouter from "./desktop-auth";
 import aiRouter from "./ai";
 import convertRouter from "./convert";
 import accountRouter from "./account";
+import esignRouter from "./esign";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(desktopAuthRouter);
 router.use(aiRouter);
 router.use(convertRouter);
 router.use(accountRouter);
+router.use(esignRouter);
 
 export default router;
