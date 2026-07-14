@@ -36,6 +36,14 @@ interface LicenseContextValue {
    */
   clientLockReason: ClientLockReason | null;
   refetch: () => void;
+  /**
+   * Whether the dismissible "choose a plan" pop-up is open. For never-paid
+   * (free) users the pop-up is NOT shown on login — it opens only when they
+   * attempt a premium feature, and it can be closed with the X.
+   */
+  upgradeOpen: boolean;
+  openUpgrade: () => void;
+  closeUpgrade: () => void;
 }
 
 const LicenseContext = createContext<LicenseContextValue | null>(null);
@@ -88,6 +96,13 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
 
   const offline = !!isSignedIn && query.isError;
 
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+
+  // Reset the pop-up when the user signs out so the next session starts clean.
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) setUpgradeOpen(false);
+  }, [isLoaded, isSignedIn]);
+
   const effective = useMemo(() => {
     void tick; // re-derive each tick
     return deriveEffectiveState({
@@ -109,8 +124,12 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
       refetch: () => {
         void query.refetch();
       },
+      upgradeOpen,
+      openUpgrade: () => setUpgradeOpen(true),
+      closeUpgrade: () => setUpgradeOpen(false),
     }),
     [
+      upgradeOpen,
       isLoaded,
       isSignedIn,
       query.isLoading,

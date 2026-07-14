@@ -10,6 +10,7 @@ import {
   RotateCcw,
   WifiOff,
   Clock,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLicense } from "./LicenseProvider";
@@ -26,7 +27,8 @@ function planFromStatusName(name: string | null | undefined): string {
 }
 
 export function LockOverlay() {
-  const { status, signedIn, refetch, clientLockReason } = useLicense();
+  const { status, signedIn, refetch, clientLockReason, upgradeOpen, closeUpgrade } =
+    useLicense();
   const clerk = useClerk();
   const [location] = useLocation();
 
@@ -40,19 +42,20 @@ export function LockOverlay() {
 
   // Server-driven blocking reasons.
   const reason = status?.lockReason;
-  // Never-paid users (free trial removed) — needs a first-time purchase.
-  const isRequired =
-    reason === "subscription_required" || reason === "trial_expired";
+  // Never-paid (free) users are NOT hard-blocked: no pop-up on login. The
+  // dismissible prompt opens only on a premium-feature attempt — server-side
+  // checks still gate every paid action.
   const isSub = reason === "subscription_expired";
   const isSuspended = reason === "account_suspended";
 
-  const blocking =
-    isOfflineTooLong ||
-    isClockTampered ||
-    isRequired ||
-    isSub ||
-    isSuspended;
-  if (!blocking) return null;
+  const hardBlocking =
+    isOfflineTooLong || isClockTampered || isSub || isSuspended;
+  // The dismissible "choose a plan" prompt renders whenever it was opened
+  // (premium-feature attempt), regardless of the exact lock reason — as long
+  // as no hard lock takes precedence.
+  const showUpgradePrompt = !hardBlocking && upgradeOpen;
+  if (!hardBlocking && !showUpgradePrompt) return null;
+  const dismissible = showUpgradePrompt;
 
   // Don't block the activate-key page itself, or auth pages.
   if (
@@ -68,7 +71,18 @@ export function LockOverlay() {
       className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
       data-testid="license-lock-overlay"
     >
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200">
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200">
+        {dismissible && (
+          <button
+            type="button"
+            onClick={closeUpgrade}
+            aria-label="Close"
+            className="absolute top-3 right-3 p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            data-testid="lock-action-close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
         <div className="flex justify-center mb-4">
           <div
             className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-md ${

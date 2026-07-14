@@ -90,7 +90,8 @@ export function useGuardedAction(options: { bypass?: boolean } = {}) {
   const { bypass = false } = options;
   const { toast } = useToast();
   const qc = useQueryClient();
-  const { signedIn, offline, status, clientLockReason } = useLicense();
+  const { signedIn, offline, status, clientLockReason, openUpgrade } =
+    useLicense();
   const checkMut = useCheckUsage();
   const recordMut = useRecordUsage();
 
@@ -137,9 +138,16 @@ export function useGuardedAction(options: { bypass?: boolean } = {}) {
       }
       const cachedReason = status?.lockReason;
       if (
-        cachedReason === "subscription_expired" ||
         cachedReason === "subscription_required" ||
-        cachedReason === "trial_expired" ||
+        cachedReason === "trial_expired"
+      ) {
+        // Free (never-paid) user tried a premium feature: open the
+        // dismissible "choose a plan" pop-up instead of a toast.
+        openUpgrade();
+        return undefined;
+      }
+      if (
+        cachedReason === "subscription_expired" ||
         cachedReason === "account_suspended"
       ) {
         toast({ ...reasonMessage(cachedReason), variant: "destructive" });
@@ -169,8 +177,16 @@ export function useGuardedAction(options: { bypass?: boolean } = {}) {
         return undefined;
       }
       if (!check.allowed) {
-        const msg = reasonMessage(check.lockReason, check.dailyLimit);
-        toast({ ...msg, variant: "destructive" });
+        if (
+          check.lockReason === "subscription_required" ||
+          check.lockReason === "trial_expired" ||
+          check.lockReason === "premium_feature"
+        ) {
+          openUpgrade();
+        } else {
+          const msg = reasonMessage(check.lockReason, check.dailyLimit);
+          toast({ ...msg, variant: "destructive" });
+        }
         // Refresh status so any expiry / lock UI appears immediately.
         void qc.invalidateQueries({ queryKey: getGetLicenseStatusQueryKey() });
         return undefined;
@@ -219,6 +235,7 @@ export function useGuardedAction(options: { bypass?: boolean } = {}) {
       recordMut,
       qc,
       toast,
+      openUpgrade,
     ],
   );
 
