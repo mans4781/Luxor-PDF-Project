@@ -1,14 +1,14 @@
 /**
  * Suite sign-in/sign-up URLs. The pdf-expiry artifact hosts the only
  * Clerk sign-in/up pages for the whole Luxor suite; the shared proxy
- * routes `/pdf-expiry/*` there from any artifact. After auth, the user
- * is returned to wherever they started via `redirect_url`.
+ * routes `/pdf-expiry/*` there from any artifact. No `redirect_url` is
+ * passed from the marketing site, so after auth the user lands on the
+ * account dashboard (the sign-in page's default destination).
  */
 const SUITE_AUTH_HOST_BASE = "/pdf-expiry";
 
 export function suiteAuthUrl(kind: "sign-in" | "sign-up"): string {
-  const redirect = encodeURIComponent(window.location.href);
-  return `${SUITE_AUTH_HOST_BASE}/${kind}?redirect_url=${redirect}`;
+  return `${SUITE_AUTH_HOST_BASE}/${kind}`;
 }
 
 export function goToSignIn(): void {
