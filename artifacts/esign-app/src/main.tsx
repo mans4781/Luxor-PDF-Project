@@ -3,6 +3,9 @@ import { LuxorClerkProvider } from "@workspace/luxor-auth-ui";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import App from "./App";
 import "./index.css";
+import { initPageTracking } from "./lib/pageTracking";
+
+initPageTracking();
 
 const clerkPubKey = publishableKeyFromHost(
   typeof window !== "undefined" ? window.location.hostname : "",

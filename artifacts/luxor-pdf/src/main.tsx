@@ -8,6 +8,9 @@ import App from "./App";
 // still win — this only supplies the `.annotationLayer` form-widget styling.
 import "pdfjs-dist/web/pdf_viewer.css";
 import "./index.css";
+import { initPageTracking } from "./lib/pageTracking";
+
+initPageTracking();
 
 const clerkPubKey = publishableKeyFromHost(
   typeof window !== "undefined" ? window.location.hostname : "",

@@ -34,3 +34,5 @@ export * from "./desktop-auth-handoffs";
 export * from "./welcome-emails";
 export * from "./developers";
 export * from "./esign-waitlist";
+export * from "./page-views";
+export * from "./payments";

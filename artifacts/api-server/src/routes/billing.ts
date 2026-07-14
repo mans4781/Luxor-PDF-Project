@@ -15,6 +15,7 @@ import {
   applyPaidPlan,
   applyBusinessPlan,
   applyTeamPlan,
+  recordPayment,
   claimBillingEvent,
   listProviders,
   stripePriceIdFor,
@@ -374,6 +375,20 @@ billingWebhookRouter.post(
           return;
         }
 
+        // Revenue ledger (best-effort; never fails the webhook).
+        try {
+          await recordPayment({
+            provider: "stripe",
+            eventId: event.id,
+            userId,
+            planName: plan,
+            amountMinor: session.amount_total ?? null,
+            currency: session.currency ?? null,
+          });
+        } catch (payErr) {
+          req.log.error({ err: payErr, eventId: event.id }, "Failed to record payment");
+        }
+
         // ─── Team / Business: provision the organization ────────────────────
         if (plan === "team") {
           const now = new Date();
@@ -624,7 +639,12 @@ interface RazorpayWebhookPayload {
       };
     };
     payment?: {
-      entity?: { id?: string; email?: string | null };
+      entity?: {
+        id?: string;
+        email?: string | null;
+        amount?: number;
+        currency?: string | null;
+      };
     };
   };
 }
@@ -709,6 +729,23 @@ razorpayWebhookRouter.post(
           );
           res.json({ received: true, processed: false });
           return;
+        }
+
+        // Revenue ledger (best-effort; never fails the webhook).
+        try {
+          await recordPayment({
+            provider: "razorpay",
+            eventId,
+            userId,
+            planName: plan,
+            amountMinor:
+              typeof paymentEntity?.amount === "number"
+                ? paymentEntity.amount
+                : null,
+            currency: paymentEntity?.currency ?? null,
+          });
+        } catch (payErr) {
+          req.log.error({ err: payErr, eventId }, "Failed to record payment");
         }
 
         const outcome = await applyPaidPlan(userId, plan, {

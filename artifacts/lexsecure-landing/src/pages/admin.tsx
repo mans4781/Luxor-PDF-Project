@@ -8,18 +8,19 @@ const SIDEBAR_W = 220;
 
 interface AdminStats {
   overview: {
-    totalUsers: number; monthlyRevenue: number; annualRevenue: number;
+    totalUsers: number; paidUsers: number; freeUsers: number;
+    totalRevenue: Record<string, number>; monthRevenue: Record<string, number>;
     pageViews: number; totalPdfs: number; activePdfs: number;
-    expiredPdfs: number; totalStorageBytes: number; avgRevenuePerUser: number;
-    churnRate: number; nps: number; supportTickets: number;
+    expiredPdfs: number; totalStorageBytes: number;
   };
-  plans: { free: number; pro: number; enterprise: number };
-  monthlyData: { month: string; revenue: number; users: number; documents: number }[];
-  recentActivity: { id: number; type: string; user: string; plan: string; time: string }[];
-  topCountries: { country: string; users: number; pct: number }[];
+  plans: Record<string, number>;
+  monthlyData: { month: string; revenue: Record<string, number>; signups: number }[];
+  topPages: { path: string; views: number }[];
+  dailyViews: { day: string; views: number }[];
+  recentActivity: { id: number; type: string; user: string; message: string; time: string }[];
 }
 
-type Section = "overview" | "users" | "customers" | "revenue" | "documents" | "geography" | "activity" | "settings";
+type Section = "overview" | "users" | "customers" | "revenue" | "documents" | "pages" | "activity" | "settings";
 
 interface AdminCustomer {
   userId: string;
@@ -84,7 +85,39 @@ function fmtBytes(b: number) {
   return `${b} B`;
 }
 
-const PIE_COLORS = ["#6366f1", "#4f8ef7", "#10b981"];
+const PIE_COLORS = ["#6366f1", "#4f8ef7", "#10b981", "#a78bfa", "#f59e0b", "#ef4444", "#374151"];
+
+const CURRENCY_SYMBOL: Record<string, string> = { USD: "$", INR: "₹", EUR: "€", GBP: "£" };
+
+/** Formats a { CUR: amount } record like "$120 + ₹4,300"; "$0" when empty. */
+function fmtMoney(rec: Record<string, number> | undefined | null) {
+  const entries = Object.entries(rec ?? {}).filter(([, v]) => v > 0);
+  if (entries.length === 0) return "$0";
+  return entries
+    .map(([cur, v]) => `${CURRENCY_SYMBOL[cur] ?? `${cur} `}${Math.round(v).toLocaleString()}`)
+    .join(" + ");
+}
+
+/** Flattens monthlyData for charts: one numeric column per currency + signups. */
+function monthlyChartData(monthlyData: AdminStats["monthlyData"]) {
+  return monthlyData.map(m => ({
+    month: m.month,
+    USD: Math.round(m.revenue["USD"] ?? 0),
+    INR: Math.round(m.revenue["INR"] ?? 0),
+    signups: m.signups,
+  }));
+}
+
+function timeAgo(iso: string) {
+  const ms = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(ms / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return days < 30 ? `${days}d ago` : new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 function StatCard({ label, value, sub, color = "#4f8ef7", icon, t }: {
@@ -225,23 +258,24 @@ function Sidebar({ active, onSelect, onLogout, t }: {
 
 // ── Section: Overview ─────────────────────────────────────────────────────────
 function OverviewSection({ stats, t }: { stats: AdminStats; t: Theme }) {
-  const [activeChart, setActiveChart] = useState<"revenue"|"users"|"documents">("revenue");
+  const [activeChart, setActiveChart] = useState<"revenue"|"signups">("revenue");
   const { overview, plans, monthlyData } = stats;
-  const totalPlanUsers = Object.values(plans).reduce((a, b) => a + b, 0);
-  const pieData = [{ name: "Free", value: plans.free }, { name: "Pro", value: plans.pro }, { name: "Enterprise", value: plans.enterprise }];
-  const chartColor = { revenue: "#4f8ef7", users: "#10b981", documents: "#a78bfa" }[activeChart];
-  const chartLabel = { revenue: "Revenue ($)", users: "New Users", documents: "Documents" }[activeChart];
+  const chartData = monthlyChartData(monthlyData);
+  const pieData = Object.entries(plans)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, value]) => ({ name, value }));
+  const totalPlanUsers = pieData.reduce((a, d) => a + d.value, 0);
 
   return (
     <div>
       <SectionTitle title="Overview" sub="Platform-wide metrics at a glance" t={t} />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 12, marginBottom: 24 }}>
-        <StatCard label="Total Users"      value={fmt(overview.totalUsers)}                       sub="+83 this month"           icon="👥" color="#10b981" t={t} />
-        <StatCard label="Monthly Revenue"  value={`$${overview.monthlyRevenue.toLocaleString()}`} sub="↑ 14% vs last month"      icon="💰" color="#10b981" t={t} />
-        <StatCard label="Page Views"       value={fmt(overview.pageViews)}                        sub="Unique visitors"          icon="👁️" t={t} />
-        <StatCard label="NPS Score"        value={String(overview.nps)}                           sub="Excellent (>70)"          icon="⭐" color="#f59e0b" t={t} />
-        <StatCard label="Churn Rate"       value={`${overview.churnRate}%`}                       sub="Monthly — healthy"        icon="📉" color="#10b981" t={t} />
-        <StatCard label="Support Tickets"  value={String(overview.supportTickets)}                sub="Open tickets"             icon="🎟️" color={overview.supportTickets > 10 ? "#ef4444" : "#10b981"} t={t} />
+        <StatCard label="Total Users"       value={fmt(overview.totalUsers)}          sub={`${overview.paidUsers} paid · ${overview.freeUsers} free`} icon="👥" color="#10b981" t={t} />
+        <StatCard label="Revenue (Month)"   value={fmtMoney(overview.monthRevenue)}   sub="This calendar month"    icon="💰" color="#10b981" t={t} />
+        <StatCard label="Revenue (Total)"   value={fmtMoney(overview.totalRevenue)}   sub="All recorded payments"  icon="🏦" t={t} />
+        <StatCard label="Page Views"        value={fmt(overview.pageViews)}           sub="All-time tracked"       icon="👁️" t={t} />
+        <StatCard label="Active PDFs"       value={String(overview.activePdfs)}       sub={`${overview.expiredPdfs} expired`} icon="📄" t={t} />
+        <StatCard label="Storage Used"      value={fmtBytes(overview.totalStorageBytes)} sub="Secure uploads"      icon="🗄️" t={t} />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16 }}>
@@ -249,7 +283,7 @@ function OverviewSection({ stats, t }: { stats: AdminStats; t: Theme }) {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
             <span style={{ fontWeight: 600, fontSize: 14, color: t.text }}>12-Month Trend</span>
             <div style={{ display: "flex", gap: 5 }}>
-              {(["revenue","users","documents"] as const).map(k => (
+              {(["revenue","signups"] as const).map(k => (
                 <button key={k} onClick={() => setActiveChart(k)} style={{ padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, border: `1px solid ${t.cardBorder}`, background: activeChart === k ? "rgba(79,142,247,0.2)" : "transparent", color: activeChart === k ? "#4f8ef7" : t.textSub, cursor: "pointer" }}>
                   {k.charAt(0).toUpperCase() + k.slice(1)}
                 </button>
@@ -257,46 +291,63 @@ function OverviewSection({ stats, t }: { stats: AdminStats; t: Theme }) {
             </div>
           </div>
           <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={monthlyData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
               <defs>
-                <linearGradient id="aGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={chartColor} stopOpacity={0.28} />
-                  <stop offset="95%" stopColor={chartColor} stopOpacity={0} />
+                <linearGradient id="aGradU" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#4f8ef7" stopOpacity={0.28} />
+                  <stop offset="95%" stopColor="#4f8ef7" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="aGradI" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.28} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={t.chartGrid} />
               <XAxis dataKey="month" tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} labelStyle={{ color: t.text }} itemStyle={{ color: chartColor }} formatter={(v: any) => activeChart === "revenue" ? [`$${v.toLocaleString()}`, chartLabel] : [v.toLocaleString(), chartLabel]} />
-              <Area type="monotone" dataKey={activeChart} stroke={chartColor} strokeWidth={2} fill="url(#aGrad)" />
+              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} labelStyle={{ color: t.text }} />
+              {activeChart === "revenue" ? (
+                <>
+                  <Area type="monotone" dataKey="USD" stroke="#4f8ef7" strokeWidth={2} fill="url(#aGradU)" name="USD ($)" />
+                  <Area type="monotone" dataKey="INR" stroke="#10b981" strokeWidth={2} fill="url(#aGradI)" name="INR (₹)" />
+                </>
+              ) : (
+                <Area type="monotone" dataKey="signups" stroke="#10b981" strokeWidth={2} fill="url(#aGradI)" name="Signups" />
+              )}
             </AreaChart>
           </ResponsiveContainer>
         </Card>
 
         <Card t={t}>
           <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Plan Breakdown</div>
-          <ResponsiveContainer width="100%" height={150}>
-            <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={68} paddingAngle={3} dataKey="value">
-                {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
-              </Pie>
-              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} itemStyle={{ color: t.text }} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 10 }}>
-            {pieData.map((d, i) => (
-              <div key={d.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                  <div style={{ width: 9, height: 9, borderRadius: "50%", background: PIE_COLORS[i] }} />
-                  <span style={{ color: t.textMuted, fontSize: 12 }}>{d.name}</span>
-                </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <span style={{ color: t.text, fontSize: 12, fontWeight: 600 }}>{d.value.toLocaleString()}</span>
-                  <span style={{ color: t.textSub, fontSize: 11 }}>{Math.round(d.value / totalPlanUsers * 100)}%</span>
-                </div>
+          {pieData.length === 0 ? (
+            <div style={{ color: t.textMuted, fontSize: 13, padding: "20px 0" }}>No users yet.</div>
+          ) : (
+            <>
+              <ResponsiveContainer width="100%" height={150}>
+                <PieChart>
+                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={68} paddingAngle={3} dataKey="value">
+                    {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} itemStyle={{ color: t.text }} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 10 }}>
+                {pieData.map((d, i) => (
+                  <div key={d.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                      <div style={{ width: 9, height: 9, borderRadius: "50%", background: PIE_COLORS[i % PIE_COLORS.length] }} />
+                      <span style={{ color: t.textMuted, fontSize: 12, textTransform: "capitalize" }}>{d.name}</span>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <span style={{ color: t.text, fontSize: 12, fontWeight: 600 }}>{d.value.toLocaleString()}</span>
+                      <span style={{ color: t.textSub, fontSize: 11 }}>{totalPlanUsers ? Math.round(d.value / totalPlanUsers * 100) : 0}%</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </Card>
       </div>
     </div>
@@ -306,80 +357,68 @@ function OverviewSection({ stats, t }: { stats: AdminStats; t: Theme }) {
 // ── Section: Users ────────────────────────────────────────────────────────────
 function UsersSection({ stats, t }: { stats: AdminStats; t: Theme }) {
   const { overview, plans, monthlyData } = stats;
-  const totalPlanUsers = Object.values(plans).reduce((a, b) => a + b, 0);
-  const mockUsers = [
-    { name: "alex.m@gmail.com",    plan: "Pro",        joined: "Mar 28, 2026", status: "Active" },
-    { name: "sarah.j@acme.com",    plan: "Enterprise", joined: "Mar 20, 2026", status: "Active" },
-    { name: "tom.w@outlook.com",   plan: "Free",       joined: "Mar 15, 2026", status: "Active" },
-    { name: "priya.k@startup.io",  plan: "Pro",        joined: "Feb 28, 2026", status: "Active" },
-    { name: "mike.r@gmail.com",    plan: "Pro",        joined: "Feb 10, 2026", status: "Churned" },
-    { name: "dana.l@corp.com",     plan: "Pro",        joined: "Jan 22, 2026", status: "Active" },
-    { name: "james.b@dev.co",      plan: "Free",       joined: "Jan 05, 2026", status: "Active" },
-    { name: "nina.s@design.io",    plan: "Enterprise", joined: "Dec 12, 2025", status: "Active" },
-  ];
-  const planBadge = (plan: string) => {
-    const c: Record<string, string> = { Free: "#6b7280", Pro: "#4f8ef7", Enterprise: "#a78bfa" };
-    return <span style={{ background: `${c[plan]}22`, color: c[plan], borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>{plan}</span>;
-  };
-  const statusBadge = (s: string) => (
-    <span style={{ background: s === "Active" ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.12)", color: s === "Active" ? "#10b981" : "#ef4444", borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>{s}</span>
-  );
+  const chartData = monthlyChartData(monthlyData);
+  const planEntries = Object.entries(plans).sort((a, b) => b[1] - a[1]);
+  const totalPlanUsers = planEntries.reduce((a, [, v]) => a + v, 0);
+  const monthSignups = monthlyData[monthlyData.length - 1]?.signups ?? 0;
 
   return (
     <div>
-      <SectionTitle title="Users" sub="Subscriber breakdown and management" t={t} />
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 24 }}>
-        <StatCard label="Total Users"   value={fmt(overview.totalUsers)}  sub="+83 this month"       icon="👥" color="#10b981" t={t} />
-        <StatCard label="Free Plan"     value={plans.free.toLocaleString()} sub={`${Math.round(plans.free/totalPlanUsers*100)}% of users`} icon="🆓" t={t} />
-        <StatCard label="Pro Plan"      value={plans.pro.toLocaleString()}  sub={`${Math.round(plans.pro/totalPlanUsers*100)}% of users`}  icon="⭐" color="#4f8ef7" t={t} />
-        <StatCard label="Enterprise"    value={plans.enterprise.toLocaleString()} sub={`${Math.round(plans.enterprise/totalPlanUsers*100)}% of users`} icon="🏢" color="#a78bfa" t={t} />
+      <SectionTitle title="Users" sub="Subscriber breakdown by plan" t={t} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 12, marginBottom: 24 }}>
+        <StatCard label="Total Users" value={fmt(overview.totalUsers)} sub={`+${monthSignups} this month`} icon="👥" color="#10b981" t={t} />
+        <StatCard label="Paid Users"  value={fmt(overview.paidUsers)}  sub={totalPlanUsers ? `${Math.round(overview.paidUsers / totalPlanUsers * 100)}% of users` : undefined} icon="💳" color="#4f8ef7" t={t} />
+        <StatCard label="Free Users"  value={fmt(overview.freeUsers)}  sub={totalPlanUsers ? `${Math.round(overview.freeUsers / totalPlanUsers * 100)}% of users` : undefined} icon="🆓" t={t} />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
         <Card t={t}>
-          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>User Growth</div>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Signups per Month</div>
           <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={monthlyData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+            <LineChart data={chartData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={t.chartGrid} />
               <XAxis dataKey="month" tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
               <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} labelStyle={{ color: t.text }} />
-              <Line type="monotone" dataKey="users" stroke="#10b981" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="signups" stroke="#10b981" strokeWidth={2} dot={false} name="Signups" />
             </LineChart>
           </ResponsiveContainer>
         </Card>
         <Card t={t}>
           <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Plan Distribution</div>
-          <ResponsiveContainer width="100%" height={180}>
-            <PieChart>
-              <Pie data={[{ name: "Free", value: plans.free }, { name: "Pro", value: plans.pro }, { name: "Enterprise", value: plans.enterprise }]} cx="50%" cy="50%" outerRadius={75} paddingAngle={3} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
-                {[0,1,2].map(i => <Cell key={i} fill={PIE_COLORS[i]} />)}
-              </Pie>
-              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} />
-            </PieChart>
-          </ResponsiveContainer>
+          {planEntries.length === 0 ? (
+            <div style={{ color: t.textMuted, fontSize: 13, padding: "20px 0" }}>No users yet.</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie data={planEntries.map(([name, value]) => ({ name, value }))} cx="50%" cy="50%" outerRadius={75} paddingAngle={3} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+                  {planEntries.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                </Pie>
+                <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </Card>
       </div>
       <Card t={t}>
-        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Recent Users</div>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-          <thead>
-            <tr style={{ borderBottom: `1px solid ${t.divider}` }}>
-              {["User", "Plan", "Joined", "Status"].map(h => (
-                <th key={h} style={{ textAlign: "left", padding: "6px 10px 10px", color: t.textMuted, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {mockUsers.map((u, i) => (
-              <tr key={i} style={{ borderBottom: i < mockUsers.length - 1 ? `1px solid ${t.divider}` : "none" }}>
-                <td style={{ padding: "10px 10px", color: t.text }}>{u.name}</td>
-                <td style={{ padding: "10px 10px" }}>{planBadge(u.plan)}</td>
-                <td style={{ padding: "10px 10px", color: t.textMuted }}>{u.joined}</td>
-                <td style={{ padding: "10px 10px" }}>{statusBadge(u.status)}</td>
-              </tr>
+        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Users by Plan</div>
+        {planEntries.length === 0 ? (
+          <div style={{ color: t.textMuted, fontSize: 13, padding: "12px 0" }}>No users yet — plan counts will appear as accounts are created.</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {planEntries.map(([name, count], i) => (
+              <div key={name}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                  <span style={{ color: t.text, fontSize: 13, textTransform: "capitalize" }}>{name}</span>
+                  <span style={{ color: t.textMuted, fontSize: 13 }}>{count.toLocaleString()} users · {totalPlanUsers ? Math.round(count / totalPlanUsers * 100) : 0}%</span>
+                </div>
+                <div style={{ height: 6, background: t.barTrack, borderRadius: 3 }}>
+                  <div style={{ width: `${totalPlanUsers ? Math.round(count / totalPlanUsers * 100) : 0}%`, height: "100%", background: PIE_COLORS[i % PIE_COLORS.length], borderRadius: 3, transition: "width 0.5s" }} />
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+        )}
+        <div style={{ color: t.textFaint, fontSize: 11, marginTop: 12 }}>Per-user details are in the Customers tab.</div>
       </Card>
     </div>
   );

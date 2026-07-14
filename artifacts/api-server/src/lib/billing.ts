@@ -199,6 +199,27 @@ export async function claimBillingEvent(
   return (inserted.rows?.length ?? 0) > 0;
 }
 
+/**
+ * Records a successful payment in the revenue ledger. Idempotent per
+ * (provider, eventId) — webhook replays never double-count. Best-effort:
+ * callers should not fail the webhook if this throws.
+ */
+export async function recordPayment(params: {
+  provider: BillingProviderId;
+  eventId: string;
+  userId: string;
+  planName: string;
+  amountMinor: number | null;
+  currency: string | null;
+}): Promise<void> {
+  await db.execute(sql`
+    INSERT INTO payments (provider, event_id, user_id, plan_name, amount_minor, currency)
+    VALUES (${params.provider}, ${params.eventId}, ${params.userId}, ${params.planName},
+            ${params.amountMinor}, ${params.currency ? params.currency.toUpperCase() : null})
+    ON CONFLICT (provider, event_id) DO NOTHING
+  `);
+}
+
 export interface PaidRenewalOutcome {
   productKeyId: number;
   rawProductKey: string;

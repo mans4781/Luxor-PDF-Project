@@ -1,7 +1,16 @@
 import { Router, type Request, type Response } from "express";
 import { createHash, timingSafeEqual } from "node:crypto";
-import { db, pdfsTable, productKeysTable, siteStats } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import {
+  db,
+  pdfsTable,
+  productKeysTable,
+  siteStats,
+  pageViewsTable,
+  paymentsTable,
+  userLicensesTable,
+  licenseEventsTable,
+} from "@workspace/db";
+import { desc, eq, gte, sql } from "drizzle-orm";
 import {
   AdminGenerateProductKeysBody,
   AdminRevokeProductKeyBody,
@@ -77,25 +86,17 @@ function checkAuth(req: Request, res: Response): boolean {
   return true;
 }
 
-function generateMonthlyData() {
-  const months: { month: string; revenue: number; users: number; documents: number }[] = [];
-  const now = new Date();
-  const baseRevenue = 3200;
-  const baseUsers = 120;
-  const baseDocs = 340;
+/** Month labels for the trailing 12 months (oldest first). */
+function trailingMonths(now: Date): { key: string; label: string }[] {
+  const out: { key: string; label: string }[] = [];
   for (let i = 11; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const label = d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
-    const growth = (12 - i) / 12;
-    const jitter = () => Math.floor((Math.random() - 0.5) * 200);
-    months.push({
-      month: label,
-      revenue: Math.round(baseRevenue * (1 + growth * 1.8) + jitter()),
-      users: Math.round(baseUsers * (1 + growth * 2.1) + Math.abs(jitter() / 5)),
-      documents: Math.round(baseDocs * (1 + growth * 1.5) + Math.abs(jitter() / 2)),
+    out.push({
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+      label: d.toLocaleDateString("en-US", { month: "short", year: "2-digit" }),
     });
   }
-  return months;
+  return out;
 }
 
 // Step 1 of admin login: email + password. On success the client shows the
@@ -145,75 +146,142 @@ router.get("/admin/stats", async (req, res): Promise<void> => {
   if (!checkAuth(req, res)) return;
 
   try {
+    const now = new Date();
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+
     const [visitorRow] = await db
       .select()
       .from(siteStats)
       .where(eq(siteStats.key, "visitors"));
 
     const pdfs = await db.select().from(pdfsTable);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-
     let activePdfs = 0;
     let expiredPdfs = 0;
     let totalStorageBytes = 0;
-
     for (const p of pdfs) {
       totalStorageBytes += p.fileSize;
-      if (new Date(p.expiryDate) < now) expiredPdfs++;
+      if (new Date(p.expiryDate) < today) expiredPdfs++;
       else activePdfs++;
     }
 
-    const plans = {
-      free: 684,
-      pro: 312,
-      enterprise: 47,
-    };
-    const totalSubscribers = plans.free + plans.pro + plans.enterprise;
-    const monthlyRevenue = plans.pro * 12 + plans.enterprise * 79;
-    const annualRevenue = monthlyRevenue * 12;
+    // ── Users & plan distribution (real, from user_licenses) ────────────────
+    const licenseRows = await db
+      .select({
+        planName: userLicensesTable.planName,
+        isPaid: userLicensesTable.isPaid,
+        createdAt: userLicensesTable.createdAt,
+      })
+      .from(userLicensesTable);
+    const totalUsers = licenseRows.length;
+    const planCounts: Record<string, number> = {};
+    let paidUsers = 0;
+    for (const r of licenseRows) {
+      const key = r.isPaid ? (r.planName ?? "paid") : "free";
+      if (r.isPaid) paidUsers++;
+      planCounts[key] = (planCounts[key] ?? 0) + 1;
+    }
 
-    const monthlyData = generateMonthlyData();
+    // ── Revenue (real, from payments ledger; grouped by currency) ───────────
+    const paymentRows = await db
+      .select({
+        amountMinor: paymentsTable.amountMinor,
+        currency: paymentsTable.currency,
+        createdAt: paymentsTable.createdAt,
+      })
+      .from(paymentsTable);
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const totalRevenue: Record<string, number> = {};
+    const monthRevenue: Record<string, number> = {};
+    const revenueByMonth = new Map<string, Record<string, number>>();
+    for (const p of paymentRows) {
+      if (p.amountMinor == null) continue;
+      const cur = p.currency ?? "USD";
+      const major = p.amountMinor / 100;
+      totalRevenue[cur] = (totalRevenue[cur] ?? 0) + major;
+      if (p.createdAt >= monthStart) {
+        monthRevenue[cur] = (monthRevenue[cur] ?? 0) + major;
+      }
+      const mk = `${p.createdAt.getFullYear()}-${String(p.createdAt.getMonth() + 1).padStart(2, "0")}`;
+      const bucket = revenueByMonth.get(mk) ?? {};
+      bucket[cur] = (bucket[cur] ?? 0) + major;
+      revenueByMonth.set(mk, bucket);
+    }
 
-    const recentActivity = [
-      { id: 1, type: "signup", user: "alex.m@gmail.com", plan: "Pro", time: "2 min ago" },
-      { id: 2, type: "upgrade", user: "sarah.j@acme.com", plan: "Enterprise", time: "14 min ago" },
-      { id: 3, type: "signup", user: "tom.w@outlook.com", plan: "Free", time: "31 min ago" },
-      { id: 4, type: "signup", user: "priya.k@startup.io", plan: "Pro", time: "1h ago" },
-      { id: 5, type: "cancel", user: "mike.r@gmail.com", plan: "Pro", time: "2h ago" },
-      { id: 6, type: "upgrade", user: "dana.l@corp.com", plan: "Pro", time: "3h ago" },
-      { id: 7, type: "signup", user: "james.b@dev.co", plan: "Free", time: "5h ago" },
-    ];
+    // ── Monthly trend: signups + revenue per trailing month ─────────────────
+    const months = trailingMonths(now);
+    const signupsByMonth = new Map<string, number>();
+    for (const r of licenseRows) {
+      const mk = `${r.createdAt.getFullYear()}-${String(r.createdAt.getMonth() + 1).padStart(2, "0")}`;
+      signupsByMonth.set(mk, (signupsByMonth.get(mk) ?? 0) + 1);
+    }
+    const monthlyData = months.map((m) => ({
+      month: m.label,
+      revenue: revenueByMonth.get(m.key) ?? {},
+      signups: signupsByMonth.get(m.key) ?? 0,
+    }));
 
-    const topCountries = [
-      { country: "United States", users: 389, pct: 37 },
-      { country: "United Kingdom", users: 148, pct: 14 },
-      { country: "Germany", users: 112, pct: 11 },
-      { country: "Canada", users: 98, pct: 9 },
-      { country: "Australia", users: 76, pct: 7 },
-      { country: "India", users: 64, pct: 6 },
-      { country: "Other", users: 156, pct: 15 },
-    ];
+    // ── Daily page views per page (last 30 days) ────────────────────────────
+    const cutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+    const pageViewRows = await db
+      .select()
+      .from(pageViewsTable)
+      .where(gte(pageViewsTable.day, cutoff))
+      .orderBy(pageViewsTable.day);
+    const perPageTotals = new Map<string, number>();
+    const perDayTotals = new Map<string, number>();
+    for (const r of pageViewRows) {
+      perPageTotals.set(r.path, (perPageTotals.get(r.path) ?? 0) + r.count);
+      perDayTotals.set(r.day, (perDayTotals.get(r.day) ?? 0) + r.count);
+    }
+    const topPages = [...perPageTotals.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15)
+      .map(([path, views]) => ({ path, views }));
+    const dailyViews = [...perDayTotals.entries()]
+      .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+      .map(([day, views]) => ({ day, views }));
+
+    // ── Recent activity (real, from license events) ─────────────────────────
+    const events = await db
+      .select({
+        id: licenseEventsTable.id,
+        userId: licenseEventsTable.userId,
+        eventType: licenseEventsTable.eventType,
+        eventMessage: licenseEventsTable.eventMessage,
+        createdAt: licenseEventsTable.createdAt,
+      })
+      .from(licenseEventsTable)
+      .orderBy(desc(licenseEventsTable.createdAt))
+      .limit(15);
+    const recentActivity = events.map((e) => ({
+      id: e.id,
+      type: e.eventType,
+      user: e.userId,
+      message: e.eventMessage,
+      time: e.createdAt.toISOString(),
+    }));
 
     res.json({
       overview: {
-        totalUsers: totalSubscribers,
-        monthlyRevenue,
-        annualRevenue,
+        totalUsers,
+        paidUsers,
+        freeUsers: totalUsers - paidUsers,
+        totalRevenue,
+        monthRevenue,
         pageViews: visitorRow?.value ?? 0,
         totalPdfs: pdfs.length,
         activePdfs,
         expiredPdfs,
         totalStorageBytes,
-        avgRevenuePerUser: Math.round((monthlyRevenue / (plans.pro + plans.enterprise)) * 100) / 100,
-        churnRate: 2.4,
-        nps: 72,
-        supportTickets: 8,
       },
-      plans,
+      plans: planCounts,
       monthlyData,
+      topPages,
+      dailyViews,
       recentActivity,
-      topCountries,
     });
   } catch (err) {
     req.log.error({ err }, "Failed to load admin stats");

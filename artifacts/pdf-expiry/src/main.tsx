@@ -6,6 +6,9 @@ import {
   initDeviceIdFromBridge,
 } from "./license/device-id";
 import "./index.css";
+import { initPageTracking } from "./lib/pageTracking";
+
+initPageTracking();
 
 // When running inside the Electron desktop wrapper, replace the localStorage
 // device id with the stable per-install UUID from the preload bridge BEFORE
