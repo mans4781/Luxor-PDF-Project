@@ -6,7 +6,6 @@ import Home from "@/pages/Home";
 const Viewer = lazy(() => import("@/pages/Viewer"));
 const IconGallery = lazy(() => import("@/pages/IconGallery"));
 import { AuthGateProvider } from "@/components/AuthGate";
-import BrandSplash, { shouldShowBrandSplash } from "@/components/BrandSplash";
 import TabBar from "@/components/TabBar";
 import { initDesktopFileOpen } from "@/lib/desktopBridge";
 
@@ -31,7 +30,6 @@ let nextTabId = 1;
 export default function App() {
   const [tabs, setTabs] = useState<DocTab[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [showSplash, setShowSplash] = useState(shouldShowBrandSplash);
   const addInputRef = useRef<HTMLInputElement>(null);
 
   // Keep a live mirror so stable callbacks can read the current tabs
@@ -113,7 +111,6 @@ export default function App() {
 
   return (
     <AuthGateProvider>
-      {showSplash && <BrandSplash onDone={() => setShowSplash(false)} />}
       {hasTabs && (
         <>
           <TabBar
