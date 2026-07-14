@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { Suspense, lazy, useEffect, useRef } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { useClerk } from "@clerk/react";
@@ -8,21 +8,25 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
-import AccountDashboardPage from "@/pages/account-dashboard";
-import History from "@/pages/history";
-import PdfTool from "@/pages/pdf-tool";
-import ConvertTool from "@/pages/convert-tool";
-import OnlineTools from "@/pages/online-tools";
-import ToolPage from "@/pages/tool-page";
-import SecurePdf from "@/pages/secure-pdf";
-import PdfViewer from "@/pages/viewer";
-import SignInPage from "@/pages/sign-in";
-import DesktopLinkPage from "@/pages/desktop-link";
-import SignUpPage from "@/pages/sign-up";
-import ActivateKeyPage from "@/pages/activate-key";
-import CheckoutPage from "@/pages/checkout";
-import TeamPage from "@/pages/team";
-import AcceptInvitePage from "@/pages/accept-invite";
+
+// Everything except the landing dashboard is lazy-loaded so the initial
+// bundle stays small — the heavy PDF/Office libraries only download when a
+// page that needs them is opened.
+const AccountDashboardPage = lazy(() => import("@/pages/account-dashboard"));
+const History = lazy(() => import("@/pages/history"));
+const PdfTool = lazy(() => import("@/pages/pdf-tool"));
+const ConvertTool = lazy(() => import("@/pages/convert-tool"));
+const OnlineTools = lazy(() => import("@/pages/online-tools"));
+const ToolPage = lazy(() => import("@/pages/tool-page"));
+const SecurePdf = lazy(() => import("@/pages/secure-pdf"));
+const PdfViewer = lazy(() => import("@/pages/viewer"));
+const SignInPage = lazy(() => import("@/pages/sign-in"));
+const DesktopLinkPage = lazy(() => import("@/pages/desktop-link"));
+const SignUpPage = lazy(() => import("@/pages/sign-up"));
+const ActivateKeyPage = lazy(() => import("@/pages/activate-key"));
+const CheckoutPage = lazy(() => import("@/pages/checkout"));
+const TeamPage = lazy(() => import("@/pages/team"));
+const AcceptInvitePage = lazy(() => import("@/pages/accept-invite"));
 import { LicenseProvider } from "@/license/LicenseProvider";
 import { LockOverlay } from "@/license/LockOverlay";
 import { basePath, routerBase } from "@/lib/base-path";
@@ -66,6 +70,14 @@ function ClerkQueryClientCacheInvalidator() {
   }, [addListener, qc]);
 
   return null;
+}
+
+function RouteFallback() {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-slate-500" />
+    </div>
+  );
 }
 
 function Router() {
@@ -124,7 +136,9 @@ function ClerkProviderWithRoutes() {
         <ClerkQueryClientCacheInvalidator />
         <LicenseProvider>
           <TooltipProvider>
-            <Router />
+            <Suspense fallback={<RouteFallback />}>
+              <Router />
+            </Suspense>
             <LockOverlay />
             <Toaster />
           </TooltipProvider>

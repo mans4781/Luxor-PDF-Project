@@ -1,7 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import Home from "@/pages/Home";
-import Viewer from "@/pages/Viewer";
-import IconGallery from "@/pages/IconGallery";
+
+// The viewer (and its pdfjs dependency) is by far the heaviest part of the
+// app — lazy-load it so the home screen paints instantly.
+const Viewer = lazy(() => import("@/pages/Viewer"));
+const IconGallery = lazy(() => import("@/pages/IconGallery"));
 import { AuthGateProvider } from "@/components/AuthGate";
 import BrandSplash, { shouldShowBrandSplash } from "@/components/BrandSplash";
 import TabBar from "@/components/TabBar";
@@ -101,7 +104,11 @@ export default function App() {
   };
 
   if (shouldShowIconGallery()) {
-    return <IconGallery />;
+    return (
+      <Suspense fallback={null}>
+        <IconGallery />
+      </Suspense>
+    );
   }
 
   return (
@@ -130,6 +137,7 @@ export default function App() {
           scroll position, zoom, and edits; inactive ones are hidden. */}
       {tabs.map((t) => (
         <div key={t.id} style={t.id === activeId ? undefined : { display: "none" }}>
+          <Suspense fallback={null}>
           <Viewer
             file={t.file}
             active={t.id === activeId}
@@ -137,6 +145,7 @@ export default function App() {
             onClose={() => removeTab(t.id)}
             onFileLoad={(f) => replaceTabFile(t.id, f)}
           />
+          </Suspense>
         </div>
       ))}
       {!hasTabs && <Home onFileLoad={openFile} />}

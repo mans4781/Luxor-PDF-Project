@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 import { Link, useRoute } from "wouter";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { Layout } from "@/components/layout";
@@ -58,7 +59,15 @@ export default function ToolPage() {
 
         {/* Tool body */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-          {tool.render()}
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center py-16 text-slate-400">
+                <Loader2 className="w-6 h-6 animate-spin" />
+              </div>
+            }
+          >
+            {tool.render()}
+          </Suspense>
         </div>
       </div>
     </Layout>

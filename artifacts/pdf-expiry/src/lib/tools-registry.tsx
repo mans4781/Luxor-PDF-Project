@@ -1,3 +1,4 @@
+import { lazy } from "react";
 import type { ComponentType, ReactNode } from "react";
 import {
   Combine,
@@ -11,22 +12,47 @@ import {
   FileSpreadsheet,
   Minimize2,
 } from "lucide-react";
-import {
-  PdfToImages,
-  ImagesToPdf,
-  WordToPdf,
-  ExcelToPdf,
-  PdfToWord,
-  PdfToExcel,
-} from "@/pages/convert-tool";
-import {
-  MergeTab,
-  SplitTab,
-  ExtractTab,
-  DeleteTab,
-  AddTab,
-} from "@/pages/pdf-tool";
-import { CompressToSize, COMPRESS_TARGETS } from "@/pages/compress-pdf";
+import { COMPRESS_TARGETS } from "@/lib/compress-targets";
+
+// All tool implementations are lazy-loaded so the registry (used by the
+// mega menu and tools index for metadata only) doesn't pull the heavy
+// PDF/Office libraries into the initial bundle.
+const PdfToImages = lazy(() =>
+  import("@/pages/convert-tool").then((m) => ({ default: m.PdfToImages })),
+);
+const ImagesToPdf = lazy(() =>
+  import("@/pages/convert-tool").then((m) => ({ default: m.ImagesToPdf })),
+);
+const WordToPdf = lazy(() =>
+  import("@/pages/convert-tool").then((m) => ({ default: m.WordToPdf })),
+);
+const ExcelToPdf = lazy(() =>
+  import("@/pages/convert-tool").then((m) => ({ default: m.ExcelToPdf })),
+);
+const PdfToWord = lazy(() =>
+  import("@/pages/convert-tool").then((m) => ({ default: m.PdfToWord })),
+);
+const PdfToExcel = lazy(() =>
+  import("@/pages/convert-tool").then((m) => ({ default: m.PdfToExcel })),
+);
+const MergeTab = lazy(() =>
+  import("@/pages/pdf-tool").then((m) => ({ default: m.MergeTab })),
+);
+const SplitTab = lazy(() =>
+  import("@/pages/pdf-tool").then((m) => ({ default: m.SplitTab })),
+);
+const ExtractTab = lazy(() =>
+  import("@/pages/pdf-tool").then((m) => ({ default: m.ExtractTab })),
+);
+const DeleteTab = lazy(() =>
+  import("@/pages/pdf-tool").then((m) => ({ default: m.DeleteTab })),
+);
+const AddTab = lazy(() =>
+  import("@/pages/pdf-tool").then((m) => ({ default: m.AddTab })),
+);
+const CompressToSize = lazy(() =>
+  import("@/pages/compress-pdf").then((m) => ({ default: m.CompressToSize })),
+);
 
 export type ToolCategoryKey =
   | "organise"

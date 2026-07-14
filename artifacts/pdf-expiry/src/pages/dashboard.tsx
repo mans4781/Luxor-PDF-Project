@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { useSearch } from "wouter";
 import { Layout } from "@/components/layout";
 import {
@@ -24,10 +24,20 @@ import {
   Shield,
   Sparkles,
 } from "lucide-react";
-import { PdfToolContent } from "./pdf-tool";
-import { ConvertToolContent } from "./convert-tool";
-import { SecurePdfContent } from "./secure-pdf";
-import { CompressPdfContent } from "./compress-pdf";
+// Lazy-loaded so the landing dashboard paints without downloading the heavy
+// PDF/Office libraries; each tool panel loads on first open.
+const PdfToolContent = lazy(() =>
+  import("./pdf-tool").then((m) => ({ default: m.PdfToolContent })),
+);
+const ConvertToolContent = lazy(() =>
+  import("./convert-tool").then((m) => ({ default: m.ConvertToolContent })),
+);
+const SecurePdfContent = lazy(() =>
+  import("./secure-pdf").then((m) => ({ default: m.SecurePdfContent })),
+);
+const CompressPdfContent = lazy(() =>
+  import("./compress-pdf").then((m) => ({ default: m.CompressPdfContent })),
+);
 import { UsagePanel } from "@/license/UsageBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -674,6 +684,13 @@ function RightPanel({ active }: { active: ToolKey | null }) {
 
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-6 lg:p-8 overflow-y-auto">
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center py-16">
+            <div className="h-7 w-7 animate-spin rounded-full border-2 border-slate-200 border-t-slate-500" />
+          </div>
+        }
+      >
       {active === "pdf-tool" && <PdfToolContent />}
       {active === "convert-from" && (
         <ConvertToolContent
@@ -692,6 +709,7 @@ function RightPanel({ active }: { active: ToolKey | null }) {
       {active === "secure-pdf" && <SecurePdfContent />}
       {active === "compress-pdf" && <CompressPdfContent />}
       {active === "user-guide" && <UserGuideContent />}
+      </Suspense>
     </div>
   );
 }

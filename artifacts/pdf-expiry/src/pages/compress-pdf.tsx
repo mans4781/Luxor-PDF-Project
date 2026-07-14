@@ -18,6 +18,7 @@ import { saveFile } from "@/lib/save-file";
 import { scheduleAutoRefresh } from "@/lib/auto-refresh";
 import { AccentProvider, useAccentBtn, useAccentDrop } from "@/lib/accent";
 import { useUploadAuthGate } from "@/license/useUploadAuthGate";
+import { COMPRESS_TARGETS } from "@/lib/compress-targets";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -44,9 +45,6 @@ if (typeof _mapProto.getOrInsertComputed !== "function") {
   };
 }
 
-const MB = 1024 * 1024;
-const KB = 1024;
-
 type CompressionTarget = {
   label: string;
   bytes: number;
@@ -56,24 +54,12 @@ type CompressionTarget = {
 
 const ACCENT = "from-[#F37311] to-[#D4640C]";
 
-const TARGETS: CompressionTarget[] = [
-  { label: "25 MB", bytes: 25 * MB, minOriginalBytes: 25 * MB, accent: ACCENT },
-  { label: "20 MB", bytes: 20 * MB, minOriginalBytes: 20 * MB, accent: ACCENT },
-  { label: "15 MB", bytes: 15 * MB, minOriginalBytes: 15 * MB, accent: ACCENT },
-  { label: "10 MB", bytes: 10 * MB, minOriginalBytes: 10 * MB, accent: ACCENT },
-  { label: "5 MB", bytes: 5 * MB, minOriginalBytes: 5 * MB, accent: ACCENT },
-  { label: "1000 kB", bytes: 1000 * KB, minOriginalBytes: 1000 * KB, accent: ACCENT },
-  { label: "500 kB", bytes: 500 * KB, minOriginalBytes: 500 * KB, accent: ACCENT },
-  { label: "200 kB", bytes: 200 * KB, minOriginalBytes: 200 * KB, accent: ACCENT },
-  { label: "100 kB", bytes: 100 * KB, minOriginalBytes: 100 * KB, accent: ACCENT },
-  { label: "50 kB", bytes: 50 * KB, minOriginalBytes: 50 * KB, accent: ACCENT },
-  { label: "20 kB", bytes: 20 * KB, minOriginalBytes: 20 * KB, accent: ACCENT },
-];
-
-/** Look up a compression target by its byte size (used by per-size pages). */
-export const COMPRESS_TARGETS: { label: string; bytes: number }[] = TARGETS.map(
-  (t) => ({ label: t.label, bytes: t.bytes }),
-);
+const TARGETS: CompressionTarget[] = COMPRESS_TARGETS.map((t) => ({
+  label: t.label,
+  bytes: t.bytes,
+  minOriginalBytes: t.bytes,
+  accent: ACCENT,
+}));
 
 function FileDropZone({
   onFiles,
