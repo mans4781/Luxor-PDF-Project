@@ -53,22 +53,6 @@
   --toolbar-sep: rgba(255,255,255,0.18);
 }
 
-/* Night — dark chrome AND the document is inverted to light-on-dark. */
-:root[data-theme="night"] {
-  --viewer-bg: #0e0e0e;
-  --page-bg: #111111;
-  --page-filter: invert(1) hue-rotate(180deg);
-  /* The page is now dark with light text, so multiply would darken the
-     highlight into invisibility. `screen` is multiply's dual: it tints the
-     dark background while keeping the light text intact. */
-  --highlight-blend: screen;
-  --toolbar-bg: #1a1a1a;
-  --toolbar-fg: #e8e8e8;
-  --toolbar-fg-muted: #b5b5b5;
-  --toolbar-hover: rgba(255,255,255,0.10);
-  --toolbar-sep: rgba(255,255,255,0.18);
-}
-
 * { box-sizing: border-box; }
 
 html, body, #root {

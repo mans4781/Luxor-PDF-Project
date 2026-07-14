@@ -205,13 +205,12 @@ interface ToolbarProps {
   showAI: boolean;
 }
 
-export type ThemeKey = "light" | "sepia" | "dark" | "night";
+export type ThemeKey = "light" | "sepia" | "dark";
 
 const THEMES: { key: ThemeKey; label: string; swatch: string; ring: string }[] = [
   { key: "light", label: "Light", swatch: "#ffffff", ring: "rgba(0,0,0,0.18)" },
   { key: "sepia", label: "Sepia", swatch: "#f4ecd8", ring: "rgba(74,63,42,0.35)" },
   { key: "dark",  label: "Dark",  swatch: "#2b2b2b", ring: "rgba(255,255,255,0.25)" },
-  { key: "night", label: "Night", swatch: "#0e0e0e", ring: "rgba(255,255,255,0.25)" },
 ];
 
 type PopoverType = "file" | "highlight" | "text" | "shapes" | "draw" | null;
@@ -1120,7 +1119,7 @@ export default function Toolbar({
         <div style={{ marginLeft: 6, display: "flex", alignItems: "center" }}>
           <AuthMenu
             iconOnly
-            variant={theme === "dark" || theme === "night" ? "dark" : "light"}
+            variant={theme === "dark" ? "dark" : "light"}
             onSignIn={beginSignIn}
             onSignUp={beginSignUp}
           />

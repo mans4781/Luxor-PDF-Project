@@ -51,7 +51,7 @@ const Ic = {
 const TIPS = [
   "Use bookmarks to quickly navigate through long documents.",
   "Press Ctrl + F to search inside any open document instantly.",
-  "Night Mode is easier on your eyes when reading after dark.",
+  "Dark theme is easier on your eyes when reading after dark.",
 ];
 
 const FEATURES: { label: string; color: string; bg: string; icon: React.ReactNode }[] = [
@@ -59,7 +59,7 @@ const FEATURES: { label: string; color: string; bg: string; icon: React.ReactNod
   { label: "Fast Search", color: "#d21f2f", bg: "#fdeeee", icon: Ic.search(16) },
   { label: "Bookmarks", color: "#7c3aed", bg: "#f3edfd", icon: Ic.bookmark(16) },
   { label: "Annotations", color: "#16a34a", bg: "#eaf7ef", icon: Ic.pen() },
-  { label: "Night Mode", color: "#2563eb", bg: "#ecf1fd", icon: Ic.moon() },
+  { label: "Dark Theme", color: "#2563eb", bg: "#ecf1fd", icon: Ic.moon() },
   { label: "Secure Viewing", color: "#0d9488", bg: "#e8f6f4", icon: Ic.shield() },
   { label: "Print Ready", color: "#d21f2f", bg: "#fdeeee", icon: Ic.print(16) },
   { label: "Cloud Sync", color: "#db2777", bg: "#fdecf4", icon: Ic.cloud() },

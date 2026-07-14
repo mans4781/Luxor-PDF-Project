@@ -70,7 +70,7 @@ const LS_KEYS = {
 /** Per-document localStorage key under which highlights are persisted. */
 const highlightsKey = (docKey: string) => `luxor-pdf:highlights:${docKey}`;
 
-const THEME_KEYS = ["light", "sepia", "dark", "night"] as const;
+const THEME_KEYS = ["light", "sepia", "dark"] as const;
 const isThemeKey = (v: string): v is ThemeKey =>
   (THEME_KEYS as readonly string[]).includes(v);
 
