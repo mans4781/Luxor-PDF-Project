@@ -20,8 +20,9 @@
   --accent-hover: #3a74e0;
 
   /* Reading themes — defaults below are the Light theme. The Theme menu
-     sets data-theme on <html>; the overrides further down remap these. */
-  --viewer-bg: #E6E6E6;
+     sets data-theme on <html>; the overrides further down remap these.
+     Pages stay bright white; the area around them is a light 5% grey. */
+  --viewer-bg: #F2F2F2;
   --page-bg: #ffffff;
   --page-filter: none;
 }
@@ -1112,11 +1113,11 @@ mark.search-hl {
 
 .loading-scr {
   position: fixed; inset: 0;
-  background: #525659;
+  background: var(--viewer-bg, #F2F2F2);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 14px; z-index: 200;
 }
 
-.loading-scr p { color: #aaa; font-size: 13px; }
+.loading-scr p { color: #666; font-size: 13px; }
 
