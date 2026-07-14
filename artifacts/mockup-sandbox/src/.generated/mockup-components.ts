@@ -7,8 +7,8 @@ export const modules: ModuleMap = {
   "./components/mockups/landing-themes/Scheme2.tsx": () => import("../components/mockups/landing-themes/Scheme2.tsx"),
   "./components/mockups/landing-themes/Scheme3.tsx": () => import("../components/mockups/landing-themes/Scheme3.tsx"),
   "./components/mockups/landing-themes/StripePremium.tsx": () => import("../components/mockups/landing-themes/StripePremium.tsx"),
+  "./components/mockups/luxor-dashboard/Dashboard.tsx": () => import("../components/mockups/luxor-dashboard/Dashboard.tsx"),
   "./components/mockups/luxor-invoices/BoldBranded.tsx": () => import("../components/mockups/luxor-invoices/BoldBranded.tsx"),
   "./components/mockups/luxor-invoices/BoldBrandedUSD.tsx": () => import("../components/mockups/luxor-invoices/BoldBrandedUSD.tsx"),
-  "./components/mockups/luxor-invoices/InvoiceTemplate.tsx": () => import("../components/mockups/luxor-invoices/InvoiceTemplate.tsx"),
-  "./components/mockups/luxor-dashboard/Dashboard.tsx": () => import("../components/mockups/luxor-dashboard/Dashboard.tsx")
+  "./components/mockups/luxor-invoices/InvoiceTemplate.tsx": () => import("../components/mockups/luxor-invoices/InvoiceTemplate.tsx")
 };
