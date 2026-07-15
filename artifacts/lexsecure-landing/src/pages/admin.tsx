@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import type { AdminStats } from "@/components/admin/types";
-import { adminApi, isUnauthorized, DEV_PREVIEW_TOKEN } from "@/components/admin/api";
+import { adminApi, isUnauthorized, DEV_PREVIEW_TOKEN, DEV_SESSION_TOKEN } from "@/components/admin/api";
 import { ConsoleShell, NAV_ITEMS, type ConsoleSection } from "@/components/admin/shell";
 import { DashboardPage } from "@/components/admin/pages/dashboard";
 import { RevenuePage } from "@/components/admin/pages/revenue";
@@ -264,6 +264,34 @@ export default function AdminPage() {
 
   const isPreview = import.meta.env.DEV && token === DEV_PREVIEW_TOKEN;
 
+  // A developer who signed in and passed the two-passphrase step gets the
+  // console directly — no separate admin email/password login. We probe the
+  // server once; on success the sentinel token unlocks the console and the
+  // server authorizes each request via the session cookie.
+  const [probing, setProbing] = useState(() => !token);
+  useEffect(() => {
+    if (token) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/session", {
+          credentials: "include",
+          signal: AbortSignal.timeout(8000),
+        });
+        if (!cancelled && res.ok) {
+          setToken(DEV_SESSION_TOKEN);
+          return;
+        }
+      } catch {
+        // Not a developer session — fall through to the login screen.
+      }
+      if (!cancelled) setProbing(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
   const handleUnlock = useCallback((t: string) => {
     sessionStorage.setItem("luxor_admin_token", t);
     setToken(t);
@@ -271,9 +299,22 @@ export default function AdminPage() {
   const handleLogout = useCallback(() => {
     sessionStorage.removeItem("luxor_admin_token");
     sessionStorage.removeItem("luxor_admin_dev_preview");
+    if (token === DEV_SESSION_TOKEN) {
+      // Session-based unlock can't be "logged out" here (the sign-in session
+      // lives in the PDF app) — send the developer back to their dashboard.
+      window.location.href = "/pdf-expiry/dashboard";
+      return;
+    }
     setToken("");
-  }, []);
+  }, [token]);
 
+  if (!token && probing) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#0f0f13", display: "flex", alignItems: "center", justifyContent: "center", color: "#888", fontSize: 14 }}>
+        Checking access…
+      </div>
+    );
+  }
   if (!token) return <LoginScreen onUnlock={handleUnlock} />;
   return (
     <>

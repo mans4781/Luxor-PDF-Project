@@ -4,6 +4,11 @@ import { SAMPLE_STATS, SAMPLE_CUSTOMERS, SAMPLE_PRODUCT_KEYS, SAMPLE_VISITOR_ANA
 // Dev-only preview mode: the console renders with sample data, no login.
 // Never active in production builds.
 export const DEV_PREVIEW_TOKEN = "__dev_preview__";
+
+// Sentinel used when the console is unlocked by a verified developer
+// sign-in session (cookie-based) instead of an admin token. The server
+// ignores the header value and authorizes the session itself.
+export const DEV_SESSION_TOKEN = "__dev_session__";
 export const isDevPreview = (token: string) =>
   import.meta.env.DEV && token === DEV_PREVIEW_TOKEN;
 

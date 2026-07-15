@@ -17,6 +17,8 @@ Developer accounts (emails in the `developers` table) must enter TWO passphrases
 - Dev-status/dev-verify/admin routes stay exempt from the middleware or the gate deadlocks.
 - The developer account is a real Clerk user (verified email, `bypass_client_trust`) seeded via Clerk Backend API; its email is in `developers` (no management UI yet).
 
-Owner preference: after a successful passphrase verification, developers are redirected to the admin dashboard (`/admin`, suite root) rather than the account dashboard — the admin page still has its own admin-password login.
+Owner preference: after a successful passphrase verification, developers are redirected to the admin dashboard (`/admin`, suite root). A verified dev session unlocks the admin console directly — no second email/password login (the token login screen remains only as fallback).
+
+**Session-based admin auth rule:** admin routes accept EITHER the `x-admin-token` header OR a verified dev Clerk session. Cookie-based session auth MUST keep the same-origin CSRF guard (Origin/Referer must match request host; header-less requests trusted only for GET/HEAD) — the API's global CORS reflects arbitrary origins with credentials, so dropping this guard reopens cross-site admin actions. Token auth needs no CSRF guard (custom headers can't be sent cross-site).
 
 Related constraint: Replit-managed Clerk supports only `email_code` verification and has name attributes disabled — names live in `unsafeMetadata` (see clerk-signup-constraints.md).

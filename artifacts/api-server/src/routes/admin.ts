@@ -1,5 +1,10 @@
 import { Router, type Request, type Response } from "express";
 import { createHash, timingSafeEqual } from "node:crypto";
+import { getAuth } from "@clerk/express";
+import {
+  isDeveloperUser,
+  isSessionDevVerified,
+} from "../middlewares/devVerification";
 import {
   db,
   pdfsTable,
@@ -75,17 +80,71 @@ function credentialsValid(email: unknown, password: unknown): boolean {
   );
 }
 
-function checkAuth(req: Request, res: Response): boolean {
+/**
+ * CSRF guard for cookie-authorized admin access: only honour the Clerk
+ * session when the request provably comes from our own site. Cross-origin
+ * requests carry an Origin (all cross-site fetches/form posts do); if an
+ * Origin or Referer is present it must match the request's own host. A
+ * request with neither header is only trusted for safe (read-only) methods.
+ * Token-based admin auth is unaffected (custom headers can't be sent
+ * cross-site with cookies).
+ */
+function isSameOriginRequest(req: Request): boolean {
+  const fwdHost = req.headers["x-forwarded-host"];
+  const host = (
+    (Array.isArray(fwdHost) ? fwdHost[0] : fwdHost)?.split(",")[0]?.trim() ||
+    req.headers.host ||
+    ""
+  ).toLowerCase();
+  if (!host) return false;
+
+  const check = (value: string): boolean => {
+    try {
+      return new URL(value).host.toLowerCase() === host;
+    } catch {
+      return false;
+    }
+  };
+
+  const origin = req.headers.origin;
+  if (typeof origin === "string" && origin !== "null") return check(origin);
+  const referer = req.headers.referer;
+  if (typeof referer === "string") return check(referer);
+  return req.method === "GET" || req.method === "HEAD";
+}
+
+/**
+ * A signed-in Clerk session that belongs to a registered developer AND has
+ * passed the two-passphrase step counts as admin. This lets developers land
+ * in the console straight from the sign-in gate without a second login.
+ * Fails closed on any lookup error.
+ */
+async function isVerifiedDevSession(req: Request): Promise<boolean> {
+  try {
+    if (!isSameOriginRequest(req)) return false;
+    const { userId, sessionId } = getAuth(req);
+    if (!userId || !sessionId) return false;
+    if (!(await isDeveloperUser(userId))) return false;
+    return await isSessionDevVerified(sessionId);
+  } catch {
+    return false;
+  }
+}
+
+async function checkAuth(req: Request, res: Response): Promise<boolean> {
   if (!ADMIN_TOKEN) {
     res.status(503).json({ error: "Admin access not configured" });
     return false;
   }
   const token = req.headers["x-admin-token"];
-  if (!token || token !== ADMIN_TOKEN) {
-    res.status(401).json({ error: "Unauthorized" });
-    return false;
+  if (typeof token === "string" && token === ADMIN_TOKEN) {
+    return true;
   }
-  return true;
+  if (await isVerifiedDevSession(req)) {
+    return true;
+  }
+  res.status(401).json({ error: "Unauthorized" });
+  return false;
 }
 
 /** Month labels for the trailing 12 months (oldest first). */
@@ -144,8 +203,18 @@ router.post("/admin/login", (req, res): void => {
   res.json({ token: ADMIN_TOKEN });
 });
 
+// Probe used by the admin console: is the current Clerk session a verified
+// developer (i.e. may it use the console without the email/password login)?
+router.get("/admin/session", async (req, res): Promise<void> => {
+  if (await isVerifiedDevSession(req)) {
+    res.json({ admin: true });
+    return;
+  }
+  res.status(401).json({ error: "Unauthorized" });
+});
+
 router.get("/admin/stats", async (req, res): Promise<void> => {
-  if (!checkAuth(req, res)) return;
+  if (!(await checkAuth(req, res))) return;
 
   try {
     const now = new Date();
@@ -296,7 +365,7 @@ router.get("/admin/stats", async (req, res): Promise<void> => {
 router.post(
   "/admin/product-keys/generate",
   async (req: Request, res: Response): Promise<void> => {
-    if (!checkAuth(req, res)) return;
+    if (!(await checkAuth(req, res))) return;
 
     const parsed = AdminGenerateProductKeysBody.safeParse(req.body);
     if (!parsed.success) {
@@ -372,7 +441,7 @@ router.post(
 router.get(
   "/admin/product-keys",
   async (req: Request, res: Response): Promise<void> => {
-    if (!checkAuth(req, res)) return;
+    if (!(await checkAuth(req, res))) return;
 
     try {
       const rows = await adminListProductKeys();
@@ -401,7 +470,7 @@ router.get(
 router.post(
   "/admin/product-keys/revoke",
   async (req: Request, res: Response): Promise<void> => {
-    if (!checkAuth(req, res)) return;
+    if (!(await checkAuth(req, res))) return;
 
     const parsed = AdminRevokeProductKeyBody.safeParse(req.body);
     if (!parsed.success) {
@@ -426,7 +495,7 @@ router.post(
 router.post(
   "/admin/product-keys/extend",
   async (req: Request, res: Response): Promise<void> => {
-    if (!checkAuth(req, res)) return;
+    if (!(await checkAuth(req, res))) return;
 
     const parsed = AdminExtendProductKeyBody.safeParse(req.body);
     if (!parsed.success) {
@@ -459,7 +528,7 @@ router.post(
 router.get(
   "/admin/customers",
   async (req: Request, res: Response): Promise<void> => {
-    if (!checkAuth(req, res)) return;
+    if (!(await checkAuth(req, res))) return;
     try {
       const customers = await adminListCustomers();
       res.json({ customers });
@@ -473,7 +542,7 @@ router.get(
 router.post(
   "/admin/customers/quota-override",
   async (req: Request, res: Response): Promise<void> => {
-    if (!checkAuth(req, res)) return;
+    if (!(await checkAuth(req, res))) return;
 
     const body = req.body as { userId?: unknown; override?: unknown };
     const userId =
@@ -517,7 +586,7 @@ router.post(
 
 // ── Visitor analytics: daily unique visitors + locations (last N days) ───────
 router.get("/admin/analytics/visitors", async (req, res): Promise<void> => {
-  if (!checkAuth(req, res)) return;
+  if (!(await checkAuth(req, res))) return;
   const raw = Number(req.query["days"]);
   const days = Number.isFinite(raw) ? Math.min(Math.max(Math.trunc(raw), 1), 90) : 30;
   try {
@@ -602,7 +671,7 @@ router.get("/admin/analytics/visitors", async (req, res): Promise<void> => {
 // supported way to register a developer email in any environment.
 
 router.get("/admin/developers", async (req, res): Promise<void> => {
-  if (!checkAuth(req, res)) return;
+  if (!(await checkAuth(req, res))) return;
   const rows = await db.execute(
     sql`SELECT email, created_at FROM developers ORDER BY created_at`,
   );
@@ -610,7 +679,7 @@ router.get("/admin/developers", async (req, res): Promise<void> => {
 });
 
 router.post("/admin/developers", async (req, res): Promise<void> => {
-  if (!checkAuth(req, res)) return;
+  if (!(await checkAuth(req, res))) return;
   const email =
     typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -626,7 +695,7 @@ router.post("/admin/developers", async (req, res): Promise<void> => {
 });
 
 router.post("/admin/developers/remove", async (req, res): Promise<void> => {
-  if (!checkAuth(req, res)) return;
+  if (!(await checkAuth(req, res))) return;
   const email =
     typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
   if (!email) {
@@ -639,7 +708,7 @@ router.post("/admin/developers/remove", async (req, res): Promise<void> => {
 });
 
 router.get("/admin/tickets", async (req, res): Promise<void> => {
-  if (!checkAuth(req, res)) return;
+  if (!(await checkAuth(req, res))) return;
   try {
     const tickets = await listTickets();
     res.json({ tickets });
@@ -650,7 +719,7 @@ router.get("/admin/tickets", async (req, res): Promise<void> => {
 });
 
 router.post("/admin/tickets/update", async (req, res): Promise<void> => {
-  if (!checkAuth(req, res)) return;
+  if (!(await checkAuth(req, res))) return;
   const body = (req.body ?? {}) as Record<string, unknown>;
   const id = Number(body["id"]);
   const status = typeof body["status"] === "string" ? body["status"] : undefined;
