@@ -596,6 +596,48 @@ router.get("/admin/analytics/visitors", async (req, res): Promise<void> => {
 
 // ─── Support tickets ─────────────────────────────────────────────────────────
 
+// ─── Developer registration ──────────────────────────────────────────────────
+// Developers (dev-passphrase gate) are keyed by email in the `developers`
+// table. There is no public management UI; this admin-token route is the
+// supported way to register a developer email in any environment.
+
+router.get("/admin/developers", async (req, res): Promise<void> => {
+  if (!checkAuth(req, res)) return;
+  const rows = await db.execute(
+    sql`SELECT email, created_at FROM developers ORDER BY created_at`,
+  );
+  res.json({ developers: rows.rows });
+});
+
+router.post("/admin/developers", async (req, res): Promise<void> => {
+  if (!checkAuth(req, res)) return;
+  const email =
+    typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    res.status(400).json({ error: "A valid email is required" });
+    return;
+  }
+  await db.execute(sql`
+    INSERT INTO developers (email) VALUES (${email})
+    ON CONFLICT (email) DO NOTHING
+  `);
+  req.log.info({ email }, "developer email registered via admin route");
+  res.json({ ok: true, email });
+});
+
+router.post("/admin/developers/remove", async (req, res): Promise<void> => {
+  if (!checkAuth(req, res)) return;
+  const email =
+    typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+  if (!email) {
+    res.status(400).json({ error: "Email is required" });
+    return;
+  }
+  await db.execute(sql`DELETE FROM developers WHERE email = ${email}`);
+  req.log.info({ email }, "developer email removed via admin route");
+  res.json({ ok: true, email });
+});
+
 router.get("/admin/tickets", async (req, res): Promise<void> => {
   if (!checkAuth(req, res)) return;
   try {
