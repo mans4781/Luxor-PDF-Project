@@ -64,6 +64,40 @@ async function requestWelcomeEmail(): Promise<void> {
   }
 }
 
+/**
+ * Route into the app after a sign-up session is active, honoring the
+ * developer passphrase gate. Developer accounts (and any account whose
+ * dev-status cannot be determined — fail closed) are sent to the sign-in
+ * page, which shows the passphrase step for already-signed-in developers.
+ * Regular accounts go straight to the target.
+ */
+async function routeAfterSignUp(target: string): Promise<void> {
+  // Preserve the intended destination so the passphrase step returns the
+  // developer to it (e.g. desktop-app handoff deep links) instead of the
+  // default dashboard.
+  const signInUrl = `${import.meta.env.BASE_URL}sign-in?redirect_url=${encodeURIComponent(target)}`;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetch("/api/account/dev-status", {
+        credentials: "include",
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { isDeveloper: boolean; verified: boolean };
+        if (data.isDeveloper && !data.verified) {
+          window.location.href = signInUrl;
+        } else {
+          window.location.href = target;
+        }
+        return;
+      }
+    } catch {
+      // Retry once, then fail closed via the sign-in page.
+    }
+  }
+  window.location.href = signInUrl;
+}
+
 export default function SignUpPage() {
   const { signUp, errors, fetchStatus } = useSignUp();
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
@@ -78,7 +112,7 @@ export default function SignUpPage() {
   useEffect(() => {
     if (isSsoCallback) return;
     if (authLoaded && isSignedIn) {
-      window.location.replace(authRedirectTarget());
+      void routeAfterSignUp(authRedirectTarget());
     }
   }, [authLoaded, isSignedIn, isSsoCallback]);
 
@@ -101,7 +135,7 @@ export default function SignUpPage() {
     await signUp.finalize({
       navigate: async ({ decorateUrl }) => {
         await requestWelcomeEmail();
-        window.location.href = decorateUrl(authRedirectTarget());
+        await routeAfterSignUp(decorateUrl(authRedirectTarget()));
       },
     });
   };
@@ -174,7 +208,7 @@ export default function SignUpPage() {
         <HandleSSOCallback
           navigateToApp={async ({ decorateUrl }) => {
             await requestWelcomeEmail();
-            window.location.href = decorateUrl(authRedirectTarget());
+            await routeAfterSignUp(decorateUrl(authRedirectTarget()));
           }}
           navigateToSignIn={() => setLocation("/sign-in")}
           navigateToSignUp={() => setLocation("/sign-up")}
