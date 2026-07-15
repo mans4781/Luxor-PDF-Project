@@ -192,18 +192,21 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="flex flex-col gap-4 border-t border-slate-200/80 py-7 text-sm md:flex-row md:items-center md:justify-center">
+        <div className="flex flex-col gap-4 border-t border-slate-200/80 py-7 text-sm md:relative md:flex-row md:items-center md:justify-center">
           <div className="text-center text-slate-600">
             Copyright © {new Date().getFullYear()}. Luxor PDF. All rights
             reserved.
           </div>
           {import.meta.env.DEV && (
-            <a
-              href={`${import.meta.env.BASE_URL}admin?dev=1`}
-              className="text-center text-xs font-semibold text-amber-600 hover:text-amber-700 md:absolute md:right-8"
-            >
-              Developer: Admin Console preview
-            </a>
+            <div className="flex justify-center md:absolute md:right-0">
+              <a
+                href={`${import.meta.env.BASE_URL}admin?dev=1`}
+                className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-xs font-bold text-amber-700 shadow-sm transition-colors hover:bg-amber-100 hover:text-amber-800"
+              >
+                <span className="flex h-2 w-2 rounded-full bg-amber-500" />
+                Developer: Admin Console preview
+              </a>
+            </div>
           )}
         </div>
       </div>
