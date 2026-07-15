@@ -120,7 +120,8 @@ export default function SignInPage() {
   // Developer passphrase gate: developer accounts must enter the passphrase
   // once per login session before being redirected into the apps.
   const [devGateTarget, setDevGateTarget] = useState<string | null>(null);
-  const [devPassphrase, setDevPassphrase] = useState("");
+  const [devPassphrase1, setDevPassphrase1] = useState("");
+  const [devPassphrase2, setDevPassphrase2] = useState("");
   const [devError, setDevError] = useState<string | null>(null);
   const [devBusy, setDevBusy] = useState(false);
   const [statusCheckFailed, setStatusCheckFailed] = useState<string | null>(null);
@@ -190,7 +191,10 @@ export default function SignInPage() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ passphrase: devPassphrase }),
+        body: JSON.stringify({
+          passphrase1: devPassphrase1,
+          passphrase2: devPassphrase2,
+        }),
         signal: AbortSignal.timeout(10000),
       });
       if (res.status === 429) {
@@ -202,7 +206,7 @@ export default function SignInPage() {
         window.location.href = devGateTarget;
         return;
       }
-      setDevError("Incorrect passphrase. Please try again.");
+      setDevError("One or both passphrases are incorrect. Please try again.");
     } catch {
       setDevError("Something went wrong. Please try again.");
     } finally {
@@ -331,11 +335,11 @@ export default function SignInPage() {
             Developer verification
           </h1>
           <p className="mt-1.5 text-center text-[13px] text-slate-500">
-            This account has developer access. Enter your passphrase to continue.
+            This account has developer access. Enter both passphrases to continue.
           </p>
           <form onSubmit={handleDevVerify} className="mt-5">
             <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">
-              Passphrase
+              Passphrase 1
             </label>
             <div className="relative">
               <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -344,11 +348,27 @@ export default function SignInPage() {
                 autoComplete="off"
                 autoFocus
                 required
-                value={devPassphrase}
-                onChange={(e) => setDevPassphrase(e.target.value)}
-                placeholder="Enter developer passphrase"
+                value={devPassphrase1}
+                onChange={(e) => setDevPassphrase1(e.target.value)}
+                placeholder="Enter passphrase 1"
                 className={inputBase}
-                data-testid="input-dev-passphrase"
+                data-testid="input-dev-passphrase-1"
+              />
+            </div>
+            <label className="mt-4 block text-[13px] font-semibold text-slate-700 mb-1.5">
+              Passphrase 2
+            </label>
+            <div className="relative">
+              <Lock className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                type="password"
+                autoComplete="off"
+                required
+                value={devPassphrase2}
+                onChange={(e) => setDevPassphrase2(e.target.value)}
+                placeholder="Enter passphrase 2"
+                className={inputBase}
+                data-testid="input-dev-passphrase-2"
               />
             </div>
             {devError && (
@@ -358,7 +378,7 @@ export default function SignInPage() {
             )}
             <button
               type="submit"
-              disabled={devBusy || devPassphrase.length === 0}
+              disabled={devBusy || devPassphrase1.length === 0 || devPassphrase2.length === 0}
               className="mt-4 w-full rounded-lg bg-[#DC2626] py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-[#b91c1c] disabled:opacity-60"
               data-testid="button-dev-verify"
             >

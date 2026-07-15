@@ -24,7 +24,12 @@ export interface DevVerifyRequest {
    * @minLength 1
    * @maxLength 512
    */
-  passphrase: string;
+  passphrase1: string;
+  /**
+   * @minLength 1
+   * @maxLength 512
+   */
+  passphrase2: string;
 }
 
 export interface DevVerifyResult {

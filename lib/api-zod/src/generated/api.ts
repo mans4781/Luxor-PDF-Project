@@ -351,12 +351,15 @@ export const GetDevStatusResponse = zod.object({
 });
 
 /**
- * @summary Submit the developer passphrase for the current login session
+ * @summary Submit both developer passphrases for the current login session
  */
-export const verifyDevPassphraseBodyPassphraseMax = 512;
+export const verifyDevPassphraseBodyPassphrase1Max = 512;
+
+export const verifyDevPassphraseBodyPassphrase2Max = 512;
 
 export const VerifyDevPassphraseBody = zod.object({
-  passphrase: zod.string().min(1).max(verifyDevPassphraseBodyPassphraseMax),
+  passphrase1: zod.string().min(1).max(verifyDevPassphraseBodyPassphrase1Max),
+  passphrase2: zod.string().min(1).max(verifyDevPassphraseBodyPassphrase2Max),
 });
 
 export const VerifyDevPassphraseResponse = zod.object({

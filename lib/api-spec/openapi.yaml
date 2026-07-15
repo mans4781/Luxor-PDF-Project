@@ -456,7 +456,7 @@ paths:
     post:
       operationId: verifyDevPassphrase
       tags: [account]
-      summary: Submit the developer passphrase for the current login session
+      summary: Submit both developer passphrases for the current login session
       requestBody:
         required: true
         content:
@@ -1214,12 +1214,17 @@ components:
     DevVerifyRequest:
       type: object
       properties:
-        passphrase:
+        passphrase1:
+          type: string
+          minLength: 1
+          maxLength: 512
+        passphrase2:
           type: string
           minLength: 1
           maxLength: 512
       required:
-        - passphrase
+        - passphrase1
+        - passphrase2
 
     DevVerifyResult:
       type: object

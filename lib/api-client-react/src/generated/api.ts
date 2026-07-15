@@ -1136,7 +1136,7 @@ export function useGetDevStatus<
 }
 
 /**
- * @summary Submit the developer passphrase for the current login session
+ * @summary Submit both developer passphrases for the current login session
  */
 export const getVerifyDevPassphraseUrl = () => {
   return `/api/account/dev-verify`;
@@ -1199,7 +1199,7 @@ export type VerifyDevPassphraseMutationBody = BodyType<DevVerifyRequest>;
 export type VerifyDevPassphraseMutationError = ErrorType<void>;
 
 /**
- * @summary Submit the developer passphrase for the current login session
+ * @summary Submit both developer passphrases for the current login session
  */
 export const useVerifyDevPassphrase = <
   TError = ErrorType<void>,

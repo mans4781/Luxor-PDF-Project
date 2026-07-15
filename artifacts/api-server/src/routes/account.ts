@@ -60,7 +60,8 @@ export async function runWelcomeMigrations(): Promise<void> {
 
 // ─── Developer passphrase gate ────────────────────────────────────────────────
 
-const DEV_PASSPHRASE = process.env["ADMIN_PASSPHRASE"];
+const DEV_PASSPHRASE_1 = process.env["DEV_PASSPHRASE_1"];
+const DEV_PASSPHRASE_2 = process.env["DEV_PASSPHRASE_2"];
 
 /** Per-user throttle for failed passphrase attempts. */
 const DEV_ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
@@ -120,8 +121,8 @@ router.post("/account/dev-verify", async (req: Request, res: Response): Promise<
     res.status(401).json({ error: "Not signed in" });
     return;
   }
-  if (!DEV_PASSPHRASE) {
-    req.log.error("ADMIN_PASSPHRASE is not configured");
+  if (!DEV_PASSPHRASE_1 || !DEV_PASSPHRASE_2) {
+    req.log.error("DEV_PASSPHRASE_1 / DEV_PASSPHRASE_2 is not configured");
     res.status(500).json({ error: "Developer verification is not configured" });
     return;
   }
@@ -130,8 +131,12 @@ router.post("/account/dev-verify", async (req: Request, res: Response): Promise<
     return;
   }
 
-  const passphrase = (req.body as { passphrase?: unknown })?.passphrase;
-  if (typeof passphrase !== "string" || passphrase.length === 0 || passphrase.length > 512) {
+  const body = req.body as { passphrase1?: unknown; passphrase2?: unknown };
+  const passphrase1 = body?.passphrase1;
+  const passphrase2 = body?.passphrase2;
+  const validInput = (v: unknown): v is string =>
+    typeof v === "string" && v.length > 0 && v.length <= 512;
+  if (!validInput(passphrase1) || !validInput(passphrase2)) {
     recordDevAttempt(auth.userId);
     res.json({ verified: false });
     return;
@@ -139,7 +144,11 @@ router.post("/account/dev-verify", async (req: Request, res: Response): Promise<
 
   try {
     const isDeveloper = await isDeveloperUser(auth.userId);
-    if (!isDeveloper || !safeEqual(passphrase, DEV_PASSPHRASE)) {
+    // Evaluate both comparisons unconditionally so a wrong first passphrase
+    // doesn't short-circuit and leak which one failed via timing.
+    const ok1 = safeEqual(passphrase1, DEV_PASSPHRASE_1);
+    const ok2 = safeEqual(passphrase2, DEV_PASSPHRASE_2);
+    if (!isDeveloper || !ok1 || !ok2) {
       recordDevAttempt(auth.userId);
       res.json({ verified: false });
       return;
