@@ -115,6 +115,14 @@ function ClerkProviderWithRoutes() {
   // prefixed URL rather than SPA-pushing to an unproxied root path.
   const isCleanEntry = routerBase === "";
   const navigate = (to: string, replace: boolean) => {
+    // A bare "/" from Clerk means the suite root (afterSignOutUrl → the
+    // marketing landing page), NOT this app's home. Leave the SPA with a
+    // full-page navigation so the wouter base doesn't re-prefix it.
+    if (to === "/") {
+      if (replace) window.location.replace("/");
+      else window.location.assign("/");
+      return;
+    }
     if (isCleanEntry && basePath && to.startsWith(basePath)) {
       if (replace) window.location.replace(to);
       else window.location.assign(to);
