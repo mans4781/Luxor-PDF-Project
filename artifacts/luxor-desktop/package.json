@@ -71,6 +71,7 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
+      "license": "build/license.txt",
       "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
