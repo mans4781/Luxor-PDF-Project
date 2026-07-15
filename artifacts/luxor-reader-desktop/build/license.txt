@@ -1,0 +1,54 @@
+LUXOR PDF READER
+END USER LICENSE AGREEMENT
+
+Last updated: July 15, 2026
+
+Please read this agreement before installing Luxor PDF Reader. By
+clicking "I Agree" and installing the software, you accept these terms.
+If you do not accept them, cancel the installation.
+
+1. LICENSE GRANT
+Luxor PDF grants you a personal, non-exclusive, non-transferable
+license to install and use Luxor PDF Reader on devices you own or
+control. Reading PDF documents is free. Certain premium features
+require a Luxor account and, where indicated, an active paid plan or
+a valid Luxor product key.
+
+2. WHAT YOU MAY NOT DO
+You may not (a) sell, rent, lease, or redistribute the software;
+(b) reverse engineer, decompile, or attempt to extract its source
+code except where the law expressly permits; (c) remove or alter any
+Luxor PDF branding or notices; or (d) use the software to break the
+law or infringe the rights of others.
+
+3. YOUR DOCUMENTS
+Your documents belong to you. Luxor PDF Reader opens files locally on
+your device. Online features (such as sign-in, licensing, and
+updates) communicate with Luxor PDF servers only for the purpose of
+providing those features.
+
+4. UPDATES
+The software may download and install updates automatically to keep
+it secure and current. Updates are covered by this agreement.
+
+5. OPEN-SOURCE COMPONENTS
+Luxor PDF Reader includes open-source components licensed under their
+own terms, which are respected and preserved. Nothing in this
+agreement limits your rights under those licenses.
+
+6. DISCLAIMER OF WARRANTY
+The software is provided "as is" without warranties of any kind,
+whether express or implied, including fitness for a particular
+purpose. You use it at your own risk.
+
+7. LIMITATION OF LIABILITY
+To the maximum extent permitted by law, Luxor PDF is not liable for
+any indirect, incidental, or consequential damages arising from the
+use of, or inability to use, the software.
+
+8. TERMINATION
+This license ends automatically if you breach its terms. On
+termination you must uninstall the software.
+
+9. CONTACT
+Questions about this agreement: support@luxorpdf.com
