@@ -203,7 +203,10 @@ export default function SignInPage() {
       }
       const data = (await res.json()) as { verified?: boolean };
       if (data.verified) {
-        window.location.href = devGateTarget;
+        // Developers go straight to the admin dashboard after the
+        // passphrase step (owner preference). The marketing site (and its
+        // /admin page) is served at the suite root in every environment.
+        window.location.href = "/admin";
         return;
       }
       setDevError("One or both passphrases are incorrect. Please try again.");
