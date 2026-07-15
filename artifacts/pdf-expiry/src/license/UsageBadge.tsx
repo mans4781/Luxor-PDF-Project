@@ -41,6 +41,19 @@ export function PlanBadge() {
     );
   }
 
+  if (status.isPaid && status.graceActive && !status.subscriptionActive) {
+    return (
+      <span
+        className={`${base} text-amber-700 bg-amber-50 border-amber-200`}
+        title="Your plan has ended — renew to keep premium access"
+        data-testid="plan-badge"
+      >
+        <ShieldCheck className="w-3.5 h-3.5" strokeWidth={2.25} />
+        {`Renew by ${status.graceEndDate ? formatResetDate(status.graceEndDate) : "soon"}`}
+      </span>
+    );
+  }
+
   if (status.isPaid && status.subscriptionActive) {
     const plan = status.planName ?? "Pro";
     const days = status.subscriptionDaysRemaining;
@@ -125,8 +138,8 @@ export function UsageBadge() {
 
   if (!signedIn || isLoading || !status) return null;
 
-  const devMode = status.devBypass === true && !status.subscriptionActive;
-  if ((status.isPaid && status.subscriptionActive) || devMode) {
+  const devMode = status.devBypass === true && !status.subscriptionActive && !status.graceActive;
+  if ((status.isPaid && (status.subscriptionActive || status.graceActive)) || devMode) {
     const plan = status.planName ? status.planName : devMode ? "Dev" : "Pro";
     const { limit, remaining } = status.monthlyUsage;
 
@@ -245,8 +258,8 @@ export function UsagePanel() {
 
   if (!signedIn || isLoading || !status) return null;
 
-  const devMode = status.devBypass === true && !status.subscriptionActive;
-  const isPaid = (status.isPaid && status.subscriptionActive) || devMode;
+  const devMode = status.devBypass === true && !status.subscriptionActive && !status.graceActive;
+  const isPaid = (status.isPaid && (status.subscriptionActive || status.graceActive)) || devMode;
   const used = status.todayUsage;
   const reset = formatResetDate(status.monthlyUsage.periodEnd);
 
@@ -381,7 +394,7 @@ export function UsagePanel() {
 export function DailyLimitBanner() {
   const { status, signedIn, isLoading } = useLicense();
   if (!signedIn || isLoading || !status) return null;
-  const isPaid = status.isPaid && status.subscriptionActive;
+  const isPaid = status.isPaid && (status.subscriptionActive || status.graceActive);
   if (!isPaid) return null;
   const { limit, remaining } = status.monthlyUsage;
   if (limit === null || remaining === null || remaining > 0) return null;

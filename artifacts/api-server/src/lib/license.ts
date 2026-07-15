@@ -23,7 +23,9 @@ import {
   type ProductPlan,
 } from "@workspace/license-keys";
 import { logger } from "./logger";
-import { getActiveOrgMembership } from "./org";
+import { getActiveOrgMembership, EXPIRY_GRACE_DAYS, EXPIRY_GRACE_MS } from "./org";
+
+export { EXPIRY_GRACE_DAYS, EXPIRY_GRACE_MS };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -130,6 +132,10 @@ export interface LicenseStatusResult {
   subscriptionActive: boolean;
   subscriptionDaysRemaining: number | null;
   subscriptionExpired: boolean;
+  /** True while inside the 5-day post-expiry grace window (premium still on). */
+  graceActive: boolean;
+  /** When the grace window closes; only set while graceActive. */
+  graceEndDate: string | null;
   subscriptionStartDate: string | null;
   subscriptionEndDate: string | null;
   licenseStatus: LicenseStatusValue;
@@ -559,15 +565,22 @@ export async function getTodayUsage(
 
 // ─── Active license lookup (paid sub) ─────────────────────────────────────────
 
+/** The moment a license that expired at `end` fully loses access. */
+export function graceEndOf(end: Date): Date {
+  return new Date(end.getTime() + EXPIRY_GRACE_MS);
+}
+
 /**
  * Returns the caller's "best" active license — the one whose
  * `subscription_end_date` is the latest, among rows with status='active'
- * and end > now. Null if the caller has no active paid license.
+ * and end within the post-expiry grace window (end + 5 days > now).
+ * Null if the caller has no active or in-grace paid license.
  */
 export async function getActiveLicense(
   userId: string,
   now: Date = new Date(),
 ): Promise<License | null> {
+  const graceCutoff = new Date(now.getTime() - EXPIRY_GRACE_MS);
   const [row] = await db
     .select()
     .from(licensesTable)
@@ -575,7 +588,7 @@ export async function getActiveLicense(
       and(
         eq(licensesTable.userId, userId),
         eq(licensesTable.status, "active"),
-        sql`${licensesTable.subscriptionEndDate} > ${now}`,
+        sql`${licensesTable.subscriptionEndDate} > ${graceCutoff}`,
       ),
     )
     .orderBy(desc(licensesTable.subscriptionEndDate))
@@ -615,6 +628,8 @@ export function buildAnonymousStatus(now: Date = new Date()): LicenseStatusResul
     subscriptionActive: false,
     subscriptionDaysRemaining: null,
     subscriptionExpired: false,
+    graceActive: false,
+    graceEndDate: null,
     subscriptionStartDate: null,
     subscriptionEndDate: null,
     licenseStatus: "anonymous",
@@ -681,28 +696,42 @@ export async function getLicenseStatus(
   let subscriptionEndDate: string | null = null;
   let subscriptionDaysRemaining: number | null = null;
   let subscriptionExpired = false;
+  let graceActive = false;
+  let graceEndDate: string | null = null;
   let planName: string | null = license.planName;
 
+  /** Fills the subscription-window fields for an active-or-in-grace window. */
+  const applyWindow = (start: Date, end: Date, plan: string | null) => {
+    subscriptionStartDate = start.toISOString();
+    subscriptionEndDate = end.toISOString();
+    planName = plan;
+    if (end.getTime() > now.getTime()) {
+      // Genuinely active subscription.
+      subscriptionActive = true;
+      subscriptionDaysRemaining = daysRemaining(end, now);
+    } else {
+      // End date passed, but the lookup only returns rows inside the 5-day
+      // grace window — premium stays on while the user renews.
+      subscriptionExpired = true;
+      subscriptionDaysRemaining = 0;
+      graceActive = true;
+      graceEndDate = graceEndOf(end).toISOString();
+    }
+  };
+
   if (activeLicense) {
-    subscriptionActive = true;
-    subscriptionStartDate = activeLicense.subscriptionStartDate.toISOString();
-    subscriptionEndDate = activeLicense.subscriptionEndDate.toISOString();
-    subscriptionDaysRemaining = daysRemaining(
+    applyWindow(
+      activeLicense.subscriptionStartDate,
       activeLicense.subscriptionEndDate,
-      now,
+      activeLicense.planName,
     );
-    planName = activeLicense.planName;
   } else if (orgMembership) {
     // Team member — license window mirrors the org's subscription.
-    subscriptionActive = true;
-    subscriptionStartDate =
-      orgMembership.org.subscriptionStartDate.toISOString();
-    subscriptionEndDate = orgMembership.org.subscriptionEndDate.toISOString();
-    subscriptionDaysRemaining = daysRemaining(
+    applyWindow(
+      orgMembership.org.subscriptionStartDate,
       orgMembership.org.subscriptionEndDate,
-      now,
+      orgMembership.org.planName,
     );
-    planName = orgMembership.org.planName;
   } else {
     // No active license — but the user may have had one that lapsed.
     const latest = await getLatestLicense(userId);
@@ -781,6 +810,8 @@ export async function getLicenseStatus(
     subscriptionActive,
     subscriptionDaysRemaining,
     subscriptionExpired,
+    graceActive,
+    graceEndDate,
     subscriptionStartDate,
     subscriptionEndDate,
     licenseStatus,

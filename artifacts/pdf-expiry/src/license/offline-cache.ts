@@ -169,12 +169,15 @@ export function deriveEffectiveState(args: {
   // Subscription end date in the cache has now passed locally. The user
   // had a paid sub when last seen, but their plan would have lapsed by
   // wall-clock time alone. Promote to subscription_expired locally.
+  // Mirrors the server's 5-day post-expiry grace window: only lock offline
+  // once the grace window (end + 5 days) has also passed.
+  const EXPIRY_GRACE_MS = 5 * 24 * 60 * 60 * 1000;
   const subEndIso = cached.status.subscriptionEndDate;
   if (subEndIso) {
     const subEnd = Date.parse(subEndIso);
     if (
       Number.isFinite(subEnd) &&
-      subEnd <= now &&
+      subEnd + EXPIRY_GRACE_MS <= now &&
       cached.status.lockReason !== "subscription_expired"
     ) {
       return {

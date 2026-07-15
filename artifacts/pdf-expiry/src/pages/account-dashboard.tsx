@@ -154,7 +154,8 @@ export default function AccountDashboardPage() {
   const memberSince = user?.createdAt ? formatDate(new Date(user.createdAt)) : null;
 
   // ── Subscription data ──────────────────────────────────────────────────────
-  const isPaid = !!status?.subscriptionActive;
+  const inGrace = !!status?.graceActive;
+  const isPaid = !!status?.subscriptionActive || inGrace;
   const isTrial = !isPaid && !!status?.trialActive;
   const suiteTitle = isPaid
     ? "Luxor PDF Suite – Pro"
@@ -335,6 +336,22 @@ export default function AccountDashboardPage() {
 
       {/* MAIN AREA */}
       <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        {inGrace && (
+          <div
+            className="bg-amber-50 border-b border-amber-200 px-8 py-2.5 text-sm text-amber-900 flex flex-wrap items-center gap-x-2 gap-y-1"
+            data-testid="banner-grace-period"
+          >
+            <span className="font-semibold">Your plan has ended.</span>
+            <span>
+              Premium features stay on until{" "}
+              {status?.graceEndDate ? formatDate(new Date(status.graceEndDate)) : "the end of your grace period"}
+              {" "}— renew to keep access.
+            </span>
+            <Link href="/checkout" className="font-semibold text-[#ef233c] hover:underline">
+              Renew now
+            </Link>
+          </div>
+        )}
         {/* HEADER */}
         <header className="px-8 py-5 flex items-center justify-between shrink-0 bg-[#f8fafc]/80 backdrop-blur-md sticky top-0 z-20 gap-4">
           <div className="min-w-0">

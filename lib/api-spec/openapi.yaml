@@ -1406,6 +1406,18 @@ components:
           type: ["integer", "null"]
         subscriptionExpired:
           type: boolean
+        graceActive:
+          type: boolean
+          description: >-
+            True while the subscription end date has passed but the caller is
+            still inside the 5-day post-expiry grace window, during which
+            premium features remain available so the user can renew.
+        graceEndDate:
+          type: ["string", "null"]
+          format: date-time
+          description: >-
+            When the post-expiry grace window closes and premium features shut
+            off. Only set while `graceActive` is true.
         subscriptionStartDate:
           type: ["string", "null"]
           format: date-time
@@ -1444,6 +1456,8 @@ components:
         - subscriptionActive
         - subscriptionDaysRemaining
         - subscriptionExpired
+        - graceActive
+        - graceEndDate
         - subscriptionStartDate
         - subscriptionEndDate
         - licenseStatus

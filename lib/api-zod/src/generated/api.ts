@@ -236,6 +236,17 @@ export const GetLicenseStatusResponse = zod
     subscriptionActive: zod.boolean(),
     subscriptionDaysRemaining: zod.number().nullable(),
     subscriptionExpired: zod.boolean(),
+    graceActive: zod
+      .boolean()
+      .describe(
+        "True while the subscription end date has passed but the caller is still inside the 5-day post-expiry grace window, during which premium features remain available so the user can renew.",
+      ),
+    graceEndDate: zod.coerce
+      .date()
+      .nullable()
+      .describe(
+        "When the post-expiry grace window closes and premium features shut off. Only set while `graceActive` is true.",
+      ),
     subscriptionStartDate: zod.coerce.date().nullable(),
     subscriptionEndDate: zod.coerce.date().nullable(),
     licenseStatus: zod.enum([

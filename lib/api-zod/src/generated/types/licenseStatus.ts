@@ -40,6 +40,13 @@ export interface LicenseStatus {
   /** @nullable */
   subscriptionDaysRemaining: number | null;
   subscriptionExpired: boolean;
+  /** True while the subscription end date has passed but the caller is still inside the 5-day post-expiry grace window, during which premium features remain available so the user can renew. */
+  graceActive: boolean;
+  /**
+   * When the post-expiry grace window closes and premium features shut off. Only set while `graceActive` is true.
+   * @nullable
+   */
+  graceEndDate: Date | null;
   /** @nullable */
   subscriptionStartDate: Date | null;
   /** @nullable */

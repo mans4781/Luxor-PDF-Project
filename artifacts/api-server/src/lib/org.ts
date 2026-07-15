@@ -13,6 +13,16 @@ import {
 } from "@workspace/db";
 import { logger } from "./logger";
 
+/**
+ * Post-expiry grace window: paid access continues for this many days after a
+ * subscription's end date passes, giving users time to renew before premium
+ * features shut off. Defined here (rather than license.ts) so both the
+ * individual-license and org-seat lookups can share it without an import
+ * cycle — license.ts already imports from this module.
+ */
+export const EXPIRY_GRACE_DAYS = 5;
+export const EXPIRY_GRACE_MS = EXPIRY_GRACE_DAYS * 24 * 60 * 60 * 1000;
+
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 /** How long an emailed invite stays valid before it must be re-sent. */
@@ -158,11 +168,15 @@ export interface ActiveOrgMembership {
  * or null. Used by the license layer to grant Team members access without a
  * product key. If the user belongs to several orgs the one with the latest
  * subscription end wins.
+ *
+ * Mirrors the individual-license lookup: an org whose subscription lapsed
+ * within the post-expiry grace window (5 days) still grants access.
  */
 export async function getActiveOrgMembership(
   userId: string,
   now: Date = new Date(),
 ): Promise<ActiveOrgMembership | null> {
+  const graceCutoff = new Date(now.getTime() - EXPIRY_GRACE_MS);
   const rows = await db
     .select({ org: organizationsTable, member: organizationMembersTable })
     .from(organizationMembersTable)
@@ -175,7 +189,7 @@ export async function getActiveOrgMembership(
         eq(organizationMembersTable.userId, userId),
         eq(organizationMembersTable.status, "active"),
         eq(organizationsTable.status, "active"),
-        sql`${organizationsTable.subscriptionEndDate} > ${now}`,
+        sql`${organizationsTable.subscriptionEndDate} > ${graceCutoff}`,
       ),
     )
     .orderBy(desc(organizationsTable.subscriptionEndDate))
