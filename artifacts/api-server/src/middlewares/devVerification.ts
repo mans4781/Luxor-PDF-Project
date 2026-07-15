@@ -19,6 +19,18 @@ const DEV_POSITIVE_TTL_MS = 5 * 60 * 1000;
 const DEV_NEGATIVE_TTL_MS = 30 * 1000;
 const devCache = new Map<string, { isDev: boolean; expiresAt: number }>();
 
+/**
+ * User ids ever observed to be developers this process lifetime. Unlike the
+ * TTL cache this never expires — it exists so that a later Clerk/DB lookup
+ * failure for a known developer account fails CLOSED instead of open.
+ */
+const knownDevUserIds = new Set<string>();
+
+/** True when this user id was previously confirmed to be a developer. */
+export function wasKnownDeveloper(userId: string): boolean {
+  return knownDevUserIds.has(userId);
+}
+
 /** Positive-only cache of session ids that already passed the passphrase. */
 const verifiedSessions = new Set<string>();
 
@@ -44,6 +56,7 @@ export async function isDeveloperUser(userId: string): Promise<boolean> {
     isDev,
     expiresAt: now + (isDev ? DEV_POSITIVE_TTL_MS : DEV_NEGATIVE_TTL_MS),
   });
+  if (isDev) knownDevUserIds.add(userId);
   return isDev;
 }
 
@@ -110,6 +123,17 @@ export function requireDevVerification() {
     try {
       isDev = await isDeveloperUser(userId);
     } catch (err) {
+      // Fail CLOSED for accounts previously confirmed as developers — a
+      // lookup outage must not disable their passphrase gate. Unknown
+      // accounts fail open so regular users aren't taken down.
+      if (wasKnownDeveloper(userId)) {
+        req.log.error({ err, userId }, "dev membership check failed for known developer — blocking");
+        res.status(403).json({
+          error: "Developer verification required.",
+          code: "dev_verification_required",
+        });
+        return;
+      }
       req.log.warn({ err, userId }, "dev membership check failed — passing");
       next();
       return;

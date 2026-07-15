@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { getAuth, clerkClient } from "@clerk/express";
+import { isDeveloperUser } from "./devVerification";
 
 const ADMIN_EMAIL = (process.env["ADMIN_EMAIL"] ?? "").trim().toLowerCase();
 
@@ -46,18 +47,37 @@ export function blockReservedAdminEmail() {
       next();
       return;
     }
+    let reserved: boolean;
     try {
-      if (await isReservedAdminUser(userId)) {
-        res.status(403).json({
-          error:
-            "This email is reserved for admin access and cannot be used as a user account.",
-          code: "reserved_admin_email",
-        });
+      reserved = await isReservedAdminUser(userId);
+    } catch (err) {
+      // Can't tell whether the account is reserved (Clerk hiccup). This is
+      // a business rule for regular accounts, so fail open here — but the
+      // developer gate below still fails closed for known developers.
+      req.log.warn({ err, userId }, "reserved-admin-email check failed");
+      next();
+      return;
+    }
+    if (!reserved) {
+      next();
+      return;
+    }
+    // If the reserved email is also a registered developer account, it may
+    // sign in as a user — the developer two-passphrase gate
+    // (requireDevVerification) enforces the extra protection instead. A
+    // failed developer lookup for the reserved account fails CLOSED.
+    try {
+      if (await isDeveloperUser(userId)) {
+        next();
         return;
       }
     } catch (err) {
-      req.log.warn({ err, userId }, "reserved-admin-email check failed");
+      req.log.error({ err, userId }, "developer lookup failed for reserved admin — blocking");
     }
-    next();
+    res.status(403).json({
+      error:
+        "This email is reserved for admin access and cannot be used as a user account.",
+      code: "reserved_admin_email",
+    });
   };
 }
