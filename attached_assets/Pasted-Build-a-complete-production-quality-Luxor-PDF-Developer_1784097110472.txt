@@ -1,0 +1,942 @@
+Build a complete, production-quality **Luxor PDF Developer/Admin Dashboard** based on the following requirements.
+
+Do not create a basic wireframe or static mockup. Build a polished, functional, responsive SaaS admin dashboard with realistic interactions, reusable components, sample data, charts, tables, modals, filters, forms, and working navigation.
+
+## 1. Technology Stack
+
+Use:
+
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+* shadcn/ui
+* Lucide React icons
+* Recharts for charts
+* React Router
+* React Hook Form
+* Zod validation
+* TanStack Table for data tables
+* date-fns for date handling
+
+Use local mock data initially, but organize the application so that real backend APIs can be connected later.
+
+Create a clean service layer for users, licenses, offers, referrals, revenue, analytics, and system status.
+
+## 2. Product Branding
+
+Product name:
+
+**Luxor PDF Admin**
+
+Subtitle:
+
+**Developer Console**
+
+Brand styling:
+
+* Premium and professional
+* Light background
+* Dark navy text
+* Primary accent: blue-purple
+* Success accent: green
+* Warning accent: amber
+* Error accent: red
+* Rounded cards
+* Soft shadows
+* Thin borders
+* Spacious layout
+* Crisp typography
+
+Suggested colors:
+
+* Primary navy: `#0F172A`
+* Primary blue: `#2563EB`
+* Purple: `#6D5DFB`
+* Green: `#10B981`
+* Amber: `#F59E0B`
+* Red: `#EF4444`
+* Page background: `#F8FAFC`
+* Card background: `#FFFFFF`
+* Border: `#E2E8F0`
+* Muted text: `#64748B`
+
+Do not include any “Upgrade to Pro” card. The developer is the platform administrator and must already have complete access.
+
+## 3. Main Application Layout
+
+Create a fixed desktop sidebar, sticky top navigation bar, and scrollable dashboard content area.
+
+The dashboard must work well on:
+
+* 4K desktop screens
+* Standard desktop screens
+* Laptops
+* Tablets
+* Mobile devices
+
+On smaller screens, collapse the sidebar into a drawer.
+
+## 4. Sidebar Navigation
+
+Add the Luxor PDF icon and the following navigation menus:
+
+1. Dashboard
+2. Revenue
+3. Users
+4. Licenses
+5. Offers
+6. Referrals
+7. Products
+8. Analytics
+9. Reports
+10. Integrations
+11. Settings
+
+Add a “Shortcuts” section:
+
+* API Keys
+* Webhooks
+* Status Page
+
+The active menu must have a soft purple-blue background and highlighted icon.
+
+At the bottom of the sidebar, add a System Overview card showing:
+
+* All Systems Operational
+* API: Operational
+* License Service: Operational
+* Web App: Operational
+* Database: Operational
+* Storage: Operational
+* Email Service: Operational
+
+Use green indicators for operational services.
+
+Below it, include Quick Actions:
+
+* Create License Key
+* Launch Offer
+* Add User
+* Export Revenue Report
+
+## 5. Top Navigation
+
+The top navigation must include:
+
+* Sidebar toggle button
+* Global search bar
+* Search placeholder: “Search users, licenses, offers, revenue, metrics...”
+* Keyboard shortcut indicator: `⌘K` or `Ctrl+K`
+* Notifications icon with badge
+* Help icon
+* Administrator profile avatar
+* Administrator name
+* Role: Administrator
+* Profile dropdown
+* Date range selector
+* Global Filters button
+
+The global search should search sample users, licenses, offers, and referral codes.
+
+## 6. Dashboard KPI Cards
+
+At the top of the dashboard, create six KPI cards:
+
+1. Total Revenue
+2. Monthly Recurring Revenue
+3. Active Users
+4. New Signups
+5. Conversion Rate
+6. Churn Rate
+
+Each card should include:
+
+* Icon
+* Metric name
+* Current value
+* Percentage increase or decrease
+* Comparison period
+* Small sparkline chart
+* Tooltip with additional information
+
+Use realistic mock data.
+
+Example values:
+
+* Total Revenue: `$124,560`
+* Monthly Recurring Revenue: `$87,650`
+* Active Users: `23,842`
+* New Signups: `4,892`
+* Conversion Rate: `3.68%`
+* Churn Rate: `1.23%`
+
+## 7. Revenue Analytics
+
+Create a Revenue Overview card with:
+
+* Monthly, quarterly, and yearly filters
+* Current revenue
+* Previous-period comparison
+* Interactive line chart
+* Revenue tooltip
+* Export chart button
+* Date range filter
+
+Show current and previous revenue using two different lines.
+
+## 8. User Analytics
+
+Create a User Analytics card with:
+
+* Daily Active Users
+* Monthly Active Users
+* New users
+* Returning users
+* Active subscriptions
+* Trial users
+* Interactive line chart
+* Last 7 days, 30 days, 90 days, and one-year filters
+
+## 9. Acquisition Analytics
+
+Create a Top Acquisition Channels card with a donut chart.
+
+Include:
+
+* Organic Search
+* Direct
+* Referral
+* Social Media
+* Email
+* Paid Advertising
+
+Show:
+
+* Number of users
+* Percentage contribution
+* Conversion rate by channel
+
+## 10. License Management
+
+Create a full License Management page and a dashboard summary section.
+
+The developer must be able to manage all Luxor PDF license keys.
+
+Display summary cards for:
+
+* Total License Keys
+* Active Licenses
+* Expired Licenses
+* Trial Licenses
+* Revoked Licenses
+* Activations Today
+
+Create a license table with columns:
+
+* License Key
+* User
+* Email
+* Product
+* Plan
+* Created Date
+* Activation Date
+* Valid Until
+* Devices Used
+* Device Limit
+* Status
+* Actions
+
+License statuses:
+
+* Active
+* Trial
+* Expired
+* Suspended
+* Revoked
+* Unassigned
+
+License actions:
+
+* View license
+* Copy license key
+* Assign license
+* Extend validity
+* Change plan
+* Reset device activations
+* Suspend license
+* Revoke license
+* Reactivate license
+* Delete license
+
+Add buttons:
+
+* Generate New License
+* Bulk Generate Licenses
+* Import Licenses
+* Export Licenses
+* Assign License
+* Filter Licenses
+
+When generating a license, open a modal with:
+
+* User
+* Product
+* Plan
+* Validity period
+* Device limit
+* Activation limit
+* Start date
+* End date
+* Notes
+
+Create realistic license keys such as:
+
+`LXR-8F2K-9Q4M-7X1P`
+
+Add recent license activity showing:
+
+* Key generated
+* Key assigned
+* Key activated
+* Key renewed
+* Key expired
+* Key revoked
+* Device reset
+
+## 11. Offers and Campaign Management
+
+Create a complete Offers page.
+
+The developer must be able to create and apply an offer:
+
+* At any time of year
+* For any occasion
+* For any duration
+* For selected users
+* For selected countries
+* For selected products
+* For selected subscription plans
+* For new users only
+* For existing users only
+* For everyone
+
+Add buttons:
+
+* Create Offer
+* Schedule Offer
+* Apply Offer
+* Pause Offer
+* Duplicate Offer
+* End Offer
+
+Create an offers table with:
+
+* Offer Name
+* Offer Code
+* Occasion
+* Discount Type
+* Discount Amount
+* Products
+* Plans
+* Eligible Users
+* Valid From
+* Valid To
+* Usage Limit
+* Times Used
+* Status
+* Actions
+
+Offer statuses:
+
+* Draft
+* Scheduled
+* Active
+* Paused
+* Expired
+* Cancelled
+
+Create sample offers:
+
+* Eid Offer
+* New Year Sale
+* Summer Campaign
+* Product Launch Offer
+* Black Friday Offer
+* Referral Bonus
+* Customer Loyalty Offer
+
+The Create Offer form must contain:
+
+* Offer name
+* Offer code
+* Description
+* Occasion
+* Percentage discount
+* Fixed-amount discount
+* Free validity extension
+* Start date and time
+* End date and time
+* Time zone
+* Eligible products
+* Eligible plans
+* Eligible countries
+* Eligible users
+* Minimum purchase value
+* Maximum discount
+* Total usage limit
+* Per-user usage limit
+* New subscriptions only
+* Renewals allowed
+* Automatically apply offer
+* Public or private offer
+* Enable or disable offer
+
+Show a confirmation modal before activating, pausing, ending, or deleting an offer.
+
+## 12. User Management
+
+Create a complete User Management page.
+
+The developer must be able to see:
+
+* User name
+* Email address
+* Profile image
+* Joined date
+* Joined time
+* Country
+* Subscription plan
+* Product access
+* Revenue generated from that user
+* Total orders
+* Validity start date
+* Validity end date
+* Remaining validity
+* Referral link
+* Referral code
+* Number of referrals
+* Account status
+* Last login
+* Device count
+
+Create a searchable, sortable, filterable, paginated user table.
+
+Columns:
+
+* User
+* Joined On
+* Country
+* Plan
+* Products
+* Revenue
+* Valid Until
+* Referral Link
+* Status
+* Actions
+
+User statuses:
+
+* Active
+* Trial
+* Expired
+* Blocked
+* Suspended
+* Cancelled
+
+Add user actions:
+
+* View complete profile
+* Edit user
+* Block user
+* Unblock user
+* Suspend user
+* Extend validity
+* Change subscription plan
+* Add product access
+* Remove product access
+* Send password reset link
+* Send verification email
+* Copy referral link
+* View payment history
+* View login history
+* View license keys
+* Delete user
+
+When clicking “Block”, show a confirmation modal with:
+
+* Reason for blocking
+* Internal notes
+* Block immediately checkbox
+* Send notification to user checkbox
+
+When clicking “Extend Validity”, open a modal with:
+
+* Current expiry date
+* Add days
+* Add months
+* Custom new expiry date
+* Reason
+* Notify user checkbox
+
+When clicking “Reset Password”, show:
+
+* User email
+* Send password reset link button
+* Confirmation message after sending
+* Timestamp of the last password reset email
+
+Add bulk actions:
+
+* Block selected users
+* Extend validity
+* Change plan
+* Send email
+* Export selected users
+
+## 13. User Detail Drawer
+
+Clicking a user should open a detailed right-side drawer.
+
+The drawer should include tabs:
+
+* Overview
+* Subscription
+* Licenses
+* Payments
+* Referrals
+* Activity
+* Security
+
+Overview should show:
+
+* Profile information
+* Join date
+* Account status
+* Country
+* Last login
+* Lifetime revenue
+* Current subscription
+* Validity
+* Products used
+
+Subscription tab:
+
+* Current plan
+* Billing cycle
+* Start date
+* Renewal date
+* Subscription history
+* Upgrade and downgrade history
+
+Licenses tab:
+
+* Assigned licenses
+* Devices
+* Activations
+* License status
+
+Payments tab:
+
+* Payment history
+* Invoice number
+* Amount
+* Payment status
+* Payment method
+* Refund status
+
+Activity tab:
+
+* Login history
+* Downloads
+* License activations
+* Password changes
+* Admin actions
+
+Security tab:
+
+* Failed login attempts
+* Blocked status
+* Active sessions
+* Device list
+* Force logout from all devices
+* Send password reset link
+
+## 14. Referral Program
+
+Create a complete referral-management section.
+
+Referral rule:
+
+* Every registered user receives a unique referral link.
+* When a new customer purchases a paid subscription through that link, the new customer receives a 10% discount.
+* The referring user receives two additional months of subscription validity.
+* Rewards should only be issued after successful payment.
+* Prevent users from referring themselves.
+* Prevent duplicate reward claims for the same purchase.
+* Record all referral activity in an audit log.
+
+Display a prominent rule badge:
+
+**Friend gets 10% OFF • Referrer gets +2 months validity**
+
+Create a visual three-step flow:
+
+1. Existing user shares unique referral link.
+2. New user purchases a subscription and receives 10% discount.
+3. Referring user receives two extra months of validity.
+
+Referral summary cards:
+
+* Total Referral Links
+* Referral Clicks
+* Successful Referrals
+* Pending Referrals
+* Discounts Given
+* Bonus Months Granted
+* Referral Revenue
+* Conversion Rate
+
+Create a referral table with:
+
+* Referrer
+* Referral Code
+* Referral Link
+* Clicks
+* Signups
+* Paid Conversions
+* Revenue
+* Discount Given
+* Reward Granted
+* Status
+* Actions
+
+Referral statuses:
+
+* Clicked
+* Registered
+* Payment Pending
+* Successful
+* Reward Granted
+* Rejected
+* Fraud Review
+
+Actions:
+
+* Copy referral link
+* View referred users
+* Grant reward manually
+* Cancel reward
+* Flag referral
+* View audit log
+
+Create referral links such as:
+
+`https://luxorpdf.com/r/JANE10`
+
+Add a copy button beside every referral link.
+
+## 15. Revenue Per User
+
+Show revenue generated from each user.
+
+Revenue should include:
+
+* Initial subscription payment
+* Renewal payments
+* Plan upgrades
+* Product purchases
+* Discounts
+* Refunds
+* Net lifetime revenue
+
+In the user table, show lifetime revenue.
+
+In the user detail view, display:
+
+* Gross revenue
+* Discounts
+* Refunds
+* Net revenue
+* Average order value
+* Number of payments
+
+## 16. Product Analytics
+
+Support the following Luxor PDF products:
+
+* PDF Reader
+* PDF Secure
+* eSign
+
+Show for each product:
+
+* Total users
+* Active users
+* Paid users
+* Trial users
+* Downloads
+* Revenue
+* Conversion rate
+* Churn
+* Active licenses
+* Product version
+
+## 17. Operational Metrics
+
+Create small metric cards for:
+
+* API Usage
+* App Downloads
+* Server Uptime
+* Support Tickets
+* Failed Payments
+* Email Delivery Rate
+* License Activation Errors
+* Failed Login Attempts
+
+Use sparklines where appropriate.
+
+## 18. Active Users by Region
+
+Create a world map or regional analytics card.
+
+Show example countries:
+
+* United States
+* India
+* United Kingdom
+* Germany
+* Canada
+
+Display:
+
+* Active users
+* Revenue
+* Paid users
+* Conversion rate
+
+## 19. Notifications
+
+Create a notification panel containing:
+
+* New high-value subscription
+* Failed payment
+* Unusual login attempt
+* License activation limit reached
+* Offer ending soon
+* Referral reward issued
+* Server warning
+* Support escalation
+
+Notifications should be markable as read.
+
+## 20. Reports
+
+Create report options for:
+
+* Revenue Report
+* User Growth Report
+* Subscription Report
+* License Report
+* Offer Performance Report
+* Referral Report
+* Product Report
+* Churn Report
+* Country Report
+
+Allow export in:
+
+* CSV
+* Excel
+* PDF
+
+## 21. Audit Log
+
+Record administrative actions such as:
+
+* User blocked
+* Validity extended
+* Password reset link sent
+* License generated
+* License revoked
+* Offer created
+* Offer activated
+* Referral reward granted
+* Subscription changed
+
+Show:
+
+* Administrator
+* Action
+* Target
+* Previous value
+* New value
+* Date and time
+* IP address
+
+## 22. Required Interactions
+
+All buttons must work using local state and mock data.
+
+Implement:
+
+* Search
+* Sorting
+* Filtering
+* Pagination
+* Date range selection
+* Dropdown menus
+* Tabs
+* Tooltips
+* Toast notifications
+* Confirmation dialogs
+* Form validation
+* Copy-to-clipboard buttons
+* Export sample CSV
+* Block and unblock user
+* Extend user validity
+* Send simulated password reset link
+* Generate license key
+* Revoke and reactivate license
+* Create and schedule offers
+* Pause and activate offers
+* Grant referral reward
+
+Actions should immediately update the interface.
+
+Use toast messages such as:
+
+* “User blocked successfully.”
+* “Validity extended by 2 months.”
+* “Password reset link sent successfully.”
+* “License key generated.”
+* “Offer scheduled successfully.”
+* “Referral reward granted.”
+
+## 23. Responsive Behaviour
+
+Desktop:
+
+* Fixed sidebar
+* Multi-column analytics layout
+* Full tables
+
+Tablet:
+
+* Collapsible sidebar
+* Two-column cards
+* Horizontally scrollable tables
+
+Mobile:
+
+* Drawer navigation
+* Single-column cards
+* Responsive tables or card-based rows
+* Sticky action buttons where useful
+
+## 24. Accessibility
+
+Include:
+
+* Semantic HTML
+* Keyboard navigation
+* Visible focus states
+* ARIA labels
+* Accessible form labels
+* Sufficient color contrast
+* Screen-reader-friendly buttons
+* Accessible dialogs
+
+## 25. File Structure
+
+Use a professional structure similar to:
+
+```text
+src/
+  components/
+    layout/
+    dashboard/
+    users/
+    licenses/
+    offers/
+    referrals/
+    revenue/
+    analytics/
+    reports/
+    shared/
+  pages/
+    DashboardPage.tsx
+    UsersPage.tsx
+    LicensesPage.tsx
+    OffersPage.tsx
+    ReferralsPage.tsx
+    RevenuePage.tsx
+    AnalyticsPage.tsx
+    ReportsPage.tsx
+    SettingsPage.tsx
+  data/
+    mockUsers.ts
+    mockLicenses.ts
+    mockOffers.ts
+    mockReferrals.ts
+    mockAnalytics.ts
+  services/
+    userService.ts
+    licenseService.ts
+    offerService.ts
+    referralService.ts
+  hooks/
+  types/
+  utils/
+  App.tsx
+  main.tsx
+```
+
+Create reusable TypeScript interfaces for:
+
+* User
+* Subscription
+* License
+* Offer
+* Referral
+* Payment
+* RevenueMetric
+* ActivityLog
+* SystemStatus
+
+## 26. Quality Requirements
+
+The finished result must:
+
+* Look like a premium professional SaaS admin dashboard
+* Closely match a polished 4K design presentation
+* Contain no broken layout
+* Contain no placeholder lorem ipsum
+* Use realistic Luxor PDF sample data
+* Have readable text and consistent spacing
+* Have functional navigation and actions
+* Be ready to run immediately in Replit
+* Require no missing manual setup
+* Avoid unnecessary dependencies
+* Contain no “Upgrade to Pro” developer prompt
+* Include complete license, user, offer, and referral management
+* Include loading, empty, and error states
+* Include a professional README with setup and run instructions
+
+## 27. Final Delivery
+
+After generating the application:
+
+1. Install all required packages.
+2. Run the application.
+3. Fix all TypeScript, build, and console errors.
+4. Verify every route works.
+5. Verify the responsive layout.
+6. Verify forms and modals work.
+7. Verify charts render correctly.
+8. Verify all mock actions update the UI.
+9. Ensure the initial route opens the Dashboard page.
+10. Do not stop after creating files; launch the working preview.
+
+The final application should feel like a complete Luxor PDF internal developer console, not merely a dashboard image.

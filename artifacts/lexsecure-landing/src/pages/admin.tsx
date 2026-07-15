@@ -180,8 +180,8 @@ const NAV_ITEMS: { id: Section; label: string; icon: string; badge?: string }[] 
   { id: "customers",  label: "Customers",  icon: "🪪" },
   { id: "revenue",    label: "Revenue",    icon: "💰" },
   { id: "documents",  label: "Documents",  icon: "📄" },
-  { id: "geography",  label: "Geography",  icon: "🌍" },
-  { id: "activity",   label: "Activity",   icon: "🔔", badge: "7" },
+  { id: "pages",      label: "Pages",      icon: "📈" },
+  { id: "activity",   label: "Activity",   icon: "🔔" },
   { id: "settings",   label: "Settings",   icon: "⚙️" },
 ];
 
@@ -601,62 +601,70 @@ function CustomersSection({ token, onLogout, t }: { token: string; onLogout: () 
 // ── Section: Revenue ──────────────────────────────────────────────────────────
 function RevenueSection({ stats, t }: { stats: AdminStats; t: Theme }) {
   const { overview, monthlyData } = stats;
+  const chartData = monthlyChartData(monthlyData);
   return (
     <div>
-      <SectionTitle title="Revenue" sub="Billing, MRR and financial analytics" t={t} />
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 24 }}>
-        <StatCard label="Monthly Revenue" value={`$${overview.monthlyRevenue.toLocaleString()}`} sub="↑ 14% vs last month" icon="💰" color="#10b981" t={t} />
-        <StatCard label="Annual Revenue"  value={`$${overview.annualRevenue.toLocaleString()}`}  sub="Projected ARR"       icon="📈" t={t} />
-        <StatCard label="ARPU"            value={`$${overview.avgRevenuePerUser}`}               sub="Pro + Enterprise"    icon="💳" t={t} />
-        <StatCard label="Churn Rate"      value={`${overview.churnRate}%`}                       sub="Monthly — healthy"   icon="📉" color="#10b981" t={t} />
+      <SectionTitle title="Revenue" sub="Real payments recorded from Stripe and Razorpay" t={t} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 24 }}>
+        <StatCard label="Revenue This Month" value={fmtMoney(overview.monthRevenue)} sub="Current calendar month" icon="💰" color="#10b981" t={t} />
+        <StatCard label="Total Revenue"      value={fmtMoney(overview.totalRevenue)} sub="All recorded payments"  icon="🏦" t={t} />
+        <StatCard label="Paying Customers"   value={fmt(overview.paidUsers)}         sub="Active paid plans"      icon="💳" color="#4f8ef7" t={t} />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
         <Card t={t}>
-          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Monthly Revenue</div>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Monthly Revenue (12 mo)</div>
           <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={monthlyData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
               <defs>
-                <linearGradient id="rGrad" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="rGradU" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#4f8ef7" stopOpacity={0.3} />
                   <stop offset="95%" stopColor="#4f8ef7" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="rGradI" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={t.chartGrid} />
               <XAxis dataKey="month" tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
-              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} formatter={(v: any) => [`$${v.toLocaleString()}`, "Revenue"]} />
-              <Area type="monotone" dataKey="revenue" stroke="#4f8ef7" strokeWidth={2} fill="url(#rGrad)" />
+              <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} labelStyle={{ color: t.text }} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Area type="monotone" dataKey="USD" stroke="#4f8ef7" strokeWidth={2} fill="url(#rGradU)" name="USD ($)" />
+              <Area type="monotone" dataKey="INR" stroke="#10b981" strokeWidth={2} fill="url(#rGradI)" name="INR (₹)" />
             </AreaChart>
           </ResponsiveContainer>
         </Card>
         <Card t={t}>
-          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Revenue Bar</div>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Last 6 Months</div>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={monthlyData.slice(-6)} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+            <BarChart data={chartData.slice(-6)} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={t.chartGrid} />
               <XAxis dataKey="month" tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
-              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} formatter={(v: any) => [`$${v.toLocaleString()}`, "Revenue"]} />
-              <Bar dataKey="revenue" fill="#4f8ef7" radius={[4, 4, 0, 0]} />
+              <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} labelStyle={{ color: t.text }} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="USD" fill="#4f8ef7" radius={[4, 4, 0, 0]} name="USD ($)" />
+              <Bar dataKey="INR" fill="#10b981" radius={[4, 4, 0, 0]} name="INR (₹)" />
             </BarChart>
           </ResponsiveContainer>
         </Card>
       </div>
       <Card t={t}>
-        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Revenue Breakdown by Plan</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-          {[
-            { plan: "Free", users: stats.plans.free, price: 0, color: "#6b7280" },
-            { plan: "Pro", users: stats.plans.pro, price: 12, color: "#4f8ef7" },
-            { plan: "Enterprise", users: stats.plans.enterprise, price: 79, color: "#a78bfa" },
-          ].map(p => (
-            <div key={p.plan} style={{ background: `${p.color}12`, border: `1px solid ${p.color}30`, borderRadius: 10, padding: "16px 18px" }}>
-              <div style={{ color: p.color, fontSize: 12, fontWeight: 700, marginBottom: 8 }}>{p.plan}</div>
-              <div style={{ color: t.text, fontSize: 22, fontWeight: 700 }}>${(p.users * p.price).toLocaleString()}</div>
-              <div style={{ color: t.textMuted, fontSize: 12, marginTop: 4 }}>{p.users} users × ${p.price}/mo</div>
-            </div>
-          ))}
-        </div>
+        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Total Revenue by Currency</div>
+        {Object.keys(overview.totalRevenue).length === 0 ? (
+          <div style={{ color: t.textMuted, fontSize: 13, padding: "12px 0" }}>No payments recorded yet — completed Stripe/Razorpay payments will appear here.</div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+            {Object.entries(overview.totalRevenue).map(([cur, amount], i) => (
+              <div key={cur} style={{ background: `${PIE_COLORS[i % PIE_COLORS.length]}12`, border: `1px solid ${PIE_COLORS[i % PIE_COLORS.length]}30`, borderRadius: 10, padding: "16px 18px" }}>
+                <div style={{ color: PIE_COLORS[i % PIE_COLORS.length], fontSize: 12, fontWeight: 700, marginBottom: 8 }}>{cur}</div>
+                <div style={{ color: t.text, fontSize: 22, fontWeight: 700 }}>{fmtMoney({ [cur]: amount })}</div>
+                <div style={{ color: t.textMuted, fontSize: 12, marginTop: 4 }}>this month: {fmtMoney({ [cur]: overview.monthRevenue[cur] ?? 0 })}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
     </div>
   );
@@ -664,7 +672,7 @@ function RevenueSection({ stats, t }: { stats: AdminStats; t: Theme }) {
 
 // ── Section: Documents ────────────────────────────────────────────────────────
 function DocumentsSection({ stats, t }: { stats: AdminStats; t: Theme }) {
-  const { overview, monthlyData } = stats;
+  const { overview, dailyViews } = stats;
   return (
     <div>
       <SectionTitle title="Documents" sub="PDF processing and storage metrics" t={t} />
@@ -676,14 +684,14 @@ function DocumentsSection({ stats, t }: { stats: AdminStats; t: Theme }) {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         <Card t={t}>
-          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Documents Processed</div>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Site Traffic (last 30 days)</div>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={monthlyData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+            <BarChart data={dailyViews} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={t.chartGrid} />
-              <XAxis dataKey="month" tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} />
-              <Bar dataKey="documents" fill="#a78bfa" radius={[4, 4, 0, 0]} />
+              <XAxis dataKey="day" tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(d: string) => d.slice(5)} />
+              <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} labelStyle={{ color: t.text }} />
+              <Bar dataKey="views" fill="#a78bfa" radius={[4, 4, 0, 0]} name="Page views" />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -708,50 +716,64 @@ function DocumentsSection({ stats, t }: { stats: AdminStats; t: Theme }) {
   );
 }
 
-// ── Section: Geography ────────────────────────────────────────────────────────
-function GeographySection({ stats, t }: { stats: AdminStats; t: Theme }) {
-  const { topCountries } = stats;
+// ── Section: Pages (real traffic) ─────────────────────────────────────────────
+function PagesSection({ stats, t }: { stats: AdminStats; t: Theme }) {
+  const { topPages, dailyViews } = stats;
+  const totalViews = topPages.reduce((a, p) => a + p.views, 0);
   return (
     <div>
-      <SectionTitle title="Geography" sub="User distribution by country" t={t} />
+      <SectionTitle title="Pages" sub="Daily visitors per page — last 30 days" t={t} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         <Card t={t}>
-          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 16, color: t.text }}>Top Countries</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {topCountries.map((c, i) => (
-              <div key={c.country}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ color: t.textSub, fontSize: 12, width: 18, textAlign: "right", fontWeight: 600 }}>{i + 1}</span>
-                    <span style={{ color: t.text, fontSize: 13 }}>{c.country}</span>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 16, color: t.text }}>Top Pages</div>
+          {topPages.length === 0 ? (
+            <div style={{ color: t.textMuted, fontSize: 13, padding: "12px 0" }}>No page views recorded yet. Views appear here as visitors browse the live site.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {topPages.map((p, i) => {
+                const pct = totalViews ? Math.round((p.views / totalViews) * 100) : 0;
+                return (
+                  <div key={p.path}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                        <span style={{ color: t.textSub, fontSize: 12, width: 18, textAlign: "right", fontWeight: 600, flexShrink: 0 }}>{i + 1}</span>
+                        <span style={{ color: t.text, fontSize: 13, fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={p.path}>{p.path}</span>
+                      </div>
+                      <div style={{ display: "flex", gap: 12, flexShrink: 0 }}>
+                        <span style={{ color: t.textMuted, fontSize: 13 }}>{p.views.toLocaleString()} views</span>
+                        <span style={{ color: t.textSub, fontSize: 12, width: 34, textAlign: "right", fontWeight: 600 }}>{pct}%</span>
+                      </div>
+                    </div>
+                    <div style={{ height: 6, background: t.barTrack, borderRadius: 3 }}>
+                      <div style={{ width: `${pct}%`, height: "100%", background: PIE_COLORS[i % PIE_COLORS.length], borderRadius: 3, transition: "width 0.5s" }} />
+                    </div>
                   </div>
-                  <div style={{ display: "flex", gap: 12 }}>
-                    <span style={{ color: t.textMuted, fontSize: 13 }}>{c.users.toLocaleString()} users</span>
-                    <span style={{ color: t.textSub, fontSize: 12, width: 34, textAlign: "right", fontWeight: 600 }}>{c.pct}%</span>
-                  </div>
-                </div>
-                <div style={{ height: 6, background: t.barTrack, borderRadius: 3 }}>
-                  <div style={{ width: `${c.pct}%`, height: "100%", background: PIE_COLORS[Math.min(i, 2)], borderRadius: 3, transition: "width 0.5s" }} />
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </Card>
         <Card t={t}>
-          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Distribution Chart</div>
-          <ResponsiveContainer width="100%" height={260}>
-            <PieChart>
-              <Pie
-                data={topCountries}
-                cx="50%" cy="50%" outerRadius={95} dataKey="users"
-                nameKey="country" paddingAngle={2}
-                label={({ country, pct }) => pct > 7 ? `${country} ${pct}%` : ""}
-              >
-                {topCountries.map((_, i) => <Cell key={i} fill={["#4f8ef7","#10b981","#a78bfa","#f59e0b","#ef4444","#6366f1","#374151"][i % 7]} />)}
-              </Pie>
-              <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} formatter={(v: any) => [v.toLocaleString(), "Users"]} />
-            </PieChart>
-          </ResponsiveContainer>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14, color: t.text }}>Daily Views</div>
+          {dailyViews.length === 0 ? (
+            <div style={{ color: t.textMuted, fontSize: 13, padding: "12px 0" }}>No traffic yet.</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={dailyViews} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="pvGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#4f8ef7" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#4f8ef7" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={t.chartGrid} />
+                <XAxis dataKey="day" tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(d: string) => d.slice(5)} />
+                <YAxis tick={{ fill: t.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip contentStyle={{ background: t.tooltipBg, border: `1px solid ${t.tooltipBorder}`, borderRadius: 8 }} labelStyle={{ color: t.text }} />
+                <Area type="monotone" dataKey="views" stroke="#4f8ef7" strokeWidth={2} fill="url(#pvGrad)" name="Views" />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
         </Card>
       </div>
     </div>
@@ -766,25 +788,29 @@ function ActivitySection({ stats, t }: { stats: AdminStats; t: Theme }) {
       <SectionTitle title="Activity" sub="Real-time user events and notifications" t={t} />
       <Card t={t}>
         <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 16, color: t.text }}>Recent Events</div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          {recentActivity.map((a, i) => (
-            <div key={a.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: i < recentActivity.length - 1 ? `1px solid ${t.divider}` : "none" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ width: 36, height: 36, borderRadius: "50%", background: t.avatarBg, display: "flex", alignItems: "center", justifyContent: "center", color: "#4f8ef7", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
-                  {a.user.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <div style={{ color: t.text, fontSize: 13, fontWeight: 500 }}>{a.user}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
-                    <ActivityBadge type={a.type} />
-                    <span style={{ color: t.textSub, fontSize: 11 }}>{a.plan} plan</span>
+        {recentActivity.length === 0 ? (
+          <div style={{ color: t.textMuted, fontSize: 13, padding: "12px 0" }}>No account events yet — signups, plan changes, and license events will appear here.</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {recentActivity.map((a, i) => (
+              <div key={a.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: i < recentActivity.length - 1 ? `1px solid ${t.divider}` : "none" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: t.avatarBg, display: "flex", alignItems: "center", justifyContent: "center", color: "#4f8ef7", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+                    {(a.user || "?").charAt(0).toUpperCase()}
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ color: t.text, fontSize: 13, fontWeight: 500, fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 320 }} title={a.user}>{a.user}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
+                      <ActivityBadge type={a.type} />
+                      {a.message && <span style={{ color: t.textSub, fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 380 }} title={a.message}>{a.message}</span>}
+                    </div>
                   </div>
                 </div>
+                <span style={{ color: t.textFaint, fontSize: 12, flexShrink: 0 }}>{timeAgo(a.time)}</span>
               </div>
-              <span style={{ color: t.textFaint, fontSize: 12 }}>{a.time}</span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </Card>
     </div>
   );
@@ -1016,7 +1042,7 @@ function Dashboard({ onLogout, dark, onToggleDark, token }: { onLogout: () => vo
               {section === "customers" && <CustomersSection token={token} onLogout={onLogout} t={t} />}
               {section === "revenue"   && <RevenueSection   stats={stats} t={t} />}
               {section === "documents" && <DocumentsSection stats={stats} t={t} />}
-              {section === "geography" && <GeographySection stats={stats} t={t} />}
+              {section === "pages"     && <PagesSection     stats={stats} t={t} />}
               {section === "activity"  && <ActivitySection  stats={stats} t={t} />}
               {section === "settings"  && <SettingsSection  dark={dark} onToggleDark={onToggleDark} onLogout={onLogout} t={t} />}
             </>
