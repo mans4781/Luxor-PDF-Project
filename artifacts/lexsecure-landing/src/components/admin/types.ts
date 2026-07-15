@@ -23,6 +23,7 @@ export interface AdminStats {
 export interface VisitorAnalytics {
   days: { day: string; visitors: number }[];
   locations: { country: string; city: string; visitors: number }[];
+  dayLocations: Record<string, { country: string; city: string; visitors: number }[]>;
 }
 
 export interface AdminCustomer {

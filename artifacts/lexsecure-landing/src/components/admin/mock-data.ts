@@ -484,4 +484,24 @@ export const SAMPLE_VISITOR_ANALYTICS: VisitorAnalytics = {
     { country: "AE", city: "Dubai", visitors: 29 },
     { country: "CA", city: "Toronto", visitors: 22 },
   ],
+  dayLocations: Object.fromEntries(
+    Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const pool = [
+        { country: "IN", city: "Mumbai" },
+        { country: "IN", city: "Delhi" },
+        { country: "US", city: "New York" },
+        { country: "US", city: "San Francisco" },
+        { country: "GB", city: "London" },
+        { country: "DE", city: "Berlin" },
+        { country: "SG", city: "Singapore" },
+        { country: "AE", city: "Dubai" },
+      ];
+      const picks = pool
+        .filter((_, j) => (i + j) % 3 !== 0)
+        .map((p, j) => ({ ...p, visitors: Math.max(1, 22 - j * 3 - ((i + j) % 5)) }))
+        .sort((a, b) => b.visitors - a.visitors);
+      return [d, picks];
+    }),
+  ),
 };

@@ -534,6 +534,18 @@ router.get("/admin/analytics/visitors", async (req, res): Promise<void> => {
       .groupBy(dailyVisitorsTable.day)
       .orderBy(dailyVisitorsTable.day);
 
+    const byDayLocation = await db
+      .select({
+        day: dailyVisitorsTable.day,
+        country: dailyVisitorsTable.country,
+        city: dailyVisitorsTable.city,
+        visitors: sql<number>`count(*)::int`,
+      })
+      .from(dailyVisitorsTable)
+      .where(gte(dailyVisitorsTable.day, since))
+      .groupBy(dailyVisitorsTable.day, dailyVisitorsTable.country, dailyVisitorsTable.city)
+      .orderBy(dailyVisitorsTable.day, sql`count(*) desc`);
+
     const byLocation = await db
       .select({
         country: dailyVisitorsTable.country,
@@ -554,6 +566,18 @@ router.get("/admin/analytics/visitors", async (req, res): Promise<void> => {
       filled.push({ day, visitors: dayMap.get(day) ?? 0 });
     }
 
+    const dayLocations: Record<
+      string,
+      { country: string; city: string; visitors: number }[]
+    > = {};
+    for (const row of byDayLocation) {
+      (dayLocations[row.day] ??= []).push({
+        country: row.country ?? "Unknown",
+        city: row.city ?? "Unknown",
+        visitors: row.visitors,
+      });
+    }
+
     res.json({
       days: filled,
       locations: byLocation.map((l) => ({
@@ -561,6 +585,7 @@ router.get("/admin/analytics/visitors", async (req, res): Promise<void> => {
         city: l.city ?? "Unknown",
         visitors: l.visitors,
       })),
+      dayLocations,
     });
   } catch (err) {
     req.log.error({ err }, "admin/analytics/visitors failed");

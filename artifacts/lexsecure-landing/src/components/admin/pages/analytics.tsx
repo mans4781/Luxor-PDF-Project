@@ -2,6 +2,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -60,6 +61,7 @@ export function AnalyticsPage({
   const { overview } = stats;
   const [visitors, setVisitors] = useState<VisitorAnalytics | null>(null);
   const [visitorsError, setVisitorsError] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -129,9 +131,68 @@ export function AnalyticsPage({
                 <XAxis dataKey="day" tick={{ fontSize: 10, fill: "#64748B" }} axisLine={false} tickLine={false} tickFormatter={(d: string) => d.slice(5)} />
                 <YAxis tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <ChartTooltip contentStyle={{ borderRadius: 8, borderColor: "#E2E8F0", fontSize: 12 }} />
-                <Bar dataKey="visitors" fill="#2563EB" radius={[4, 4, 0, 0]} name="Visitors" />
+                <Bar
+                  dataKey="visitors"
+                  radius={[4, 4, 0, 0]}
+                  name="Visitors"
+                  cursor="pointer"
+                  onClick={(entry: { payload?: { day?: string } }) => {
+                    const day = entry?.payload?.day;
+                    if (day) setSelectedDay((prev) => (prev === day ? null : day));
+                  }}
+                >
+                  {visitors.days.map((d) => (
+                    <Cell key={d.day} fill={selectedDay === d.day ? "#6D5DFB" : "#2563EB"} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
+          )}
+          {!visitorsError && visitors && !selectedDay && (
+            <p className="mt-2 text-center text-[11px] text-slate-400">
+              Click a bar to see where that day's visitors came from.
+            </p>
+          )}
+          {visitors && selectedDay && (
+            <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-semibold text-slate-700">
+                  Visitors on{" "}
+                  {new Date(`${selectedDay}T00:00:00`).toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </p>
+                <button
+                  type="button"
+                  className="text-[11px] font-medium text-slate-400 hover:text-slate-600"
+                  onClick={() => setSelectedDay(null)}
+                >
+                  Close
+                </button>
+              </div>
+              {(visitors.dayLocations?.[selectedDay] ?? []).length === 0 ? (
+                <p className="py-3 text-center text-xs text-slate-400">
+                  No visitors recorded on this day.
+                </p>
+              ) : (
+                <ul className="space-y-1.5">
+                  {(visitors.dayLocations?.[selectedDay] ?? []).map((l, i) => (
+                    <li key={`${l.country}-${l.city}-${i}`} className="flex items-center gap-2 text-xs">
+                      <span className="w-10 shrink-0 text-right font-semibold tabular-nums text-[#2563EB]">
+                        {fmtNum(l.visitors)}
+                      </span>
+                      <span className="text-slate-300">—</span>
+                      <span className="text-slate-600">
+                        {l.city}, {countryLabel(l.country)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
