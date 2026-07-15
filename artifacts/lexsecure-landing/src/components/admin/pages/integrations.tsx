@@ -56,48 +56,48 @@ export function IntegrationsPage() {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {INTEGRATIONS.map((i) => (
-          <Card key={i.name} className="border-slate-200 shadow-sm">
+          <Card key={i.name} className="border-slate-200 dark:border-slate-700 shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
                   <i.icon className="h-5 w-5" />
                 </div>
                 <StatusBadge status={i.status} />
               </div>
-              <div className="mt-2.5 text-sm font-semibold text-slate-800">{i.name}</div>
-              <div className="mt-0.5 text-[11px] text-slate-500">{i.desc}</div>
-              <div className="mt-2 text-[10px] font-medium uppercase tracking-wide text-slate-400">{i.detail}</div>
+              <div className="mt-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200">{i.name}</div>
+              <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">{i.desc}</div>
+              <div className="mt-2 text-[10px] font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">{i.detail}</div>
             </CardContent>
           </Card>
         ))}
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
-              <KeyRound className="h-4 w-4 text-slate-400" /> API Keys
+              <KeyRound className="h-4 w-4 text-slate-400 dark:text-slate-500" /> API Keys
             </CardTitle>
-            <Badge variant="outline" className="border-slate-200 text-[10px] text-slate-400">managed via environment</Badge>
+            <Badge variant="outline" className="border-slate-200 dark:border-slate-700 text-[10px] text-slate-400 dark:text-slate-500">managed via environment</Badge>
           </CardHeader>
           <CardContent className="space-y-2">
             {["Stripe secret key", "Razorpay key pair", "Resend API key", "Admin console token"].map((k) => (
-              <div key={k} className="flex items-center justify-between rounded-md border border-slate-100 bg-slate-50/60 px-3 py-2">
-                <span className="text-xs text-slate-600">{k}</span>
-                <span className="font-mono text-[11px] text-slate-400">••••••••</span>
+              <div key={k} className="flex items-center justify-between rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60/60 px-3 py-2">
+                <span className="text-xs text-slate-600 dark:text-slate-400">{k}</span>
+                <span className="font-mono text-[11px] text-slate-400 dark:text-slate-500">••••••••</span>
               </div>
             ))}
-            <p className="pt-1 text-[11px] text-slate-400">
+            <p className="pt-1 text-[11px] text-slate-400 dark:text-slate-500">
               Keys are stored as server-side secrets and never exposed to the browser. Rotate them
               from the hosting environment's secret manager.
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
-              <Webhook className="h-4 w-4 text-slate-400" /> Webhooks & Status
+              <Webhook className="h-4 w-4 text-slate-400 dark:text-slate-500" /> Webhooks & Status
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -105,17 +105,17 @@ export function IntegrationsPage() {
               { name: "Stripe webhook", path: "/api/billing/stripe/webhook" },
               { name: "Razorpay webhook", path: "/api/billing/razorpay/webhook" },
             ].map((w) => (
-              <div key={w.name} className="flex items-center justify-between rounded-md border border-slate-100 bg-slate-50/60 px-3 py-2">
-                <span className="text-xs text-slate-600">{w.name}</span>
-                <code className="font-mono text-[11px] text-slate-400">{w.path}</code>
+              <div key={w.name} className="flex items-center justify-between rounded-md border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60/60 px-3 py-2">
+                <span className="text-xs text-slate-600 dark:text-slate-400">{w.name}</span>
+                <code className="font-mono text-[11px] text-slate-400 dark:text-slate-500">{w.path}</code>
               </div>
             ))}
             <div className="pt-2">
-              <div className="pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Service status</div>
+              <div className="pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Service status</div>
               {SYSTEM_SERVICES.map((s) => (
                 <div key={s.name} className="flex items-center justify-between py-1 text-xs">
-                  <span className="text-slate-600">{s.name}</span>
-                  <span className="flex items-center gap-1 text-emerald-600">
+                  <span className="text-slate-600 dark:text-slate-400">{s.name}</span>
+                  <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Operational
                   </span>
                 </div>

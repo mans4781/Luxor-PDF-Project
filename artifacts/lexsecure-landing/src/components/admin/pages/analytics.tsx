@@ -97,13 +97,13 @@ export function AnalyticsPage({
       </div>
 
       {/* ── Visitors: daily uniques + locations ── */}
-      <Card className="mt-4 border-slate-200 shadow-sm">
+      <Card className="mt-4 border-slate-200 dark:border-slate-700 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-[#2563EB]" />
+            <Users className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA]" />
             <CardTitle className="text-sm font-semibold">Daily Visitors (last 30 days)</CardTitle>
             {visitors && (
-              <Badge variant="outline" className="border-slate-200 text-[10px] text-slate-500">
+              <Badge variant="outline" className="border-slate-200 dark:border-slate-700 text-[10px] text-slate-500 dark:text-slate-400">
                 {fmtNum(totalVisitors30d)} total
               </Badge>
             )}
@@ -111,7 +111,7 @@ export function AnalyticsPage({
           <Button
             size="sm"
             variant="outline"
-            className="h-7 gap-1.5 border-slate-200 text-xs"
+            className="h-7 gap-1.5 border-slate-200 dark:border-slate-700 text-xs"
             disabled={!visitors}
             onClick={() => visitors && downloadVisitorsCsv(visitors)}
           >
@@ -121,9 +121,9 @@ export function AnalyticsPage({
         </CardHeader>
         <CardContent>
           {visitorsError ? (
-            <p className="py-8 text-center text-xs text-slate-400">Could not load visitor data.</p>
+            <p className="py-8 text-center text-xs text-slate-400 dark:text-slate-500">Could not load visitor data.</p>
           ) : !visitors ? (
-            <p className="py-8 text-center text-xs text-slate-400">Loading visitor data…</p>
+            <p className="py-8 text-center text-xs text-slate-400 dark:text-slate-500">Loading visitor data…</p>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={visitors.days} margin={{ top: 4, right: 4, left: -14, bottom: 0 }}>
@@ -149,14 +149,14 @@ export function AnalyticsPage({
             </ResponsiveContainer>
           )}
           {!visitorsError && visitors && !selectedDay && (
-            <p className="mt-2 text-center text-[11px] text-slate-400">
+            <p className="mt-2 text-center text-[11px] text-slate-400 dark:text-slate-500">
               Click a bar to see where that day's visitors came from.
             </p>
           )}
           {visitors && selectedDay && (
-            <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+            <div className="mt-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60/60 p-3">
               <div className="mb-2 flex items-center justify-between">
-                <p className="text-xs font-semibold text-slate-700">
+                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Visitors on{" "}
                   {new Date(`${selectedDay}T00:00:00`).toLocaleDateString("en-US", {
                     weekday: "short",
@@ -167,25 +167,25 @@ export function AnalyticsPage({
                 </p>
                 <button
                   type="button"
-                  className="text-[11px] font-medium text-slate-400 hover:text-slate-600"
+                  className="text-[11px] font-medium text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                   onClick={() => setSelectedDay(null)}
                 >
                   Close
                 </button>
               </div>
               {(visitors.dayLocations?.[selectedDay] ?? []).length === 0 ? (
-                <p className="py-3 text-center text-xs text-slate-400">
+                <p className="py-3 text-center text-xs text-slate-400 dark:text-slate-500">
                   No visitors recorded on this day.
                 </p>
               ) : (
                 <ul className="space-y-1.5">
                   {(visitors.dayLocations?.[selectedDay] ?? []).map((l, i) => (
                     <li key={`${l.country}-${l.city}-${i}`} className="flex items-center gap-2 text-xs">
-                      <span className="w-10 shrink-0 text-right font-semibold tabular-nums text-[#2563EB]">
+                      <span className="w-10 shrink-0 text-right font-semibold tabular-nums text-[#2563EB] dark:text-[#60A5FA]">
                         {fmtNum(l.visitors)}
                       </span>
-                      <span className="text-slate-300">—</span>
-                      <span className="text-slate-600">
+                      <span className="text-slate-300 dark:text-slate-600">—</span>
+                      <span className="text-slate-600 dark:text-slate-400">
                         {l.city}, {countryLabel(l.country)}
                       </span>
                     </li>
@@ -197,23 +197,23 @@ export function AnalyticsPage({
         </CardContent>
       </Card>
 
-      <Card className="mt-4 border-slate-200 shadow-sm">
+      <Card className="mt-4 border-slate-200 dark:border-slate-700 shadow-sm">
         <CardHeader className="flex flex-row items-center gap-2 pb-2">
           <Globe2 className="h-4 w-4 text-[#6D5DFB]" />
           <CardTitle className="text-sm font-semibold">Visitor Locations (last 30 days)</CardTitle>
         </CardHeader>
         <CardContent>
           {visitorsError ? (
-            <p className="py-8 text-center text-xs text-slate-400">Could not load location data.</p>
+            <p className="py-8 text-center text-xs text-slate-400 dark:text-slate-500">Could not load location data.</p>
           ) : !visitors ? (
-            <p className="py-8 text-center text-xs text-slate-400">Loading location data…</p>
+            <p className="py-8 text-center text-xs text-slate-400 dark:text-slate-500">Loading location data…</p>
           ) : visitors.locations.length === 0 ? (
-            <p className="py-8 text-center text-xs text-slate-400">No location data yet. Locations appear as new visitors arrive.</p>
+            <p className="py-8 text-center text-xs text-slate-400 dark:text-slate-500">No location data yet. Locations appear as new visitors arrive.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-100 text-[10px] uppercase tracking-wide text-slate-400">
+                  <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase tracking-wide text-slate-400 dark:text-slate-500">
                     <th className="py-2 pr-4 font-medium">Country</th>
                     <th className="py-2 pr-4 font-medium">City</th>
                     <th className="py-2 pr-4 text-right font-medium">Visitors</th>
@@ -224,12 +224,12 @@ export function AnalyticsPage({
                   {visitors.locations.slice(0, 15).map((l, i) => {
                     const max = visitors.locations[0]?.visitors ?? 1;
                     return (
-                      <tr key={`${l.country}-${l.city}-${i}`} className="border-b border-slate-50">
-                        <td className="py-2 pr-4 font-medium text-slate-700">{countryLabel(l.country)}</td>
-                        <td className="py-2 pr-4 text-slate-500">{l.city}</td>
-                        <td className="py-2 pr-4 text-right tabular-nums text-slate-600">{fmtNum(l.visitors)}</td>
+                      <tr key={`${l.country}-${l.city}-${i}`} className="border-b border-slate-50 dark:border-slate-800">
+                        <td className="py-2 pr-4 font-medium text-slate-700 dark:text-slate-300">{countryLabel(l.country)}</td>
+                        <td className="py-2 pr-4 text-slate-500 dark:text-slate-400">{l.city}</td>
+                        <td className="py-2 pr-4 text-right tabular-nums text-slate-600 dark:text-slate-400">{fmtNum(l.visitors)}</td>
                         <td className="py-2">
-                          <div className="h-1.5 rounded-full bg-slate-100">
+                          <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800">
                             <div className="h-1.5 rounded-full bg-gradient-to-r from-[#2563EB] to-[#6D5DFB]" style={{ width: `${Math.max(4, (l.visitors / max) * 100)}%` }} />
                           </div>
                         </td>
@@ -244,7 +244,7 @@ export function AnalyticsPage({
       </Card>
 
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">Daily Page Views (live)</CardTitle>
           </CardHeader>
@@ -261,13 +261,13 @@ export function AnalyticsPage({
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">Top Pages (live)</CardTitle>
           </CardHeader>
           <CardContent>
             {stats.topPages.length === 0 ? (
-              <p className="py-8 text-center text-xs text-slate-400">No page data yet.</p>
+              <p className="py-8 text-center text-xs text-slate-400 dark:text-slate-500">No page data yet.</p>
             ) : (
               <div className="space-y-2">
                 {stats.topPages.slice(0, 8).map((p) => {
@@ -275,10 +275,10 @@ export function AnalyticsPage({
                   return (
                     <div key={p.path}>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="truncate font-mono text-slate-600">{p.path}</span>
-                        <span className="ml-2 shrink-0 text-slate-400">{fmtNum(p.views)}</span>
+                        <span className="truncate font-mono text-slate-600 dark:text-slate-400">{p.path}</span>
+                        <span className="ml-2 shrink-0 text-slate-400 dark:text-slate-500">{fmtNum(p.views)}</span>
                       </div>
-                      <div className="mt-1 h-1.5 rounded-full bg-slate-100">
+                      <div className="mt-1 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800">
                         <div className="h-1.5 rounded-full bg-gradient-to-r from-[#2563EB] to-[#6D5DFB]" style={{ width: `${Math.max(4, (p.views / max) * 100)}%` }} />
                       </div>
                     </div>
@@ -290,10 +290,10 @@ export function AnalyticsPage({
         </Card>
       </div>
 
-      <Card className="mt-4 border-slate-200 shadow-sm">
+      <Card className="mt-4 border-slate-200 dark:border-slate-700 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-semibold">Channel Performance</CardTitle>
-          <Badge variant="outline" className="border-slate-200 text-[10px] text-slate-400">sample</Badge>
+          <Badge variant="outline" className="border-slate-200 dark:border-slate-700 text-[10px] text-slate-400 dark:text-slate-500">sample</Badge>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={220}>

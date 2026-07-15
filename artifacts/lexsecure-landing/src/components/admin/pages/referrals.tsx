@@ -67,16 +67,16 @@ export function ReferralsPage() {
         title="Referrals"
         sub="Give a friend 10% off — earn 2 bonus months when they subscribe"
         actions={
-          <Badge variant="outline" className="border-amber-200 bg-amber-50 text-[10px] text-amber-600">
+          <Badge variant="outline" className="border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/50 text-[10px] text-amber-600 dark:text-amber-400">
             sample workspace — referral tracking backend pending
           </Badge>
         }
       />
 
       {/* Program rule */}
-      <Card className="mb-4 border-slate-200 bg-gradient-to-r from-blue-50/60 to-violet-50/60 shadow-sm">
+      <Card className="mb-4 border-slate-200 dark:border-slate-700 bg-gradient-to-r from-blue-50/60 to-violet-50/60 dark:from-blue-950/40 dark:to-violet-950/40 shadow-sm">
         <CardContent className="p-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
             <Gift className="h-4 w-4 text-[#6D5DFB]" /> Program rule
           </div>
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -85,12 +85,12 @@ export function ReferralsPage() {
               { n: "2", t: "Friend gets 10% off", d: "The discount applies automatically at checkout." },
               { n: "3", t: "You earn +2 months", d: "Reward is granted after the friend's first successful payment." },
             ].map((s) => (
-              <div key={s.n} className="rounded-lg border border-slate-200 bg-white p-3">
+              <div key={s.n} className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#2563EB] text-xs font-bold text-white">
                   {s.n}
                 </div>
-                <div className="mt-2 text-xs font-semibold text-slate-800">{s.t}</div>
-                <div className="mt-0.5 text-[11px] text-slate-500">{s.d}</div>
+                <div className="mt-2 text-xs font-semibold text-slate-800 dark:text-slate-200">{s.t}</div>
+                <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">{s.d}</div>
               </div>
             ))}
           </div>
@@ -104,11 +104,11 @@ export function ReferralsPage() {
         <KpiCard icon={<Gift className="h-4 w-4" />} label="Referral Revenue" value={`$${stats.revenue.toLocaleString()}`} />
       </div>
 
-      <Card className="border-slate-200 shadow-sm">
+      <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-semibold">Referrers</CardTitle>
           <div className="relative w-full max-w-56">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
             <Input
               value={table.search}
               onChange={(e) => table.setSearch(e.target.value)}
@@ -139,11 +139,11 @@ export function ReferralsPage() {
                   {table.pageRows.map((r) => (
                     <TableRow key={r.id}>
                       <TableCell>
-                        <div className="text-xs font-medium text-slate-800">{r.referrer}</div>
-                        <div className="font-mono text-[11px] text-slate-400">{r.code}</div>
+                        <div className="text-xs font-medium text-slate-800 dark:text-slate-200">{r.referrer}</div>
+                        <div className="font-mono text-[11px] text-slate-400 dark:text-slate-500">{r.code}</div>
                       </TableCell>
                       <TableCell>
-                        <span className="flex items-center gap-1 text-[11px] text-slate-500">
+                        <span className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
                           <Link2 className="h-3 w-3" />
                           /r/{r.code}
                           <CopyButton text={r.link} label="Referral link copied" />
@@ -170,7 +170,7 @@ export function ReferralsPage() {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               disabled={r.status === "Fraud Review"}
-                              className="text-amber-600 focus:text-amber-600"
+                              className="text-amber-600 dark:text-amber-400 focus:text-amber-600"
                               onClick={() => {
                                 referralService.flag(r.id);
                                 toast.warning(`${r.code} flagged for fraud review.`);

@@ -72,7 +72,7 @@ export function ProductsPage({ stats }: { stats: AdminStats }) {
       <PageHeader title="Products" sub="Health and reach of every product in the Luxor PDF suite" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {products.map((p) => (
-          <Card key={p.name} className="border-slate-200 shadow-sm">
+          <Card key={p.name} className="border-slate-200 dark:border-slate-700 shadow-sm">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -80,17 +80,17 @@ export function ProductsPage({ stats }: { stats: AdminStats }) {
                     <p.icon className="h-5 w-5" />
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-slate-900">{p.name}</div>
-                    <div className="text-[11px] text-slate-500">{p.desc}</div>
+                    <div className="text-sm font-bold text-slate-900 dark:text-slate-100">{p.name}</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">{p.desc}</div>
                   </div>
                 </div>
                 <StatusBadge status={p.status} />
               </div>
               <div className="mt-4 grid grid-cols-4 gap-2">
                 {p.metrics.map((m) => (
-                  <div key={m.k} className="rounded-md bg-slate-50 px-2 py-2 text-center">
-                    <div className="truncate text-xs font-bold text-slate-800">{m.v}</div>
-                    <div className="text-[10px] text-slate-400">{m.k}</div>
+                  <div key={m.k} className="rounded-md bg-slate-50 dark:bg-slate-800/60 px-2 py-2 text-center">
+                    <div className="truncate text-xs font-bold text-slate-800 dark:text-slate-200">{m.v}</div>
+                    <div className="text-[10px] text-slate-400 dark:text-slate-500">{m.k}</div>
                   </div>
                 ))}
               </div>
@@ -106,19 +106,19 @@ export function ProductsPage({ stats }: { stats: AdminStats }) {
         ))}
       </div>
 
-      <Card className="mt-4 border-slate-200 shadow-sm">
+      <Card className="mt-4 border-slate-200 dark:border-slate-700 shadow-sm">
         <CardContent className="p-5">
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-            Plan distribution <Badge variant="outline" className="border-slate-200 text-[10px] text-slate-400">live</Badge>
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
+            Plan distribution <Badge variant="outline" className="border-slate-200 dark:border-slate-700 text-[10px] text-slate-400 dark:text-slate-500">live</Badge>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {Object.entries(stats.plans).length === 0 ? (
-              <p className="col-span-4 text-xs text-slate-400">No paid plans yet.</p>
+              <p className="col-span-4 text-xs text-slate-400 dark:text-slate-500">No paid plans yet.</p>
             ) : (
               Object.entries(stats.plans).map(([plan, count]) => (
-                <div key={plan} className="rounded-lg border border-slate-100 bg-slate-50/60 p-3 text-center">
-                  <div className="text-lg font-bold text-slate-900">{count}</div>
-                  <div className="text-[11px] capitalize text-slate-500">{plan}</div>
+                <div key={plan} className="rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60/60 p-3 text-center">
+                  <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{count}</div>
+                  <div className="text-[11px] capitalize text-slate-500 dark:text-slate-400">{plan}</div>
                 </div>
               ))
             )}

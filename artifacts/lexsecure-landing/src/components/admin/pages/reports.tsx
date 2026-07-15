@@ -112,11 +112,11 @@ export function ReportsPage({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {reports.map((r) => (
-          <Card key={r.name} className="border-slate-200 shadow-sm">
+          <Card key={r.name} className="border-slate-200 dark:border-slate-700 shadow-sm">
             <CardContent className="p-4">
-              <FileBarChart className="h-5 w-5 text-[#2563EB]" />
-              <div className="mt-2 text-sm font-semibold text-slate-800">{r.name}</div>
-              <div className="mt-0.5 min-h-8 text-[11px] text-slate-500">{r.desc}</div>
+              <FileBarChart className="h-5 w-5 text-[#2563EB] dark:text-[#60A5FA]" />
+              <div className="mt-2 text-sm font-semibold text-slate-800 dark:text-slate-200">{r.name}</div>
+              <div className="mt-0.5 min-h-8 text-[11px] text-slate-500 dark:text-slate-400">{r.desc}</div>
               <Button variant="outline" size="sm" className="mt-3 h-8 w-full text-xs" onClick={() => void r.run()}>
                 <Download className="mr-1.5 h-3 w-3" /> Download CSV
               </Button>
@@ -125,12 +125,12 @@ export function ReportsPage({
         ))}
       </div>
 
-      <Card className="mt-4 border-slate-200 shadow-sm">
+      <Card className="mt-4 border-slate-200 dark:border-slate-700 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
-            <ScrollText className="h-4 w-4 text-slate-400" /> Console Audit Log
+            <ScrollText className="h-4 w-4 text-slate-400 dark:text-slate-500" /> Console Audit Log
           </CardTitle>
-          <Badge variant="outline" className="border-slate-200 text-[10px] text-slate-400">
+          <Badge variant="outline" className="border-slate-200 dark:border-slate-700 text-[10px] text-slate-400 dark:text-slate-500">
             local to this console session
           </Badge>
         </CardHeader>
@@ -151,12 +151,12 @@ export function ReportsPage({
                 <TableBody>
                   {audit.slice(0, 20).map((a) => (
                     <TableRow key={a.id}>
-                      <TableCell className="text-xs font-medium text-slate-800">{a.action}</TableCell>
-                      <TableCell className="font-mono text-[11px] text-slate-500">{a.target}</TableCell>
-                      <TableCell className="text-[11px] text-slate-500">
+                      <TableCell className="text-xs font-medium text-slate-800 dark:text-slate-200">{a.action}</TableCell>
+                      <TableCell className="font-mono text-[11px] text-slate-500 dark:text-slate-400">{a.target}</TableCell>
+                      <TableCell className="text-[11px] text-slate-500 dark:text-slate-400">
                         {a.prev} → {a.next}
                       </TableCell>
-                      <TableCell className="text-[11px] text-slate-400">{timeAgo(a.time)}</TableCell>
+                      <TableCell className="text-[11px] text-slate-400 dark:text-slate-500">{timeAgo(a.time)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

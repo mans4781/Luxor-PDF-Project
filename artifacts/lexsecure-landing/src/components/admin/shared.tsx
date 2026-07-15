@@ -82,8 +82,8 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
       <div>
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">{title}</h1>
-        {sub && <p className="mt-0.5 text-sm text-slate-500">{sub}</p>}
+        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{title}</h1>
+        {sub && <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{sub}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>
@@ -137,24 +137,24 @@ export function KpiCard({
 }) {
   const up = (delta ?? 0) >= 0;
   const body = (
-    <Card className="border-slate-200 shadow-sm">
+    <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             {label}
           </span>
-          <span className="text-slate-400">{icon}</span>
+          <span className="text-slate-400 dark:text-slate-500">{icon}</span>
         </div>
-        <div className="mt-2 text-2xl font-bold tracking-tight text-slate-900">{value}</div>
+        <div className="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{value}</div>
         {delta !== undefined && (
           <div className="mt-1 flex items-center gap-1 text-xs">
             <span
-              className={`flex items-center gap-0.5 font-semibold ${up ? "text-emerald-600" : "text-red-600"}`}
+              className={`flex items-center gap-0.5 font-semibold ${up ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}
             >
               {up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
               {Math.abs(delta).toFixed(1)}%
             </span>
-            <span className="text-slate-400">{deltaLabel}</span>
+            <span className="text-slate-400 dark:text-slate-500">{deltaLabel}</span>
           </div>
         )}
         {spark && spark.length > 1 && (
@@ -178,36 +178,36 @@ export function KpiCard({
 
 const STATUS_STYLES: Record<string, string> = {
   // greens
-  active: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  successful: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  "reward granted": "bg-emerald-50 text-emerald-700 border-emerald-200",
-  operational: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  paid: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  active: "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900",
+  successful: "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900",
+  "reward granted": "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900",
+  operational: "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900",
+  paid: "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900",
   // blues / purples
-  scheduled: "bg-blue-50 text-blue-700 border-blue-200",
-  trial: "bg-violet-50 text-violet-700 border-violet-200",
-  registered: "bg-blue-50 text-blue-700 border-blue-200",
+  scheduled: "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900",
+  trial: "bg-violet-50 dark:bg-violet-950/50 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-900",
+  registered: "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900",
   // ambers
-  paused: "bg-amber-50 text-amber-700 border-amber-200",
-  "payment pending": "bg-amber-50 text-amber-700 border-amber-200",
-  "fraud review": "bg-amber-50 text-amber-700 border-amber-200",
-  locked: "bg-amber-50 text-amber-700 border-amber-200",
-  suspended: "bg-amber-50 text-amber-700 border-amber-200",
+  paused: "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900",
+  "payment pending": "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900",
+  "fraud review": "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900",
+  locked: "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900",
+  suspended: "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900",
   // reds
-  expired: "bg-red-50 text-red-600 border-red-200",
-  revoked: "bg-red-50 text-red-600 border-red-200",
-  cancelled: "bg-red-50 text-red-600 border-red-200",
-  rejected: "bg-red-50 text-red-600 border-red-200",
-  blocked: "bg-red-50 text-red-600 border-red-200",
+  expired: "bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900",
+  revoked: "bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900",
+  cancelled: "bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900",
+  rejected: "bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900",
+  blocked: "bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900",
   // neutral
-  draft: "bg-slate-100 text-slate-600 border-slate-200",
-  clicked: "bg-slate-100 text-slate-600 border-slate-200",
-  free: "bg-slate-100 text-slate-600 border-slate-200",
-  unassigned: "bg-slate-100 text-slate-600 border-slate-200",
+  draft: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700",
+  clicked: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700",
+  free: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700",
+  unassigned: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700",
 };
 
 export function StatusBadge({ status }: { status: string }) {
-  const cls = STATUS_STYLES[status.toLowerCase()] ?? "bg-slate-100 text-slate-600 border-slate-200";
+  const cls = STATUS_STYLES[status.toLowerCase()] ?? "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700";
   return (
     <Badge variant="outline" className={`font-medium capitalize ${cls}`}>
       {status}
@@ -220,7 +220,7 @@ export function CopyButton({ text, label }: { text: string; label?: string }) {
     <Button
       variant="ghost"
       size="icon"
-      className="h-6 w-6 text-slate-400 hover:text-slate-700"
+      className="h-6 w-6 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
       aria-label={`Copy ${label ?? "value"}`}
       onClick={() => copyText(text, label ?? "Copied")}
     >
@@ -231,9 +231,9 @@ export function CopyButton({ text, label }: { text: string; label?: string }) {
 
 export function EmptyState({ title, detail }: { title: string; detail?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50/50 px-6 py-10 text-center">
-      <p className="text-sm font-medium text-slate-700">{title}</p>
-      {detail && <p className="mt-1 max-w-sm text-xs text-slate-500">{detail}</p>}
+    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60/50 px-6 py-10 text-center">
+      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{title}</p>
+      {detail && <p className="mt-1 max-w-sm text-xs text-slate-500 dark:text-slate-400">{detail}</p>}
     </div>
   );
 }
@@ -242,7 +242,7 @@ export function LoadingRows({ rows = 4 }: { rows?: number }) {
   return (
     <div className="space-y-2 py-2">
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="h-9 animate-pulse rounded-md bg-slate-100" />
+        <div key={i} className="h-9 animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" />
       ))}
     </div>
   );
@@ -364,7 +364,7 @@ export function Pager({
 }) {
   if (pageCount <= 1) return null;
   return (
-    <div className="flex items-center justify-between pt-3 text-xs text-slate-500">
+    <div className="flex items-center justify-between pt-3 text-xs text-slate-500 dark:text-slate-400">
       <span>
         Page {page + 1} of {pageCount} · {total} rows
       </span>

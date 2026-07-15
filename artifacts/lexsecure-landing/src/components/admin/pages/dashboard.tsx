@@ -120,7 +120,7 @@ export function DashboardPage({ stats }: { stats: AdminStats }) {
 
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
         {/* Revenue overview */}
-        <Card className="border-slate-200 shadow-sm xl:col-span-2">
+        <Card className="border-slate-200 dark:border-slate-700 shadow-sm xl:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-semibold">Revenue Overview</CardTitle>
             <Tabs value={revRange} onValueChange={setRevRange}>
@@ -157,10 +157,10 @@ export function DashboardPage({ stats }: { stats: AdminStats }) {
         </Card>
 
         {/* Acquisition */}
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-semibold">Top Acquisition Channels</CardTitle>
-            <Badge variant="outline" className="border-slate-200 text-[10px] text-slate-400">sample</Badge>
+            <Badge variant="outline" className="border-slate-200 dark:border-slate-700 text-[10px] text-slate-400 dark:text-slate-500">sample</Badge>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={140}>
@@ -183,11 +183,11 @@ export function DashboardPage({ stats }: { stats: AdminStats }) {
             <div className="mt-2 space-y-1.5">
               {ACQUISITION_CHANNELS.map((c) => (
                 <div key={c.name} className="flex items-center justify-between text-xs">
-                  <span className="flex items-center gap-1.5 text-slate-600">
+                  <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                     <span className="h-2 w-2 rounded-full" style={{ background: c.color }} />
                     {c.name}
                   </span>
-                  <span className="text-slate-400">
+                  <span className="text-slate-400 dark:text-slate-500">
                     {c.users} · {c.pct}% · {c.conversion}% conv
                   </span>
                 </div>
@@ -199,7 +199,7 @@ export function DashboardPage({ stats }: { stats: AdminStats }) {
 
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
         {/* User analytics */}
-        <Card className="border-slate-200 shadow-sm xl:col-span-2">
+        <Card className="border-slate-200 dark:border-slate-700 shadow-sm xl:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-semibold">Traffic & Signups</CardTitle>
             <Tabs value={userRange} onValueChange={setUserRange}>
@@ -211,17 +211,17 @@ export function DashboardPage({ stats }: { stats: AdminStats }) {
           </CardHeader>
           <CardContent>
             <div className="mb-3 grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-md bg-slate-50 py-2">
-                <div className="text-lg font-bold text-slate-900">{fmtNum(overview.pageViews)}</div>
-                <div className="text-[11px] text-slate-500">Page views (30d)</div>
+              <div className="rounded-md bg-slate-50 dark:bg-slate-800/60 py-2">
+                <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{fmtNum(overview.pageViews)}</div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400">Page views (30d)</div>
               </div>
-              <div className="rounded-md bg-slate-50 py-2">
-                <div className="text-lg font-bold text-slate-900">{fmtNum(overview.freeUsers)}</div>
-                <div className="text-[11px] text-slate-500">Free users</div>
+              <div className="rounded-md bg-slate-50 dark:bg-slate-800/60 py-2">
+                <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{fmtNum(overview.freeUsers)}</div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400">Free users</div>
               </div>
-              <div className="rounded-md bg-slate-50 py-2">
-                <div className="text-lg font-bold text-slate-900">{fmtNum(overview.paidUsers)}</div>
-                <div className="text-[11px] text-slate-500">Subscribers</div>
+              <div className="rounded-md bg-slate-50 dark:bg-slate-800/60 py-2">
+                <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{fmtNum(overview.paidUsers)}</div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400">Subscribers</div>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={170}>
@@ -243,27 +243,27 @@ export function DashboardPage({ stats }: { stats: AdminStats }) {
         </Card>
 
         {/* Recent activity */}
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
             {stats.recentActivity.length === 0 ? (
-              <p className="py-6 text-center text-xs text-slate-400">
+              <p className="py-6 text-center text-xs text-slate-400 dark:text-slate-500">
                 No account events yet — signups and plan changes will appear here.
               </p>
             ) : (
               <div className="space-y-3">
                 {stats.recentActivity.slice(0, 7).map((a) => (
                   <div key={a.id} className="flex items-start gap-2.5">
-                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[11px] font-bold text-[#2563EB]">
+                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/50 text-[11px] font-bold text-[#2563EB] dark:text-[#60A5FA]">
                       {(a.user || "?").charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <div className="truncate font-mono text-xs text-slate-700" title={a.user}>
+                      <div className="truncate font-mono text-xs text-slate-700 dark:text-slate-300" title={a.user}>
                         {a.user}
                       </div>
-                      <div className="truncate text-[11px] text-slate-400" title={a.message}>
+                      <div className="truncate text-[11px] text-slate-400 dark:text-slate-500" title={a.message}>
                         {a.message || a.type} · {timeAgo(a.time)}
                       </div>
                     </div>
@@ -278,17 +278,17 @@ export function DashboardPage({ stats }: { stats: AdminStats }) {
       {/* Ops metrics */}
       <div className="mt-4">
         <div className="mb-2 flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-slate-700">Operational Metrics</h2>
-          <Badge variant="outline" className="border-slate-200 text-[10px] text-slate-400">sample</Badge>
+          <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Operational Metrics</h2>
+          <Badge variant="outline" className="border-slate-200 dark:border-slate-700 text-[10px] text-slate-400 dark:text-slate-500">sample</Badge>
         </div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
           {OPS_METRICS.map((m) => (
-            <Card key={m.label} className="border-slate-200 shadow-sm">
+            <Card key={m.label} className="border-slate-200 dark:border-slate-700 shadow-sm">
               <CardContent className="p-3">
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                   {m.label}
                 </div>
-                <div className="mt-1 text-sm font-bold text-slate-900">{m.value}</div>
+                <div className="mt-1 text-sm font-bold text-slate-900 dark:text-slate-100">{m.value}</div>
                 <Sparkline data={m.trend} color="#6D5DFB" />
               </CardContent>
             </Card>
@@ -297,20 +297,20 @@ export function DashboardPage({ stats }: { stats: AdminStats }) {
       </div>
 
       {/* Regions */}
-      <Card className="mt-4 border-slate-200 shadow-sm">
+      <Card className="mt-4 border-slate-200 dark:border-slate-700 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
-            <Globe2 className="h-4 w-4 text-slate-400" /> Active Users by Region
+            <Globe2 className="h-4 w-4 text-slate-400 dark:text-slate-500" /> Active Users by Region
           </CardTitle>
-          <Badge variant="outline" className="border-slate-200 text-[10px] text-slate-400">sample</Badge>
+          <Badge variant="outline" className="border-slate-200 dark:border-slate-700 text-[10px] text-slate-400 dark:text-slate-500">sample</Badge>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5">
             {REGION_SAMPLE.map((r) => (
-              <div key={r.country} className="rounded-lg border border-slate-100 bg-slate-50/50 p-3">
-                <div className="text-xs font-semibold text-slate-700">{r.country}</div>
-                <div className="mt-1 text-lg font-bold text-slate-900">{r.users}</div>
-                <div className="text-[11px] text-slate-500">
+              <div key={r.country} className="rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60/50 p-3">
+                <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">{r.country}</div>
+                <div className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">{r.users}</div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400">
                   ${r.revenue.toLocaleString()} · {r.paid} paid · {r.conversion}% conv
                 </div>
               </div>

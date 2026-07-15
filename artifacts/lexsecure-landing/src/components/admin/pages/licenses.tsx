@@ -237,11 +237,11 @@ export function LicensesPage({ token, onLogout }: { token: string; onLogout: () 
         <KpiCard icon={<KeyRound className="h-4 w-4" />} label="Device Activations" value={String(counts.activations)} />
       </div>
 
-      <Card className="border-slate-200 shadow-sm">
+      <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
         <CardContent className="p-4">
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <div className="relative w-full max-w-xs">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
               <Input
                 value={table.search}
                 onChange={(e) => table.setSearch(e.target.value)}
@@ -260,7 +260,7 @@ export function LicensesPage({ token, onLogout }: { token: string; onLogout: () 
                 <SelectItem value="redeemed">Redeemed</SelectItem>
               </SelectContent>
             </Select>
-            <span className="ml-auto text-xs text-slate-400">{table.filtered.length} keys</span>
+            <span className="ml-auto text-xs text-slate-400 dark:text-slate-500">{table.filtered.length} keys</span>
           </div>
 
           {keys === null ? (
@@ -293,13 +293,13 @@ export function LicensesPage({ token, onLogout }: { token: string; onLogout: () 
                     <TableRow key={k.id}>
                       <TableCell className="font-mono text-xs">{k.keyPrefix}-••••</TableCell>
                       <TableCell className="text-xs capitalize">{k.planName}</TableCell>
-                      <TableCell className="text-xs text-slate-500">
+                      <TableCell className="text-xs text-slate-500 dark:text-slate-400">
                         {k.durationDays >= 36_500 ? "Lifetime" : `${k.durationDays}d`}
                       </TableCell>
-                      <TableCell className="text-xs text-slate-500">
+                      <TableCell className="text-xs text-slate-500 dark:text-slate-400">
                         {k.currentActivations}/{k.maxActivations}
                       </TableCell>
-                      <TableCell className="text-xs text-slate-500">{fmtDate(k.createdAt)}</TableCell>
+                      <TableCell className="text-xs text-slate-500 dark:text-slate-400">{fmtDate(k.createdAt)}</TableCell>
                       <TableCell>
                         <StatusBadge status={k.status} />
                       </TableCell>
@@ -322,7 +322,7 @@ export function LicensesPage({ token, onLogout }: { token: string; onLogout: () 
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               disabled={k.status === "revoked"}
-                              className="text-red-600 focus:text-red-600"
+                              className="text-red-600 dark:text-red-400 focus:text-red-600"
                               onClick={() => setRevokeTarget(k)}
                             >
                               <Ban className="mr-2 h-3.5 w-3.5" /> Revoke key
@@ -388,14 +388,14 @@ export function LicensesPage({ token, onLogout }: { token: string; onLogout: () 
             </>
           ) : (
             <>
-              <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700">
+              <p className="rounded-md bg-amber-50 dark:bg-amber-950/50 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
                 Copy these keys now — the full key is shown only once and cannot be recovered
                 later.
               </p>
               <div className="max-h-56 space-y-1.5 overflow-y-auto">
                 {minted.map((k) => (
-                  <div key={k.id} className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
-                    <span className="font-mono text-xs text-slate-800">{k.rawKey}</span>
+                  <div key={k.id} className="flex items-center justify-between rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3 py-2">
+                    <span className="font-mono text-xs text-slate-800 dark:text-slate-200">{k.rawKey}</span>
                     <CopyButton text={k.rawKey} label="Key copied" />
                   </div>
                 ))}
@@ -441,7 +441,7 @@ export function LicensesPage({ token, onLogout }: { token: string; onLogout: () 
             <DialogTitle className="text-base">Extend key duration</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Adds days to <span className="font-mono">{extendTarget?.keyPrefix}-••••</span>{" "}
               (currently {extendTarget?.durationDays} days). Applies to future redemptions and
               linked licenses.

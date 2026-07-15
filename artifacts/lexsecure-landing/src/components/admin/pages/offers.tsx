@@ -201,7 +201,7 @@ export function OffersPage() {
         sub="Occasion-based discounts and promotional campaigns"
         actions={
           <>
-            <Badge variant="outline" className="border-amber-200 bg-amber-50 text-[10px] text-amber-600">
+            <Badge variant="outline" className="border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/50 text-[10px] text-amber-600 dark:text-amber-400">
               sample workspace — checkout integration pending
             </Badge>
             <Button
@@ -238,11 +238,11 @@ export function OffersPage() {
         <KpiCard icon={<Tags className="h-4 w-4" />} label="Total Redemptions" value={String(stats.used)} />
       </div>
 
-      <Card className="border-slate-200 shadow-sm">
+      <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
         <CardContent className="p-4">
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <div className="relative w-full max-w-xs">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
               <Input
                 value={table.search}
                 onChange={(e) => table.setSearch(e.target.value)}
@@ -285,22 +285,22 @@ export function OffersPage() {
                   {table.pageRows.map((o) => (
                     <TableRow key={o.id}>
                       <TableCell>
-                        <div className="text-xs font-semibold text-slate-800">{o.name}</div>
-                        <div className="text-[11px] text-slate-400">
+                        <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">{o.name}</div>
+                        <div className="text-[11px] text-slate-400 dark:text-slate-500">
                           {o.occasion} · {o.products.join(", ")}
                         </div>
                       </TableCell>
                       <TableCell>
                         <span className="flex items-center gap-1">
-                          <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px]">{o.code}</code>
+                          <code className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-[11px]">{o.code}</code>
                           <CopyButton text={o.code} label="Code copied" />
                         </span>
                       </TableCell>
-                      <TableCell className="text-xs font-medium text-[#2563EB]">{fmtDiscount(o)}</TableCell>
-                      <TableCell className="text-[11px] text-slate-500">
+                      <TableCell className="text-xs font-medium text-[#2563EB] dark:text-[#60A5FA]">{fmtDiscount(o)}</TableCell>
+                      <TableCell className="text-[11px] text-slate-500 dark:text-slate-400">
                         {fmtDate(o.validFrom)} → {fmtDate(o.validTo)}
                       </TableCell>
-                      <TableCell className="text-xs text-slate-500">
+                      <TableCell className="text-xs text-slate-500 dark:text-slate-400">
                         {o.timesUsed}
                         {o.usageLimit ? ` / ${o.usageLimit}` : ""}
                       </TableCell>
@@ -337,7 +337,7 @@ export function OffersPage() {
                               <XCircle className="mr-2 h-3.5 w-3.5" /> Cancel
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => setDeleteTarget(o)}>
+                            <DropdownMenuItem className="text-red-600 dark:text-red-400 focus:text-red-600" onClick={() => setDeleteTarget(o)}>
                               <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -400,7 +400,7 @@ export function OffersPage() {
               <Label className="text-xs">Products</Label>
               <div className="mt-1 flex flex-wrap gap-3">
                 {PRODUCTS.map((p) => (
-                  <label key={p} className="flex items-center gap-1.5 text-xs text-slate-600">
+                  <label key={p} className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
                     <Checkbox checked={fProducts.includes(p)} onCheckedChange={() => toggleIn(fProducts, p, setFProducts)} />
                     {p}
                   </label>
@@ -411,7 +411,7 @@ export function OffersPage() {
               <Label className="text-xs">Plans</Label>
               <div className="mt-1 flex flex-wrap gap-3">
                 {PLANS.map((p) => (
-                  <label key={p} className="flex items-center gap-1.5 text-xs capitalize text-slate-600">
+                  <label key={p} className="flex items-center gap-1.5 text-xs capitalize text-slate-600 dark:text-slate-400">
                     <Checkbox checked={fPlans.includes(p)} onCheckedChange={() => toggleIn(fPlans, p, setFPlans)} />
                     {p}
                   </label>
@@ -445,10 +445,10 @@ export function OffersPage() {
               <Label className="text-xs">Description</Label>
               <Textarea value={fDescription} onChange={(e) => setFDescription(e.target.value)} rows={2} className="mt-1 text-[13px]" placeholder="Shown internally and, if public, on the pricing page." />
             </div>
-            <label className="flex items-center gap-2 text-xs text-slate-600">
+            <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
               <Checkbox checked={fAutoApply} onCheckedChange={(v) => setFAutoApply(v === true)} /> Auto-apply at checkout
             </label>
-            <label className="flex items-center gap-2 text-xs text-slate-600">
+            <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
               <Checkbox checked={fPublic} onCheckedChange={(v) => setFPublic(v === true)} /> Publicly visible
             </label>
           </div>

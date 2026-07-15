@@ -77,7 +77,7 @@ export function RevenuePage({ stats }: { stats: AdminStats }) {
         />
       </div>
 
-      <Card className="mt-4 border-slate-200 shadow-sm">
+      <Card className="mt-4 border-slate-200 dark:border-slate-700 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-semibold">Revenue Trend</CardTitle>
           <Tabs value={range} onValueChange={setRange}>
@@ -114,7 +114,7 @@ export function RevenuePage({ stats }: { stats: AdminStats }) {
       </Card>
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">Last 6 Months</CardTitle>
           </CardHeader>
@@ -133,25 +133,25 @@ export function RevenuePage({ stats }: { stats: AdminStats }) {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">Totals by Currency</CardTitle>
           </CardHeader>
           <CardContent>
             {Object.keys(overview.totalRevenue).length === 0 ? (
-              <p className="py-8 text-center text-xs text-slate-400">
+              <p className="py-8 text-center text-xs text-slate-400 dark:text-slate-500">
                 No payments recorded yet — completed Stripe and Razorpay payments will appear here
                 automatically.
               </p>
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {Object.entries(overview.totalRevenue).map(([cur, amount]) => (
-                  <div key={cur} className="rounded-lg border border-slate-100 bg-slate-50/60 p-4">
-                    <div className="text-xs font-bold text-[#2563EB]">{cur}</div>
-                    <div className="mt-1 text-xl font-bold text-slate-900">
+                  <div key={cur} className="rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60/60 p-4">
+                    <div className="text-xs font-bold text-[#2563EB] dark:text-[#60A5FA]">{cur}</div>
+                    <div className="mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">
                       {fmtMoney({ [cur]: amount })}
                     </div>
-                    <div className="text-[11px] text-slate-500">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
                       this month: {fmtMoney({ [cur]: overview.monthRevenue[cur] ?? 0 })}
                     </div>
                   </div>

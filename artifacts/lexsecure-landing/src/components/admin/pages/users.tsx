@@ -181,11 +181,11 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
         }
       />
 
-      <Card className="border-slate-200 shadow-sm">
+      <Card className="border-slate-200 dark:border-slate-700 shadow-sm">
         <CardContent className="p-4">
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <div className="relative w-full max-w-xs">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
               <Input
                 value={table.search}
                 onChange={(e) => table.setSearch(e.target.value)}
@@ -208,7 +208,7 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                 ))}
               </SelectContent>
             </Select>
-            <span className="ml-auto text-xs text-slate-400">
+            <span className="ml-auto text-xs text-slate-400 dark:text-slate-500">
               {table.filtered.length} of {customers?.length ?? 0} users
             </span>
           </div>
@@ -255,7 +255,7 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                       >
                         <TableCell className="max-w-52">
                           <div className="flex items-center gap-2">
-                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[11px] font-bold text-[#2563EB]">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/50 text-[11px] font-bold text-[#2563EB] dark:text-[#60A5FA]">
                               {c.userId.charAt(c.userId.length - 1).toUpperCase()}
                             </div>
                             <span className="truncate font-mono text-xs" title={c.userId}>
@@ -263,16 +263,16 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-xs text-slate-500">{fmtDate(c.createdAt)}</TableCell>
+                        <TableCell className="text-xs text-slate-500 dark:text-slate-400">{fmtDate(c.createdAt)}</TableCell>
                         <TableCell className="text-xs capitalize">{c.planName ?? "free"}</TableCell>
-                        <TableCell className="text-xs text-slate-500">
+                        <TableCell className="text-xs text-slate-500 dark:text-slate-400">
                           {c.monthlyUsed}
                           {c.monthlyLimit != null ? ` / ${c.monthlyLimit}` : " / ∞"}
                         </TableCell>
-                        <TableCell className="text-xs text-slate-500">
+                        <TableCell className="text-xs text-slate-500 dark:text-slate-400">
                           {fmtDate(c.subscriptionEndDate)}
                           {rem !== null && rem >= 0 && (
-                            <span className="ml-1 text-[10px] text-slate-400">({rem}d left)</span>
+                            <span className="ml-1 text-[10px] text-slate-400 dark:text-slate-500">({rem}d left)</span>
                           )}
                         </TableCell>
                         <TableCell>
@@ -309,7 +309,7 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                className="text-red-600 focus:text-red-600"
+                                className="text-red-600 dark:text-red-400 focus:text-red-600"
                                 onClick={() => setBlockTarget(c)}
                               >
                                 <Ban className="mr-2 h-3.5 w-3.5" /> Block user
@@ -361,9 +361,9 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                     ["Tier", selected.tier ?? "—"],
                     ["Lock reason", selected.lockReason ?? "—"],
                   ].map(([k, v]) => (
-                    <div key={k} className="flex justify-between border-b border-slate-100 pb-1.5">
-                      <span className="text-xs text-slate-500">{k}</span>
-                      <span className="text-xs font-medium capitalize text-slate-800">{v}</span>
+                    <div key={k} className="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-1.5">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">{k}</span>
+                      <span className="text-xs font-medium capitalize text-slate-800 dark:text-slate-200">{v}</span>
                     </div>
                   ))}
                 </TabsContent>
@@ -381,9 +381,9 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                       })(),
                     ],
                   ].map(([k, v]) => (
-                    <div key={k} className="flex justify-between border-b border-slate-100 pb-1.5">
-                      <span className="text-xs text-slate-500">{k}</span>
-                      <span className="text-xs font-medium capitalize text-slate-800">{v}</span>
+                    <div key={k} className="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-1.5">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">{k}</span>
+                      <span className="text-xs font-medium capitalize text-slate-800 dark:text-slate-200">{v}</span>
                     </div>
                   ))}
                   <Button
@@ -416,9 +416,9 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                         : "none",
                     ],
                   ].map(([k, v]) => (
-                    <div key={k} className="flex justify-between border-b border-slate-100 pb-1.5">
-                      <span className="text-xs text-slate-500">{k}</span>
-                      <span className="text-xs font-medium text-slate-800">{v}</span>
+                    <div key={k} className="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-1.5">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">{k}</span>
+                      <span className="text-xs font-medium text-slate-800 dark:text-slate-200">{v}</span>
                     </div>
                   ))}
                   <Button
@@ -448,11 +448,11 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
-              <ShieldAlert className="h-4 w-4 text-red-500" /> Block user
+              <ShieldAlert className="h-4 w-4 text-red-500 dark:text-red-400" /> Block user
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700">
+            <p className="rounded-md bg-amber-50 dark:bg-amber-950/50 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
               Account blocking needs a server-side endpoint that is not live yet. This form records
               your intent in the console audit log so the action isn't lost.
             </p>
@@ -464,10 +464,10 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
               <Label className="text-xs">Internal notes</Label>
               <Textarea placeholder="Visible to admins only" className="mt-1 text-[13px]" rows={2} />
             </div>
-            <label className="flex items-center gap-2 text-xs text-slate-600">
+            <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
               <Checkbox defaultChecked /> Block immediately
             </label>
-            <label className="flex items-center gap-2 text-xs text-slate-600">
+            <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
               <Checkbox /> Send notification to user
             </label>
           </div>
@@ -501,13 +501,13 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
             <DialogTitle className="text-base">Extend validity</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Current expiry:{" "}
-              <span className="font-medium text-slate-800">
+              <span className="font-medium text-slate-800 dark:text-slate-200">
                 {fmtDate(extendTarget?.subscriptionEndDate)}
               </span>
             </p>
-            <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700">
+            <p className="rounded-md bg-amber-50 dark:bg-amber-950/50 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
               Subscription dates are owned by the billing system. To extend a customer today,
               generate a license key for the extra period on the Licenses page and share it with
               them — that flow is fully live.
@@ -538,7 +538,7 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
             <DialogTitle className="text-base">Monthly quota override</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Sets a custom monthly secure-PDF limit for{" "}
               <span className="font-mono">{quotaTarget?.userId}</span>. Leave blank to restore the
               plan default. Applies immediately.
