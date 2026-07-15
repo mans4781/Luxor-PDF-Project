@@ -123,7 +123,12 @@ function LoginScreen({ onUnlock }: { onUnlock: (token: string) => void }) {
 
 // ── Console ───────────────────────────────────────────────────────────────────
 function Console({ token, onLogout }: { token: string; onLogout: () => void }) {
-  const [section, setSection] = useState<ConsoleSection>("dashboard");
+  const [section, setSection] = useState<ConsoleSection>(() => {
+    const wanted = new URLSearchParams(window.location.search).get("section");
+    return wanted && NAV_ITEMS.some((n) => n.id === wanted)
+      ? (wanted as ConsoleSection)
+      : "dashboard";
+  });
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [error, setError] = useState("");
   const [retryKey, setRetryKey] = useState(0);
@@ -216,7 +221,7 @@ function Console({ token, onLogout }: { token: string; onLogout: () => void }) {
       case "products":
         return <ProductsPage stats={stats!} />;
       case "analytics":
-        return <AnalyticsPage stats={stats!} />;
+        return <AnalyticsPage stats={stats!} token={token} onLogout={onLogout} />;
       case "reports":
         return <ReportsPage stats={stats!} token={token} onLogout={onLogout} />;
       case "integrations":

@@ -20,6 +20,11 @@ export interface AdminStats {
   recentActivity: { id: number; type: string; user: string; message: string; time: string }[];
 }
 
+export interface VisitorAnalytics {
+  days: { day: string; visitors: number }[];
+  locations: { country: string; city: string; visitors: number }[];
+}
+
 export interface AdminCustomer {
   userId: string;
   planName: string | null;

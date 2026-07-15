@@ -1,5 +1,5 @@
-import type { AdminStats, AdminCustomer, ProductKey, MintedKey } from "./types";
-import { SAMPLE_STATS, SAMPLE_CUSTOMERS, SAMPLE_PRODUCT_KEYS } from "./mock-data";
+import type { AdminStats, AdminCustomer, ProductKey, MintedKey, VisitorAnalytics } from "./types";
+import { SAMPLE_STATS, SAMPLE_CUSTOMERS, SAMPLE_PRODUCT_KEYS, SAMPLE_VISITOR_ANALYTICS } from "./mock-data";
 
 // Dev-only preview mode: the console renders with sample data, no login.
 // Never active in production builds.
@@ -48,6 +48,11 @@ async function request<T>(token: string, path: string, init?: RequestInit): Prom
 export const adminApi = {
   stats: (token: string) =>
     isDevPreview(token) ? Promise.resolve(SAMPLE_STATS) : request<AdminStats>(token, "/stats"),
+
+  visitorAnalytics: (token: string, days = 30) =>
+    isDevPreview(token)
+      ? Promise.resolve(SAMPLE_VISITOR_ANALYTICS)
+      : request<VisitorAnalytics>(token, `/analytics/visitors?days=${days}`),
 
   customers: (token: string) =>
     isDevPreview(token)

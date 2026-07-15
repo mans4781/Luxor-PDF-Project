@@ -1,6 +1,28 @@
 import { Router, type Request, type Response } from "express";
-import { db, siteStats, pageViewsTable } from "@workspace/db";
+import { createHash } from "node:crypto";
+import geoip from "geoip-lite";
+import { db, siteStats, pageViewsTable, dailyVisitorsTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
+
+const IP_HASH_SALT = process.env["SESSION_SECRET"];
+if (!IP_HASH_SALT) {
+  throw new Error("SESSION_SECRET must be set: it salts visitor IP hashes for privacy");
+}
+
+/** Salted one-way hash so no raw IPs are ever stored. */
+function hashIp(ip: string): string {
+  return createHash("sha256").update(`${IP_HASH_SALT}:${ip}`).digest("hex").slice(0, 32);
+}
+
+/** Coarse location lookup from the offline GeoIP database. */
+function lookupGeo(ip: string): { country: string | null; city: string | null } {
+  try {
+    const geo = geoip.lookup(ip);
+    return { country: geo?.country || null, city: geo?.city || null };
+  } catch {
+    return { country: null, city: null };
+  }
+}
 
 const router = Router();
 
@@ -64,6 +86,16 @@ router.post("/visitors/track", async (req: Request, res: Response) => {
       .update(siteStats)
       .set({ value: sql`${siteStats.value} + 1`, updatedAt: new Date() })
       .where(eq(siteStats.key, "visitors"));
+
+    // Record one unique-visitor row per IP per day with a coarse location.
+    const ip = req.ip;
+    if (ip) {
+      const { country, city } = lookupGeo(ip);
+      await db
+        .insert(dailyVisitorsTable)
+        .values({ day: today, ipHash: hashIp(ip), country, city })
+        .onConflictDoNothing();
+    }
     res.json({ ok: true });
   } catch (err) {
     req.log.error({ err, path }, "Failed to record page view");

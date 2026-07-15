@@ -29,6 +29,8 @@ async function buildAll() {
     // - use path traversal to read files (e.g. @google-cloud/secret-manager loads sibling .proto files)
     external: [
       "*.node",
+      // geoip-lite reads its bundled .dat files relative to its own module dir
+      "geoip-lite",
       "sharp",
       "better-sqlite3",
       "sqlite3",

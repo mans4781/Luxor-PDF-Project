@@ -16,6 +16,9 @@ import { logger } from "./lib/logger";
 
 const app: Express = express();
 
+// Behind the Replit reverse proxy — trust the first hop so req.ip is the client IP.
+app.set("trust proxy", 1);
+
 app.use(
   pinoHttp({
     logger,

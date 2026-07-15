@@ -354,7 +354,7 @@ export const OPS_METRICS = [
 ];
 
 // ── Dev-preview sample data (design review without login; dev builds only) ──
-import type { AdminStats, AdminCustomer, ProductKey } from "./types";
+import type { AdminStats, AdminCustomer, ProductKey, VisitorAnalytics } from "./types";
 
 export const SAMPLE_STATS: AdminStats = {
   overview: {
@@ -465,3 +465,23 @@ export const SAMPLE_PRODUCT_KEYS: ProductKey[] = [
     revokedAt: new Date(Date.now() - 2 * 86_400_000).toISOString(),
   },
 ];
+
+export const SAMPLE_VISITOR_ANALYTICS: VisitorAnalytics = {
+  days: Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000);
+    const base = 40 + Math.round(30 * Math.sin(i / 4)) + (d.getDay() === 0 || d.getDay() === 6 ? -12 : 8);
+    return { day: d.toISOString().slice(0, 10), visitors: Math.max(6, base + ((i * 7) % 11)) };
+  }),
+  locations: [
+    { country: "IN", city: "Mumbai", visitors: 214 },
+    { country: "IN", city: "Bengaluru", visitors: 187 },
+    { country: "US", city: "New York", visitors: 132 },
+    { country: "IN", city: "Delhi", visitors: 118 },
+    { country: "US", city: "San Francisco", visitors: 84 },
+    { country: "GB", city: "London", visitors: 76 },
+    { country: "DE", city: "Berlin", visitors: 41 },
+    { country: "SG", city: "Singapore", visitors: 38 },
+    { country: "AE", city: "Dubai", visitors: 29 },
+    { country: "CA", city: "Toronto", visitors: 22 },
+  ],
+};

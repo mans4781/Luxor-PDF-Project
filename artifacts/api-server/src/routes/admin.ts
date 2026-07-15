@@ -6,6 +6,7 @@ import {
   productKeysTable,
   siteStats,
   pageViewsTable,
+  dailyVisitorsTable,
   paymentsTable,
   userLicensesTable,
   licenseEventsTable,
@@ -512,5 +513,59 @@ router.post(
     }
   },
 );
+
+// ── Visitor analytics: daily unique visitors + locations (last N days) ───────
+router.get("/admin/analytics/visitors", async (req, res): Promise<void> => {
+  if (!checkAuth(req, res)) return;
+  const raw = Number(req.query["days"]);
+  const days = Number.isFinite(raw) ? Math.min(Math.max(Math.trunc(raw), 1), 90) : 30;
+  try {
+    const since = new Date(Date.now() - (days - 1) * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+
+    const perDay = await db
+      .select({
+        day: dailyVisitorsTable.day,
+        visitors: sql<number>`count(*)::int`,
+      })
+      .from(dailyVisitorsTable)
+      .where(gte(dailyVisitorsTable.day, since))
+      .groupBy(dailyVisitorsTable.day)
+      .orderBy(dailyVisitorsTable.day);
+
+    const byLocation = await db
+      .select({
+        country: dailyVisitorsTable.country,
+        city: dailyVisitorsTable.city,
+        visitors: sql<number>`count(*)::int`,
+      })
+      .from(dailyVisitorsTable)
+      .where(gte(dailyVisitorsTable.day, since))
+      .groupBy(dailyVisitorsTable.country, dailyVisitorsTable.city)
+      .orderBy(sql`count(*) desc`)
+      .limit(100);
+
+    // Fill in zero-visitor days so charts show a continuous range.
+    const dayMap = new Map(perDay.map((d) => [d.day, d.visitors]));
+    const filled: { day: string; visitors: number }[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const day = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      filled.push({ day, visitors: dayMap.get(day) ?? 0 });
+    }
+
+    res.json({
+      days: filled,
+      locations: byLocation.map((l) => ({
+        country: l.country ?? "Unknown",
+        city: l.city ?? "Unknown",
+        visitors: l.visitors,
+      })),
+    });
+  } catch (err) {
+    req.log.error({ err }, "admin/analytics/visitors failed");
+    res.status(500).json({ error: "Failed to load visitor analytics" });
+  }
+});
 
 export default router;
