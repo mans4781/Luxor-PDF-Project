@@ -827,6 +827,26 @@ export const CreateCheckoutSessionResponse = zod.object({
 });
 
 /**
+ * Returns a `url` the client should redirect to. The portal lets
+recurring subscribers (monthly and other auto-renewing plans) update
+their payment method or cancel auto-renewal. Yearly and lifetime are
+one-time purchases and have no portal profile until the user has made
+a recurring purchase.
+
+ * @summary Open the Stripe Billing Portal for the signed-in user
+ */
+export const CreateBillingPortalSessionBody = zod.object({
+  returnUrl: zod
+    .string()
+    .optional()
+    .describe("Where Stripe sends the user after they close the portal."),
+});
+
+export const CreateBillingPortalSessionResponse = zod.object({
+  url: zod.string(),
+});
+
+/**
  * @summary Get today's usage breakdown for the caller
  */
 export const GetUsageTodayResponse = zod.object({

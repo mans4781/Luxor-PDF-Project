@@ -35,15 +35,18 @@ async function main() {
     await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
     await page.waitForTimeout(1200); // let webfonts settle
 
-    const contentHeight = await page.evaluate(() =>
-      Math.ceil(
+    // Runs in the browser page context (DOM lib isn't loaded in this
+    // Node-only package, so go through globalThis).
+    const contentHeight = await page.evaluate(() => {
+      const doc = (globalThis as { document?: any }).document;
+      return Math.ceil(
         Math.max(
-          document.body.scrollHeight,
-          document.documentElement.scrollHeight,
-          document.body.offsetHeight,
+          doc.body.scrollHeight,
+          doc.documentElement.scrollHeight,
+          doc.body.offsetHeight,
         ),
-      ),
-    );
+      );
+    });
 
     // Resize so min-h-screen backgrounds fill the whole captured area.
     await page.setViewportSize({ width: CAPTURE_WIDTH, height: contentHeight });

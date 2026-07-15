@@ -174,10 +174,41 @@ export async function runBillingMigrations(): Promise<void> {
         PRIMARY KEY (provider, event_id)
       )
     `);
+    await db.execute(sql`
+      ALTER TABLE user_licenses
+      ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT
+    `);
   } catch (err) {
     logger.error({ err }, "Billing migration failed");
     throw err;
   }
+}
+
+/**
+ * Persists the Stripe customer id for a user (best-effort; used by the
+ * Billing Portal endpoint so users can manage/cancel recurring plans).
+ * Only updates an existing user_licenses row — applyPaidPlan creates it.
+ */
+export async function saveStripeCustomerId(
+  userId: string,
+  stripeCustomerId: string,
+): Promise<void> {
+  await db
+    .update(userLicensesTable)
+    .set({ stripeCustomerId, updatedAt: new Date() })
+    .where(eq(userLicensesTable.userId, userId));
+}
+
+/** Returns the stored Stripe customer id for a user, if any. */
+export async function getStripeCustomerId(
+  userId: string,
+): Promise<string | null> {
+  const [row] = await db
+    .select({ stripeCustomerId: userLicensesTable.stripeCustomerId })
+    .from(userLicensesTable)
+    .where(eq(userLicensesTable.userId, userId))
+    .limit(1);
+  return row?.stripeCustomerId ?? null;
 }
 
 /**

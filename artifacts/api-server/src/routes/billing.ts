@@ -17,6 +17,8 @@ import {
   applyTeamPlan,
   recordPayment,
   claimBillingEvent,
+  saveStripeCustomerId,
+  getStripeCustomerId,
   listProviders,
   stripePriceIdFor,
   stripeTeamPriceId,
@@ -28,6 +30,7 @@ import {
   type BillingProviderId,
 } from "../lib/billing";
 import { createPaymentLink, verifyRazorpaySignature } from "../lib/razorpay";
+import { extendOrgSubscription } from "../lib/org";
 import { sendLicenseEmail } from "../lib/email";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -262,18 +265,22 @@ router.post(
       return;
     }
 
-    const isLifetime = plan === "lifetime";
+    // Yearly and lifetime are one-time payments. Yearly customers receive a
+    // renewal license key by email and renew manually by redeeming the key
+    // (no auto-charge). Monthly/quarterly are recurring subscriptions that
+    // auto-renew until the user cancels.
+    const isOneTime = plan === "lifetime" || plan === "yearly";
 
     try {
       const session = await stripe.checkout.sessions.create({
-        mode: isLifetime ? "payment" : "subscription",
+        mode: isOneTime ? "payment" : "subscription",
         line_items: [{ price: priceId, quantity: 1 }],
         client_reference_id: auth.userId,
         metadata: {
           clerkUserId: auth.userId,
           plan,
         },
-        ...(isLifetime
+        ...(isOneTime
           ? {}
           : {
               subscription_data: {
@@ -297,6 +304,60 @@ router.post(
     } catch (err) {
       req.log.error({ err, userId: auth.userId, plan }, "Stripe checkout failed");
       res.status(500).json({ error: "Failed to create checkout session" });
+    }
+  },
+);
+
+// ─── POST /billing/portal ─────────────────────────────────────────────────────
+// Opens a Stripe Billing Portal session so recurring subscribers (monthly /
+// quarterly / business / team) can update their card or cancel auto-renewal.
+
+router.post(
+  "/billing/portal",
+  async (req: Request, res: Response): Promise<void> => {
+    const auth = getAuth(req);
+    if (!auth.userId) {
+      res.status(401).json({ error: "Not signed in" });
+      return;
+    }
+    const stripe = getStripe();
+    if (!stripe) {
+      res.status(503).json({ error: "Stripe not configured" });
+      return;
+    }
+    try {
+      const customerId = await getStripeCustomerId(auth.userId);
+      if (!customerId) {
+        res.status(404).json({
+          error:
+            "No billing profile found. Only recurring plans purchased with a card can be managed here.",
+        });
+        return;
+      }
+      const body = (req.body ?? {}) as { returnUrl?: unknown };
+      const host = req.get("host");
+      const proto =
+        (req.get("x-forwarded-proto") ?? "").split(",")[0]?.trim() ||
+        (req.secure ? "https" : "http");
+      const fallbackReturnUrl = `${host ? `${proto}://${host}` : ""}/pdf-expiry/dashboard`;
+      // Only accept same-origin return URLs to avoid an open-redirect surface.
+      let returnUrl = fallbackReturnUrl;
+      if (typeof body.returnUrl === "string" && body.returnUrl) {
+        try {
+          const parsed = new URL(body.returnUrl);
+          if (host && parsed.host === host) returnUrl = body.returnUrl;
+        } catch {
+          // ignore malformed URLs, keep fallback
+        }
+      }
+      const session = await stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: returnUrl,
+      });
+      res.json({ url: session.url });
+    } catch (err) {
+      req.log.error({ err, userId: auth.userId }, "Billing portal failed");
+      res.status(500).json({ error: "Failed to open billing portal" });
     }
   },
 );
@@ -388,6 +449,15 @@ billingWebhookRouter.post(
         } catch (payErr) {
           req.log.error({ err: payErr, eventId: event.id }, "Failed to record payment");
         }
+
+        // Remember the Stripe customer so the user can open the Billing
+        // Portal later (manage card / cancel auto-renewal). Best-effort;
+        // runs again after applyPaidPlan below for first-time buyers whose
+        // user_licenses row doesn't exist yet.
+        const sessionCustomerId =
+          typeof session.customer === "string"
+            ? session.customer
+            : (session.customer?.id ?? null);
 
         // ─── Team / Business: provision the organization ────────────────────
         if (plan === "team") {
@@ -488,6 +558,14 @@ billingWebhookRouter.post(
             now,
           );
 
+          if (sessionCustomerId) {
+            try {
+              await saveStripeCustomerId(userId, sessionCustomerId);
+            } catch (custErr) {
+              req.log.warn({ err: custErr, userId }, "Could not save Stripe customer id");
+            }
+          }
+
           req.log.info(
             {
               userId,
@@ -536,6 +614,14 @@ billingWebhookRouter.post(
           provider: "stripe",
           eventId: event.id,
         });
+
+        if (sessionCustomerId) {
+          try {
+            await saveStripeCustomerId(userId, sessionCustomerId);
+          } catch (custErr) {
+            req.log.warn({ err: custErr, userId }, "Could not save Stripe customer id");
+          }
+        }
 
         req.log.info(
           {
@@ -609,6 +695,197 @@ billingWebhookRouter.post(
           req.log.error(
             { err: emailErr, userId, plan },
             "License email pipeline failed",
+          );
+        }
+      } else if (event.type === "invoice.paid") {
+        // ─── Recurring renewal (monthly / quarterly / business / team) ──────
+        // Fires every billing cycle until the user cancels. The first cycle
+        // is already handled by checkout.session.completed, so we only act
+        // on `billing_reason === "subscription_cycle"` to avoid granting the
+        // first period twice.
+        const invoice = event.data.object as Stripe.Invoice;
+        const invoiceAny = invoice as unknown as {
+          billing_reason?: string;
+          subscription?: string | { id?: string } | null;
+          parent?: {
+            subscription_details?: {
+              subscription?: string | { id?: string } | null;
+              metadata?: Record<string, string | undefined> | null;
+            } | null;
+          } | null;
+          customer?: string | { id?: string } | null;
+          customer_email?: string | null;
+          customer_name?: string | null;
+          amount_paid?: number | null;
+          currency?: string | null;
+        };
+
+        if (invoiceAny.billing_reason !== "subscription_cycle") {
+          req.log.debug(
+            { eventId: event.id, billingReason: invoiceAny.billing_reason },
+            "Stripe invoice ignored (not a renewal cycle)",
+          );
+          res.json({ received: true, processed: false });
+          return;
+        }
+
+        // Resolve the subscription id (shape differs across Stripe API versions).
+        const subRef =
+          invoiceAny.subscription ??
+          invoiceAny.parent?.subscription_details?.subscription ??
+          null;
+        const stripeSubId =
+          typeof subRef === "string" ? subRef : (subRef?.id ?? null);
+
+        // Prefer metadata already present on the invoice; fall back to the
+        // subscription object.
+        let meta: Record<string, string | undefined> | null =
+          invoiceAny.parent?.subscription_details?.metadata ?? null;
+        let subPeriodEnd: Date | null = null;
+        if (stripeSubId) {
+          try {
+            const sub = await stripe.subscriptions.retrieve(stripeSubId);
+            if (!meta || !meta["clerkUserId"]) {
+              meta = (sub.metadata ?? null) as Record<string, string | undefined> | null;
+            }
+            const period = sub as unknown as { current_period_end?: number };
+            if (period.current_period_end) {
+              subPeriodEnd = new Date(period.current_period_end * 1000);
+            }
+          } catch (subErr) {
+            req.log.warn(
+              { err: subErr, stripeSubId },
+              "Could not retrieve subscription for renewal invoice",
+            );
+          }
+        }
+
+        const renewUserId = meta?.["clerkUserId"] ?? null;
+        const renewPlan = meta?.["plan"] ?? null;
+
+        if (!renewUserId || !renewPlan) {
+          req.log.warn(
+            { eventId: event.id, stripeSubId },
+            "Renewal invoice missing clerkUserId/plan metadata; ignoring",
+          );
+          res.json({ received: true, processed: false });
+          return;
+        }
+
+        const isFresh = await claimBillingEvent(
+          "stripe",
+          event.id,
+          event.type,
+          renewUserId,
+        );
+        if (!isFresh) {
+          req.log.info(
+            { eventId: event.id },
+            "Stripe renewal webhook already processed (idempotent replay)",
+          );
+          res.json({ received: true, processed: false });
+          return;
+        }
+
+        try {
+          await recordPayment({
+            provider: "stripe",
+            eventId: event.id,
+            userId: renewUserId,
+            planName: renewPlan,
+            amountMinor: invoiceAny.amount_paid ?? null,
+            currency: invoiceAny.currency ?? null,
+          });
+        } catch (payErr) {
+          req.log.error({ err: payErr, eventId: event.id }, "Failed to record renewal payment");
+        }
+
+        const renewCustomerId =
+          typeof invoiceAny.customer === "string"
+            ? invoiceAny.customer
+            : (invoiceAny.customer?.id ?? null);
+        if (renewCustomerId) {
+          try {
+            await saveStripeCustomerId(renewUserId, renewCustomerId);
+          } catch (custErr) {
+            req.log.warn({ err: custErr, userId: renewUserId }, "Could not save Stripe customer id");
+          }
+        }
+
+        const now = new Date();
+
+        if (renewPlan === "team") {
+          if (stripeSubId && subPeriodEnd) {
+            const org = await extendOrgSubscription(stripeSubId, subPeriodEnd, undefined, now);
+            req.log.info(
+              { userId: renewUserId, stripeSubId, orgId: org?.id ?? null, newEnd: subPeriodEnd.toISOString() },
+              org ? "Team subscription renewed" : "Team renewal: no org found for subscription",
+            );
+          } else {
+            req.log.warn(
+              { eventId: event.id, stripeSubId },
+              "Team renewal invoice missing subscription/period; skipped",
+            );
+          }
+          res.json({ received: true, processed: true });
+          return;
+        }
+
+        let renewOutcome: Awaited<ReturnType<typeof applyPaidPlan>>;
+        if (renewPlan === "business") {
+          renewOutcome = await applyBusinessPlan(
+            renewUserId,
+            { provider: "stripe", eventId: event.id },
+            subPeriodEnd ?? new Date(now.getTime() + 30 * MS_PER_DAY),
+            now,
+          );
+        } else if (isProductPlan(renewPlan)) {
+          renewOutcome = await applyPaidPlan(renewUserId, renewPlan, {
+            provider: "stripe",
+            eventId: event.id,
+          });
+        } else {
+          req.log.warn(
+            { eventId: event.id, plan: renewPlan },
+            "Renewal invoice for unknown plan; ignoring",
+          );
+          res.json({ received: true, processed: false });
+          return;
+        }
+
+        req.log.info(
+          {
+            userId: renewUserId,
+            plan: renewPlan,
+            licenseId: renewOutcome.licenseId,
+            newEnd: renewOutcome.subscriptionEndDate.toISOString(),
+          },
+          "Stripe recurring renewal applied",
+        );
+
+        // Best-effort renewal license email.
+        try {
+          let recipient: string | null = invoiceAny.customer_email ?? null;
+          let recipientName: string | null = invoiceAny.customer_name ?? null;
+          if (!recipient) {
+            const looked = await lookupClerkEmail(renewUserId);
+            recipient = looked.email;
+            recipientName = recipientName ?? looked.name;
+          }
+          if (recipient) {
+            await sendLicenseEmail({
+              to: recipient,
+              customerName: recipientName,
+              productKey: renewOutcome.rawProductKey,
+              plan: renewPlan,
+              subscriptionEndDate: renewOutcome.subscriptionEndDate.toISOString(),
+              downloadUrl: buildInstallerDownloadUrl(req),
+            });
+          }
+        } catch (emailErr) {
+          req.log.error(
+            { err: emailErr, userId: renewUserId, plan: renewPlan },
+            "Renewal license email pipeline failed",
           );
         }
       } else {

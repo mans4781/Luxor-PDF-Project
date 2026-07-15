@@ -6,6 +6,7 @@ import {
   useGetEsignWaitlistStatus,
   getGetEsignWaitlistStatusQueryKey,
   useJoinEsignWaitlist,
+  useCreateBillingPortalSession,
 } from "@workspace/api-client-react";
 import { useLicense } from "@/license/LicenseProvider";
 import { loadLocalHistory } from "@/pages/history";
@@ -167,6 +168,31 @@ export default function AccountDashboardPage() {
     : isTrial
       ? "Free Trial"
       : "Free";
+  // Recurring plans (monthly/quarterly/business/team) are managed/cancelled in
+  // the Stripe Billing Portal. Yearly is a one-time purchase renewed manually
+  // with a license key.
+  const planKey = (status?.planName ?? "").toLowerCase();
+  const isRecurringPlan =
+    isPaid && ["monthly", "quarterly", "business", "team"].includes(planKey);
+  const isYearlyPlan = isPaid && planKey === "yearly";
+  const portalMutation = useCreateBillingPortalSession({
+    mutation: {
+      onSuccess: (data) => {
+        if (data?.url) window.location.assign(data.url);
+      },
+      onError: () => {
+        toast({
+          title: "Couldn't open billing portal",
+          description:
+            "No billing profile found for this account yet. If you just subscribed, try again in a minute.",
+          variant: "destructive",
+        });
+      },
+    },
+  });
+  const openBillingPortal = () =>
+    portalMutation.mutate({ data: { returnUrl: window.location.href } });
+
   const renewalDate =
     isPaid && status?.subscriptionEndDate
       ? formatDate(new Date(status.subscriptionEndDate))
@@ -491,13 +517,33 @@ export default function AccountDashboardPage() {
               >
                 <ArrowUpCircle className="w-4 h-4" /> Upgrade Plan
               </Link>
-              <Link
-                href="/checkout"
-                className="w-full px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
-                data-testid="link-manage-billing"
-              >
-                <CreditCard className="w-4 h-4 text-slate-500" /> Manage Billing
-              </Link>
+              {isRecurringPlan ? (
+                <button
+                  onClick={openBillingPortal}
+                  disabled={portalMutation.isPending}
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-60"
+                  data-testid="button-manage-billing"
+                >
+                  <CreditCard className="w-4 h-4 text-slate-500" />
+                  {portalMutation.isPending ? "Opening…" : "Manage / Cancel Plan"}
+                </button>
+              ) : isYearlyPlan ? (
+                <Link
+                  href="/activate-key"
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+                  data-testid="link-renew-with-key"
+                >
+                  <CreditCard className="w-4 h-4 text-slate-500" /> Renew with License Key
+                </Link>
+              ) : (
+                <Link
+                  href="/checkout"
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+                  data-testid="link-manage-billing"
+                >
+                  <CreditCard className="w-4 h-4 text-slate-500" /> Manage Billing
+                </Link>
+              )}
             </div>
           </div>
 

@@ -30,6 +30,8 @@ import type {
   AdminListKeysResult,
   AdminRevokeKeyBody,
   AdminRevokeKeyResult,
+  BillingPortalBody,
+  BillingPortalResult,
   BillingProviders,
   CreateCheckoutSessionBody,
   CreateCheckoutSessionResult,
@@ -2438,6 +2440,99 @@ export const useCreateCheckoutSession = <
   TContext
 > => {
   return useMutation(getCreateCheckoutSessionMutationOptions(options));
+};
+
+/**
+ * Returns a `url` the client should redirect to. The portal lets
+recurring subscribers (monthly and other auto-renewing plans) update
+their payment method or cancel auto-renewal. Yearly and lifetime are
+one-time purchases and have no portal profile until the user has made
+a recurring purchase.
+
+ * @summary Open the Stripe Billing Portal for the signed-in user
+ */
+export const getCreateBillingPortalSessionUrl = () => {
+  return `/api/billing/portal`;
+};
+
+export const createBillingPortalSession = async (
+  billingPortalBody?: BillingPortalBody,
+  options?: RequestInit,
+): Promise<BillingPortalResult> => {
+  return customFetch<BillingPortalResult>(getCreateBillingPortalSessionUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(billingPortalBody),
+  });
+};
+
+export const getCreateBillingPortalSessionMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createBillingPortalSession>>,
+    TError,
+    { data: BodyType<BillingPortalBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createBillingPortalSession>>,
+  TError,
+  { data: BodyType<BillingPortalBody> },
+  TContext
+> => {
+  const mutationKey = ["createBillingPortalSession"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createBillingPortalSession>>,
+    { data: BodyType<BillingPortalBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createBillingPortalSession(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateBillingPortalSessionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createBillingPortalSession>>
+>;
+export type CreateBillingPortalSessionMutationBody =
+  BodyType<BillingPortalBody>;
+export type CreateBillingPortalSessionMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Open the Stripe Billing Portal for the signed-in user
+ */
+export const useCreateBillingPortalSession = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createBillingPortalSession>>,
+    TError,
+    { data: BodyType<BillingPortalBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createBillingPortalSession>>,
+  TError,
+  { data: BodyType<BillingPortalBody> },
+  TContext
+> => {
+  return useMutation(getCreateBillingPortalSessionMutationOptions(options));
 };
 
 /**

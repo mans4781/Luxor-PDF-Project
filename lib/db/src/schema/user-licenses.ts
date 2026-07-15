@@ -13,6 +13,9 @@ export const userLicensesTable = pgTable("user_licenses", {
   // features. NULL = use the plan-tier default. Used for Enterprise custom
   // contracts and one-off manual increases. A sentinel of -1 means "unlimited".
   quotaOverrideSecure: integer("quota_override_secure"),
+  // Stripe customer id captured from checkout/invoice webhooks so the user
+  // can open the Stripe Billing Portal (manage/cancel recurring plans).
+  stripeCustomerId: text("stripe_customer_id"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

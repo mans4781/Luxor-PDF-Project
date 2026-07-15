@@ -21,6 +21,8 @@ export * from "./adminMintedKey";
 export * from "./adminProductKeySummary";
 export * from "./adminRevokeKeyBody";
 export * from "./adminRevokeKeyResult";
+export * from "./billingPortalBody";
+export * from "./billingPortalResult";
 export * from "./billingProvider";
 export * from "./billingProviderInfo";
 export * from "./billingProviders";

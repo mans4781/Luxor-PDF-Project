@@ -15,7 +15,14 @@ description: Provider registry, Razorpay payment-link flow, webhook idempotency,
 ## Shared pipeline
 - Webhook idempotency: `billing_events (provider, event_id)` PK created by `runBillingMigrations()`; `claimBillingEvent()` INSERT…ON CONFLICT DO NOTHING short-circuits duplicates before `applyPaidPlan()`.
 - `applyPaidPlan()`: mints 1-use product key (attributed `billing:stripe`), extends most-recent license (renewal base = `max(now, current end)`) or sets `user_licenses.isPaid=true` for first activation; one DB transaction + `license_renewed`/`license_activated` audit row. Then `sendLicenseEmail()`.
-- Stripe per-plan price IDs `STRIPE_PRICE_MONTHLY|QUARTERLY|YEARLY|LIFETIME`; lifetime `mode:"payment"`, others `"subscription"`.
+- Stripe per-plan price IDs `STRIPE_PRICE_MONTHLY|QUARTERLY|YEARLY|LIFETIME`; yearly + lifetime `mode:"payment"` (one-time), monthly/quarterly `"subscription"`. **`STRIPE_PRICE_YEARLY` must be a one-time (non-recurring) Price in the Stripe dashboard or yearly checkout fails at runtime.**
+
+## Recurring renewals & portal
+- `invoice.paid` webhook handled ONLY when `billing_reason==="subscription_cycle"` — first period is granted by `checkout.session.completed`; anything else would double-grant.
+- Renewal routing: team → `extendOrgSubscription`, business → `applyBusinessPlan(periodEnd)`, individual recurring → `applyPaidPlan`; all behind `claimBillingEvent()`; renewal license email sent.
+- `user_licenses.stripe_customer_id` saved on `checkout.session.completed` + `invoice.paid`; `POST /api/billing/portal` (Clerk-authed) opens Stripe Billing Portal from it. `returnUrl` body param restricted to same-origin (open-redirect guard), fallback `/pdf-expiry/dashboard`.
+- Dashboard button logic: recurring plans (monthly/quarterly/business/team) → "Manage / Cancel Plan" (portal); yearly → "Renew with License Key" → `/activate-key`; free → checkout link.
+- Yearly renewal is manual: renewal license key emailed, user redeems via activate-key page / `POST /license/renew`. Razorpay stays manual one-time for both.
 
 ## Frontend
 - `pdf-expiry/src/pages/checkout.tsx` is provider-aware: reads `/billing/providers`, uses `?provider=` when available, else first available, else `"stripe"`.

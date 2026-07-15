@@ -572,6 +572,15 @@ export interface CreateCheckoutSessionResult {
   url: string;
 }
 
+export interface BillingPortalBody {
+  /** Where Stripe sends the user after they close the portal. */
+  returnUrl?: string;
+}
+
+export interface BillingPortalResult {
+  url: string;
+}
+
 export interface AdminExtendKeyResult {
   id: number;
   durationDays: number;
