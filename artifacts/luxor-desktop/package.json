@@ -1,6 +1,6 @@
 {
   "name": "@workspace/luxor-desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Luxor PDF Secure — Windows desktop wrapper for the pdf-expiry web app.",
   "main": "out/main.js",
