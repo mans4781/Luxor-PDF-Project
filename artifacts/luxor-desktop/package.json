@@ -11,7 +11,8 @@
     "dist": "pnpm run build && pnpm run build:web-bundle && electron-builder",
     "dist:win": "pnpm run build && pnpm run build:web-bundle && electron-builder --win --x64",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "icon:regen": "node ./scripts/build-icon.mjs"
+    "icon:regen": "node ./scripts/build-icon.mjs",
+    "dist:web-stub": "node ./scripts/build-web-installer.mjs"
   },
   "devDependencies": {
     "@types/node": "catalog:",

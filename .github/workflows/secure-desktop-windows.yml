@@ -80,6 +80,48 @@ jobs:
       - name: Build NSIS installer
         run: pnpm --filter @workspace/luxor-desktop exec electron-builder --win --x64 --publish ${{ steps.mode.outputs.flag }}
 
+      # Small (~230 KB) online installer that downloads the full setup from
+      # GitHub Releases when run.
+      # makensis is not on PATH on windows-latest; install via choco and
+      # expose it so the stub build can spawn it.
+      - name: Install NSIS for stub build
+        shell: bash
+        run: |
+          choco install nsis -y --no-progress
+          # GITHUB_PATH needs a native Windows path, not an MSYS-style one.
+          echo 'C:\Program Files (x86)\NSIS' >> "$GITHUB_PATH"
+
+      - name: Build web-installer stub
+        run: pnpm --filter @workspace/luxor-desktop run dist:web-stub
+
+      - name: Attach web-installer stub to the release
+        if: steps.mode.outputs.flag == 'always'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GH_RELEASES_TOKEN }}
+          REPO: mans4781/Luxor-Secure-Project
+        run: |
+          VERSION=$(node -p "require('./artifacts/luxor-desktop/package.json').version")
+          # electron-builder publishes the release under tag v<version> by
+          # default; the CI trigger tag (secure-v*) is unrelated. Resolve
+          # whichever release actually exists, failing early with a clear
+          # message otherwise.
+          TAG=""
+          for CANDIDATE in "v${VERSION}" "${GITHUB_REF_NAME}"; do
+            if [ -n "$CANDIDATE" ] && gh release view "$CANDIDATE" --repo "$REPO" >/dev/null 2>&1; then
+              TAG="$CANDIDATE"
+              break
+            fi
+          done
+          if [ -z "$TAG" ]; then
+            echo "::error::No GitHub release found for v${VERSION} or ${GITHUB_REF_NAME} on $REPO — cannot attach web-installer stub."
+            exit 1
+          fi
+          echo "Uploading stub to release $TAG"
+          gh release upload "$TAG" \
+            "artifacts/luxor-desktop/dist/Luxor PDF Secure Web Setup.exe" \
+            --repo "$REPO" --clobber
+
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
