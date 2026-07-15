@@ -57,10 +57,19 @@ Section "Download and install"
 
   DetailPrint "Download complete."
   DetailPrint "Starting the ${PRODUCT_NAME} installer..."
-  ; Hide the stub while the real installer's UI takes over.
-  HideWindow
-  ExecWait '"$PLUGINSDIR\LuxorPDFReaderSetup.exe"' $1
-  DetailPrint "Installer finished (exit code $1)."
-  ; Auto-close is on; Quit forces an immediate exit as a belt-and-suspenders.
+  ; Move the installer out of $PLUGINSDIR: NSIS deletes that folder as soon
+  ; as the stub quits, and the full installer must keep running after we're
+  ; gone. $TEMP survives; Windows cleans it up on its own schedule.
+  Rename "$PLUGINSDIR\LuxorPDFReaderSetup.exe" "$TEMP\LuxorPDFReaderSetup.exe"
+  IfFileExists "$TEMP\LuxorPDFReaderSetup.exe" launch_from_temp
+    ; Rename failed (e.g. a stale copy is locked in $TEMP) — fall back to
+    ; the old blocking behavior so the install still succeeds.
+    HideWindow
+    ExecWait '"$PLUGINSDIR\LuxorPDFReaderSetup.exe"' $1
+    Quit
+  launch_from_temp:
+  ; Launch without waiting and close the stub immediately — the full
+  ; installer's own wizard takes over from here.
+  Exec '"$TEMP\LuxorPDFReaderSetup.exe"'
   Quit
 SectionEnd
