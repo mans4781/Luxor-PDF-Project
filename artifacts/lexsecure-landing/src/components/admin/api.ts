@@ -1,5 +1,5 @@
-import type { AdminStats, AdminCustomer, ProductKey, MintedKey, VisitorAnalytics } from "./types";
-import { SAMPLE_STATS, SAMPLE_CUSTOMERS, SAMPLE_PRODUCT_KEYS, SAMPLE_VISITOR_ANALYTICS } from "./mock-data";
+import type { AdminStats, AdminCustomer, ProductKey, MintedKey, VisitorAnalytics, SupportTicket } from "./types";
+import { SAMPLE_STATS, SAMPLE_CUSTOMERS, SAMPLE_PRODUCT_KEYS, SAMPLE_VISITOR_ANALYTICS, SAMPLE_TICKETS } from "./mock-data";
 
 // Dev-only preview mode: the console renders with sample data, no login.
 // Never active in production builds.
@@ -8,6 +8,7 @@ export const isDevPreview = (token: string) =>
   import.meta.env.DEV && token === DEV_PREVIEW_TOKEN;
 
 let previewKeys: ProductKey[] = [...SAMPLE_PRODUCT_KEYS];
+let previewTickets: SupportTicket[] = [...SAMPLE_TICKETS];
 let previewNextId = 9100;
 
 class AdminApiError extends Error {
@@ -138,5 +139,27 @@ export const adminApi = {
       method: "POST",
       body: JSON.stringify({ id, additionalDays }),
     });
+  },
+
+  tickets: (token: string) =>
+    isDevPreview(token)
+      ? Promise.resolve([...previewTickets])
+      : request<{ tickets: SupportTicket[] }>(token, "/tickets").then((r) => r.tickets),
+
+  updateTicket: (
+    token: string,
+    id: number,
+    patch: { status?: string; adminReply?: string },
+  ) => {
+    if (isDevPreview(token)) {
+      previewTickets = previewTickets.map((t) =>
+        t.id === id ? { ...t, ...patch, updatedAt: new Date().toISOString() } : t,
+      );
+      return Promise.resolve(previewTickets.find((t) => t.id === id) as SupportTicket);
+    }
+    return request<{ ticket: SupportTicket }>(token, "/tickets/update", {
+      method: "POST",
+      body: JSON.stringify({ id, ...patch }),
+    }).then((r) => r.ticket);
   },
 };

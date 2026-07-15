@@ -354,7 +354,7 @@ export const OPS_METRICS = [
 ];
 
 // ── Dev-preview sample data (design review without login; dev builds only) ──
-import type { AdminStats, AdminCustomer, ProductKey, VisitorAnalytics } from "./types";
+import type { AdminStats, AdminCustomer, ProductKey, VisitorAnalytics, SupportTicket } from "./types";
 
 export const SAMPLE_STATS: AdminStats = {
   overview: {
@@ -505,3 +505,40 @@ export const SAMPLE_VISITOR_ANALYTICS: VisitorAnalytics = {
     }),
   ),
 };
+
+const hoursAgo = (h: number) => new Date(Date.now() - h * 60 * 60 * 1000).toISOString();
+
+export const SAMPLE_TICKETS: SupportTicket[] = [
+  {
+    id: 3007, name: "Riya Sharma", email: "riya@sample.dev", product: "Luxor PDF Secure",
+    category: "refund", subject: "Refund for yearly plan", status: "open", adminReply: null,
+    message: "I purchased the yearly plan two days ago but my company already has a team licence. Please refund my payment to the original card.",
+    createdAt: hoursAgo(3), updatedAt: hoursAgo(3),
+  },
+  {
+    id: 3006, name: "Dan Weber", email: "dan@sample.dev", product: "Luxor PDF Reader",
+    category: "technical", subject: "Dark mode resets on restart", status: "in_progress", adminReply: null,
+    message: "Every time I reopen the desktop reader the theme goes back to light even though I picked dark mode in settings.",
+    createdAt: hoursAgo(9), updatedAt: hoursAgo(2),
+  },
+  {
+    id: 3005, name: "Mei Lin", email: "mei@sample.dev", product: "Convert Tools",
+    category: "general", subject: "Word export keeps tables?", status: "resolved",
+    adminReply: "Yes — tables are preserved in PDF to Word conversion. Complex merged cells may need a quick manual check after export.",
+    message: "Before I buy: does the PDF to Word tool keep tables intact or does it flatten them to text?",
+    createdAt: hoursAgo(30), updatedAt: hoursAgo(20),
+  },
+  {
+    id: 3004, name: "Carlos Mendes", email: "carlos@sample.dev", product: "Luxor PDF Secure",
+    category: "billing", subject: "Charged twice this month", status: "in_progress", adminReply: null,
+    message: "My statement shows two monthly charges in the same week. Can you check my account and reverse the duplicate?",
+    createdAt: hoursAgo(50), updatedAt: hoursAgo(26),
+  },
+  {
+    id: 3003, name: "Aisha Khan", email: "aisha@sample.dev", product: "Luxor PDF eSign",
+    category: "general", subject: "When does eSign launch?", status: "closed",
+    adminReply: "eSign is in early access — you are on the waitlist and we will email you the moment your invite is ready.",
+    message: "I joined the waitlist last month. Any update on when I will get access?",
+    createdAt: hoursAgo(96), updatedAt: hoursAgo(70),
+  },
+];

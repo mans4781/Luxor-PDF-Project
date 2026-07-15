@@ -13,6 +13,7 @@ import aiRouter from "./ai";
 import convertRouter from "./convert";
 import accountRouter from "./account";
 import esignRouter from "./esign";
+import ticketsRouter from "./tickets";
 
 const router: IRouter = Router();
 
@@ -30,5 +31,6 @@ router.use(aiRouter);
 router.use(convertRouter);
 router.use(accountRouter);
 router.use(esignRouter);
+router.use(ticketsRouter);
 
 export default router;

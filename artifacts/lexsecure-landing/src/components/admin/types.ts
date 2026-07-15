@@ -26,6 +26,20 @@ export interface VisitorAnalytics {
   dayLocations: Record<string, { country: string; city: string; visitors: number }[]>;
 }
 
+export interface SupportTicket {
+  id: number;
+  name: string;
+  email: string;
+  product: string;
+  category: string;
+  subject: string;
+  message: string;
+  status: string;
+  adminReply: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AdminCustomer {
   userId: string;
   planName: string | null;

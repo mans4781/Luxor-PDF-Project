@@ -7,6 +7,7 @@ import {
   HelpCircle,
   KeyRound,
   LayoutDashboard,
+  LifeBuoy,
   LogOut,
   Menu,
   Package,
@@ -56,6 +57,7 @@ export type ConsoleSection =
   | "referrals"
   | "products"
   | "analytics"
+  | "tickets"
   | "reports"
   | "integrations"
   | "settings";
@@ -69,6 +71,7 @@ export const NAV_ITEMS: { id: ConsoleSection; label: string; icon: React.Element
   { id: "referrals", label: "Referrals", icon: Share2 },
   { id: "products", label: "Products", icon: Package },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "tickets", label: "Tickets", icon: LifeBuoy },
   { id: "reports", label: "Reports", icon: FileBarChart },
   { id: "integrations", label: "Integrations", icon: PlugZap },
   { id: "settings", label: "Settings", icon: Settings },

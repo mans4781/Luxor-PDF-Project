@@ -22,6 +22,7 @@ import {
   hashProductKey,
   PLAN_DURATION_DAYS,
 } from "@workspace/license-keys";
+import { listTickets, updateTicket } from "./tickets";
 import {
   adminListProductKeys,
   adminRevokeProductKey,
@@ -590,6 +591,45 @@ router.get("/admin/analytics/visitors", async (req, res): Promise<void> => {
   } catch (err) {
     req.log.error({ err }, "admin/analytics/visitors failed");
     res.status(500).json({ error: "Failed to load visitor analytics" });
+  }
+});
+
+// ─── Support tickets ─────────────────────────────────────────────────────────
+
+router.get("/admin/tickets", async (req, res): Promise<void> => {
+  if (!checkAuth(req, res)) return;
+  try {
+    const tickets = await listTickets();
+    res.json({ tickets });
+  } catch (err) {
+    req.log.error({ err }, "admin/tickets list failed");
+    res.status(500).json({ error: "Failed to load tickets" });
+  }
+});
+
+router.post("/admin/tickets/update", async (req, res): Promise<void> => {
+  if (!checkAuth(req, res)) return;
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const id = Number(body["id"]);
+  const status = typeof body["status"] === "string" ? body["status"] : undefined;
+  const adminReply = typeof body["adminReply"] === "string" ? body["adminReply"] : undefined;
+  if (!Number.isInteger(id) || id <= 0 || (status === undefined && adminReply === undefined)) {
+    res.status(400).json({ error: "Invalid request" });
+    return;
+  }
+  try {
+    const patch: { status?: string; adminReply?: string } = {};
+    if (status !== undefined) patch.status = status;
+    if (adminReply !== undefined) patch.adminReply = adminReply;
+    const ticket = await updateTicket(id, patch);
+    if (!ticket) {
+      res.status(400).json({ error: "Ticket not found or invalid status" });
+      return;
+    }
+    res.json({ ticket });
+  } catch (err) {
+    req.log.error({ err }, "admin/tickets update failed");
+    res.status(500).json({ error: "Failed to update ticket" });
   }
 });
 

@@ -146,25 +146,52 @@ const faqs = [
   },
 ];
 
-type FormState = "idle" | "sending" | "sent";
+const categories = [
+  { value: "general", label: "General question" },
+  { value: "technical", label: "Technical issue" },
+  { value: "billing", label: "Billing question" },
+  { value: "refund", label: "Refund request" },
+];
+
+type FormState = "idle" | "sending" | "sent" | "error";
 
 const inputCls =
   "w-full h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/25 focus:border-red-400 transition-all";
 
 /* ── Component ── */
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: "", email: "", subject: "", product: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", subject: "", product: "", category: "", message: "" });
   const [status, setStatus] = useState<FormState>("idle");
+  const [ticketId, setTicketId] = useState<number | null>(null);
+  const [errorMsg, setErrorMsg] = useState("");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("sending");
-    setTimeout(() => setStatus("sent"), 1600);
+    setErrorMsg("");
+    try {
+      const res = await fetch("/api/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const body = (await res.json().catch(() => ({}))) as { id?: number; error?: string };
+      if (!res.ok) {
+        setErrorMsg(body.error ?? "Could not submit your ticket. Please try again.");
+        setStatus("error");
+        return;
+      }
+      setTicketId(body.id ?? null);
+      setStatus("sent");
+    } catch {
+      setErrorMsg("Could not reach the server. Please check your connection and try again.");
+      setStatus("error");
+    }
   }
 
   return (
@@ -223,14 +250,18 @@ export default function ContactPage() {
                     <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100">
                       <CheckCircle2 className="h-7 w-7 text-[#DC2626]" strokeWidth={1.8} />
                     </div>
-                    <h3 className="mb-1.5 text-lg font-bold text-slate-900">Message sent!</h3>
+                    <h3 className="mb-1.5 text-lg font-bold text-slate-900">Ticket submitted!</h3>
                     <p className="max-w-xs text-sm text-slate-500">
+                      {ticketId ? (
+                        <>Your ticket number is <span className="font-bold text-slate-800">#{ticketId}</span>. </>
+                      ) : null}
                       Thanks for reaching out. Our team will get back to you within 24 hours.
                     </p>
                     <button
                       onClick={() => {
                         setStatus("idle");
-                        setForm({ name: "", email: "", subject: "", product: "", message: "" });
+                        setTicketId(null);
+                        setForm({ name: "", email: "", subject: "", product: "", category: "", message: "" });
                       }}
                       className="mt-5 text-sm font-semibold text-[#DC2626] hover:underline"
                     >
@@ -264,6 +295,17 @@ export default function ContactPage() {
                       </select>
                       <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     </div>
+                    <div className="relative">
+                      <select
+                        name="category" required value={form.category} onChange={handleChange}
+                        aria-label="Topic"
+                        className={`${inputCls} appearance-none pr-10 ${form.category ? "text-slate-700" : "text-slate-400"}`}
+                      >
+                        <option value="" disabled>What is this about?</option>
+                        {categories.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    </div>
                     <textarea
                       name="message" required value={form.message} onChange={handleChange}
                       rows={5} placeholder="Message" aria-label="Message"
@@ -283,6 +325,9 @@ export default function ContactPage() {
                         </>
                       )}
                     </button>
+                    {status === "error" && (
+                      <p className="text-center text-xs font-medium text-red-500">{errorMsg}</p>
+                    )}
                     <p className="text-center text-[11px] text-slate-400">
                       By submitting this form, you agree to our{" "}
                       <Link href="/privacy" className="font-semibold text-[#DC2626] hover:underline">Privacy Policy</Link>.
