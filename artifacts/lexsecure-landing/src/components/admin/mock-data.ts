@@ -352,3 +352,116 @@ export const OPS_METRICS = [
   { label: "Activation Errors", value: "1 today", trend: [3, 2, 2, 1, 2, 1, 1] },
   { label: "Failed Logins", value: "12 (24h)", trend: [18, 14, 16, 11, 13, 10, 12] },
 ];
+
+// ── Dev-preview sample data (design review without login; dev builds only) ──
+import type { AdminStats, AdminCustomer, ProductKey } from "./types";
+
+export const SAMPLE_STATS: AdminStats = {
+  overview: {
+    totalUsers: 128,
+    paidUsers: 34,
+    freeUsers: 94,
+    totalRevenue: { USD: 2840, INR: 64500 },
+    monthRevenue: { USD: 460, INR: 12800 },
+    pageViews: 18432,
+    totalPdfs: 512,
+    activePdfs: 391,
+    expiredPdfs: 121,
+    totalStorageBytes: 1_874_512_384,
+  },
+  plans: { monthly: 14, quarterly: 6, yearly: 11, lifetime: 3 },
+  monthlyData: [
+    { month: "Feb", revenue: { USD: 180, INR: 4200 }, signups: 9 },
+    { month: "Mar", revenue: { USD: 260, INR: 6900 }, signups: 14 },
+    { month: "Apr", revenue: { USD: 310, INR: 8100 }, signups: 18 },
+    { month: "May", revenue: { USD: 420, INR: 10400 }, signups: 22 },
+    { month: "Jun", revenue: { USD: 510, INR: 11900 }, signups: 27 },
+    { month: "Jul", revenue: { USD: 460, INR: 12800 }, signups: 21 },
+  ],
+  topPages: [
+    { path: "/", views: 6120 },
+    { path: "/pricing", views: 2840 },
+    { path: "/pdf-expiry", views: 2410 },
+    { path: "/luxor-pdf", views: 1980 },
+    { path: "/features", views: 1240 },
+    { path: "/download", views: 860 },
+  ],
+  dailyViews: Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(Date.now() - (29 - i) * 86_400_000);
+    return {
+      day: d.toISOString().slice(0, 10),
+      views: 380 + Math.round(220 * Math.abs(Math.sin(i / 4))) + (i % 7 === 0 ? -120 : 0),
+    };
+  }),
+  recentActivity: [
+    { id: 1, type: "payment", user: "ava@sample.dev", message: "Yearly plan purchased (USD)", time: new Date(Date.now() - 32 * 60_000).toISOString() },
+    { id: 2, type: "signup", user: "leo@sample.dev", message: "New account created", time: new Date(Date.now() - 2 * 3_600_000).toISOString() },
+    { id: 3, type: "document", user: "mia@sample.dev", message: "Secured a PDF with 7-day expiry", time: new Date(Date.now() - 5 * 3_600_000).toISOString() },
+    { id: 4, type: "payment", user: "raj@sample.dev", message: "Monthly plan renewed (INR)", time: new Date(Date.now() - 9 * 3_600_000).toISOString() },
+    { id: 5, type: "signup", user: "zoe@sample.dev", message: "New account created", time: new Date(Date.now() - 22 * 3_600_000).toISOString() },
+  ],
+};
+
+export const SAMPLE_CUSTOMERS: AdminCustomer[] = [
+  {
+    userId: "user_sample_ava", planName: "yearly", tier: "pro", isPaid: true,
+    accountStatus: "active", lockReason: null,
+    subscriptionStartDate: new Date(Date.now() - 40 * 86_400_000).toISOString(),
+    subscriptionEndDate: new Date(Date.now() + 325 * 86_400_000).toISOString(),
+    quotaOverrideSecure: null, monthlyUsed: 18, monthlyLimit: 100, monthlyRemaining: 82,
+    passwordProtectUsed: 11, securePdfUsed: 7,
+    resetDate: new Date(Date.now() + 12 * 86_400_000).toISOString(),
+    createdAt: new Date(Date.now() - 90 * 86_400_000).toISOString(),
+  },
+  {
+    userId: "user_sample_leo", planName: "monthly", tier: "pro", isPaid: true,
+    accountStatus: "active", lockReason: null,
+    subscriptionStartDate: new Date(Date.now() - 12 * 86_400_000).toISOString(),
+    subscriptionEndDate: new Date(Date.now() + 18 * 86_400_000).toISOString(),
+    quotaOverrideSecure: 250, monthlyUsed: 64, monthlyLimit: 250, monthlyRemaining: 186,
+    passwordProtectUsed: 40, securePdfUsed: 24,
+    resetDate: new Date(Date.now() + 18 * 86_400_000).toISOString(),
+    createdAt: new Date(Date.now() - 60 * 86_400_000).toISOString(),
+  },
+  {
+    userId: "user_sample_mia", planName: null, tier: null, isPaid: false,
+    accountStatus: "active", lockReason: null,
+    subscriptionStartDate: null, subscriptionEndDate: null,
+    quotaOverrideSecure: null, monthlyUsed: 3, monthlyLimit: 5, monthlyRemaining: 2,
+    passwordProtectUsed: 2, securePdfUsed: 1,
+    resetDate: new Date(Date.now() + 20 * 86_400_000).toISOString(),
+    createdAt: new Date(Date.now() - 15 * 86_400_000).toISOString(),
+  },
+  {
+    userId: "user_sample_raj", planName: "lifetime", tier: "pro", isPaid: true,
+    accountStatus: "active", lockReason: null,
+    subscriptionStartDate: new Date(Date.now() - 200 * 86_400_000).toISOString(),
+    subscriptionEndDate: null,
+    quotaOverrideSecure: null, monthlyUsed: 41, monthlyLimit: 100, monthlyRemaining: 59,
+    passwordProtectUsed: 25, securePdfUsed: 16,
+    resetDate: new Date(Date.now() + 5 * 86_400_000).toISOString(),
+    createdAt: new Date(Date.now() - 220 * 86_400_000).toISOString(),
+  },
+];
+
+export const SAMPLE_PRODUCT_KEYS: ProductKey[] = [
+  {
+    id: 9001, keyPrefix: "LUXOR-A1B2", planName: "yearly", durationDays: 365,
+    maxActivations: 1, currentActivations: 1, status: "redeemed",
+    expiresAt: null, notes: "Sample — giveaway batch",
+    createdAt: new Date(Date.now() - 30 * 86_400_000).toISOString(), revokedAt: null,
+  },
+  {
+    id: 9002, keyPrefix: "LUXOR-C3D4", planName: "monthly", durationDays: 30,
+    maxActivations: 2, currentActivations: 0, status: "active",
+    expiresAt: null, notes: "Sample — support goodwill",
+    createdAt: new Date(Date.now() - 12 * 86_400_000).toISOString(), revokedAt: null,
+  },
+  {
+    id: 9003, keyPrefix: "LUXOR-E5F6", planName: "lifetime", durationDays: 36_500,
+    maxActivations: 1, currentActivations: 0, status: "revoked",
+    expiresAt: null, notes: "Sample — issued in error",
+    createdAt: new Date(Date.now() - 8 * 86_400_000).toISOString(),
+    revokedAt: new Date(Date.now() - 2 * 86_400_000).toISOString(),
+  },
+];

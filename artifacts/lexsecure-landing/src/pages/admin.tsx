@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import type { AdminStats } from "@/components/admin/types";
-import { adminApi, isUnauthorized } from "@/components/admin/api";
+import { adminApi, isUnauthorized, DEV_PREVIEW_TOKEN } from "@/components/admin/api";
 import { ConsoleShell, NAV_ITEMS, type ConsoleSection } from "@/components/admin/shell";
 import { DashboardPage } from "@/components/admin/pages/dashboard";
 import { RevenuePage } from "@/components/admin/pages/revenue";
@@ -241,7 +241,20 @@ function Console({ token, onLogout }: { token: string; onLogout: () => void }) {
 
 // ── Page Root ─────────────────────────────────────────────────────────────────
 export default function AdminPage() {
-  const [token, setToken] = useState(() => sessionStorage.getItem("luxor_admin_token") ?? "");
+  const [token, setToken] = useState(() => {
+    // Dev-only preview entry (?dev=1 from the footer). Never active in production builds.
+    if (import.meta.env.DEV) {
+      if (new URLSearchParams(window.location.search).has("dev")) {
+        sessionStorage.setItem("luxor_admin_dev_preview", "1");
+      }
+      if (sessionStorage.getItem("luxor_admin_dev_preview") === "1") {
+        return DEV_PREVIEW_TOKEN;
+      }
+    }
+    return sessionStorage.getItem("luxor_admin_token") ?? "";
+  });
+
+  const isPreview = import.meta.env.DEV && token === DEV_PREVIEW_TOKEN;
 
   const handleUnlock = useCallback((t: string) => {
     sessionStorage.setItem("luxor_admin_token", t);
@@ -249,9 +262,19 @@ export default function AdminPage() {
   }, []);
   const handleLogout = useCallback(() => {
     sessionStorage.removeItem("luxor_admin_token");
+    sessionStorage.removeItem("luxor_admin_dev_preview");
     setToken("");
   }, []);
 
   if (!token) return <LoginScreen onUnlock={handleUnlock} />;
-  return <Console token={token} onLogout={handleLogout} />;
+  return (
+    <>
+      {isPreview && (
+        <div className="sticky top-0 z-50 bg-amber-400 px-4 py-1.5 text-center text-xs font-semibold text-amber-950">
+          Developer preview — sample data, no login. This mode exists only in development builds.
+        </div>
+      )}
+      <Console token={token} onLogout={handleLogout} />
+    </>
+  );
 }

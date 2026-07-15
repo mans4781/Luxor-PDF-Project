@@ -197,6 +197,14 @@ export function Footer() {
             Copyright © {new Date().getFullYear()}. Luxor PDF. All rights
             reserved.
           </div>
+          {import.meta.env.DEV && (
+            <a
+              href={`${import.meta.env.BASE_URL}admin?dev=1`}
+              className="text-center text-xs font-semibold text-amber-600 hover:text-amber-700 md:absolute md:right-8"
+            >
+              Developer: Admin Console preview
+            </a>
+          )}
         </div>
       </div>
     </footer>
