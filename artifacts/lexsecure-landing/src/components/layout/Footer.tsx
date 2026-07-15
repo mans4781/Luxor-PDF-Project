@@ -197,17 +197,6 @@ export function Footer() {
             Copyright © {new Date().getFullYear()}. Luxor PDF. All rights
             reserved.
           </div>
-          {import.meta.env.DEV && (
-            <div className="flex justify-center md:absolute md:right-0">
-              <a
-                href={`${import.meta.env.BASE_URL}admin?dev=1`}
-                className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-xs font-bold text-amber-700 shadow-sm transition-colors hover:bg-amber-100 hover:text-amber-800"
-              >
-                <span className="flex h-2 w-2 rounded-full bg-amber-500" />
-                Developer: Admin Console preview
-              </a>
-            </div>
-          )}
         </div>
       </div>
     </footer>
