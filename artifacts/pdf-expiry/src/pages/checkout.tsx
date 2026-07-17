@@ -45,7 +45,8 @@ export default function CheckoutPage() {
 
   // Pick the provider to use: an explicit ?provider= override when it's
   // actually configured, otherwise the first available provider, falling
-  // back to "stripe" (which will surface a clear "not configured" error).
+  // back to "razorpay" — the suite's primary (and currently only) live
+  // payment provider.
   const requestedProvider = params.get("provider");
   const available = (providersQuery.data?.providers ?? []).filter(
     (p) => p.available,
@@ -53,7 +54,7 @@ export default function CheckoutPage() {
   const resolvedProvider =
     available.find((p) => p.id === requestedProvider)?.id ??
     available[0]?.id ??
-    "stripe";
+    "razorpay";
 
   useEffect(() => {
     if (!isLoaded) return;

@@ -99,7 +99,7 @@ router.post(
     }
     const { plan, successUrl, cancelUrl, seats, orgName } = parsed.data;
     const provider: BillingProviderId = (parsed.data.provider ??
-      "stripe") as BillingProviderId;
+      "razorpay") as BillingProviderId;
 
     // ─── Razorpay (one-time payment links; monthly/yearly, INR or USD) ───────
     if (provider === "razorpay") {
