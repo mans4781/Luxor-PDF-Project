@@ -345,7 +345,7 @@ export default function PricingPage() {
               const useInr = isIndia && plan.inr !== undefined;
               const price = useInr
                 ? yearly
-                  ? Math.round(plan.inr!.yearly / 12)
+                  ? plan.inr!.yearly
                   : plan.inr!.monthly
                 : isFlat
                   ? plan.flatPrice!
@@ -389,7 +389,7 @@ export default function PricingPage() {
                       </span>
                       {!isCustom && (
                         <span className={`text-sm ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
-                          /mo
+                          {useInr && yearly && !isFlat ? "/yr" : "/mo"}
                         </span>
                       )}
                     </div>
@@ -403,7 +403,7 @@ export default function PricingPage() {
                       </p>
                     ) : yearly ? (
                       <p className={`text-xs mt-1 ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
-                        Billed {useInr ? `${inrFmt(plan.inr!.yearly)}` : `$${price * 12}`}/year
+                        {useInr ? "Billed once a year" : `Billed $${price * 12}/year`}
                       </p>
                     ) : (
                       <p className={`text-xs mt-1 ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
