@@ -102,7 +102,19 @@ const inputBase =
 
 export default function SignInPage() {
   const { signIn, errors, fetchStatus } = useSignIn();
-  const { isLoaded: authLoaded, isSignedIn } = useAuth();
+  const { isLoaded: authLoaded, isSignedIn, getToken } = useAuth();
+
+  // Send the Clerk session token explicitly: right after sign-in (and inside
+  // embedded/iframe contexts) the session cookie may not be readable yet,
+  // which made the dev-status check 401 and show the retry screen.
+  const authHeaders = async (): Promise<Record<string, string>> => {
+    try {
+      const token = await getToken();
+      return token ? { Authorization: `Bearer ${token}` } : {};
+    } catch {
+      return {};
+    }
+  };
   const [, setLocation] = useLocation();
   const isSsoCallback =
     typeof window !== "undefined" &&
@@ -141,6 +153,7 @@ export default function SignInPage() {
       try {
         const res = await fetch("/api/account/dev-status", {
           credentials: "include",
+          headers: await authHeaders(),
           signal: AbortSignal.timeout(8000),
         });
         if (res.ok) {
@@ -190,7 +203,7 @@ export default function SignInPage() {
       const res = await fetch("/api/account/dev-verify", {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({
           passphrase1: devPassphrase1,
           passphrase2: devPassphrase2,

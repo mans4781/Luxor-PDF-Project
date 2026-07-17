@@ -71,7 +71,20 @@ async function requestWelcomeEmail(): Promise<void> {
  * page, which shows the passphrase step for already-signed-in developers.
  * Regular accounts go straight to the target.
  */
-async function routeAfterSignUp(target: string): Promise<void> {
+async function routeAfterSignUp(
+  target: string,
+  getToken: () => Promise<string | null>,
+): Promise<void> {
+  // Send the Clerk session token explicitly: right after sign-up (and inside
+  // embedded/iframe contexts) the session cookie may not be readable yet,
+  // which would 401 the dev-status check.
+  let headers: Record<string, string> = {};
+  try {
+    const token = await getToken();
+    if (token) headers = { Authorization: `Bearer ${token}` };
+  } catch {
+    // Fall back to cookie auth.
+  }
   // Preserve the intended destination so the passphrase step returns the
   // developer to it (e.g. desktop-app handoff deep links) instead of the
   // default dashboard.
@@ -80,6 +93,7 @@ async function routeAfterSignUp(target: string): Promise<void> {
     try {
       const res = await fetch("/api/account/dev-status", {
         credentials: "include",
+        headers,
         signal: AbortSignal.timeout(8000),
       });
       if (res.ok) {
@@ -100,7 +114,7 @@ async function routeAfterSignUp(target: string): Promise<void> {
 
 export default function SignUpPage() {
   const { signUp, errors, fetchStatus } = useSignUp();
-  const { isLoaded: authLoaded, isSignedIn } = useAuth();
+  const { isLoaded: authLoaded, isSignedIn, getToken } = useAuth();
   const [, setLocation] = useLocation();
   const isSsoCallback =
     typeof window !== "undefined" &&
@@ -112,7 +126,7 @@ export default function SignUpPage() {
   useEffect(() => {
     if (isSsoCallback) return;
     if (authLoaded && isSignedIn) {
-      void routeAfterSignUp(authRedirectTarget());
+      void routeAfterSignUp(authRedirectTarget(), getToken);
     }
   }, [authLoaded, isSignedIn, isSsoCallback]);
 
@@ -135,7 +149,7 @@ export default function SignUpPage() {
     await signUp.finalize({
       navigate: async ({ decorateUrl }) => {
         await requestWelcomeEmail();
-        await routeAfterSignUp(decorateUrl(authRedirectTarget()));
+        await routeAfterSignUp(decorateUrl(authRedirectTarget()), getToken);
       },
     });
   };
@@ -208,7 +222,7 @@ export default function SignUpPage() {
         <HandleSSOCallback
           navigateToApp={async ({ decorateUrl }) => {
             await requestWelcomeEmail();
-            await routeAfterSignUp(decorateUrl(authRedirectTarget()));
+            await routeAfterSignUp(decorateUrl(authRedirectTarget()), getToken);
           }}
           navigateToSignIn={() => setLocation("/sign-in")}
           navigateToSignUp={() => setLocation("/sign-up")}
