@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Check, ArrowRight, Sparkles } from "lucide-react";
 import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
@@ -14,6 +14,12 @@ type Plan = {
   flatPrice?: number;
   /** Non-priced plans (Enterprise) display this label instead of a number. */
   priceLabel?: string;
+  /** Rupee pricing shown to visitors in India. `yearly` is the total per year. */
+  inr?: { monthly: number; yearly: number };
+  /** Hide this card entirely for visitors in India. */
+  hideInIndia?: boolean;
+  /** Alternate card name for visitors in India. */
+  indiaName?: string;
   cta: string;
   /**
    * When set, the Buy button initiates Stripe checkout for this plan via the
@@ -43,6 +49,7 @@ const PLANS: Plan[] = [
     tagline: "For solo professionals securing their own documents.",
     monthlyPrice: 9,
     yearlyPrice: 7,
+    inr: { monthly: 499, yearly: 4999 },
     cta: "Get Starter",
     checkoutPlan: { monthly: "monthly", yearly: "yearly" },
     secureLimit: "10 secure actions / month",
@@ -61,6 +68,7 @@ const PLANS: Plan[] = [
     tagline: "For teams that share and protect documents together.",
     monthlyPrice: 29,
     yearlyPrice: 23,
+    inr: { monthly: 1499, yearly: 14999 },
     cta: "Contact sales",
     contactHref: "mailto:sales@luxorpdf.com",
     highlight: true,
@@ -81,6 +89,7 @@ const PLANS: Plan[] = [
     name: "Premium",
     tagline: "Unlimited secure actions for high-volume orgs.",
     flatPrice: 99,
+    hideInIndia: true,
     cta: "Contact sales",
     contactHref: "mailto:sales@luxorpdf.com",
     secureLimit: "Unlimited secure actions",
@@ -99,6 +108,7 @@ const PLANS: Plan[] = [
     name: "Enterprise",
     tagline: "Custom quotas, SSO, and procurement for large orgs.",
     priceLabel: "Custom",
+    indiaName: "Custom",
     cta: "Contact sales",
     contactHref: "mailto:sales@luxorpdf.com",
     secureLimit: "Custom secure quota",
@@ -197,6 +207,21 @@ const FAQS = [
   },
 ];
 
+/**
+ * Region detection mirrors the checkout page: visitors in India see rupee
+ * pricing (and are charged in INR via Razorpay); everyone else sees USD.
+ */
+function detectIsIndia(): boolean {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "";
+    return tz === "Asia/Kolkata" || tz === "Asia/Calcutta";
+  } catch {
+    return false;
+  }
+}
+
+const inrFmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+
 function checkoutHref(plan: Plan, yearly: boolean): string | null {
   if (!plan.checkoutPlan) return null;
   if (typeof plan.checkoutPlan === "string") {
@@ -222,11 +247,11 @@ function CompareCell({ value }: { value: string }) {
   return <span className="text-slate-700">{value}</span>;
 }
 
-function CompareGroupRows({ group }: { group: CompareGroup }) {
+function CompareGroupRows({ group, isIndia }: { group: CompareGroup; isIndia: boolean }) {
   return (
     <>
       <tr className="bg-slate-50/60 border-t border-slate-200">
-        <td colSpan={5} className="px-5 py-2.5">
+        <td colSpan={isIndia ? 4 : 5} className="px-5 py-2.5">
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{group.group}</span>
           {group.note && <span className="ml-2 text-xs text-slate-400 normal-case font-normal">{group.note}</span>}
         </td>
@@ -237,14 +262,17 @@ function CompareGroupRows({ group }: { group: CompareGroup }) {
             {row.feature}
             {row.emphasize && <span className="text-[#FB7185]">*</span>}
           </td>
-          {row.values.map((value, i) => (
-            <td
-              key={i}
-              className={`px-4 py-3 text-center ${COMPARE_COLUMNS[i] === "Pro" ? "bg-[#EAF2FB]/40" : ""}`}
-            >
-              <CompareCell value={value} />
-            </td>
-          ))}
+          {row.values.map((value, i) => {
+            if (isIndia && COMPARE_COLUMNS[i] === "Premium") return null;
+            return (
+              <td
+                key={i}
+                className={`px-4 py-3 text-center ${COMPARE_COLUMNS[i] === "Pro" ? "bg-[#EAF2FB]/40" : ""}`}
+              >
+                <CompareCell value={value} />
+              </td>
+            );
+          })}
         </tr>
       ))}
     </>
@@ -253,6 +281,14 @@ function CompareGroupRows({ group }: { group: CompareGroup }) {
 
 export default function PricingPage() {
   const [yearly, setYearly] = useState(true);
+  const isIndia = useMemo(detectIsIndia, []);
+  const visiblePlans = isIndia
+    ? PLANS.filter((p) => !p.hideInIndia)
+    : PLANS;
+  // Yearly-billing savings vs paying monthly, based on the Starter plan.
+  const savePct = isIndia
+    ? Math.round((1 - 4999 / (499 * 12)) * 100)
+    : 22;
 
   return (
     <ProductPageLayout>
@@ -290,7 +326,7 @@ export default function PricingPage() {
               >
                 Yearly
                 <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-700">
-                  Save 22%
+                  Save {savePct}%
                 </span>
               </button>
             </div>
@@ -301,16 +337,27 @@ export default function PricingPage() {
       {/* Pricing cards */}
       <section className="pb-20 bg-white">
         <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-[88rem] mx-auto">
-            {PLANS.map((plan, i) => {
+          <div className={`grid md:grid-cols-2 ${isIndia ? "lg:grid-cols-3 max-w-5xl" : "lg:grid-cols-4 max-w-[88rem]"} gap-6 mx-auto`}>
+            {visiblePlans.map((plan, i) => {
               const href = checkoutHref(plan, yearly);
               const isCustom = plan.priceLabel !== undefined;
               const isFlat = plan.flatPrice !== undefined;
-              const price = isFlat
-                ? plan.flatPrice!
-                : yearly
-                  ? (plan.yearlyPrice ?? 0)
-                  : (plan.monthlyPrice ?? 0);
+              const useInr = isIndia && plan.inr !== undefined;
+              const price = useInr
+                ? yearly
+                  ? Math.round(plan.inr!.yearly / 12)
+                  : plan.inr!.monthly
+                : isFlat
+                  ? plan.flatPrice!
+                  : yearly
+                    ? (plan.yearlyPrice ?? 0)
+                    : (plan.monthlyPrice ?? 0);
+              const priceText = isCustom
+                ? plan.priceLabel
+                : useInr
+                  ? inrFmt(price)
+                  : `$${price}`;
+              const displayName = isIndia && plan.indiaName ? plan.indiaName : plan.name;
 
               return (
                 <motion.div
@@ -331,14 +378,14 @@ export default function PricingPage() {
                   )}
 
                   <div className="mb-6">
-                    <h2 className={`text-xl font-semibold mb-1 ${plan.highlight ? "text-white" : "text-slate-900"}`}>{plan.name}</h2>
+                    <h2 className={`text-xl font-semibold mb-1 ${plan.highlight ? "text-white" : "text-slate-900"}`}>{displayName}</h2>
                     <p className={`text-sm ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>{plan.tagline}</p>
                   </div>
 
                   <div className="mb-5">
                     <div className="flex items-baseline gap-1">
                       <span className={`text-5xl font-bold tracking-tight ${plan.highlight ? "text-white" : "text-slate-900"}`}>
-                        {isCustom ? plan.priceLabel : `$${price}`}
+                        {priceText}
                       </span>
                       {!isCustom && (
                         <span className={`text-sm ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
@@ -356,7 +403,7 @@ export default function PricingPage() {
                       </p>
                     ) : yearly ? (
                       <p className={`text-xs mt-1 ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
-                        Billed ${price * 12}/year
+                        Billed {useInr ? `${inrFmt(plan.inr!.yearly)}` : `$${price * 12}`}/year
                       </p>
                     ) : (
                       <p className={`text-xs mt-1 ${plan.highlight ? "text-neutral-300" : "text-slate-500"}`}>
@@ -449,14 +496,14 @@ export default function PricingPage() {
               <thead>
                 <tr className="bg-slate-50">
                   <th className="text-left font-semibold text-slate-900 px-5 py-4 w-[28%]">Feature</th>
-                  {COMPARE_COLUMNS.map((col) => (
+                  {COMPARE_COLUMNS.filter((col) => !(isIndia && col === "Premium")).map((col) => (
                     <th
                       key={col}
                       className={`text-center font-semibold px-4 py-4 ${
                         col === "Pro" ? "text-[#312E81] bg-[#EAF2FB]" : "text-slate-900"
                       }`}
                     >
-                      {col}
+                      {col === "Enterprise" && isIndia ? "Custom" : col}
                       {col === "Pro" && (
                         <span className="block text-[10px] font-bold uppercase tracking-wider text-[#FB7185]">
                           Most popular
@@ -468,7 +515,7 @@ export default function PricingPage() {
               </thead>
               <tbody>
                 {COMPARE_GROUPS.map((grp) => (
-                  <CompareGroupRows key={grp.group} group={grp} />
+                  <CompareGroupRows key={grp.group} group={grp} isIndia={isIndia} />
                 ))}
               </tbody>
             </table>
