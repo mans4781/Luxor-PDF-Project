@@ -16,6 +16,7 @@ Developer accounts (emails in the `developers` table) must enter TWO passphrases
 - The reserved `ADMIN_EMAIL` account is normally blocked from user APIs, EXCEPT when it is also a registered developer — then it passes and the dev gate protects it. A failed developer lookup for the reserved account fails closed (403).
 - Dev-status/dev-verify/admin routes stay exempt from the middleware or the gate deadlocks.
 - The developer account is a real Clerk user (verified email, `bypass_client_trust`) seeded via Clerk Backend API; its email is in `developers` (no management UI yet).
+- The `developers` table is per-database — a fresh prod DB starts empty, which makes `blockReservedAdminEmail` reject the admin's own account (403 "reserved for admin access") on user actions like checkout. Startup migrations now auto-seed `ADMIN_EMAIL` into `developers` (idempotent); prod was also patched live via `POST /api/admin/developers` with the admin token.
 
 Owner preference: after a successful passphrase verification, developers are redirected to the admin dashboard (`/admin`, suite root). A verified dev session unlocks the admin console directly — no second email/password login (the token login screen remains only as fallback).
 

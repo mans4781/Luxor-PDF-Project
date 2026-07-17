@@ -56,6 +56,16 @@ export async function runWelcomeMigrations(): Promise<void> {
       verified_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
     )
   `);
+  // The admin/developer are the same person: always seed the reserved admin
+  // email as a developer so it can act as a regular account (behind the
+  // two-passphrase gate) in every environment, including fresh prod DBs.
+  const adminEmail = (process.env["ADMIN_EMAIL"] ?? "").trim().toLowerCase();
+  if (adminEmail) {
+    await db.execute(sql`
+      INSERT INTO developers (email) VALUES (${adminEmail})
+      ON CONFLICT (email) DO NOTHING
+    `);
+  }
 }
 
 // ─── Developer passphrase gate ────────────────────────────────────────────────
