@@ -4,6 +4,8 @@ description: Provider registry, Razorpay payment-link flow, webhook idempotency,
 ---
 
 - Provider registry `artifacts/api-server/src/lib/billing.ts`: Stripe available iff `STRIPE_SECRET_KEY`; Razorpay iff `RAZORPAY_KEY_ID`+`RAZORPAY_KEY_SECRET` (else `comingSoon`); PayPal stub.
+- **Razorpay is the default provider** (user decision, July 2026 — no Stripe keys): server route + checkout.tsx both default/fall back to `razorpay`. Landing pricing Team/Business CTAs are "Contact sales" mailto (those plans are Stripe-only).
+- **Razorpay `reference_id` max 40 chars** — never embed the Clerk userId in it (too long); identity travels in `notes.clerkUserId`. Prices come from `RAZORPAY_PRICE_<PLAN>_<CUR>` env vars; both INR and USD must be set or checkout 503s for that region (INR was missing → prod checkout failures).
 - Endpoints: `GET /api/billing/providers`, `POST /api/billing/checkout-session` (Clerk-authed), `POST /api/billing/webhook` (Stripe, raw body BEFORE `express.json()`), `POST /api/billing/razorpay/webhook` (same raw-body rule).
 
 ## Razorpay (one-time Payment Links)
@@ -25,6 +27,6 @@ description: Provider registry, Razorpay payment-link flow, webhook idempotency,
 - Yearly renewal is manual: renewal license key emailed, user redeems via activate-key page / `POST /license/renew`. Razorpay stays manual one-time for both.
 
 ## Frontend
-- `pdf-expiry/src/pages/checkout.tsx` is provider-aware: reads `/billing/providers`, uses `?provider=` when available, else first available, else `"stripe"`.
+- `pdf-expiry/src/pages/checkout.tsx` is provider-aware: reads `/billing/providers`, uses `?provider=` when available, else first available, else `"razorpay"`.
 - lexsecure-landing pricing Pro CTA deep-links `/pdf-expiry/checkout?plan=monthly|yearly`; checkout POSTs then `window.location.replace()` to hosted URL. LockOverlay "Renew subscription" uses same route, defaulting to previous plan.
 - Razorpay webhook URL to register: `<domain>/api/billing/razorpay/webhook`, event `payment_link.paid`.

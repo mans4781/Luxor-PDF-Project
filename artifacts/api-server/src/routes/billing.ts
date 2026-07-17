@@ -127,7 +127,9 @@ router.post(
           amount,
           currency,
           description: `Luxor PDF — ${plan} plan`,
-          referenceId: `luxor_${auth.userId}_${plan}_${Date.now()}`,
+          // Razorpay limits reference_id to 40 chars; the user is identified
+          // via `notes.clerkUserId`, so this only needs to be short + unique.
+          referenceId: `lx_${plan}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
           customer: { email, name },
           notes: { clerkUserId: auth.userId, plan },
           callbackUrl: successUrl,
