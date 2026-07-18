@@ -1,0 +1,778 @@
+Build a complete, production-quality landing page for “Luxor PDF Reader” that visually matches the supplied reference design as closely as possible.
+
+The page must use the existing Luxor PDF Reader branding and the uploaded red Luxor PDF logo. Do not redesign or distort the logo. Use the logo in the header, hero product preview, final CTA section, and footer.
+
+PROJECT GOAL
+
+Create a premium, modern, responsive product landing page for Luxor PDF Reader.
+
+The design must use the same visual language as the reference:
+
+- White and very light gray backgrounds
+- Bright Luxor red as the primary accent
+- Dark navy or near-black headings
+- Soft red gradients
+- Rounded cards
+- Subtle borders
+- Clean shadows
+- Spacious layout
+- Modern SaaS-style typography
+- Minimal, professional, conversion-focused appearance
+
+The final page should look like the reference image, not like a generic template.
+
+TECH STACK
+
+Use:
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- Lucide React icons
+- Framer Motion only for subtle animations
+- Responsive desktop, tablet, and mobile layouts
+
+Do not use Bootstrap.
+
+Use reusable React components and keep the code clean and organized.
+
+BRAND COLORS
+
+Use this palette consistently:
+
+- Primary red: #E50914
+- Bright red: #FF1A1A
+- Dark red: #B8000B
+- Soft red background: #FFF3F3
+- Light pink border: #FFD6D6
+- Main heading: #111827
+- Body text: #4B5563
+- Muted text: #6B7280
+- Light background: #F8FAFC
+- White: #FFFFFF
+- Border: #E5E7EB
+
+Use red gradients sparingly:
+
+linear-gradient(135deg, #E50914 0%, #FF2020 55%, #B8000B 100%)
+
+TYPOGRAPHY
+
+Use Inter or Manrope from Google Fonts.
+
+Typography rules:
+
+- Large bold hero headline
+- Strong section headings
+- Medium-weight body text
+- Compact labels and badges
+- Clear button labels
+- Proper line height and spacing
+- No decorative or handwritten fonts
+
+PAGE WIDTH AND SPACING
+
+Use:
+
+- Maximum content width: 1280px
+- Horizontal page padding:
+  - Desktop: 32px
+  - Tablet: 24px
+  - Mobile: 18px
+- Section spacing:
+  - Desktop: 88px to 112px
+  - Tablet: 72px
+  - Mobile: 56px
+- Rounded corners:
+  - Buttons: 10px to 12px
+  - Cards: 16px
+  - Large panels: 22px
+- Subtle shadows only
+
+HEADER
+
+Create a sticky header with:
+
+Left side:
+
+- Luxor PDF red logo
+- Text: “Luxor PDF Reader”
+
+Center navigation:
+
+- Features
+- Tools
+- Security
+- Pricing
+- Support
+
+Right side:
+
+- Red button with download icon
+- Text: “Download for Windows”
+
+Header requirements:
+
+- White background
+- Thin bottom border
+- Slight shadow after scrolling
+- Height around 72px
+- Navigation links scroll smoothly to page sections
+- Mobile hamburger menu
+- Keep the download button visible on desktop
+- Use a compact download icon on mobile
+
+HERO SECTION
+
+Create a two-column desktop hero section.
+
+LEFT SIDE
+
+Add a small outlined badge:
+
+“FAST • LIGHTWEIGHT • SECURE”
+
+Main headline:
+
+“Read PDFs Faster
+with Luxor PDF Reader”
+
+Make “Luxor PDF Reader” red.
+
+Supporting paragraph:
+
+“A fast, lightweight, and secure PDF reader for Windows. Open, view, search, annotate, and print PDFs with a smooth and elegant experience.”
+
+Buttons:
+
+Primary button:
+
+- Windows icon
+- “Download for Windows”
+- Small text: “Windows 10/11 (64-bit)”
+
+Secondary button:
+
+- “Learn More”
+- Right arrow icon
+
+Below the buttons, add:
+
+- Small shield icon
+- “Built for fast, private, and reliable PDF reading”
+
+RIGHT SIDE
+
+Create a realistic desktop application mockup of Luxor PDF Reader.
+
+The mockup should include:
+
+- Red Windows-style title bar
+- Product name: “Luxor PDF Reader”
+- Window control icons
+- Menu bar:
+  - File
+  - Home
+  - View
+  - Annotate
+  - Tools
+  - Help
+- Toolbar icons:
+  - Open
+  - Save
+  - Print
+  - Zoom Out
+  - Zoom In
+  - Rotate
+  - Bookmark
+  - Search
+- Page thumbnails on the left
+- Main PDF page preview
+- Page navigation at the bottom
+
+Inside the PDF page show:
+
+Heading:
+
+“About Luxor PDF Reader”
+
+Paragraph:
+
+“Luxor PDF Reader is designed to deliver a fast, secure, and delightful PDF reading experience.”
+
+Checklist:
+
+- Lightning-fast performance
+- Lightweight and easy to use
+- Advanced viewing and search
+- Secure and private by design
+
+Place the red Luxor PDF icon on the right side of this document preview.
+
+Add a subtle red dotted wave pattern in the background.
+
+The application preview must look like a software interface, not a flat image card.
+
+HERO RESPONSIVENESS
+
+- Desktop: text left, software mockup right
+- Tablet: text above software mockup
+- Mobile: single-column layout
+- Keep all text readable
+- Prevent horizontal overflow
+
+BENEFITS STRIP
+
+Below the hero, create one wide rounded card containing four columns.
+
+Benefit 1:
+
+- Lightning icon
+- Heading: “Fast”
+- Text: “Open large PDFs in seconds with optimized performance.”
+
+Benefit 2:
+
+- Feather icon
+- Heading: “Lightweight”
+- Text: “Minimal resource usage for a smooth reading experience.”
+
+Benefit 3:
+
+- Shield icon
+- Heading: “Secure”
+- Text: “Your files remain private with no unnecessary cloud uploads.”
+
+Benefit 4:
+
+- Thumbs-up icon
+- Heading: “Easy to Use”
+- Text: “A clean, intuitive interface designed for productivity.”
+
+Use thin vertical separators on desktop.
+
+Stack the benefits on mobile.
+
+FEATURES SECTION
+
+Section ID: features
+
+Centered heading:
+
+“Everything You Need in a PDF Reader”
+
+Subheading:
+
+“Powerful features. Beautifully simple.”
+
+Create a responsive grid of ten feature cards.
+
+Each card should contain:
+
+- Red Lucide icon
+- Feature title
+- Short description
+- White background
+- Thin border
+- Rounded corners
+- Very subtle shadow
+- Hover lift effect
+
+Feature cards:
+
+1. Smooth Viewing
+“Enjoy seamless scrolling and crisp rendering for every type of PDF.”
+
+2. Search PDF
+“Find keywords instantly with advanced search and highlighted results.”
+
+3. Zoom & Fit
+“Zoom in, zoom out, or fit documents to the page with one click.”
+
+4. Page Navigation
+“Move quickly between pages using thumbnails and navigation controls.”
+
+5. Bookmarks
+“Add and manage bookmarks to return to important sections.”
+
+6. Annotations
+“Highlight, underline, strike through, and add notes while reading.”
+
+7. Dark Mode
+“Reduce eye strain with a comfortable dark reading experience.”
+
+8. Print
+“Print documents quickly with clear and flexible print options.”
+
+9. File Security
+“Open password-protected PDF files securely and privately.”
+
+10. Full Screen
+“Focus entirely on your document with immersive full-screen viewing.”
+
+Use five cards per row on large screens, two or three per row on tablets, and one per row on mobile.
+
+PRODUCTIVITY SHOWCASE
+
+Section ID: tools
+
+Create a large two-column section.
+
+LEFT SIDE
+
+Create another realistic Luxor PDF Reader interface preview with:
+
+- Red title bar
+- Thumbnail sidebar
+- Toolbar
+- Main PDF document
+- Annotation note popup
+- Page content titled:
+  “THE FUTURE OF PRODUCTIVITY”
+- Supporting text:
+  “Work smarter with tools that help you read, review, and act faster.”
+- Add a clean architectural or business image inside the PDF page
+- Include a note popup reading:
+  “Great point! Let’s discuss this.”
+- Place the preview over a pale red abstract background
+
+RIGHT SIDE
+
+Small red badge:
+
+“BUILT FOR PRODUCTIVITY”
+
+Heading:
+
+“Tools that help you work smarter”
+
+Paragraph:
+
+“Luxor PDF Reader gives you all the essential tools to read, review, and manage your PDFs efficiently.”
+
+Checklist:
+
+- Annotate and highlight important content
+- Add bookmarks and organize your documents
+- Search and navigate with ease
+- Work comfortably with dark mode
+- Print and share with advanced options
+
+Use red outlined check-circle icons.
+
+COMPATIBILITY SECTION
+
+Centered heading:
+
+“Works Where You Work”
+
+Subheading:
+
+“Available now on Windows. More platforms are coming soon.”
+
+Create four platform cards.
+
+Windows card:
+
+- Windows icon
+- Title: “Windows”
+- Badge: “AVAILABLE NOW”
+- Text: “Windows 10/11 (64-bit)”
+- Red border and pale red background
+
+Mac card:
+
+- Apple icon
+- Title: “Mac”
+- Badge: “COMING SOON”
+- Text: “macOS”
+
+Android card:
+
+- Android-style smartphone icon
+- Title: “Android”
+- Badge: “COMING SOON”
+- Text: “Android phones and tablets”
+
+iOS card:
+
+- Smartphone icon
+- Title: “iOS”
+- Badge: “COMING SOON”
+- Text: “iPhone and iPad”
+
+Use grayscale icons for unavailable platforms.
+
+SECURITY SECTION
+
+Section ID: security
+
+Create a clean two-column section.
+
+Left side:
+
+- Large shield and document illustration made with CSS and Lucide icons
+- Soft red circular gradient background
+
+Right side:
+
+Small label:
+
+“PRIVACY BY DESIGN”
+
+Heading:
+
+“Your PDFs stay on your device”
+
+Paragraph:
+
+“Luxor PDF Reader is designed for private, secure document viewing. Your files are not uploaded to external servers simply to open and read them.”
+
+Security points:
+
+- Local document processing
+- Password-protected PDF support
+- No forced cloud upload
+- Private reading environment
+- Secure Windows desktop experience
+
+COMPARISON SECTION
+
+Heading:
+
+“Why Choose Luxor PDF Reader?”
+
+Create three comparison cards.
+
+CARD 1: LUXOR PDF READER
+
+Use pale red background and red border.
+
+Include the Luxor logo.
+
+Checklist:
+
+- Fast and lightweight
+- Clean and easy to use
+- Secure and private
+- Regular updates
+- Free to get started
+
+Use red check icons.
+
+CARD 2: OTHER PDF READERS
+
+Use neutral gray styling.
+
+List:
+
+- Slow with large files
+- Bloated and complex
+- Data collection risks
+- Infrequent updates
+- Hidden costs
+
+Use gray X-circle icons.
+
+CARD 3: ONLINE PDF VIEWERS
+
+Use neutral gray styling.
+
+List:
+
+- Requires internet
+- File upload risks
+- Limited features
+- Slow performance
+- Privacy concerns
+
+Use gray X-circle icons.
+
+PRICING SECTION
+
+Section ID: pricing
+
+Add a simple, premium pricing section that fits the same design.
+
+Heading:
+
+“Simple Access to Better PDF Reading”
+
+Create two pricing cards.
+
+FREE READER
+
+- Free
+- Open and read PDFs
+- Search documents
+- Zoom and navigate
+- Bookmarks
+- Print documents
+- Dark mode
+- Button: “Download Free”
+
+LUXOR PDF SUITE
+
+- Mark as “RECOMMENDED”
+- Reader plus advanced Luxor PDF tools
+- PDF security tools
+- PDF conversion tools
+- Merge, split, compress, and organize PDFs
+- Future product integrations
+- Button: “Explore Luxor PDF Suite”
+
+Do not invent a price unless one is supplied later.
+
+FAQ SECTION
+
+Section ID: support
+
+Heading:
+
+“Frequently Asked Questions”
+
+Create accessible accordion components.
+
+Questions:
+
+1. Is Luxor PDF Reader free?
+Answer:
+“Yes. The core PDF Reader can be downloaded and used for reading and viewing PDF documents.”
+
+2. What Windows versions are supported?
+Answer:
+“Luxor PDF Reader is designed for modern 64-bit versions of Windows 10 and Windows 11.”
+
+3. Is my data safe with Luxor PDF Reader?
+Answer:
+“Luxor PDF Reader is designed to open files locally without requiring routine cloud uploads for document viewing.”
+
+4. Can I annotate and highlight PDFs?
+Answer:
+“Yes. The reader includes tools for highlighting, underlining, strike-through, and adding notes.”
+
+5. Does it support password-protected PDFs?
+Answer:
+“Yes. You can open password-protected PDF documents when you have the correct password.”
+
+6. Will there be Mac or mobile versions?
+Answer:
+“Mac, Android, and iOS versions are planned and should be displayed as coming soon.”
+
+Only one accordion item should open at a time.
+
+FINAL CTA SECTION
+
+Create a large rounded red gradient banner.
+
+Left side:
+
+- Luxor PDF icon
+- Heading:
+  “Ready to read PDFs the fast and secure way?”
+- Text:
+  “Download Luxor PDF Reader for Windows today.”
+
+Right side:
+
+Large white button:
+
+- Windows icon
+- “Download for Windows”
+- Small text: “Windows 10/11 (64-bit)”
+
+Add a subtle dotted wave decoration.
+
+FOOTER
+
+Use a clean white footer.
+
+Column 1:
+
+- Luxor PDF logo
+- “Luxor PDF Reader”
+- Description:
+  “A fast, lightweight, and secure PDF reader designed for productivity and privacy.”
+
+Column 2 — Product:
+
+- Features
+- Tools
+- Security
+- Pricing
+- Changelog
+
+Column 3 — Company:
+
+- About Us
+- Privacy Policy
+- Terms of Service
+- Refund Policy
+- Contact
+
+Column 4 — Support:
+
+- Help Center
+- FAQ
+- enquiry@luxorpdf.com
+
+Column 5 — Follow Us:
+
+- X
+- Facebook
+- YouTube
+- LinkedIn
+
+Bottom footer:
+
+“© 2026 Luxor PDF. A brand of Fairnova Labs Private Limited. All rights reserved.”
+
+Use enquiry@luxorpdf.com as the only contact email.
+
+Do not show a phone number or office address.
+
+ANIMATIONS
+
+Use subtle motion only:
+
+- Hero content fade-up
+- App preview gentle entrance
+- Feature cards fade in on scroll
+- Buttons move up by 1 to 2 pixels on hover
+- Cards use a soft shadow increase on hover
+- Accordion opens smoothly
+- Do not use excessive bouncing, spinning, or animated backgrounds
+
+BUTTON BEHAVIOUR
+
+All “Download for Windows” buttons should use the same reusable component.
+
+For now, use:
+
+href="/downloads/luxor-pdf-reader.exe"
+
+Make it easy to replace later.
+
+Add an optional download tracking function placeholder.
+
+ACCESSIBILITY
+
+Include:
+
+- Proper semantic HTML
+- Keyboard-accessible menu
+- Keyboard-accessible accordion
+- Visible focus states
+- ARIA labels where needed
+- Good color contrast
+- Descriptive image alt text
+- Minimum button height of 44px
+- Reduced-motion support
+
+SEO
+
+Add:
+
+Page title:
+“Luxor PDF Reader – Fast, Lightweight and Secure PDF Reader”
+
+Meta description:
+“Download Luxor PDF Reader for Windows. Open, view, search, annotate, bookmark, print, and securely read PDF documents with a fast and lightweight desktop experience.”
+
+Add Open Graph title and description.
+
+Add structured data for SoftwareApplication with:
+
+- Name: Luxor PDF Reader
+- Application category: BusinessApplication
+- Operating system: Windows 10, Windows 11
+- Brand: Luxor PDF
+
+RESPONSIVE REQUIREMENTS
+
+Desktop:
+
+- Full navigation
+- Two-column hero
+- Five-column feature grid
+- Four platform cards
+- Three comparison cards
+
+Tablet:
+
+- Compact navigation
+- Hero may stack
+- Two or three feature cards per row
+- Two platform cards per row
+
+Mobile:
+
+- Hamburger navigation
+- One-column hero
+- Full-width buttons
+- Product mockups remain readable
+- One feature card per row
+- One platform card per row
+- One comparison card per row
+- Footer stacks vertically
+
+QUALITY REQUIREMENTS
+
+- Do not use placeholder lorem ipsum
+- Do not use unrelated stock photos
+- Do not use purple, blue, green, or orange as major theme colors
+- Maintain the red and white Luxor identity
+- Do not change the attached logo
+- Avoid oversized empty spaces
+- Avoid overly dark sections
+- Avoid excessive gradients
+- Make the page look polished at 1920px desktop width
+- Prevent text clipping and overflow
+- Ensure the entire page works without console errors
+- Ensure all navigation links work
+- Ensure the mobile menu works
+- Ensure all accordion controls work
+
+FILE STRUCTURE
+
+Use an organized structure similar to:
+
+src/
+  components/
+    Header.tsx
+    Hero.tsx
+    BenefitsStrip.tsx
+    Features.tsx
+    ReaderMockup.tsx
+    ProductivitySection.tsx
+    SecuritySection.tsx
+    PlatformSection.tsx
+    ComparisonSection.tsx
+    PricingSection.tsx
+    FAQ.tsx
+    FinalCTA.tsx
+    Footer.tsx
+    DownloadButton.tsx
+  data/
+    features.ts
+    faq.ts
+  assets/
+    luxor-pdf-logo.png
+  App.tsx
+  main.tsx
+  index.css
+
+Store repeated content in data arrays and map over it.
+
+FINAL DELIVERY
+
+After building:
+
+1. Run the application.
+2. Fix all TypeScript and build errors.
+3. Verify the desktop and mobile layouts.
+4. Ensure the page closely matches the supplied reference design.
+5. Do not stop after creating only the hero section.
+6. Complete the entire landing page through the footer.
+7. Show the finished page in Replit Preview.

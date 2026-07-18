@@ -306,6 +306,12 @@ uri = "file://artifacts/lexsecure-landing/src/assets/secure-net.png"
 type = "image"
 title = "blue internet security shield"
 
+[[generated]]
+id = "SUyNtBBuC6vmgV60koNes"
+uri = "file://artifacts/lexsecure-landing/public/brand/reader-business-image.png"
+type = "image"
+title = "Clean architectural abstract image"
+
 [[outputs]]
 id = "idChIMQ01dWz_efeEcJLc"
 uri = "file://electron/dist/LexSecure-PDF-Windows.zip"
