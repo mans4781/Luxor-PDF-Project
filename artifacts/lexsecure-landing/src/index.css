@@ -124,8 +124,8 @@
   --sidebar-accent-foreground: 243 47% 34%;
   --sidebar-ring: 243 47% 34%;
 
-  --app-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --app-font-serif: 'Inter', system-ui, sans-serif;
+  --app-font-sans: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+  --app-font-serif: 'Segoe UI', 'Inter', system-ui, sans-serif;
   --app-font-mono: ui-monospace, 'JetBrains Mono', monospace;
   --radius: 0.5rem; 
   

@@ -53,7 +53,7 @@
 }
 
 :root {
-  --app-font-sans: 'Inter', sans-serif;
+  --app-font-sans: 'Segoe UI', 'Inter', system-ui, sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
   --radius: 0.25rem;

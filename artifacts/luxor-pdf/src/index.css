@@ -72,7 +72,11 @@ html, body, #root {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+button, input, textarea, select {
+  font-family: inherit;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }

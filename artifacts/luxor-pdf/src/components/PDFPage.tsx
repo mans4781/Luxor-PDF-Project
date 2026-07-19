@@ -2097,7 +2097,7 @@ export default function PDFPage({
                 whiteSpace: "nowrap",
                 transform: `${watermark.position === "center" ? "translate(-50%,-50%) " : ""}rotate(${watermark.rotation}deg)`,
                 transformOrigin: "center center",
-                fontFamily: "Helvetica, Arial, sans-serif",
+                fontFamily: "'Segoe UI', Helvetica, Arial, sans-serif",
               }}>{watermark.text}</div>
             )}
             {showWatermark && watermark && watermark.position === "tiled" && (() => {
@@ -2120,7 +2120,7 @@ export default function PDFPage({
                     whiteSpace: "nowrap",
                     transform: `rotate(${watermark.rotation}deg)`,
                     transformOrigin: "0 0",
-                    fontFamily: "Helvetica, Arial, sans-serif",
+                    fontFamily: "'Segoe UI', Helvetica, Arial, sans-serif",
                   }}>{watermark.text}</div>
                 );
               }
@@ -2132,7 +2132,7 @@ export default function PDFPage({
                 ...cssPageNoPos(pageNo.position),
                 color: pageNo.color,
                 fontSize: pageNo.fontSize * zoom,
-                fontFamily: "Helvetica, Arial, sans-serif",
+                fontFamily: "'Segoe UI', Helvetica, Arial, sans-serif",
                 fontWeight: 500,
                 whiteSpace: "nowrap",
               }}>{formatPageLabel(pageNo, pageNum, totalPages ?? pageNum)}</div>
@@ -2267,7 +2267,7 @@ export default function PDFPage({
             padding: "6px 8px",
             boxShadow: "0 4px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)",
             pointerEvents: "all",
-            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif",
           }}
         >
           {QUICK_HIGHLIGHT_COLORS.map((c) => (
@@ -2348,7 +2348,7 @@ export default function PDFPage({
             boxShadow: "0 4px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)",
             minWidth: 180,
             pointerEvents: "all",
-            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif",
           }}
           onMouseDown={e => e.stopPropagation()}
         >
@@ -2653,7 +2653,7 @@ export default function PDFPage({
               height,
               background: ann.coverColor ?? "#FFFFFF",
               color: ann.textColor ?? "#000000",
-              fontFamily: "Helvetica, Arial, sans-serif",
+              fontFamily: "'Segoe UI', Helvetica, Arial, sans-serif",
               fontSize: ann.fontSize * zoom,
               lineHeight: `${height}px`,
               whiteSpace: "pre",
@@ -2710,7 +2710,7 @@ export default function PDFPage({
             minWidth: Math.max(editingPdfText.w, 60),
             height: editingPdfText.h,
             fontSize: editingPdfText.fontSizeCss,
-            fontFamily: "Helvetica, Arial, sans-serif",
+            fontFamily: "'Segoe UI', Helvetica, Arial, sans-serif",
             lineHeight: `${editingPdfText.h}px`,
             padding: "0 1px",
             margin: 0,

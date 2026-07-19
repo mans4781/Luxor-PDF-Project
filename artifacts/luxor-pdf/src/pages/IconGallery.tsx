@@ -114,7 +114,7 @@ export default function IconGallery() {
   const btnFg = isDark ? "#E5E7EB" : "#0B1220";
 
   return (
-    <div style={{ minHeight: "100vh", background: bg, color: fg, padding: "32px 24px", fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: bg, color: fg, padding: "32px 24px", fontFamily: "'Segoe UI', system-ui, -apple-system, Roboto, sans-serif" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, flexWrap: "wrap", gap: 12 }}>
           <div>
