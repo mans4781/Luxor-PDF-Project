@@ -463,31 +463,31 @@ export default function PdfSecurityPage() {
           <motion.div {...fadeUp}>
             <div className="rounded-2xl bg-gradient-to-r from-[#2563eb] via-[#1d4ed8] to-[#1e3a8a] relative overflow-hidden px-8 py-8 lg:px-14 lg:py-10">
               <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "radial-gradient(circle at center, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} aria-hidden="true" />
-              <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-                <img src={secureShield} alt="" className="w-20 lg:w-24 shrink-0 drop-shadow-xl" />
+              <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-10">
+                <img src={secureShield} alt="" className="w-24 lg:w-28 shrink-0 drop-shadow-xl" />
                 <div className="flex-1 text-center lg:text-left">
                   <h2 className="text-2xl lg:text-[30px] font-extrabold text-white tracking-tight leading-tight mb-2">Ready to Secure Your PDFs?</h2>
-                  <p className="text-blue-100 text-base lg:text-lg font-medium mb-4 lg:mb-0">
-                    Take control of your documents with Luxor PDF Secure. Start your free trial today — no credit card required.
+                  <p className="text-blue-100 text-sm lg:text-base font-medium mb-5">
+                    Take control of your documents with Luxor PDF Secure.<br className="hidden lg:block" />
+                    Start your free trial today — no credit card required.
                   </p>
-                </div>
-                <div className="shrink-0 flex flex-col items-center lg:items-end gap-3">
-                  <div className="flex flex-wrap justify-center gap-3">
-                    <a href={APP_URL} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/30 transition-colors">
+                  <div className="flex flex-wrap justify-center lg:justify-start gap-3">
+                    <a href={APP_URL} className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white hover:bg-blue-50 text-[#1d4ed8] font-bold shadow-xl transition-colors">
                       Start Free Trial
+                      <span aria-hidden="true">&rarr;</span>
                     </a>
-                    <a href={SECURE_INSTALLER_URL} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-blue-50 text-[#1d4ed8] font-bold shadow-xl transition-colors">
+                    <a href={SECURE_INSTALLER_URL} className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/40 transition-colors">
                       <WindowsGlyph className="w-4 h-4" />
                       Download for Windows
                     </a>
                   </div>
-                  <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-blue-100 text-xs font-medium">
-                    <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Full access for 7 days</span>
-                    <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> No credit card required</span>
-                    <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Cancel anytime</span>
-                  </div>
                 </div>
-                <img src={secureCubes} alt="" className="w-32 lg:w-40 shrink-0 drop-shadow-xl" />
+                <div className="shrink-0 flex flex-col items-start gap-3 text-white text-sm font-medium">
+                  <span className="inline-flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-300" /> Full access for 7 days</span>
+                  <span className="inline-flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-300" /> No credit card required</span>
+                  <span className="inline-flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-300" /> Cancel anytime</span>
+                </div>
+                <img src={secureCubes} alt="" className="w-36 lg:w-44 shrink-0 drop-shadow-xl opacity-90" />
               </div>
             </div>
           </motion.div>
