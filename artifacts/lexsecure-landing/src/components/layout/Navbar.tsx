@@ -11,28 +11,22 @@ const productItems = [
     label: "Luxor PDF Reader",
     href: "/products/pdf-reader",
     iconSrc: "brand/product-reader.webp",
-    desc: "Flagship PDF reader",
-    badge: "Flagship",
+    desc: "Fast, powerful PDF reader",
     iconBg: "bg-[#DC2626]/5 border-[#DC2626]/15 group-hover:bg-[#DC2626]/10",
-    badgeBg: "bg-[#312E81]/10 text-[#312E81]",
   },
   {
     label: "Luxor PDF Secure",
     href: "/products/pdf-security",
     iconSrc: "brand/product-secure.webp",
     desc: "Self-destructing documents",
-    badge: "Add-on",
     iconBg: "bg-[#2563EB]/5 border-[#2563EB]/15 group-hover:bg-[#2563EB]/10",
-    badgeBg: "bg-[#2563EB]/10 text-[#1D4ED8]",
   },
   {
     label: "Luxor PDF eSign",
     href: "/products/esign",
     iconSrc: "brand/product-esign.webp",
     desc: "Legally-binding eSignatures",
-    badge: "Add-on",
     iconBg: "bg-[#16A34A]/5 border-[#16A34A]/15 group-hover:bg-[#16A34A]/10",
-    badgeBg: "bg-[#16A34A]/10 text-[#15803D]",
   },
 ];
 
@@ -133,7 +127,7 @@ export function Navbar() {
                   className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-80 bg-white rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200 overflow-hidden z-50"
                 >
                   <div className="p-2">
-                    {productItems.map(({ label, href, iconSrc, desc, badge, iconBg, badgeBg }) => (
+                    {productItems.map(({ label, href, iconSrc, desc, iconBg }) => (
                       <Link
                         key={label}
                         href={href}
@@ -150,12 +144,7 @@ export function Navbar() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-[#312E81] transition-colors">{label}</p>
-                            <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded ${badgeBg}`}>
-                              {badge}
-                            </span>
-                          </div>
+                          <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-[#312E81] transition-colors">{label}</p>
                           <p className="text-xs text-slate-500 leading-tight mt-0.5">{desc}</p>
                         </div>
                       </Link>
