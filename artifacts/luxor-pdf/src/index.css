@@ -507,7 +507,7 @@ mark.search-hl {
 .thumb-panel {
   position: fixed;
   top: calc(var(--tabbar-height, 0px) + var(--toolbar-height)); bottom: var(--statusbar-height); left: 0;
-  width: 164px;
+  width: 220px;
   background: #F6F6F6;
   border-right: 1px solid rgba(0,0,0,0.10);
   display: flex;
@@ -589,7 +589,7 @@ mark.search-hl {
 .thumb-active { border-color: #4f8ef7 !important; background: rgba(79,142,247,0.08) !important; }
 
 .thumb-canvas-wrap {
-  width: 120px;
+  width: 176px;
   min-height: 80px;
   background: #fff;
   border-radius: 3px;
@@ -608,7 +608,7 @@ mark.search-hl {
 }
 
 .thumb-placeholder {
-  width: 120px;
+  width: 176px;
   height: 160px;
   background: linear-gradient(90deg, #e8e8e8 25%, #f0f0f0 50%, #e8e8e8 75%);
   background-size: 200% 100%;
@@ -628,7 +628,7 @@ mark.search-hl {
 .thumb-active .thumb-label { color: #4f8ef7; }
 
 /* Viewer shifts right when contents panel is open */
-.viewer-with-panel { left: 164px !important; }
+.viewer-with-panel { left: 220px !important; }
 
 /* ── View controls cluster (inline in the top toolbar/header) ───────────── */
 

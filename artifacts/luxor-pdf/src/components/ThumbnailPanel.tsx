@@ -52,7 +52,7 @@ function PageThumb({
         if (taskRef.current) { taskRef.current.cancel(); taskRef.current = null; }
         const page = await pdfDoc.getPage(pageNum);
         const totalRot = ((page.rotate ?? 0) + rotation) % 360;
-        const viewport = page.getViewport({ scale: 0.22, rotation: totalRot });
+        const viewport = page.getViewport({ scale: 0.30, rotation: totalRot });
         const canvas = canvasRef.current!;
         if (cancelled) return;
         canvas.width = viewport.width;
