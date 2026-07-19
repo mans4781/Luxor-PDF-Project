@@ -6,7 +6,7 @@ import { DownloadButton } from "@/components/reader/DownloadButton";
 import readerHeroApp from "@/assets/reader-hero-app.png";
 import { ProductivityMockup } from "@/components/reader/ProductivityMockup";
 import { benefits, features, faqs } from "@/components/reader/data";
-import { CheckCircle2, Plus, Monitor, Smartphone, XCircle, ArrowLeft, ArrowRight, Star } from "lucide-react";
+import { CheckCircle2, Plus, Monitor, Smartphone, XCircle, Star } from "lucide-react";
 import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 
 function WindowsLogo({ className }: { className?: string }) {
@@ -193,20 +193,6 @@ export default function PdfReaderPage() {
                   />
                 </div>
 
-                {/* Pagination Dots/Arrows under mockup */}
-                <div className="flex items-center justify-center gap-6 mt-8 w-full max-w-[640px]">
-                  <button className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-colors shadow-sm">
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
-                  <div className="flex items-center gap-3">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#E50914]" />
-                    <div className="w-2 h-2 rounded-full bg-slate-300" />
-                    <div className="w-2 h-2 rounded-full bg-slate-300" />
-                  </div>
-                  <button className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-colors shadow-sm">
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
-                </div>
               </motion.div>
             </div>
           </div>
