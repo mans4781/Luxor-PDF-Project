@@ -281,10 +281,6 @@ export default function ESignPage() {
         <div className="container mx-auto px-6 max-w-[88rem] relative">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }}>
-              <div className="inline-flex items-center gap-2 bg-[#dff5e5] border border-[#24b34b]/30 rounded-full px-4 py-1.5 text-[#0a6e24] text-sm font-semibold mb-6">
-                <ShieldCheck className="w-4 h-4" strokeWidth={2} />
-                Trusted eSigning for Professionals
-              </div>
               <h1 className="text-4xl lg:text-[52px] font-extrabold tracking-tight leading-[1.08] text-[#111827] mb-6">
                 Sign Every PDF<br />
                 <span className="text-[#0f8f2f]">with Confidence</span>
