@@ -3,6 +3,7 @@ import { Link, useLocation } from 'wouter';
 import { 
   LayoutDashboard, 
   Lock, 
+  FilePenLine,
   KeyRound, 
   Eraser, 
   ShieldCheck, 
@@ -21,6 +22,7 @@ import { cn } from '../utils/cn';
 const navItems = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
   { name: 'Encrypt', path: '/encrypt', icon: Lock },
+  { name: 'Edit', path: '/edit', icon: FilePenLine },
   { name: 'Password', path: '/password', icon: KeyRound },
   { name: 'Redact', path: '/redact', icon: Eraser },
   { name: 'Permissions', path: '/permissions', icon: ShieldCheck },

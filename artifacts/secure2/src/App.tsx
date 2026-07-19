@@ -2,6 +2,7 @@ import { Router, Route, Switch } from "wouter";
 import { AppLayout } from "./layouts/AppLayout";
 import { Dashboard } from "./pages/Dashboard";
 import { Encrypt } from "./pages/Encrypt";
+import { Edit } from "./pages/Edit";
 import { SecureShare } from "./pages/SecureShare";
 import { Password } from "./pages/Password";
 import { Redact } from "./pages/Redact";
@@ -22,6 +23,7 @@ export default function App() {
           <Switch>
             <Route path="/" component={Dashboard} />
             <Route path="/encrypt" component={Encrypt} />
+            <Route path="/edit" component={Edit} />
             <Route path="/password" component={Password} />
             <Route path="/redact" component={Redact} />
             <Route path="/permissions" component={Permissions} />
