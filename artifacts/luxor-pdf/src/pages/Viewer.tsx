@@ -1111,12 +1111,10 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   }
 
   if (loading) {
-    return (
-      <div className="loading-scr">
-        <div className="spinner" />
-        <p>Loading {file.name}…</p>
-      </div>
-    );
+    // No splash/spinner screen: PDFs open near-instantly, so a flashing
+    // loading animation only adds perceived lag. A plain neutral surface
+    // is shown for the few milliseconds the document takes to parse.
+    return <div className="loading-scr" />;
   }
 
   /* ── View controls (zoom / page nav / rotate / fits) — rendered

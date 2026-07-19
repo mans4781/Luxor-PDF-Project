@@ -4,6 +4,17 @@ import Home from "@/pages/Home";
 // The viewer (and its pdfjs dependency) is by far the heaviest part of the
 // app — lazy-load it so the home screen paints instantly.
 const Viewer = lazy(() => import("@/pages/Viewer"));
+
+// Warm up the viewer bundle (pdfjs included) as soon as the browser is idle
+// on the home screen, so the first PDF open doesn't wait for a code download.
+if (typeof window !== "undefined") {
+  const warmup = () => void import("@/pages/Viewer");
+  if ("requestIdleCallback" in window) {
+    (window as Window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(warmup);
+  } else {
+    setTimeout(warmup, 300);
+  }
+}
 const IconGallery = lazy(() => import("@/pages/IconGallery"));
 import { AuthGateProvider } from "@/components/AuthGate";
 import TabBar from "@/components/TabBar";
