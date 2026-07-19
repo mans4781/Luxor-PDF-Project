@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { canvasToBmpBlob } from '../lib/bmp-encode';
+import { loadPreferences } from './Settings';
 
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
@@ -49,8 +50,8 @@ export function Edit() {
   const [files, setFiles] = useState<File[]>([]);
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [imageDpi, setImageDpi] = useState<ImageDpi>(144);
-  const [imageFormat, setImageFormat] = useState<ImageFormat>('png');
+  const [imageDpi, setImageDpi] = useState<ImageDpi>(() => loadPreferences().defaultDpi);
+  const [imageFormat, setImageFormat] = useState<ImageFormat>(() => loadPreferences().defaultImageFormat);
   const { addActivity } = useAppStore();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
