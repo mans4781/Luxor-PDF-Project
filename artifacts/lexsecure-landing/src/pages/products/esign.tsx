@@ -6,7 +6,7 @@ import {
   Settings, ScrollText, Smile, Lock, Briefcase, Zap, Share2, BarChart3,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import esignShield from "@/assets/esign-shield.png";
+import esignShieldGreen from "@/assets/esign-shield-green.png";
 import esignHeroDashboard from "@/assets/esign-hero-dashboard.png";
 import esignSigningMockup from "@/assets/esign-signing-mockup.png";
 
@@ -460,15 +460,22 @@ export default function ESignPage() {
       <section className="py-12 lg:py-16 bg-white">
         <div className="container mx-auto px-6 max-w-[88rem]">
           <motion.div {...fadeUp}>
-            <div className="rounded-[28px] bg-gradient-to-br from-[#2cae4f] via-[#149135] to-[#0a6e24] relative overflow-hidden px-8 pt-8 pb-8 lg:px-12 lg:pt-10 lg:pb-10 shadow-2xl shadow-green-900/20">
+            <div className="relative mt-16">
+              <img
+                src={esignShieldGreen}
+                alt="LUXOR eSign shield badge"
+                className="hidden lg:block absolute -top-14 left-12 w-44 z-20 drop-shadow-xl"
+              />
+              <div className="rounded-[28px] bg-gradient-to-br from-[#2cae4f] via-[#149135] to-[#0a6e24] relative overflow-hidden px-8 pt-8 pb-8 lg:px-12 lg:pt-10 lg:pb-10 shadow-2xl shadow-green-900/20">
               <div className="absolute -top-24 -left-16 w-72 h-72 bg-white/10 rounded-full blur-3xl" aria-hidden="true" />
               <div className="absolute -bottom-28 right-10 w-80 h-80 bg-[#0a6e24]/60 rounded-full blur-3xl" aria-hidden="true" />
               <div className="relative z-10">
                 <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
                   <img
-                    src={esignShield}
-                    alt="LUXOR eSign shield badge"
-                    className="w-36 lg:w-44 shrink-0"
+                    src={esignShieldGreen}
+                    alt=""
+                    aria-hidden="true"
+                    className="w-36 lg:w-44 shrink-0 lg:invisible"
                   />
                   <div className="flex-1 text-center lg:text-left">
                     <h2 className="text-3xl lg:text-[38px] font-extrabold text-white tracking-tight leading-[1.15] mb-3">
@@ -508,6 +515,7 @@ export default function ESignPage() {
                     ))}
                   </div>
                 </div>
+              </div>
               </div>
             </div>
           </motion.div>
