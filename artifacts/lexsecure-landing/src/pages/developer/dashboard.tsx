@@ -9,11 +9,12 @@ import {
   LayoutDashboard, KeyRound, Activity, ScrollText, Webhook, CreditCard,
   BookOpen, Settings, Search, Bell, ChevronDown, LogOut, Plus, Copy, Eye,
   EyeOff, RefreshCw, Trash2, ArrowUpRight, ArrowDownRight, Sparkles,
-  CheckCircle2, AlertTriangle, XCircle, Globe, Zap, Server, Code,
+  CheckCircle2, AlertTriangle, XCircle, Globe, Zap, Server, Code, Download,
+  MonitorDown, MapPin,
 } from "lucide-react";
 import { isDevAuthed, setDevAuthed } from "@/lib/devAuth";
 
-type Section = "overview" | "keys" | "usage" | "logs" | "webhooks" | "billing" | "docs" | "settings";
+type Section = "overview" | "downloads" | "keys" | "usage" | "logs" | "webhooks" | "billing" | "docs" | "settings";
 
 // ── Mock data ────────────────────────────────────────────────────────────────
 const REQUESTS_30D = Array.from({ length: 30 }, (_, i) => {
@@ -66,7 +67,8 @@ const WEBHOOKS = [
 ];
 
 const NAV: { id: Section; label: string; icon: typeof LayoutDashboard }[] = [
-  { id: "overview", label: "Overview",  icon: LayoutDashboard },
+  { id: "overview",  label: "Overview",  icon: LayoutDashboard },
+  { id: "downloads", label: "Downloads", icon: Download },
   { id: "keys",     label: "API Keys",  icon: KeyRound },
   { id: "usage",    label: "Usage",     icon: Activity },
   { id: "logs",     label: "Logs",      icon: ScrollText },
@@ -202,6 +204,7 @@ export default function DeveloperDashboardPage() {
         {/* Main content */}
         <main className="flex-1 overflow-y-auto p-6 md:p-8">
           {section === "overview"  && <OverviewPanel />}
+          {section === "downloads" && <DownloadsPanel />}
           {section === "keys"      && <KeysPanel />}
           {section === "usage"     && <UsagePanel />}
           {section === "logs"      && <LogsPanel />}
@@ -256,6 +259,252 @@ function SectionHeader({ title, subtitle, action }: { title: string; subtitle?: 
       </div>
       {action}
     </div>
+  );
+}
+
+// ── Downloads panel (real data) ──────────────────────────────────────────────
+type DownloadStats = {
+  totals: { app: string; count: number }[];
+  daily: { day: string; app: string; count: number }[];
+  countries: { country: string | null; app: string; count: number }[];
+  recent: { app: string; country: string | null; city: string | null; createdAt: string }[];
+};
+
+const APP_LABEL: Record<string, string> = {
+  reader: "Luxor PDF Reader",
+  secure: "Luxor PDF Secure",
+};
+
+function DownloadsPanel() {
+  const [stats, setStats] = useState<DownloadStats | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const token = sessionStorage.getItem("luxor_admin_token") ?? "";
+        const res = await fetch("/api/admin/downloads", {
+          credentials: "include",
+          headers: token ? { "x-admin-token": token } : undefined,
+        });
+        if (res.status === 401) {
+          throw new Error(
+            "Not authorized. Sign in on the Admin Console first (its session unlocks this data), then come back here.",
+          );
+        }
+        if (!res.ok) throw new Error("Could not load download statistics.");
+        const data = (await res.json()) as DownloadStats;
+        if (!cancelled) setStats(data);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Could not load download statistics.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    void load();
+    return () => { cancelled = true; };
+  }, []);
+
+  const readerTotal = stats?.totals.find((t) => t.app === "reader")?.count ?? 0;
+  const secureTotal = stats?.totals.find((t) => t.app === "secure")?.count ?? 0;
+
+  const dailySeries = useMemo(() => {
+    if (!stats) return [];
+    const byDay = new Map<string, { day: string; reader: number; secure: number }>();
+    for (const row of stats.daily) {
+      const key = row.day;
+      const entry = byDay.get(key) ?? { day: key, reader: 0, secure: 0 };
+      if (row.app === "reader") entry.reader += row.count;
+      else if (row.app === "secure") entry.secure += row.count;
+      byDay.set(key, entry);
+    }
+    return Array.from(byDay.values())
+      .sort((a, b) => a.day.localeCompare(b.day))
+      .map((e) => ({ ...e, label: e.day.slice(5) }));
+  }, [stats]);
+
+  const countryRows = useMemo(() => {
+    if (!stats) return [];
+    const byCountry = new Map<string, { country: string; reader: number; secure: number; total: number }>();
+    for (const row of stats.countries) {
+      const key = row.country ?? "Unknown";
+      const entry = byCountry.get(key) ?? { country: key, reader: 0, secure: 0, total: 0 };
+      if (row.app === "reader") entry.reader += row.count;
+      else if (row.app === "secure") entry.secure += row.count;
+      entry.total += row.count;
+      byCountry.set(key, entry);
+    }
+    return Array.from(byCountry.values()).sort((a, b) => b.total - a.total).slice(0, 12);
+  }, [stats]);
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+      <SectionHeader
+        title="Desktop app downloads"
+        subtitle="Real installer downloads served through luxorpdf.com, with a coarse location for each download."
+      />
+
+      {loading && (
+        <Card className="p-8 text-center text-sm text-slate-500">Loading download statistics…</Card>
+      )}
+
+      {!loading && error && (
+        <Card className="p-8">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <div className="text-sm font-semibold text-slate-900 mb-1">Can't show download data</div>
+              <p className="text-sm text-slate-600">{error}</p>
+              <a
+                href="/admin"
+                className="inline-flex items-center gap-1.5 mt-3 text-sm font-semibold text-[#2563EB] hover:underline"
+              >
+                Open Admin Console <ArrowUpRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {!loading && !error && stats && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <Card className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">Total downloads</span>
+                <span className="w-9 h-9 rounded-lg flex items-center justify-center bg-[#312E81]/10 text-[#312E81]">
+                  <Download className="w-4 h-4" />
+                </span>
+              </div>
+              <div className="text-2xl font-bold text-slate-900">{(readerTotal + secureTotal).toLocaleString()}</div>
+              <div className="text-xs text-slate-500 mt-1">All time, both apps</div>
+            </Card>
+            <Card className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">Luxor PDF Reader</span>
+                <span className="w-9 h-9 rounded-lg flex items-center justify-center bg-red-50 text-[#DC2626]">
+                  <MonitorDown className="w-4 h-4" />
+                </span>
+              </div>
+              <div className="text-2xl font-bold text-slate-900">{readerTotal.toLocaleString()}</div>
+              <div className="text-xs text-slate-500 mt-1">Windows installer</div>
+            </Card>
+            <Card className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">Luxor PDF Secure</span>
+                <span className="w-9 h-9 rounded-lg flex items-center justify-center bg-[#2563EB]/10 text-[#2563EB]">
+                  <MonitorDown className="w-4 h-4" />
+                </span>
+              </div>
+              <div className="text-2xl font-bold text-slate-900">{secureTotal.toLocaleString()}</div>
+              <div className="text-xs text-slate-500 mt-1">Windows installer</div>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+            <Card className="p-5 lg:col-span-2">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900">Downloads · last 30 days</h3>
+                  <p className="text-xs text-slate-500">Per app, per day</p>
+                </div>
+                <div className="flex items-center gap-3 text-xs">
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#DC2626]" /> Reader</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#2563EB]" /> Secure</span>
+                </div>
+              </div>
+              <div className="h-64">
+                {dailySeries.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-sm text-slate-400">
+                    No downloads recorded in the last 30 days yet.
+                  </div>
+                ) : (
+                  <ResponsiveContainer>
+                    <BarChart data={dailySeries} margin={{ top: 5, right: 8, left: -8, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+                      <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                      <Tooltip />
+                      <Bar dataKey="reader" name="Reader" stackId="d" fill="#DC2626" radius={[0, 0, 0, 0]} />
+                      <Bar dataKey="secure" name="Secure" stackId="d" fill="#2563EB" radius={[3, 3, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </Card>
+
+            <Card className="p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Globe className="w-4 h-4 text-slate-500" />
+                <h3 className="text-sm font-semibold text-slate-900">Top locations</h3>
+              </div>
+              {countryRows.length === 0 ? (
+                <p className="text-sm text-slate-400">No location data yet.</p>
+              ) : (
+                <div className="space-y-2.5">
+                  {countryRows.map((c) => (
+                    <div key={c.country} className="flex items-center justify-between text-sm">
+                      <span className="text-slate-700 font-medium">{c.country}</span>
+                      <span className="text-slate-500 tabular-nums">
+                        {c.total.toLocaleString()}
+                        <span className="text-slate-400 text-xs ml-1.5">({c.reader} R / {c.secure} S)</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </div>
+
+          <Card className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <MapPin className="w-4 h-4 text-slate-500" />
+              <h3 className="text-sm font-semibold text-slate-900">Recent downloads</h3>
+            </div>
+            {stats.recent.length === 0 ? (
+              <p className="text-sm text-slate-400">
+                No downloads yet. This list fills up as people download the desktop apps from luxorpdf.com.
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-100">
+                      <th className="py-2 pr-4 font-semibold">When</th>
+                      <th className="py-2 pr-4 font-semibold">App</th>
+                      <th className="py-2 font-semibold">Location</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.recent.map((r, i) => (
+                      <tr key={i} className="border-b border-slate-50 last:border-0">
+                        <td className="py-2.5 pr-4 text-slate-600 whitespace-nowrap">
+                          {new Date(r.createdAt).toLocaleString()}
+                        </td>
+                        <td className="py-2.5 pr-4">
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                            r.app === "reader" ? "bg-red-50 text-[#DC2626]" : "bg-[#2563EB]/10 text-[#2563EB]"
+                          }`}>
+                            {APP_LABEL[r.app] ?? r.app}
+                          </span>
+                        </td>
+                        <td className="py-2.5 text-slate-600">
+                          {[r.city, r.country].filter(Boolean).join(", ") || "Unknown"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        </>
+      )}
+    </motion.div>
   );
 }
 

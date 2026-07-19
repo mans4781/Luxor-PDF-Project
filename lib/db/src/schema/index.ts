@@ -37,4 +37,5 @@ export * from "./esign-waitlist";
 export * from "./page-views";
 export * from "./payments";
 export * from "./daily-visitors";
+export * from "./download-events";
 export * from "./tickets";

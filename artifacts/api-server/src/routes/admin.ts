@@ -12,6 +12,7 @@ import {
   siteStats,
   pageViewsTable,
   dailyVisitorsTable,
+  downloadEventsTable,
   paymentsTable,
   userLicensesTable,
   licenseEventsTable,
@@ -211,6 +212,64 @@ router.get("/admin/session", async (req, res): Promise<void> => {
     return;
   }
   res.status(401).json({ error: "Unauthorized" });
+});
+
+// Desktop-installer download analytics: totals, 30-day trend, and location
+// breakdown per app. Read by the developer dashboard's Downloads section.
+router.get("/admin/downloads", async (req, res): Promise<void> => {
+  if (!(await checkAuth(req, res))) return;
+
+  try {
+    const since = new Date();
+    since.setDate(since.getDate() - 29);
+    const sinceDay = since.toISOString().slice(0, 10);
+
+    const totals = await db
+      .select({
+        app: downloadEventsTable.app,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(downloadEventsTable)
+      .groupBy(downloadEventsTable.app);
+
+    const daily = await db
+      .select({
+        day: downloadEventsTable.day,
+        app: downloadEventsTable.app,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(downloadEventsTable)
+      .where(gte(downloadEventsTable.day, sinceDay))
+      .groupBy(downloadEventsTable.day, downloadEventsTable.app)
+      .orderBy(downloadEventsTable.day);
+
+    const countries = await db
+      .select({
+        country: downloadEventsTable.country,
+        app: downloadEventsTable.app,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(downloadEventsTable)
+      .groupBy(downloadEventsTable.country, downloadEventsTable.app)
+      .orderBy(desc(sql`count(*)`))
+      .limit(60);
+
+    const recent = await db
+      .select({
+        app: downloadEventsTable.app,
+        country: downloadEventsTable.country,
+        city: downloadEventsTable.city,
+        createdAt: downloadEventsTable.createdAt,
+      })
+      .from(downloadEventsTable)
+      .orderBy(desc(downloadEventsTable.createdAt))
+      .limit(25);
+
+    res.json({ totals, daily, countries, recent });
+  } catch (err) {
+    req.log.error({ err }, "Failed to load download stats");
+    res.status(500).json({ error: "Failed to load download stats" });
+  }
 });
 
 router.get("/admin/stats", async (req, res): Promise<void> => {

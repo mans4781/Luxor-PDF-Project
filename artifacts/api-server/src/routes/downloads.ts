@@ -1,6 +1,69 @@
 import { Router, type IRouter, type Request, type Response } from "express";
+import { createHash } from "node:crypto";
+import geoip from "geoip-lite";
+import { db, downloadEventsTable } from "@workspace/db";
+import { sql } from "drizzle-orm";
 
 const router: IRouter = Router();
+
+// ── Download tracking ────────────────────────────────────────────────────────
+const IP_HASH_SALT = process.env["SESSION_SECRET"];
+if (!IP_HASH_SALT) {
+  throw new Error("SESSION_SECRET must be set: it salts download IP hashes for privacy");
+}
+
+/**
+ * Idempotent startup migration: makes sure the download_events table exists
+ * on fresh/production databases (same pattern as runPdfMigrations()).
+ */
+export async function runDownloadMigrations(): Promise<void> {
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS download_events (
+      id serial PRIMARY KEY,
+      app text NOT NULL,
+      day date NOT NULL,
+      ip_hash text NOT NULL,
+      country text,
+      city text,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+  await db.execute(
+    sql`CREATE INDEX IF NOT EXISTS download_events_app_day_idx ON download_events (app, day)`,
+  );
+  await db.execute(
+    sql`CREATE INDEX IF NOT EXISTS download_events_day_idx ON download_events (day)`,
+  );
+}
+
+function hashIp(ip: string): string {
+  return createHash("sha256").update(`${IP_HASH_SALT}:${ip}`).digest("hex").slice(0, 32);
+}
+
+/**
+ * Fire-and-forget: record one download event with a coarse GeoIP location.
+ * Never blocks or fails the actual download redirect.
+ */
+function recordDownload(req: Request, app: "reader" | "secure"): void {
+  const ip = req.ip;
+  if (!ip) return;
+  let country: string | null = null;
+  let city: string | null = null;
+  try {
+    const geo = geoip.lookup(ip);
+    country = geo?.country || null;
+    city = geo?.city || null;
+  } catch {
+    /* location stays unknown */
+  }
+  const day = new Date().toISOString().slice(0, 10);
+  db.insert(downloadEventsTable)
+    .values({ app, day, ipHash: hashIp(ip), country, city })
+    .then(() => undefined)
+    .catch((err: unknown) => {
+      req.log.warn({ err, app }, "Failed to record download event");
+    });
+}
 
 // ---------------------------------------------------------------------------
 // Windows desktop installers (Luxor PDF Reader + Luxor PDF Secure).
@@ -62,7 +125,8 @@ router.get(
     try {
       const resolved = await resolveAssetName(SECURE_RELEASES_LATEST, secureCache);
       secureCache = resolved.cache;
-      res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
+      recordDownload(req, "secure");
+      res.setHeader("Cache-Control", "no-store");
       res.redirect(
         302,
         `${SECURE_RELEASES_LATEST}/${encodeURIComponent(resolved.name)}`,
@@ -87,7 +151,8 @@ router.get(
     try {
       const resolved = await resolveAssetName(READER_RELEASES_LATEST, readerCache);
       readerCache = resolved.cache;
-      res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
+      recordDownload(req, "reader");
+      res.setHeader("Cache-Control", "no-store");
       res.redirect(
         302,
         `${READER_RELEASES_LATEST}/${encodeURIComponent(resolved.name)}`,
