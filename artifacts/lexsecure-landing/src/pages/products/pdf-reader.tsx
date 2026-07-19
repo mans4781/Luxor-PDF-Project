@@ -4,7 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { DownloadButton } from "@/components/reader/DownloadButton";
 import readerHeroApp from "@/assets/reader-hero-app.png";
-import { ProductivityMockup } from "@/components/reader/ProductivityMockup";
+import readerProductivity from "@/assets/reader-productivity.png";
 import { benefits, features, faqs } from "@/components/reader/data";
 import { CheckCircle2, Plus, Monitor, Smartphone, XCircle, Star } from "lucide-react";
 import { motion, AnimatePresence, MotionConfig } from "framer-motion";
@@ -246,7 +246,7 @@ export default function PdfReaderPage() {
           <div className="container mx-auto px-6 max-w-[88rem]">
             <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
               <div className="order-2 lg:order-1 flex justify-center lg:justify-start relative min-w-0">
-                <ProductivityMockup />
+                <img src={readerProductivity} alt="Luxor PDF Reader productivity tools" className="w-full max-w-[820px] h-auto" />
               </div>
               <div className="order-1 lg:order-2 text-left">
                 <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-white text-[#E50914] text-xs font-bold tracking-widest uppercase mb-6 shadow-sm border border-red-100">
