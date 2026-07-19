@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "wouter";
-import { Header } from "@/components/reader/Header";
-import { Footer } from "@/components/reader/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 import { DownloadButton } from "@/components/reader/DownloadButton";
 import { ReaderMockup } from "@/components/reader/ReaderMockup";
 import { ProductivityMockup } from "@/components/reader/ProductivityMockup";
@@ -95,8 +95,8 @@ export default function PdfReaderPage() {
 
   return (
     <MotionConfig reducedMotion="user">
-    <div className="min-h-screen bg-slate-50 font-sans selection:bg-[#E50914] selection:text-white pt-[72px]">
-      <Header />
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-[#E50914] selection:text-white pt-20">
+      <Navbar />
 
       <main>
         {/* HERO SECTION */}
