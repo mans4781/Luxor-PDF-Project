@@ -143,7 +143,7 @@ export default function PdfReaderPage() {
         {/* HERO SECTION */}
         <section className="bg-gradient-to-b from-[#FFF5F5] to-white pt-16 pb-24 lg:pt-24 lg:pb-32 overflow-hidden relative">
           <div className="container mx-auto px-6 max-w-[1280px]">
-            <div className="grid lg:grid-cols-2 gap-16 lg:gap-8 items-center">
+            <div className="grid lg:grid-cols-2 gap-16 lg:gap-8 items-stretch">
               
               {/* Left Side */}
               <motion.div className="min-w-0 flex flex-col items-start text-left" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -177,8 +177,8 @@ export default function PdfReaderPage() {
               </motion.div>
 
               {/* Right Side */}
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="relative flex flex-col items-center lg:items-end min-w-0">
-                <div className="relative w-full max-w-[640px]">
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="relative flex flex-col items-center lg:items-end justify-end min-w-0">
+                <div className="relative w-full max-w-[720px]">
                   <img
                     src={readerHeroApp}
                     alt="Luxor PDF Reader application window showing the About page"
