@@ -17,10 +17,11 @@ import {
   XCircle
 } from "lucide-react";
 import benefitFast from "@/assets/benefit-fast.png";
+import benefitLightweight from "@/assets/benefit-lightweight.png";
 
 export const benefits = [
   { icon: Zap, filled: true, image: benefitFast, title: "Fast", text: "Open large PDFs in seconds with optimized performance." },
-  { icon: Feather, filled: false, title: "Lightweight", text: "Minimal resource usage for a smooth reading experience." },
+  { icon: Feather, filled: false, image: benefitLightweight, title: "Lightweight", text: "Minimal resource usage for a smooth reading experience." },
   { icon: Shield, filled: false, title: "Secure", text: "Your files remain private with no unnecessary cloud uploads." },
   { icon: MousePointerClick, filled: false, title: "Easy to Use", text: "A clean, intuitive interface designed for productivity." },
 ];
