@@ -11,7 +11,7 @@
   --toolbar-active-bg: rgba(13,98,242,0.18);
   --toolbar-active-fg: #0D62F2;
   --toolbar-sep: rgba(0,0,0,0.18);
-  --toolbar-height: 110px;
+  --toolbar-height: 142px;
   --statusbar-height: 34px;
   /* Height of the document tab strip; set to 36px by App when at least
      one PDF is open, 0 otherwise. All fixed chrome offsets include it. */
@@ -828,13 +828,13 @@ mark.search-hl {
   z-index: 10;
 }
 
-/* Title bar — deep blue banner with white text */
+/* Title bar — Luxor red banner with white text (matches the shield icon) */
 .lxh-titlebar {
   height: 42px; flex: 0 0 auto;
   display: flex; align-items: center;
   padding: 0 12px 0 14px;
-  background: #185ABD;
-  border-bottom: 1px solid #12489c;
+  background: #d21f2f;
+  border-bottom: 1px solid #b01a27;
   gap: 10px;
   color: #ffffff;
 }
@@ -847,7 +847,21 @@ mark.search-hl {
   display: flex; align-items: center; justify-content: center;
 }
 .lxh-winbtn:hover { background: rgba(255,255,255,0.18); color: #fff; }
-.lxh-winbtn.close:hover { background: #d21f2f; color: #fff; }
+.lxh-winbtn.close:hover { background: #921520; color: #fff; }
+
+/* Same red title bar inside the Reader view (row 0 of the toolbar). */
+.luxor-titlebar {
+  height: 32px; flex: 0 0 auto;
+  display: flex; align-items: center;
+  padding: 0 8px 0 12px;
+  background: #d21f2f;
+  border-bottom: 1px solid #b01a27;
+  gap: 8px;
+  color: #ffffff;
+}
+.luxor-titlebar img { width: 16px; height: 20px; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+.luxor-titlebar .lxh-title { font-size: 12.5px; }
+.luxor-titlebar .lxh-winbtn { width: 36px; height: 26px; }
 
 /* Toolbar — light 5% grey band */
 .lxh-toolbar {

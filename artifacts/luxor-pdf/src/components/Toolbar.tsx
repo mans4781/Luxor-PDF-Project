@@ -1207,6 +1207,38 @@ export default function Toolbar({
 
   return (
     <div className="luxor-toolbar" ref={popoverRef}>
+      {/* ── Row 0: red title bar (matches the Luxor shield icon) ── */}
+      <div className="luxor-titlebar">
+        <img
+          src={`${import.meta.env.BASE_URL}brand/luxor-shield.png`}
+          alt="Luxor"
+          draggable={false}
+        />
+        <span className="lxh-title">Luxor PDF Reader</span>
+        <div className="lxh-winbtns">
+          <button className="lxh-winbtn" aria-disabled="true" title="Minimize" aria-label="Minimize">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+              <path d="M5 12h14" />
+            </svg>
+          </button>
+          <button
+            className="lxh-winbtn"
+            title={isFullscreen ? "Restore" : "Maximize"}
+            aria-label={isFullscreen ? "Restore" : "Maximize"}
+            onClick={onToggleFullscreen}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+              <rect x="5" y="5" width="14" height="14" rx="1.5" />
+            </svg>
+          </button>
+          <button className="lxh-winbtn close" title="Close document" aria-label="Close document" onClick={onFileClose}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
       {/* ── Row 1: menu bar ─────────── */}
       <div className="luxor-menu-strip">
         <div className="toolbar-brand">
