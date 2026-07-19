@@ -58,7 +58,12 @@ const AuthGateContext = createContext<AuthGateContextValue | null>(null);
 
 // Dev-preview bypass: in development builds every feature is unlocked and
 // the sign-in prompt never shows. Production builds keep full gating.
-const DEV_BYPASS = import.meta.env.DEV;
+// Add `?locked=1` to the URL (dev only) to preview the free-user view:
+// premium items grey out and clicks show the upgrade prompt.
+const LOCKED_PREVIEW =
+  typeof window !== "undefined" &&
+  new URLSearchParams(window.location.search).get("locked") === "1";
+const DEV_BYPASS = import.meta.env.DEV && !LOCKED_PREVIEW;
 
 export function useAuthGate(): AuthGateContextValue {
   const ctx = useContext(AuthGateContext);
