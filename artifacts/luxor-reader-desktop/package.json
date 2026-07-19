@@ -1,6 +1,6 @@
 {
   "name": "@workspace/luxor-reader-desktop",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "description": "Luxor PDF",
   "main": "out/main.js",
@@ -23,7 +23,7 @@
   "build": {
     "appId": "com.luxor.pdfreader",
     "productName": "Luxor PDF",
-    "copyright": "Copyright \u00a9 2026 Luxor PDF",
+    "copyright": "Copyright © 2026 Luxor PDF",
     "asar": true,
     "directories": {
       "buildResources": "build",
