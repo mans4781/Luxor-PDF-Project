@@ -142,7 +142,7 @@ export default function PdfReaderPage() {
       <main>
         {/* HERO SECTION */}
         <section className="bg-gradient-to-b from-[#FFF5F5] to-white pt-16 pb-24 lg:pt-24 lg:pb-32 overflow-hidden relative">
-          <div className="container mx-auto px-6 max-w-[1280px]">
+          <div className="container mx-auto px-6 max-w-[88rem]">
             <div className="grid lg:grid-cols-2 gap-16 lg:gap-8 items-stretch">
               
               {/* Left Side */}
@@ -178,7 +178,7 @@ export default function PdfReaderPage() {
 
               {/* Right Side */}
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="relative flex flex-col items-center lg:items-end justify-end min-w-0">
-                <div className="relative w-full max-w-[720px]">
+                <div className="relative w-full max-w-[820px]">
                   <img
                     src={readerHeroApp}
                     alt="Luxor PDF Reader application window showing the About page"
@@ -194,7 +194,7 @@ export default function PdfReaderPage() {
 
         {/* BENEFITS STRIP */}
         <section className="bg-white -mt-12 relative z-10">
-          <div className="container mx-auto px-6 max-w-[1280px]">
+          <div className="container mx-auto px-6 max-w-[88rem]">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-lg shadow-slate-200/50 p-8 lg:p-10">
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 lg:divide-x divide-slate-100">
                 {benefits.map((benefit, i) => (
@@ -217,7 +217,7 @@ export default function PdfReaderPage() {
 
         {/* FEATURES SECTION (5x2 grid) */}
         <section id="features" className="py-24 lg:py-32 bg-white">
-          <div className="container mx-auto px-6 max-w-[1280px]">
+          <div className="container mx-auto px-6 max-w-[88rem]">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <h2 className="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Everything You Need in a PDF Reader</h2>
               <p className="text-lg text-slate-500">Powerful features. Beautifully simple.</p>
@@ -239,7 +239,7 @@ export default function PdfReaderPage() {
 
         {/* PRODUCTIVITY SHOWCASE */}
         <section id="tools" className="py-24 lg:py-32 bg-[#FFF5F5]">
-          <div className="container mx-auto px-6 max-w-[1280px]">
+          <div className="container mx-auto px-6 max-w-[88rem]">
             <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
               <div className="order-2 lg:order-1 flex justify-center lg:justify-start relative min-w-0">
                 <ProductivityMockup />
@@ -275,7 +275,7 @@ export default function PdfReaderPage() {
 
         {/* COMPATIBILITY SECTION */}
         <section className="py-24 bg-white border-y border-slate-100">
-          <div className="container mx-auto px-6 max-w-[1280px]">
+          <div className="container mx-auto px-6 max-w-[88rem]">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <h2 className="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Works Where You Work</h2>
               <p className="text-lg text-slate-500">Available now on Windows. More platforms are coming soon.</p>
@@ -319,7 +319,7 @@ export default function PdfReaderPage() {
 
         {/* COMPARISON SECTION */}
         <section className="py-24 lg:py-32 bg-[#F8FAFC]">
-          <div className="container mx-auto px-6 max-w-[1280px]">
+          <div className="container mx-auto px-6 max-w-[88rem]">
             <h2 className="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-16 text-center tracking-tight">Why Choose Luxor PDF Reader?</h2>
             
             <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
@@ -416,7 +416,7 @@ export default function PdfReaderPage() {
         {/* FINAL CTA */}
         <section className="py-24 lg:py-32 bg-gradient-to-br from-[#E50914] to-[#990000] relative overflow-hidden">
           <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: 'radial-gradient(circle at center, white 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
-          <div className="container mx-auto px-6 max-w-[1280px] relative z-10">
+          <div className="container mx-auto px-6 max-w-[88rem] relative z-10">
             <div className="max-w-3xl mx-auto text-center flex flex-col items-center">
               <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-8 shadow-2xl">
                 <img src={`${import.meta.env.BASE_URL}brand/luxor-reader-logo.png`} alt="" className="w-10 h-10" />
