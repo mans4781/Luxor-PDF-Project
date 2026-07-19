@@ -434,7 +434,7 @@ button, input, textarea, select {
   -webkit-appearance: none;
   appearance: none;
   width: 110px;
-  height: 3px;
+  height: 2px;
   border-radius: 2px;
   background: rgba(128,128,128,0.45);
   outline: none;
@@ -443,14 +443,14 @@ button, input, textarea, select {
 .zoom-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 13px; height: 13px;
+  width: 9px; height: 9px;
   border-radius: 50%;
   background: #d21f2f;
   border: none;
   cursor: pointer;
 }
 .zoom-slider::-moz-range-thumb {
-  width: 13px; height: 13px;
+  width: 9px; height: 9px;
   border-radius: 50%;
   background: #d21f2f;
   border: none;
