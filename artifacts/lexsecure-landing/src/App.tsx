@@ -19,7 +19,8 @@ const PdfEditorPage = lazy(() => import("@/pages/products/pdf-editor"));
 const ESignPage = lazy(() => import("@/pages/products/esign"));
 const PdfSecurityPage = lazy(() => import("@/pages/products/pdf-security"));
 const AdminPage = lazy(() => import("@/pages/admin"));
-const FeaturesPage = lazy(() => import("@/pages/features"));
+// Features page hidden for now — re-enable later
+// const FeaturesPage = lazy(() => import("@/pages/features"));
 const DownloadPage = lazy(() => import("@/pages/download"));
 const BrandPage = lazy(() => import("@/pages/brand"));
 const ContactPage = lazy(() => import("@/pages/contact"));
@@ -68,7 +69,8 @@ function Router() {
       <Route path="/products/pdf-editor" component={PdfEditorPage} />
       <Route path="/products/esign" component={ESignPage} />
       <Route path="/products/pdf-security" component={PdfSecurityPage} />
-      <Route path="/features" component={FeaturesPage} />
+      {/* Features page hidden for now — re-enable later */}
+      {/* <Route path="/features" component={FeaturesPage} /> */}
       <Route path="/download" component={DownloadPage} />
       <Route path="/thank-you" component={DownloadPage} />
       <Route path="/brand" component={BrandPage} />

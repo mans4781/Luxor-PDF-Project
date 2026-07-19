@@ -9,12 +9,12 @@ const PRODUCT_LINKS: LinkItem[] = [
   { label: "PDF Reader", href: "/products/pdf-reader" },
   { label: "PDF Secure", href: "/products/pdf-security" },
   { label: "eSign", href: "/products/esign" },
-  { label: "Convert Tools", href: "/features" },
+  { label: "Convert Tools", href: "/online-tools" },
 ];
 
 const RESOURCE_LINKS: LinkItem[] = [
   { label: "Help Center", href: "/contact" },
-  { label: "Guides", href: "/features" },
+  { label: "Guides", href: "/contact" },
   { label: "Blog", href: "/about" },
   { label: "FAQ", href: "/#faq" },
 ];

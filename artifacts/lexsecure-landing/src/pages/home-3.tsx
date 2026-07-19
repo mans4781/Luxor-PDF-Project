@@ -448,9 +448,9 @@ export default function Home3Page() {
                   Luxor PDF combines powerful features with a beautiful experience to help
                   individuals and teams do more, faster and safer.
                 </p>
-                <Link href="/features">
+                <Link href="/pricing">
                   <Button className="bg-[#DC2626] hover:bg-[#B91C1C] text-white font-bold rounded-xl px-5 h-10">
-                    Explore All Features
+                    View Plans & Pricing
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>

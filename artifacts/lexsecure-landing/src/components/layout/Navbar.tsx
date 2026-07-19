@@ -256,10 +256,6 @@ export function Navbar() {
             </AnimatePresence>
           </div>
 
-          <Link href="/features" className={`group ${linkCls}`}>
-            <Sparkles className={linkIconCls} strokeWidth={2.2} />
-            Features
-          </Link>
           <Link href="/pricing" className={`group ${linkCls}`}>
             <Tag className={linkIconCls} strokeWidth={2.2} />
             Pricing

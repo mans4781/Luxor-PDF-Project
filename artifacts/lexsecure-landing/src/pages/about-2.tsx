@@ -86,12 +86,12 @@ export default function About2Page() {
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </a>
-                  <Link href="/features">
+                  <Link href="/pricing">
                     <Button
                       variant="outline"
                       className="rounded-xl px-6 h-11 font-bold border-slate-300 text-slate-700"
                     >
-                      See All Features
+                      View Pricing
                     </Button>
                   </Link>
                 </div>
@@ -422,9 +422,9 @@ export default function About2Page() {
                   Every feature is designed around practical problems faced by individuals and
                   organizations — from personal productivity to professional business operations.
                 </p>
-                <Link href="/features">
+                <Link href="/pricing">
                   <Button className="bg-[#DC2626] hover:bg-[#B91C1C] text-white font-bold rounded-xl px-5 h-10">
-                    Explore All Features
+                    Explore Our Plans
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
