@@ -1040,6 +1040,17 @@ export default function Toolbar({
   };
   const activeRibbon = ribbonByMenu[ribbonMenu];
 
+  /* Shrink the fixed header (and let the PDF area grow) whenever the
+     icon ribbon is collapsed or hidden. */
+  const ribbonVisible = !toolbarHidden && !!activeRibbon && !ribbonCollapsed;
+  const collapsedStripVisible = !toolbarHidden && !!activeRibbon && ribbonCollapsed;
+  useEffect(() => {
+    const el = document.documentElement;
+    const h = ribbonVisible ? "142px" : collapsedStripVisible ? "86px" : "68px";
+    el.style.setProperty("--toolbar-height", h);
+    return () => { el.style.setProperty("--toolbar-height", "142px"); };
+  }, [ribbonVisible, collapsedStripVisible]);
+
   /* ── Menu-bar dropdown definitions ────────── */
 
   // Same-origin marketing-site pages (served by the landing artifact).
