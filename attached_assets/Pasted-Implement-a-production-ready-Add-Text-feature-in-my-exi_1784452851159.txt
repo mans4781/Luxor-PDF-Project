@@ -1,0 +1,469 @@
+Implement a production-ready “Add Text” feature in my existing Luxor PDF desktop/web application.
+
+The feature’s technical name is “Free Text Annotation” or “Typewriter Tool.” It must allow users to click anywhere on a PDF page and insert an editable text box, similar to Adobe Acrobat’s Add Text tool.
+
+IMPORTANT:
+- Work inside my existing project.
+- Do not redesign or break the current PDF viewer.
+- Preserve the existing Luxor PDF layout, navigation, zoom, thumbnails, toolbar and colour theme.
+- Use the application’s existing design variables and components.
+- Use TypeScript and clean, modular code.
+- Do not create only a visual demo. Build the complete working feature.
+
+TECHNOLOGY:
+- React + TypeScript
+- Electron-compatible implementation
+- PDF.js for rendering PDF pages
+- pdf-lib or another suitable open-source PDF library for saving text permanently into the PDF
+- Use an HTML/SVG annotation overlay positioned above each PDF.js page
+- Do not convert or rasterize the complete PDF
+
+==================================================
+1. TOOLBAR BUTTON
+==================================================
+
+Add a toolbar button with:
+
+Icon: “T” inside a text-box style icon
+Label: “Add Text”
+Tooltip: “Add text anywhere on the PDF”
+Keyboard shortcut: T
+
+When the user clicks “Add Text”:
+- Activate text insertion mode
+- Highlight the toolbar button
+- Change the cursor to a text cursor or crosshair
+- Display a small instruction: “Click anywhere on the page to add text”
+- Pressing Escape must exit Add Text mode
+
+==================================================
+2. CREATE A TEXT BOX
+==================================================
+
+When the user clicks anywhere inside a PDF page:
+
+- Create a transparent editable text box at the exact clicked position
+- Automatically place the typing cursor inside it
+- Allow the user to type immediately
+- Default placeholder must not be saved
+- The text box must expand vertically while typing
+- Default width: approximately 220 px
+- Minimum width: 60 px
+- Minimum height: 28 px
+- Initial text must be aligned to the top-left
+- Support multiple text boxes on every PDF page
+
+Default formatting:
+- Font: Helvetica or Arial
+- Font size: 14 pt
+- Text colour: black
+- Transparent background
+- No visible border after deselection
+- Line height: approximately 1.3
+
+==================================================
+3. SELECT, MOVE AND RESIZE
+==================================================
+
+When a text box is selected:
+
+- Show a subtle bounding box
+- Show resize handles on corners and edges
+- Allow dragging the text box anywhere on the same PDF page
+- Allow resizing horizontally and vertically
+- Keep the text inside the resized area
+- Do not allow the box to move outside the PDF page
+- Use pointer events so dragging works smoothly
+- Do not trigger page scrolling while dragging
+
+Selection behaviour:
+- Single click selects the text box
+- Double-click enters text-editing mode
+- Clicking outside deselects it
+- Delete or Backspace removes the selected text box when not editing text
+- Escape exits editing or deselects the object
+- Ctrl/Cmd + C copies the selected text box
+- Ctrl/Cmd + V pastes a duplicate with a slight offset
+- Ctrl/Cmd + D duplicates it
+- Arrow keys move it by 1 px
+- Shift + Arrow keys move it by 10 px
+
+==================================================
+4. FLOATING TEXT FORMATTING TOOLBAR
+==================================================
+
+Display a floating formatting toolbar when a text box is selected.
+
+Include:
+
+- Font family dropdown
+- Font size input/dropdown
+- Increase font size
+- Decrease font size
+- Bold
+- Italic
+- Underline
+- Text colour picker
+- Background colour picker
+- Background transparency option
+- Left alignment
+- Centre alignment
+- Right alignment
+- Border colour
+- Border width
+- Line spacing
+- Duplicate
+- Delete
+
+Supported fonts:
+- Helvetica
+- Times New Roman
+- Courier
+- Arial
+- Georgia
+
+If a selected font cannot be embedded safely, use a reliable fallback font.
+
+Formatting changes must apply:
+- To selected text when the user highlights only part of the content, where technically supported
+- Otherwise, to the entire selected text box
+
+==================================================
+5. TEXT EDITING EXPERIENCE
+==================================================
+
+Use a contenteditable element, textarea, or another stable editing approach.
+
+Requirements:
+- Proper text cursor positioning
+- Multiline text
+- Enter creates a new line
+- Text wrapping
+- Copy and paste text
+- Undo and redo
+- No unexpected line breaks
+- No text blur during zoom
+- Prevent browser spellcheck marks from becoming part of the saved PDF
+- Preserve spaces and line breaks
+- Support common English characters, numbers and punctuation
+- Structure the code so Unicode font embedding can be added later
+
+Do not allow editing shortcuts to accidentally trigger viewer shortcuts while typing.
+
+==================================================
+6. PDF ZOOM AND COORDINATE HANDLING
+==================================================
+
+This is critical.
+
+The text box must remain attached to the correct PDF coordinates when:
+- Zooming in
+- Zooming out
+- Changing fit-to-width mode
+- Changing fit-to-page mode
+- Resizing the application window
+- Scrolling between pages
+- Rotating a page
+
+Store annotation positions using PDF page coordinates, not only screen pixels.
+
+Create reliable conversion utilities for:
+- Screen coordinates to PDF coordinates
+- PDF coordinates to screen coordinates
+- PDF’s bottom-left coordinate system
+- Browser’s top-left coordinate system
+- Current page scale
+- Page rotation
+- Device pixel ratio
+
+After changing zoom, the text must remain in exactly the same document position.
+
+==================================================
+7. MULTI-PAGE SUPPORT
+==================================================
+
+Each text annotation must include:
+
+- Unique annotation ID
+- PDF page number/index
+- X coordinate
+- Y coordinate
+- Width
+- Height
+- Rotation
+- Text content
+- Font family
+- Font size
+- Font weight
+- Font style
+- Underline state
+- Text colour
+- Background colour
+- Background opacity
+- Border colour
+- Border width
+- Text alignment
+- Line height
+- Created timestamp
+- Updated timestamp
+
+Suggested TypeScript interface:
+
+interface FreeTextAnnotation {
+  id: string;
+  type: "freeText";
+  pageIndex: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  text: string;
+  fontFamily: string;
+  fontSize: number;
+  fontWeight: "normal" | "bold";
+  fontStyle: "normal" | "italic";
+  underline: boolean;
+  textColor: string;
+  backgroundColor: string;
+  backgroundOpacity: number;
+  borderColor: string;
+  borderWidth: number;
+  textAlign: "left" | "center" | "right";
+  lineHeight: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+Use a central annotation state/store rather than keeping annotation data only inside DOM elements.
+
+==================================================
+8. UNDO AND REDO
+==================================================
+
+Add full undo and redo support for:
+
+- Creating a text box
+- Deleting a text box
+- Moving
+- Resizing
+- Changing text
+- Changing font
+- Changing font size
+- Changing colours
+- Changing alignment
+- Duplicating
+
+Shortcuts:
+- Ctrl/Cmd + Z: Undo
+- Ctrl/Cmd + Shift + Z: Redo
+- Ctrl/Cmd + Y: Redo on Windows
+
+Group continuous typing into logical undo operations instead of creating one history item for every keystroke.
+
+==================================================
+9. SAVE OPTIONS
+==================================================
+
+Provide two save behaviours:
+
+A. Save as Editable Annotation
+- Preserve text-box metadata so it can be edited again when reopened inside Luxor PDF
+- Store annotation metadata safely
+- Where feasible, create a standards-compliant PDF /FreeText annotation
+- Use PDF annotation subtype /FreeText
+- Keep the PDF valid and compatible with common PDF readers
+
+B. Flatten Text into PDF
+- Draw the text permanently onto the PDF page
+- Preserve the original PDF quality
+- Do not rasterize pages
+- Embed the required font
+- Correctly draw multiline text
+- Respect wrapping, font size, colour, opacity, alignment and rotation
+- The flattened text must appear in Adobe Acrobat, browsers and other PDF readers
+- Remove the editable overlay after successful flattening
+- Save as a new PDF rather than overwriting the original without confirmation
+
+Add save options:
+
+- “Save PDF”
+- “Save As”
+- “Flatten Annotations”
+- “Keep annotations editable”
+
+If standards-compliant editable /FreeText annotations are difficult with the chosen library, fully implement the reliable flattened save first, while preserving editable annotation data within the Luxor project/session. Do not fake PDF saving.
+
+==================================================
+10. TEXT WRAPPING DURING PDF EXPORT
+==================================================
+
+Build a reusable multiline text layout function.
+
+It must:
+- Measure words using the embedded PDF font
+- Wrap text according to the text-box width
+- Preserve manual line breaks
+- Calculate line height
+- Respect left, centre and right alignment
+- Stop text from overflowing outside the box
+- Optionally expand the text box vertically before export
+- Correctly convert font points into PDF units
+
+The exported PDF text position must closely match the text shown in the editor.
+
+==================================================
+11. AUTOSAVE AND DOCUMENT STATE
+==================================================
+
+- Mark the document as modified after any annotation change
+- Show an unsaved-changes indicator
+- Prompt before closing a modified document
+- Save annotation state to the current document session
+- Restore text annotations after page rerendering
+- Prevent annotations from disappearing when pages are virtualized
+- Keep annotations associated with the correct document using a document ID or file fingerprint
+
+==================================================
+12. USER INTERFACE DESIGN
+==================================================
+
+Use a clean, premium and minimal interface.
+
+Selected state:
+- Thin highlight border
+- Small round or square resize handles
+- No heavy shadow
+- Do not obstruct the PDF content
+
+Deselected state:
+- No selection border
+- Only the text and configured background/border should remain visible
+
+The floating toolbar should:
+- Appear close to the selected box
+- Reposition itself to remain within the viewport
+- Not cover the text unnecessarily
+- Match the existing Luxor PDF visual style
+- Work well at smaller window sizes
+
+Add a right-side properties panel only if the existing application already uses one. Otherwise, use the floating toolbar.
+
+==================================================
+13. EDGE CASES
+==================================================
+
+Handle:
+
+- Empty text boxes
+- Very long words
+- Large font sizes
+- Multiline paragraphs
+- Text boxes near page edges
+- Rotated pages
+- PDFs with different page sizes
+- Zoom from 25% to 500%
+- Rapid zoom changes
+- Copying text between pages
+- Deleting a page containing annotations
+- Switching documents
+- Password-protected PDFs after successful opening
+- Large PDFs with many pages
+- More than 100 text annotations
+- High-DPI screens
+- Windows display scaling
+- Browser and Electron keyboard differences
+
+Automatically remove an empty newly created text box when the user clicks outside it.
+
+==================================================
+14. COMPONENT STRUCTURE
+==================================================
+
+Organize the implementation into reusable files similar to:
+
+components/pdf/AddTextToolButton.tsx
+components/pdf/FreeTextAnnotationLayer.tsx
+components/pdf/FreeTextAnnotationBox.tsx
+components/pdf/TextFormattingToolbar.tsx
+components/pdf/AnnotationSelectionHandles.tsx
+
+hooks/useFreeTextAnnotations.ts
+hooks/useAnnotationHistory.ts
+hooks/usePdfCoordinates.ts
+
+services/pdf/freeTextExportService.ts
+services/pdf/pdfCoordinateService.ts
+services/pdf/fontEmbeddingService.ts
+
+store/annotationStore.ts
+
+types/annotations.ts
+
+utils/textWrapping.ts
+utils/annotationClipboard.ts
+
+Use the project’s current folder structure where appropriate.
+
+==================================================
+15. PERFORMANCE
+==================================================
+
+- Render only annotations belonging to visible PDF pages
+- Avoid rerendering every annotation while typing in one box
+- Use requestAnimationFrame for drag and resize updates where helpful
+- Debounce autosave
+- Keep typing responsive
+- Avoid loading the complete PDF again for every edit
+- Export only when the user saves
+- Clean up event listeners when components unmount
+
+==================================================
+16. ACCESSIBILITY
+==================================================
+
+- Add accessible labels to all buttons
+- Support keyboard selection and deletion
+- Show visible focus states
+- Use proper tooltips
+- Ensure colour picker controls have labels
+- Do not rely only on colour to show selection or active state
+
+==================================================
+17. ACCEPTANCE TESTS
+==================================================
+
+The feature is complete only when all of these work:
+
+1. Open a multipage PDF.
+2. Click “Add Text.”
+3. Click anywhere on page 1.
+4. Type a multiline paragraph.
+5. Change font size and text colour.
+6. Move and resize the text box.
+7. Zoom from 100% to 200%.
+8. Confirm the text remains at the exact PDF location.
+9. Add another text box on page 2.
+10. Undo and redo the changes.
+11. Save the PDF.
+12. Close and reopen the saved PDF.
+13. Confirm the added text appears in another PDF reader.
+14. Confirm the original PDF content has not lost quality.
+15. Confirm page rendering, scrolling and zoom still work normally.
+
+==================================================
+18. FINAL DELIVERY
+==================================================
+
+After implementation:
+
+- Run the application
+- Fix all TypeScript and runtime errors
+- Test with at least one multipage PDF
+- Verify saving with Adobe Acrobat or a browser PDF viewer
+- Provide a summary of files created and changed
+- Explain how the screen-to-PDF coordinate conversion works
+- Explain how editable and flattened saving are handled
+- Do not leave unfinished placeholder buttons
+- Do not use mock data
+- Do not remove existing application functionality

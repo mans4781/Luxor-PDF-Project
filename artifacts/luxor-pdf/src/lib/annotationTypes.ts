@@ -63,6 +63,10 @@ export interface TextAnnotation {
   fontFamily?: string;
   underline?: boolean;
   strikethrough?: boolean;
+  /** Zoom-stable position/size: x & size are fractions of page width,
+   *  y is a fraction of page height. Legacy annotations (pre-norm) only
+   *  have the raw pixel x/y captured at whatever zoom they were made. */
+  norm?: { x: number; y: number; size: number };
 }
 
 export interface CommentAnnotation {

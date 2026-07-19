@@ -311,16 +311,24 @@ function ImageOverlay({ ann, pageSize, isInteractive, onMove, onResize, onDelete
 interface TextBoxProps {
   ann: TextAnnotation;
   pageWidth: number;
+  pageHeight: number;
   onMove: (x: number, y: number) => void;
   onUpdate: (patch: Partial<TextAnnotation>) => void;
   onDelete: () => void;
 }
 
-function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBoxProps) {
+function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDelete }: TextBoxProps) {
+  // Zoom-stable rendering: annotations carry normalized page coords
+  // (fractions of page width/height) so the box stays anchored to the
+  // same document position at every zoom level. Legacy annotations
+  // without `norm` fall back to their raw pixel coords.
+  const dispX = ann.norm ? ann.norm.x * pageWidth : ann.x;
+  const dispY = ann.norm ? ann.norm.y * pageHeight : ann.y;
+  const dispSize = ann.norm ? ann.norm.size * pageWidth : ann.fontSize;
   const [selected, setSelected] = useState(false);
   const [editing, setEditing] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
-  const [localPos, setLocalPos] = useState({ x: ann.x, y: ann.y });
+  const [localPos, setLocalPos] = useState({ x: dispX, y: dispY });
   const [inputWidth, setInputWidth] = useState<number | null>(null);
   const dragRef = useRef<{ startMouseX: number; startMouseY: number; startX: number; startY: number } | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -328,8 +336,8 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
   const wrapperBoxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setLocalPos({ x: ann.x, y: ann.y });
-  }, [ann.x, ann.y]);
+    setLocalPos({ x: dispX, y: dispY });
+  }, [dispX, dispY]);
 
   useEffect(() => {
     if (!selected) return;
@@ -375,17 +383,28 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
       const newY = dragRef.current.startY + (me.clientY - dragRef.current.startMouseY);
       dragRef.current = null;
       setLocalPos({ x: newX, y: newY });
-      onMove(newX, newY);
+      // Persist both raw pixels (legacy readers) and normalized coords
+      // so the box stays anchored across zoom changes.
+      onUpdate({
+        x: newX, y: newY,
+        norm: { x: newX / pageWidth, y: newY / pageHeight, size: dispSize / pageWidth },
+      });
       document.removeEventListener("mousemove", handleDragMove);
       document.removeEventListener("mouseup", handleDragUp);
     };
     document.addEventListener("mousemove", handleDragMove);
     document.addEventListener("mouseup", handleDragUp);
-  }, [localPos, onMove]);
+  }, [localPos, onUpdate, pageWidth, pageHeight, dispSize]);
 
-  const lineH = Math.round(ann.fontSize * 1.485);
+  /** Build a patch that also refreshes `norm` (call for size changes). */
+  const sizePatch = useCallback((newSize: number): Partial<TextAnnotation> => ({
+    fontSize: Math.round(newSize),
+    norm: { x: localPos.x / pageWidth, y: localPos.y / pageHeight, size: newSize / pageWidth },
+  }), [localPos, pageWidth, pageHeight]);
+
+  const lineH = Math.round(dispSize * 1.485);
   const maxW = Math.max(60, pageWidth - localPos.x - 4);
-  const initialW = Math.min(maxW, Math.max(110, ann.fontSize * 7));
+  const initialW = Math.min(maxW, Math.max(110, dispSize * 7));
   const ls = ann.letterSpacing ?? 0;
   const textDeco = [ann.underline && "underline", ann.strikethrough && "line-through"]
     .filter(Boolean).join(" ") || undefined;
@@ -496,17 +515,17 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
             <button
               style={tbtnStyle} title="Decrease font size"
               onMouseDown={e => e.stopPropagation()}
-              onClick={e => { e.stopPropagation(); if (ann.fontSize > 8) onUpdate({ fontSize: ann.fontSize - 2 }); }}
+              onClick={e => { e.stopPropagation(); if (dispSize > 8) onUpdate(sizePatch(dispSize - 2)); }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
             </button>
-            <span style={{ color: "#bbb", fontSize: 12, minWidth: 22, textAlign: "center", fontWeight: 500 }}>{ann.fontSize}</span>
+            <span style={{ color: "#bbb", fontSize: 12, minWidth: 22, textAlign: "center", fontWeight: 500 }}>{Math.round(dispSize)}</span>
             <button
               style={tbtnStyle} title="Increase font size"
               onMouseDown={e => e.stopPropagation()}
-              onClick={e => { e.stopPropagation(); if (ann.fontSize < 72) onUpdate({ fontSize: ann.fontSize + 2 }); }}
+              onClick={e => { e.stopPropagation(); if (dispSize < 72) onUpdate(sizePatch(dispSize + 2)); }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -585,7 +604,7 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
         ref={measureRef}
         style={{
           position: "absolute", visibility: "hidden", whiteSpace: "pre",
-          fontSize: ann.fontSize, fontFamily: fontFamilyCss(ann.fontFamily),
+          fontSize: dispSize, fontFamily: fontFamilyCss(ann.fontFamily),
           letterSpacing: ls, padding: "0 5px",
         }}
         aria-hidden="true"
@@ -598,7 +617,7 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
           defaultValue={ann.content}
           rows={1}
           style={{
-            fontSize: ann.fontSize,
+            fontSize: dispSize,
             color: ann.color,
             fontFamily: fontFamilyCss(ann.fontFamily),
             letterSpacing: ls,
@@ -641,7 +660,7 @@ function DraggableTextBox({ ann, pageWidth, onMove, onUpdate, onDelete }: TextBo
         <div
           onDoubleClick={() => setEditing(true)}
           style={{
-            fontSize: ann.fontSize,
+            fontSize: dispSize,
             color: ann.color,
             fontFamily: fontFamilyCss(ann.fontFamily),
             letterSpacing: ls,
@@ -1922,6 +1941,9 @@ export default function PDFPage({
         id, type: "text", page: pageNum,
         x, y, content: content.trim(), fontSize: textSize, color: textColor, letterSpacing: 0, fontFamily: textFont,
         underline: textUnderline || undefined, strikethrough: textStrike || undefined,
+        norm: pageSize.w > 0 && pageSize.h > 0
+          ? { x: x / pageSize.w, y: y / pageSize.h, size: textSize / pageSize.w }
+          : undefined,
       };
       onAnnotationAdd(ann);
     }
@@ -1929,6 +1951,20 @@ export default function PDFPage({
   };
 
   const textAnnotations = annotations.filter(a => a.type === "text") as TextAnnotation[];
+
+  // One-time upgrade of legacy text annotations (pixel-only coords) to
+  // zoom-stable normalized coords, using the current render size. After
+  // this they survive zoom changes and can be flattened into exports.
+  useEffect(() => {
+    if (pageSize.w <= 0 || pageSize.h <= 0) return;
+    for (const t of textAnnotations) {
+      if (!t.norm) {
+        onAnnotationUpdate(t.id, {
+          norm: { x: t.x / pageSize.w, y: t.y / pageSize.h, size: t.fontSize / pageSize.w },
+        } as Partial<TextAnnotation> as any);
+      }
+    }
+  }, [textAnnotations, pageSize.w, pageSize.h, onAnnotationUpdate]);
   const commentAnnotations = annotations.filter(a => a.type === "comment") as CommentAnnotation[];
   const imageAnnotations = annotations.filter(a => a.type === "image" && a.page === pageNum) as ImageAnnotation[];
   const editTextAnnotations = annotations.filter(
@@ -2616,6 +2652,7 @@ export default function PDFPage({
           key={ann.id}
           ann={ann}
           pageWidth={pageSize.w}
+          pageHeight={pageSize.h}
           onMove={(x, y) => onAnnotationUpdate(ann.id, { x, y } as any)}
           onUpdate={patch => onAnnotationUpdate(ann.id, patch as any)}
           onDelete={() => onAnnotationRemove(ann.id)}

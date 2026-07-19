@@ -20,7 +20,7 @@ import {
   type PageNoPosition,
 } from "./editTypes";
 import type {
-  RedactionAnnotation, ImageAnnotation, EditTextAnnotation,
+  RedactionAnnotation, ImageAnnotation, EditTextAnnotation, TextAnnotation,
 } from "./annotationTypes";
 
 export interface ExportEdits {
@@ -32,6 +32,10 @@ export interface ExportEdits {
   images?: ImageAnnotation[];
   /** Adobe-style text replacements: cover rect + replacement string. */
   editTexts?: EditTextAnnotation[];
+  /** Free-text (Add Text) annotations to flatten into the page. Only
+   *  entries carrying zoom-stable `norm` coords can be placed reliably;
+   *  legacy pixel-only entries are skipped. */
+  texts?: TextAnnotation[];
   /** 1-based page that was current in the viewer (used by `pageRange: current`). */
   currentPage: number;
   /** Optional pre-processed source bytes to burn edits into instead of the
@@ -65,6 +69,24 @@ export async function exportPdfWithEdits(file: File, edits: ExportEdits): Promis
     const arr = editTextsByPage.get(et.page);
     if (arr) arr.push(et); else editTextsByPage.set(et.page, [et]);
   }
+  const textsByPage = new Map<number, TextAnnotation[]>();
+  for (const t of edits.texts ?? []) {
+    if (!t.norm) continue; // legacy pixel-only coords can't be mapped reliably
+    const arr = textsByPage.get(t.page);
+    if (arr) arr.push(t); else textsByPage.set(t.page, [t]);
+  }
+
+  // Embed each base-14 family actually used by free-text annotations.
+  // Keys map onto the PDF standard fonts; families we can't embed
+  // (georgia/verdana/local device fonts) fall back to the closest match.
+  const textFontCache = new Map<StandardFonts, Awaited<ReturnType<PDFDocument["embedFont"]>>>();
+  if (textsByPage.size > 0) {
+    const needed = new Set<StandardFonts>();
+    for (const list of textsByPage.values()) {
+      for (const t of list) needed.add(standardFontForKey(t.fontFamily));
+    }
+    for (const sf of needed) textFontCache.set(sf, await pdf.embedFont(sf));
+  }
 
   // Embed each unique image once and reuse the embedded handle on every
   // page that references it. Keyed by dataUrl so duplicates dedupe.
@@ -92,6 +114,9 @@ export async function exportPdfWithEdits(file: File, edits: ExportEdits): Promis
 
     const ets = editTextsByPage.get(pageNum);
     if (ets && ets.length) drawEditTextsOnPage(p, ets, font, width, height);
+
+    const txts = textsByPage.get(pageNum);
+    if (txts && txts.length) drawTextsOnPage(p, txts, textFontCache, width, height);
 
     if (edits.watermark && watermarkAppliesTo(edits.watermark, pageNum, edits.currentPage)) {
       drawWatermarkOnPage(p, edits.watermark, fontBold, width, height);
@@ -363,6 +388,86 @@ function drawEditTextsOnPage(
       font,
       color: rgb(tx.r, tx.g, tx.b),
     });
+  }
+}
+
+/** Map a TEXT_FONTS key (or `local:` device font) onto a PDF base-14 font. */
+function standardFontForKey(key?: string): StandardFonts {
+  switch (key) {
+    case "helvetica": return StandardFonts.Helvetica;
+    case "courier":   return StandardFonts.Courier;
+    case "georgia":   return StandardFonts.TimesRoman; // closest serif match
+    case "verdana":   return StandardFonts.Helvetica;  // closest sans match
+    case "times":
+    default:          return StandardFonts.TimesRoman; // local:* + legacy default
+  }
+}
+
+/**
+ * Flatten free-text (Add Text) annotations into the page. Coordinates
+ * come from the zoom-stable `norm` record: x & font size are fractions
+ * of page width, y is a fraction of page height (screen convention,
+ * origin top-left), so positions match what the viewer shows at any
+ * zoom. Multiline content, underline and strikethrough are drawn line
+ * by line; the on-screen box uses line-height 1.485 and a small
+ * padding, which we mirror here so the export lines up visually.
+ */
+function drawTextsOnPage(
+  page: ReturnType<PDFDocument["getPages"]>[number],
+  texts: TextAnnotation[],
+  fonts: Map<StandardFonts, Awaited<ReturnType<PDFDocument["embedFont"]>>>,
+  w: number,
+  h: number,
+) {
+  for (const t of texts) {
+    if (!t.norm) continue;
+    const font = fonts.get(standardFontForKey(t.fontFamily));
+    if (!font) continue;
+    const c = hexToRgb01(t.color || "#000000");
+    const size = t.norm.size * w;
+    if (!(size > 0)) continue;
+    const lineH = size * 1.485;
+    // On screen the text sits inside a box with ~2.5px border + 2px/5px
+    // padding; express that inset as a fraction of the annotation size
+    // so it scales sensibly.
+    const padX = size * 0.36;
+    const padY = size * 0.22;
+    const topY = h - t.norm.y * h - padY;
+    const lines = t.content.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      // Baseline for line i: drop by ascent (~0.75em within the 1.485
+      // line box) then i full line heights.
+      const baseline = topY - size * 1.05 - i * lineH;
+      if (line) {
+        page.drawText(line, {
+          x: t.norm.x * w + padX,
+          y: baseline,
+          size,
+          font,
+          color: rgb(c.r, c.g, c.b),
+        });
+      }
+      if (line && (t.underline || t.strikethrough)) {
+        const lineW = font.widthOfTextAtSize(line, size);
+        const strokeW = Math.max(0.5, size * 0.06);
+        const xs = t.norm.x * w + padX;
+        if (t.underline) {
+          const uy = baseline - size * 0.12;
+          page.drawLine({
+            start: { x: xs, y: uy }, end: { x: xs + lineW, y: uy },
+            thickness: strokeW, color: rgb(c.r, c.g, c.b),
+          });
+        }
+        if (t.strikethrough) {
+          const sy = baseline + size * 0.28;
+          page.drawLine({
+            start: { x: xs, y: sy }, end: { x: xs + lineW, y: sy },
+            thickness: strokeW, color: rgb(c.r, c.g, c.b),
+          });
+        }
+      }
+    }
   }
 }
 

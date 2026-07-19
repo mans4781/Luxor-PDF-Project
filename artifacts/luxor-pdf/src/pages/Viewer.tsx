@@ -740,13 +740,14 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
     const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
     const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
+    const texts = annotations.filter((a): a is import("@/lib/annotationTypes").TextAnnotation => a.type === "text" && !!(a as import("@/lib/annotationTypes").TextAnnotation).norm);
     // Burning Protect edits (redactions/whiteout/watermark) into the copy
     // is a premium feature.
     if ((redactions.length > 0 || watermarkCfg !== null) && !requirePremium("Protect features")) return;
     const dot = file.name.lastIndexOf(".");
     const base = dot > 0 ? file.name.slice(0, dot) : file.name;
     const copyName = `${base} - Copy.pdf`;
-    if (!watermarkCfg && !pageNoCfg && redactions.length === 0 && images.length === 0 && editTexts.length === 0) {
+    if (!watermarkCfg && !pageNoCfg && redactions.length === 0 && images.length === 0 && editTexts.length === 0 && texts.length === 0) {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(file);
       a.download = copyName;
@@ -758,7 +759,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     try {
       const blob = await exportPdfWithEdits(file, {
         watermark: watermarkCfg, pageNo: pageNoCfg,
-        redactions, images, editTexts, currentPage,
+        redactions, images, editTexts, texts, currentPage,
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -801,12 +802,13 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
       const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
       const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
+      const texts = annotations.filter((a): a is import("@/lib/annotationTypes").TextAnnotation => a.type === "text" && !!(a as import("@/lib/annotationTypes").TextAnnotation).norm);
       const hasOtherEdits = watermarkCfg !== null || pageNoCfg !== null ||
-        redactions.length > 0 || images.length > 0 || editTexts.length > 0;
+        redactions.length > 0 || images.length > 0 || editTexts.length > 0 || texts.length > 0;
       const blob: Blob = hasOtherEdits
         ? await exportPdfWithEdits(file, {
             watermark: watermarkCfg, pageNo: pageNoCfg,
-            redactions, images, editTexts, currentPage,
+            redactions, images, editTexts, texts, currentPage,
             sourceBytes: filled,
           })
         : new Blob([filled as BlobPart], { type: "application/pdf" });
@@ -831,8 +833,9 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
     const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
     const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
+    const texts = annotations.filter((a): a is import("@/lib/annotationTypes").TextAnnotation => a.type === "text" && !!(a as import("@/lib/annotationTypes").TextAnnotation).norm);
     const needsExport = watermarkCfg !== null || pageNoCfg !== null ||
-      redactions.length > 0 || images.length > 0 || editTexts.length > 0;
+      redactions.length > 0 || images.length > 0 || editTexts.length > 0 || texts.length > 0;
     // Sharing is free — but burning Protect edits (redactions/whiteout/
     // watermark) into the shared copy is premium, same as Save/export.
     if ((redactions.length > 0 || watermarkCfg !== null) && !requirePremium("Protect features")) return;
@@ -841,7 +844,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       const blob: Blob = needsExport
         ? await exportPdfWithEdits(file, {
             watermark: watermarkCfg, pageNo: pageNoCfg,
-            redactions, images, editTexts, currentPage,
+            redactions, images, editTexts, texts, currentPage,
           })
         : file;
       const name = file.name.toLowerCase().endsWith(".pdf") ? file.name : `${file.name}.pdf`;
@@ -1153,9 +1156,10 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
     const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
     const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
+    const texts = annotations.filter((a): a is import("@/lib/annotationTypes").TextAnnotation => a.type === "text" && !!(a as import("@/lib/annotationTypes").TextAnnotation).norm);
     // If no edit feature is active, just hand back the original bytes —
     // no need to round-trip through pdf-lib.
-    if (!watermarkCfg && !pageNoCfg && redactions.length === 0 && images.length === 0 && editTexts.length === 0) {
+    if (!watermarkCfg && !pageNoCfg && redactions.length === 0 && images.length === 0 && editTexts.length === 0 && texts.length === 0) {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(file);
       a.download = file.name;
@@ -1175,6 +1179,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         redactions,
         images,
         editTexts,
+        texts,
         currentPage,
       });
       const url = URL.createObjectURL(blob);
