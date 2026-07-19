@@ -1108,6 +1108,46 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     }
   }, [pdfDoc, currentPage, rotation, addAnnotation]);
 
+  // Stamps menu → place a generated rubber-stamp PNG on the current
+  // page as a regular image annotation (movable/resizable, burned into
+  // exports by the same pipeline as Add Image).
+  const handlePlaceStamp = useCallback(async (def: import("@/lib/stamps").StampDef) => {
+    if (!pdfDoc) return;
+    try {
+      const { renderStampDataUrl } = await import("@/lib/stamps");
+      const { dataUrl, aspect } = renderStampDataUrl(def);
+      const wrapper = document.getElementById(`page-${currentPage}`);
+      const canvasW = wrapper?.offsetWidth ?? 0;
+      const canvasH = wrapper?.offsetHeight ?? 0;
+      if (canvasW <= 0 || canvasH <= 0) {
+        alert("Could not measure the current page — try clicking the page first.");
+        return;
+      }
+      const displayW = Math.min(canvasW * 0.28, 260);
+      const displayH = displayW * aspect;
+      const w = displayW / canvasW;
+      const h = displayH / canvasH;
+      const page = await pdfDoc.getPage(currentPage);
+      const totalRotation = ((((page.rotate ?? 0) + rotation) % 360) + 360) % 360;
+      addAnnotation({
+        id: (crypto.randomUUID?.() ?? `stamp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`),
+        type: "image",
+        page: currentPage,
+        x: (1 - w) / 2,
+        y: (1 - h) / 2,
+        w, h,
+        rotation: totalRotation,
+        dataUrl,
+        mime: "image/png",
+        createdAt: new Date().toISOString(),
+      });
+      setTool("hand");
+    } catch (err) {
+      console.error("Place stamp failed:", err);
+      alert("Sorry — couldn't place that stamp.");
+    }
+  }, [pdfDoc, currentPage, rotation, addAnnotation]);
+
   const handleDownload = async () => {
     if (downloading || sharing) return;
     const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
@@ -1402,6 +1442,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         onOpenWatermark={() => setWatermarkOpen(true)}
         onOpenPageNo={() => setPageNoOpen(true)}
         onAddImage={handleAddImage}
+        onPlaceStamp={handlePlaceStamp}
         onOpenCompress={() => setCompressOpen(true)}
         onScreenshot={() => setScreenshotActive(true)}
         onClearWatermark={() => setWatermarkCfg(null)}

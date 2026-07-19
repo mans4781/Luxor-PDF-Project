@@ -9,6 +9,7 @@ import {
   allTextFonts,
 } from "@/lib/annotationColors";
 import { loadRecents, formatFileSize, type RecentFileEntry } from "@/lib/recentFiles";
+import { STAMP_CATEGORIES, STAMP_INK_COLORS, type StampDef } from "@/lib/stamps";
 
 // Toolbar swatches are derived from the central palette in
 // src/lib/annotationColors.ts. The 30-color DRAW_PALETTE is shared by
@@ -175,6 +176,7 @@ interface ToolbarProps {
   onOpenWatermark: () => void;
   onOpenPageNo: () => void;
   onAddImage: () => void;
+  onPlaceStamp: (def: StampDef) => void;
   onOpenCompress: () => void;
   onScreenshot: () => void;
   onClearWatermark: () => void;
@@ -231,10 +233,10 @@ const THEMES: { key: ThemeKey; label: string; swatch: string; ring: string }[] =
 ];
 
 type PopoverType =
-  | "file" | "view" | "annotate" | "tools" | "help"
+  | "file" | "view" | "annotate" | "tools" | "stamps" | "help"
   | "highlight" | "text" | "shapes" | "draw" | null;
 
-const MENU_KEYS = ["file", "view", "annotate", "tools", "help"] as const;
+const MENU_KEYS = ["file", "view", "annotate", "tools", "stamps", "help"] as const;
 type MenuKey = (typeof MENU_KEYS)[number];
 
 /** One entry in a menu-bar dropdown. */
@@ -413,7 +415,7 @@ export default function Toolbar({
   onToolChange,
   onHighlightColorChange, onTextColorChange, onTextSizeChange, onTextFontChange, onTextUnderlineChange, onTextStrikeChange, onDrawColorChange, onDrawThicknessChange, onShapeFillChange,
   onEraseAll, onReadAloud, onOpenFile, onPrint,
-  onOpenWatermark, onOpenPageNo, onAddImage, onOpenCompress, onScreenshot,
+  onOpenWatermark, onOpenPageNo, onAddImage, onPlaceStamp, onOpenCompress, onScreenshot,
   onClearWatermark, onClearPageNo,
   watermarkActive, pageNoActive,
   onShare, sharing,
@@ -947,6 +949,7 @@ export default function Toolbar({
     view: viewRibbon,
     annotate: annotateRibbon,
     tools: toolsRibbon,
+    stamps: null,
     help: null,
   };
   const activeRibbon = ribbonByMenu[ribbonMenu];
@@ -1112,11 +1115,59 @@ export default function Toolbar({
     { label: "About Luxor PDF Reader", action: () => onOpenHelp("about") },
   ];
 
+  /* Stamps menu: each category expands to a grid of realistic stamp
+     previews. Clicking a preview places that stamp on the current page. */
+  const stampPreviewGrid = (items: StampDef[]) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "8px 10px 10px" }}>
+      {items.map((def) => {
+        const ink = STAMP_INK_COLORS[def.ink];
+        return (
+          <button
+            key={def.text}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              setPopover(null);
+              setOpenSub(null);
+              onPlaceStamp(def);
+            }}
+            title={`Place "${def.text}" stamp on the current page`}
+            style={{
+              alignSelf: "flex-start",
+              background: "transparent",
+              border: `2.5px solid ${ink}`,
+              borderRadius: 6,
+              boxShadow: `inset 0 0 0 1.5px #fff, inset 0 0 0 2.5px ${ink}`,
+              color: ink,
+              cursor: "pointer",
+              padding: "3px 12px",
+              fontSize: 11.5,
+              fontWeight: 800,
+              letterSpacing: 1.2,
+              whiteSpace: "nowrap",
+              transform: "rotate(-1.5deg)",
+              fontFamily: '"Arial Narrow", "Helvetica Neue", Arial, sans-serif',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,0,0,0.05)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+          >
+            {def.text}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  const stampsMenu: MenuEntry[] = STAMP_CATEGORIES.map((cat) => ({
+    label: cat.label,
+    subContent: stampPreviewGrid(cat.items),
+  }));
+
   const MENUS: { key: MenuKey; label: string; entries: MenuEntry[] }[] = [
     { key: "file",     label: "File",     entries: fileMenu },
     { key: "view",     label: "View",     entries: viewMenu },
     { key: "annotate", label: "Annotate", entries: annotateMenu },
     { key: "tools",    label: "Tools",    entries: toolsMenu },
+    { key: "stamps",   label: "Stamps",   entries: stampsMenu },
     { key: "help",     label: "Help",     entries: helpMenu },
   ];
 
