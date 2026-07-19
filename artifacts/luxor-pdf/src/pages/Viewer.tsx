@@ -116,6 +116,15 @@ const createDedicatedPdfWorker = () => {
 const ZOOM_BASE = 1.875;
 const zoomLabel = (z: number) => `${Math.round((z / ZOOM_BASE) * 100)}%`;
 
+/* Excel-style non-linear zoom slider: 0–50 maps to 10%–100%, 50–100 maps
+   to 100%–500%, so the centre notch is exactly 100%. */
+const ZOOM_MIN = ZOOM_BASE * 0.1;   // 10%
+const ZOOM_MAX = ZOOM_BASE * 5;     // 500%
+const sliderToPct = (v: number) =>
+  v <= 50 ? 10 + (v / 50) * 90 : 100 + ((v - 50) / 50) * 400;
+const pctToSlider = (pct: number) =>
+  pct <= 100 ? ((pct - 10) / 90) * 50 : 50 + ((pct - 100) / 400) * 50;
+
 interface ViewerProps {
   file: File;
   onClose: () => void;
@@ -370,7 +379,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
 
       // Apply user preferences for a freshly-opened document.
       const prefs = loadSettings();
-      setZoom(Math.min(7.5, Math.max(0.25, ZOOM_BASE * (prefs.defaultZoomPct / 100))));
+      setZoom(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, ZOOM_BASE * (prefs.defaultZoomPct / 100))));
       setSplitView(prefs.defaultView === "double");
       setShowContents(prefs.showThumbnails);
 
@@ -479,8 +488,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       if ((e.target as HTMLElement).tagName === "TEXTAREA" || (e.target as HTMLElement).tagName === "INPUT") return;
       if (e.key === "ArrowRight" || e.key === "ArrowDown") setCurrentPage(p => Math.min(totalPages, p + 1));
       if (e.key === "ArrowLeft" || e.key === "ArrowUp") setCurrentPage(p => Math.max(1, p - 1));
-      if (e.key === "+" || e.key === "=") setZoom(z => Math.min(7.5, z + 0.15));
-      if (e.key === "-") setZoom(z => Math.max(0.25, z - 0.15));
+      if (e.key === "+" || e.key === "=") setZoom(z => Math.min(ZOOM_MAX, z + 0.15));
+      if (e.key === "-") setZoom(z => Math.max(ZOOM_MIN, z - 0.15));
       if (e.key === "Escape") {
         if (searchOpen) { setSearchOpen(false); setSearchQuery(""); return; }
         setTool("hand"); speechSynthesis.cancel(); setIsSpeaking(false);
@@ -497,7 +506,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       if (!e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
       const delta = e.deltaY < 0 ? 0.1 : -0.1;
-      setZoom(z => Math.min(7.5, Math.max(0.25, parseFloat((z + delta).toFixed(2)))));
+      setZoom(z => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, parseFloat((z + delta).toFixed(2)))));
     };
     if (!active) return;
     window.addEventListener("wheel", handler, { passive: false });
@@ -592,7 +601,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     const zW = availW / baseW;
     const zH = availH / baseH;
     const z = mode === "width" ? zW : mode === "height" ? zH : Math.min(zW, zH);
-    setZoom(Math.min(7.5, Math.max(0.25, parseFloat(z.toFixed(3)))));
+    setZoom(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, parseFloat(z.toFixed(3)))));
   }, [basePageSize, rotation]);
 
   const handleFitWidth = useCallback(() => applyFit("width"), [applyFit]);
@@ -600,10 +609,10 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   const handleFitHeight = useCallback(() => applyFit("height"), [applyFit]);
 
   // ── Menu-bar zoom commands ─────────────────────────────────
-  const handleZoomIn = useCallback(() => setZoom(z => Math.min(7.5, parseFloat((z + 0.25).toFixed(2)))), []);
-  const handleZoomOut = useCallback(() => setZoom(z => Math.max(0.25, parseFloat((z - 0.25).toFixed(2)))), []);
+  const handleZoomIn = useCallback(() => setZoom(z => Math.min(ZOOM_MAX, parseFloat((z + 0.25).toFixed(2)))), []);
+  const handleZoomOut = useCallback(() => setZoom(z => Math.max(ZOOM_MIN, parseFloat((z - 0.25).toFixed(2)))), []);
   const handleZoomTo = useCallback((pct: number) => {
-    setZoom(Math.min(7.5, Math.max(0.25, ZOOM_BASE * (pct / 100))));
+    setZoom(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, ZOOM_BASE * (pct / 100))));
   }, []);
   const handleActualSize = useCallback(() => setZoom(ZOOM_BASE), []);
 
@@ -1440,27 +1449,31 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
             <button
               className="zoom-slider-btn"
               aria-label="Zoom out"
-              onClick={() => setZoom(z => Math.max(0.25, parseFloat((z - 0.25).toFixed(2))))}
+              onClick={() => setZoom(z => Math.max(ZOOM_MIN, parseFloat((z - 0.25).toFixed(4))))}
             >
               −
             </button>
-            <input
-              type="range"
-              className="zoom-slider"
-              min={25}
-              max={400}
-              step={5}
-              value={Math.round((zoom / ZOOM_BASE) * 100)}
-              onChange={e => {
-                const pct = parseInt(e.target.value, 10);
-                if (!isNaN(pct)) setZoom(Math.min(7.5, Math.max(0.25, ZOOM_BASE * (pct / 100))));
-              }}
-              aria-label="Zoom level"
-            />
+            <div className="zoom-slider-track">
+              <input
+                type="range"
+                className="zoom-slider"
+                min={0}
+                max={100}
+                step={1}
+                value={Math.max(0, Math.min(100, pctToSlider((zoom / ZOOM_BASE) * 100)))}
+                onChange={e => {
+                  const v = parseFloat(e.target.value);
+                  if (isNaN(v)) return;
+                  const pct = sliderToPct(v);
+                  setZoom(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, ZOOM_BASE * (pct / 100))));
+                }}
+                aria-label="Zoom level"
+              />
+            </div>
             <button
               className="zoom-slider-btn"
               aria-label="Zoom in"
-              onClick={() => setZoom(z => Math.min(7.5, parseFloat((z + 0.25).toFixed(2))))}
+              onClick={() => setZoom(z => Math.min(ZOOM_MAX, parseFloat((z + 0.25).toFixed(4))))}
             >
               +
             </button>

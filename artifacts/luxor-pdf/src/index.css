@@ -413,6 +413,23 @@ button, input, textarea, select {
   padding: 0;
 }
 .zoom-slider-btn:hover { background: rgba(0,0,0,0.08); color: #d21f2f; }
+/* Wrapper adds a centre notch (100%) behind the slider, like Excel. */
+.zoom-slider-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.zoom-slider-track::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 1.5px;
+  height: 11px;
+  background: rgba(100,100,100,0.55);
+  pointer-events: none;
+}
 .zoom-slider {
   -webkit-appearance: none;
   appearance: none;
