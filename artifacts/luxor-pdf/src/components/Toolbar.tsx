@@ -919,13 +919,6 @@ export default function Toolbar({
           title="Outline, bookmarks and annotations"
           onClick={() => onOpenPanel("nav")}
         />
-        <RibbonBtn
-          icon={Icons.forms}
-          label="Forms & Sign"
-          active={activePanel === "forms"}
-          title="Fill form fields and sign the document"
-          onClick={() => onOpenPanel("forms")}
-        />
         {showOCR && (
           <RibbonBtn
             icon={Icons.ocr}
@@ -1062,7 +1055,6 @@ export default function Toolbar({
     { label: "Cloud Shape", soon: true },
     { kind: "divider" },
     { label: "Stamp Image", action: onAddImage },
-    { label: "Add Signature", action: () => onOpenPanel("forms") },
     { kind: "divider" },
     {
       label: "Annotation Colors",
@@ -1089,9 +1081,6 @@ export default function Toolbar({
     { label: "Redact Content", checked: tool === "redact", action: () => onToolChange(tool === "redact" ? "hand" : "redact") },
     { label: "Whiteout", checked: tool === "whiteout", action: () => onToolChange(tool === "whiteout" ? "hand" : "whiteout") },
     { label: "Restrict Printing & Copying", soon: true },
-    { kind: "divider" },
-    { label: "Fill Forms & Sign", checked: activePanel === "forms", action: () => onOpenPanel("forms") },
-    { label: "Create Forms", soon: true },
     { kind: "divider" },
     { label: "Edit Text", checked: tool === "edittext", action: () => onToolChange(tool === "edittext" ? "hand" : "edittext") },
     { label: "Add Image", action: onAddImage },
