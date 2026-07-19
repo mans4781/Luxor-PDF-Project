@@ -1062,8 +1062,6 @@ export default function Toolbar({
     { label: "Strikeout Text", action: () => onMarkup("strike") },
     { label: "Squiggly Underline", soon: true },
     { kind: "divider" },
-    { label: "Stamp Image", action: onAddImage },
-    { kind: "divider" },
     {
       label: "Annotation Colors",
       subContent: (
