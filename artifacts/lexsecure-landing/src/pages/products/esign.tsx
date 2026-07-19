@@ -445,7 +445,7 @@ export default function ESignPage() {
                   <img
                     src={esignShield}
                     alt="LUXOR eSign shield badge"
-                    className="w-36 lg:w-44 shrink-0 drop-shadow-[0_18px_30px_rgba(0,40,10,0.45)]"
+                    className="w-36 lg:w-44 shrink-0"
                   />
                   <div className="flex-1 text-center lg:text-left">
                     <h2 className="text-3xl lg:text-[38px] font-extrabold text-white tracking-tight leading-[1.15] mb-3">
