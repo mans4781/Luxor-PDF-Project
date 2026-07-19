@@ -2,19 +2,12 @@ import { ReactNode } from "react";
 
 interface StatusBarProps {
   viewControls: ReactNode;
-  fileName?: string;
 }
 
-export default function StatusBar({ viewControls, fileName }: StatusBarProps) {
+export default function StatusBar({ viewControls }: StatusBarProps) {
   return (
     <div className="luxor-statusbar">
-      <div style={{ flex: 1, display: "flex", alignItems: "center", minWidth: 0 }}>
-        {fileName && (
-          <span className="statusbar-filename" title={fileName}>
-            {fileName}
-          </span>
-        )}
-      </div>
+      <div style={{ flex: 1 }} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
         {viewControls}
       </div>

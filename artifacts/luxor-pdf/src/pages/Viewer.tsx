@@ -1471,7 +1471,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         onOpenHelp={setHelpSection}
         onSetSplitView={setSplitView}
       />
-      <StatusBar viewControls={viewControls} fileName={file.name} />
+      <StatusBar viewControls={viewControls} />
 
       {/* Transient hint when Comment ribbon button is used with no text selected. */}
       {commentHint && (
