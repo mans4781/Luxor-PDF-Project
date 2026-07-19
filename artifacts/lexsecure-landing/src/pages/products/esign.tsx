@@ -502,7 +502,7 @@ export default function ESignPage() {
                     </div>
                   </div>
                 </div>
-                <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                   <a href={APP_URL} className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-xl bg-white hover:bg-green-50 text-[#0f8f2f] font-bold text-base shadow-xl transition-colors w-full sm:w-auto">
                     Start Free Trial
                     <span aria-hidden="true" className="font-extrabold">&rsaquo;</span>
