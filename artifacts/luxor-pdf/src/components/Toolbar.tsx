@@ -10,6 +10,21 @@ import {
 } from "@/lib/annotationColors";
 import { loadRecents, formatFileSize, type RecentFileEntry } from "@/lib/recentFiles";
 import { STAMP_CATEGORIES, STAMP_INK_COLORS, type StampDef } from "@/lib/stamps";
+import {
+  FolderOpen, Clock, FilePlus, Save, SaveAll, Copy, Share2, Printer, X, LogOut,
+  ZoomIn, ZoomOut, Search, Scan, Maximize, MoveHorizontal, MoveVertical,
+  File as FileIcon, BookOpen, RotateCw, RotateCcw, LayoutGrid, Bookmark, Info,
+  Expand, MonitorPlay, Moon, PanelTop,
+  Type, StickyNote, Pencil, Minus, ArrowUpRight, Square, Circle, Pentagon, Cloud, Eraser,
+  Highlighter, Underline, Strikethrough, Waves, Palette, Trash2, MessageSquare,
+  FilePlus2, FileMinus2, Crop, FileArchive, Droplet, Hash, EyeOff, PaintRoller,
+  Lock, PenLine, Image as ImageIcon, Camera, Volume2, ScanText, Sparkles, Settings,
+  Keyboard, Video, Download, LifeBuoy, Flag, Shield, FileText, BadgeCheck, Stamp,
+  type LucideIcon,
+} from "lucide-react";
+
+/** Uniform 13px menu icon so every dropdown entry shows its feature icon. */
+const mi = (I: LucideIcon) => <I size={13} strokeWidth={2} />;
 
 // Toolbar swatches are derived from the central palette in
 // src/lib/annotationColors.ts. The 30-color DRAW_PALETTE is shared by
@@ -963,15 +978,10 @@ export default function Toolbar({
   const recents = popover === "file" ? loadRecents() : [];
 
   const fileMenu: MenuEntry[] = [
-    { label: "Open PDF", shortcut: "Ctrl+O", action: onOpenFile },
+    { label: "Open PDF", icon: mi(FolderOpen), shortcut: "Ctrl+O", action: onOpenFile },
     {
       label: "Recent Files",
-      icon: (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 7v5l3 2" />
-        </svg>
-      ),
+      icon: mi(Clock),
       sub: recents.length
         ? [
             // Reopens from the local byte cache; falls back to the file
@@ -982,139 +992,130 @@ export default function Toolbar({
               action: () => onOpenRecent(r),
             })),
             { kind: "divider" } as MenuEntry,
-            { label: "Browse for a File", action: onOpenFile } as MenuEntry,
+            { label: "Browse for a File", icon: mi(FolderOpen), action: onOpenFile } as MenuEntry,
           ]
         : [{ label: "No recent files yet", disabled: true }],
     },
-    { label: "Create New Document", action: onCreateNew },
+    { label: "Create New Document", icon: mi(FilePlus), action: onCreateNew },
     { kind: "divider" },
-    {
-      label: "Save",
-      icon: (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
-          <path d="M17 21v-8H7v8" />
-          <path d="M7 3v5h8" />
-        </svg>
-      ),
-      shortcut: "Ctrl+Shift+S",
-      action: onFileSaveAs,
-    },
-    { label: "Save As", action: onFileSaveAs },
-    { label: "Export a Copy", shortcut: "Ctrl+Alt+S", action: onFileSaveCopy },
-    { label: sharing ? "Preparing Share Link" : "Share", action: onShare, disabled: sharing },
-    { label: "Print", shortcut: "Ctrl+P", action: onPrint },
+    { label: "Save", icon: mi(Save), shortcut: "Ctrl+Shift+S", action: onFileSaveAs },
+    { label: "Save As", icon: mi(SaveAll), action: onFileSaveAs },
+    { label: "Export a Copy", icon: mi(Copy), shortcut: "Ctrl+Alt+S", action: onFileSaveCopy },
+    { label: sharing ? "Preparing Share Link" : "Share", icon: mi(Share2), action: onShare, disabled: sharing },
+    { label: "Print", icon: mi(Printer), shortcut: "Ctrl+P", action: onPrint },
     { kind: "divider" },
-    { label: "Close Document", shortcut: "Ctrl+W", action: onFileClose },
-    { label: "Exit Reader", action: onFileClose },
+    { label: "Close Document", icon: mi(X), shortcut: "Ctrl+W", action: onFileClose },
+    { label: "Exit Reader", icon: mi(LogOut), action: onFileClose },
   ];
 
   const viewMenu: MenuEntry[] = [
-    { label: "Zoom In", shortcut: "+", action: onZoomIn },
-    { label: "Zoom Out", shortcut: "−", action: onZoomOut },
+    { label: "Zoom In", icon: mi(ZoomIn), shortcut: "+", action: onZoomIn },
+    { label: "Zoom Out", icon: mi(ZoomOut), shortcut: "−", action: onZoomOut },
     {
       label: "Zoom Level",
+      icon: mi(Search),
       sub: [50, 75, 100, 125, 150, 200, 400].map((p) => ({
         label: `${p}%`,
         action: () => onZoomTo(p),
       })),
     },
-    { label: "Actual Size", action: onActualSize },
+    { label: "Actual Size", icon: mi(Scan), action: onActualSize },
     { kind: "divider" },
-    { label: "Fit Page", action: onFitPage },
-    { label: "Fit Width", action: onFitWidth },
-    { label: "Fit Height", action: onFitHeight },
+    { label: "Fit Page", icon: mi(Maximize), action: onFitPage },
+    { label: "Fit Width", icon: mi(MoveHorizontal), action: onFitWidth },
+    { label: "Fit Height", icon: mi(MoveVertical), action: onFitHeight },
     { kind: "divider" },
-    { label: "Single Page Scrolling", checked: !splitView, action: () => onSetSplitView(false) },
-    { label: "Two-Page Spread", checked: splitView, action: () => onSetSplitView(true) },
+    { label: "Single Page Scrolling", icon: mi(FileIcon), checked: !splitView, action: () => onSetSplitView(false) },
+    { label: "Two-Page Spread", icon: mi(BookOpen), checked: splitView, action: () => onSetSplitView(true) },
     { kind: "divider" },
-    { label: "Rotate View Right", action: onRotateCw },
-    { label: "Rotate View Left", action: onRotateCcw },
+    { label: "Rotate View Right", icon: mi(RotateCw), action: onRotateCw },
+    { label: "Rotate View Left", icon: mi(RotateCcw), action: onRotateCcw },
     { kind: "divider" },
-    { label: "Page Thumbnails", checked: showContents, action: onToggleContents },
-    { label: "Bookmarks & Annotations", checked: activePanel === "nav", action: () => onOpenPanel("nav") },
-    { label: "Document Info", checked: activePanel === "info", action: () => onOpenPanel("info") },
+    { label: "Page Thumbnails", icon: mi(LayoutGrid), checked: showContents, action: onToggleContents },
+    { label: "Bookmarks & Annotations", icon: mi(Bookmark), checked: activePanel === "nav", action: () => onOpenPanel("nav") },
+    { label: "Document Info", icon: mi(Info), checked: activePanel === "info", action: () => onOpenPanel("info") },
     { kind: "divider" },
-    { label: isFullscreen ? "Exit Full Screen" : "Full Screen", shortcut: "F11", checked: isFullscreen, action: onToggleFullscreen },
-    { label: "Presentation Mode", action: onPresentation },
-    { label: "Dark Mode", checked: theme === "dark", action: () => onThemeChange(theme === "dark" ? "light" : "dark") },
-    { label: toolbarHidden ? "Show Toolbar" : "Hide Toolbar", action: onToggleToolbar },
+    { label: isFullscreen ? "Exit Full Screen" : "Full Screen", icon: mi(Expand), shortcut: "F11", checked: isFullscreen, action: onToggleFullscreen },
+    { label: "Presentation Mode", icon: mi(MonitorPlay), action: onPresentation },
+    { label: "Dark Mode", icon: mi(Moon), checked: theme === "dark", action: () => onThemeChange(theme === "dark" ? "light" : "dark") },
+    { label: toolbarHidden ? "Show Toolbar" : "Hide Toolbar", icon: mi(PanelTop), action: onToggleToolbar },
   ];
 
   const editMenu: MenuEntry[] = [
-    { label: "Add Text Box", checked: tool === "text", action: () => onToolChange(tool === "text" ? "hand" : "text") },
-    { label: "Sticky Note Comment", action: onAddComment },
+    { label: "Add Text Box", icon: mi(Type), checked: tool === "text", action: () => onToolChange(tool === "text" ? "hand" : "text") },
+    { label: "Sticky Note Comment", icon: mi(StickyNote), action: onAddComment },
     { kind: "divider" },
-    { label: "Pencil Drawing", checked: tool === "freehand", action: () => onToolChange(tool === "freehand" ? "hand" : "freehand") },
-    { label: "Straight Line", checked: tool === "line", action: () => onToolChange("line") },
-    { label: "Arrow", checked: tool === "arrow", action: () => onToolChange("arrow") },
-    { label: "Rectangle", checked: tool === "rectangle", action: () => onToolChange("rectangle") },
-    { label: "Circle / Oval", checked: tool === "oval", action: () => onToolChange("oval") },
-    { label: "Polygon", soon: true },
-    { label: "Cloud Shape", soon: true },
+    { label: "Pencil Drawing", icon: mi(Pencil), checked: tool === "freehand", action: () => onToolChange(tool === "freehand" ? "hand" : "freehand") },
+    { label: "Straight Line", icon: mi(Minus), checked: tool === "line", action: () => onToolChange("line") },
+    { label: "Arrow", icon: mi(ArrowUpRight), checked: tool === "arrow", action: () => onToolChange("arrow") },
+    { label: "Rectangle", icon: mi(Square), checked: tool === "rectangle", action: () => onToolChange("rectangle") },
+    { label: "Circle / Oval", icon: mi(Circle), checked: tool === "oval", action: () => onToolChange("oval") },
+    { label: "Polygon", icon: mi(Pentagon), soon: true },
+    { label: "Cloud Shape", icon: mi(Cloud), soon: true },
     { kind: "divider" },
-    { label: "Eraser", checked: tool === "eraser", action: () => onToolChange(tool === "eraser" ? "hand" : "eraser") },
+    { label: "Eraser", icon: mi(Eraser), checked: tool === "eraser", action: () => onToolChange(tool === "eraser" ? "hand" : "eraser") },
   ];
 
   const annotateMenu: MenuEntry[] = [
-    { label: "Highlight Text", checked: tool === "highlight", action: () => onToolChange(tool === "highlight" ? "hand" : "highlight") },
-    { label: "Underline Text", action: () => onMarkup("underline") },
-    { label: "Strikeout Text", action: () => onMarkup("strike") },
-    { label: "Squiggly Underline", soon: true },
+    { label: "Highlight Text", icon: mi(Highlighter), checked: tool === "highlight", action: () => onToolChange(tool === "highlight" ? "hand" : "highlight") },
+    { label: "Underline Text", icon: mi(Underline), action: () => onMarkup("underline") },
+    { label: "Strikeout Text", icon: mi(Strikethrough), action: () => onMarkup("strike") },
+    { label: "Squiggly Underline", icon: mi(Waves), soon: true },
     { kind: "divider" },
     {
       label: "Annotation Colors",
+      icon: mi(Palette),
       subContent: (
         <div style={{ padding: "8px 10px 4px" }}>
           <ColorGrid colors={DRAW_COLORS} selected={drawColor} onSelect={onDrawColorChange} />
         </div>
       ),
     },
-    { label: "Erase All Annotations", action: onEraseAll },
-    { label: "Show All Comments", checked: activePanel === "nav", action: () => onOpenPanel("nav") },
+    { label: "Erase All Annotations", icon: mi(Trash2), action: onEraseAll },
+    { label: "Show All Comments", icon: mi(MessageSquare), checked: activePanel === "nav", action: () => onOpenPanel("nav") },
   ];
 
   const toolsMenu: MenuEntry[] = [
-    { label: "Insert Blank Page", action: () => onPageOp("insert") },
-    { label: "Delete Current Page", action: () => onPageOp("delete") },
-    { label: "Rotate Current Page", action: () => onPageOp("rotate") },
-    { label: "Crop Pages", soon: true },
+    { label: "Insert Blank Page", icon: mi(FilePlus2), action: () => onPageOp("insert") },
+    { label: "Delete Current Page", icon: mi(FileMinus2), action: () => onPageOp("delete") },
+    { label: "Rotate Current Page", icon: mi(RotateCw), action: () => onPageOp("rotate") },
+    { label: "Crop Pages", icon: mi(Crop), soon: true },
     { kind: "divider" },
-    { label: "Compress PDF", action: onOpenCompress },
-    { label: watermarkActive ? "Remove Watermark" : "Add Watermark", action: watermarkActive ? onClearWatermark : onOpenWatermark },
-    { label: pageNoActive ? "Remove Page Numbers" : "Add Page Numbers", action: pageNoActive ? onClearPageNo : onOpenPageNo },
-    { label: "Redact Content", checked: tool === "redact", action: () => onToolChange(tool === "redact" ? "hand" : "redact") },
-    { label: "Whiteout", checked: tool === "whiteout", action: () => onToolChange(tool === "whiteout" ? "hand" : "whiteout") },
-    { label: "Restrict Printing & Copying", soon: true },
+    { label: "Compress PDF", icon: mi(FileArchive), action: onOpenCompress },
+    { label: watermarkActive ? "Remove Watermark" : "Add Watermark", icon: mi(Droplet), action: watermarkActive ? onClearWatermark : onOpenWatermark },
+    { label: pageNoActive ? "Remove Page Numbers" : "Add Page Numbers", icon: mi(Hash), action: pageNoActive ? onClearPageNo : onOpenPageNo },
+    { label: "Redact Content", icon: mi(EyeOff), checked: tool === "redact", action: () => onToolChange(tool === "redact" ? "hand" : "redact") },
+    { label: "Whiteout", icon: mi(PaintRoller), checked: tool === "whiteout", action: () => onToolChange(tool === "whiteout" ? "hand" : "whiteout") },
+    { label: "Restrict Printing & Copying", icon: mi(Lock), soon: true },
     { kind: "divider" },
-    { label: "Edit Text", checked: tool === "edittext", action: () => onToolChange(tool === "edittext" ? "hand" : "edittext") },
-    { label: "Add Image", action: onAddImage },
-    { label: "Take Snapshot", action: onScreenshot },
-    { label: isSpeaking ? "Stop Reading Aloud" : "Read Aloud", action: onReadAloud },
+    { label: "Edit Text", icon: mi(PenLine), checked: tool === "edittext", action: () => onToolChange(tool === "edittext" ? "hand" : "edittext") },
+    { label: "Add Image", icon: mi(ImageIcon), action: onAddImage },
+    { label: "Take Snapshot", icon: mi(Camera), action: onScreenshot },
+    { label: isSpeaking ? "Stop Reading Aloud" : "Read Aloud", icon: mi(Volume2), action: onReadAloud },
     ...(showOCR
-      ? [{ label: "Recognize Text (OCR)", checked: activePanel === "ocr", action: () => onOpenPanel("ocr") } as MenuEntry]
+      ? [{ label: "Recognize Text (OCR)", icon: mi(ScanText), checked: activePanel === "ocr", action: () => onOpenPanel("ocr") } as MenuEntry]
       : []),
     ...(showAI
-      ? [{ label: "AI Assistant", checked: activePanel === "ai", action: () => onOpenPanel("ai") } as MenuEntry]
+      ? [{ label: "AI Assistant", icon: mi(Sparkles), checked: activePanel === "ai", action: () => onOpenPanel("ai") } as MenuEntry]
       : []),
     { kind: "divider" },
-    { label: "Reader Settings", action: onOpenSettings },
+    { label: "Reader Settings", icon: mi(Settings), action: onOpenSettings },
   ];
 
   const helpMenu: MenuEntry[] = [
-    { label: "User Guide", action: () => onOpenHelp("guide") },
-    { label: "Keyboard Shortcuts", action: () => onOpenHelp("shortcuts") },
-    { label: "Video Tutorials", soon: true },
+    { label: "User Guide", icon: mi(BookOpen), action: () => onOpenHelp("guide") },
+    { label: "Keyboard Shortcuts", icon: mi(Keyboard), action: () => onOpenHelp("shortcuts") },
+    { label: "Video Tutorials", icon: mi(Video), soon: true },
     { kind: "divider" },
-    { label: "Check for Updates", action: () => openSitePage("/download") },
-    { label: "Contact Support", action: () => openSitePage("/contact") },
-    { label: "Report a Problem", action: () => openSitePage("/contact") },
+    { label: "Check for Updates", icon: mi(Download), action: () => openSitePage("/download") },
+    { label: "Contact Support", icon: mi(LifeBuoy), action: () => openSitePage("/contact") },
+    { label: "Report a Problem", icon: mi(Flag), action: () => openSitePage("/contact") },
     { kind: "divider" },
-    { label: "Privacy Policy", action: () => openSitePage("/privacy") },
-    { label: "Terms of Use", action: () => openSitePage("/terms") },
-    { label: "License Information", action: () => openSitePage("/licensing") },
+    { label: "Privacy Policy", icon: mi(Shield), action: () => openSitePage("/privacy") },
+    { label: "Terms of Use", icon: mi(FileText), action: () => openSitePage("/terms") },
+    { label: "License Information", icon: mi(BadgeCheck), action: () => openSitePage("/licensing") },
     { kind: "divider" },
-    { label: "About Luxor PDF Reader", action: () => onOpenHelp("about") },
+    { label: "About Luxor PDF Reader", icon: mi(Info), action: () => onOpenHelp("about") },
   ];
 
   /* Stamps menu: each category expands to a grid of realistic stamp
@@ -1161,6 +1162,7 @@ export default function Toolbar({
 
   const stampsMenu: MenuEntry[] = STAMP_CATEGORIES.map((cat) => ({
     label: cat.label,
+    icon: mi(Stamp),
     subContent: stampPreviewGrid(cat.items),
   }));
 
