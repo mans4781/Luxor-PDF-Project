@@ -8,6 +8,7 @@ import {
 import { motion } from "framer-motion";
 import esignShield from "@/assets/esign-shield.png";
 import esignHeroDashboard from "@/assets/esign-hero-dashboard.png";
+import esignSigningMockup from "@/assets/esign-signing-mockup.png";
 
 const APP_URL = "/esign-app/";
 const ESIGN_INSTALLER_URL = "/api/downloads/luxor-pdf-esign-latest.exe";
@@ -403,7 +404,11 @@ export default function ESignPage() {
         <div className="container mx-auto px-6 max-w-[88rem]">
           <div className="grid lg:grid-cols-[1.25fr_1fr] gap-12 lg:gap-16 items-center">
             <motion.div {...fadeUp}>
-              <SigningMockup />
+              <img
+                src={esignSigningMockup}
+                alt="LUXOR PDF eSign document signing view"
+                className="w-full rounded-2xl shadow-2xl border border-green-100"
+              />
             </motion.div>
             <motion.div {...fadeUp}>
               <h2 className="text-3xl lg:text-4xl font-extrabold text-[#111827] tracking-tight leading-tight mb-8">
