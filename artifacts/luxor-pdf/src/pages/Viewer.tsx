@@ -1260,7 +1260,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
             disabled={currentPage <= 1}
             onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="18 15 12 9 6 15"/>
             </svg>
           </button>
@@ -1293,7 +1293,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
             disabled={currentPage >= totalPages}
             onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="6 9 12 15 18 9"/>
             </svg>
           </button>
@@ -1309,7 +1309,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
           title="Rotate clockwise (90°)"
           onClick={() => setRotation(r => (r + 90) % 360)}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 2v6h-6"/>
             <path d="M21 8C19.6 5 16.8 3 13.5 3 8.8 3 5 6.8 5 11.5S8.8 20 13.5 20c3.3 0 6.2-2 7.6-5"/>
           </svg>
@@ -1319,7 +1319,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
           title="Rotate counter-clockwise (90°)"
           onClick={() => setRotation(r => (r + 270) % 360)}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 2v6h6"/>
             <path d="M3 8c1.4-3 4.2-5 7.5-5C15.2 3 19 6.8 19 11.5S15.2 20 10.5 20c-3.3 0-6.2-2-7.6-5"/>
           </svg>
@@ -1336,14 +1336,14 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
           onClick={toggleFullscreen}
         >
           {isFullscreen ? (
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14.5 9.5H21v-6"/><path d="M21 3l-6.5 6.5"/>
               <path d="M9.5 9.5H3v-6"/><path d="M3 3l6.5 6.5"/>
               <path d="M14.5 14.5H21v6"/><path d="M21 21l-6.5-6.5"/>
               <path d="M9.5 14.5H3v6"/><path d="M3 21l6.5-6.5"/>
             </svg>
           ) : (
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 3h6v6"/><path d="M21 3l-6.5 6.5"/>
               <path d="M9 3H3v6"/><path d="M3 3l6.5 6.5"/>
               <path d="M15 21h6v-6"/><path d="M21 21l-6.5-6.5"/>
@@ -1471,7 +1471,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
               aria-label="Reset zoom to 100%"
               onClick={handleActualSize}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9" />
                 <path d="M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9" />
                 <path d="M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15" />
