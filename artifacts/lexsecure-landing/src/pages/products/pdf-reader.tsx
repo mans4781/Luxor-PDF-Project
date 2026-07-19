@@ -265,9 +265,7 @@ export default function PdfReaderPage() {
                     "Print and share with advanced options"
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-4 text-slate-800 font-semibold text-lg">
-                      <div className="w-6 h-6 rounded-full bg-[#E50914] text-white flex items-center justify-center shrink-0 shadow-md">
-                        <CheckCircle2 className="w-4 h-4" />
-                      </div>
+                      <CheckCircle2 className="w-6 h-6 text-[#E50914] shrink-0" />
                       {item}
                     </li>
                   ))}
