@@ -435,7 +435,7 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
   }, [onUpdate, onDelete]);
 
   const tbtnStyle: React.CSSProperties = {
-    background: "none", border: "none", color: "#ddd", cursor: "pointer",
+    background: "none", border: "none", color: "#3a3a3a", cursor: "pointer",
     fontSize: 14, padding: "3px 4px", display: "flex", alignItems: "center",
     lineHeight: 1, borderRadius: 3,
   };
@@ -457,9 +457,10 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
         <div style={{
           position: "absolute", top: -(showColorPicker ? 60 : 30), left: 0,
           display: "flex", flexDirection: "column", alignItems: "flex-start",
-          background: "rgba(40,40,40,0.95)", borderRadius: 5,
+          background: "#F7F7F7", borderRadius: 5,
+          border: "1px solid #e0e0e0",
           padding: "3px 6px", zIndex: 40, gap: 3,
-          boxShadow: "0 2px 10px rgba(0,0,0,0.35)",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.18)",
         }}>
           {showColorPicker && (
             <div style={{ display: "flex", gap: 4, padding: "3px 0" }}>
@@ -471,7 +472,7 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
                   style={{
                     width: 17, height: 17, borderRadius: "50%",
                     background: c.hex, cursor: "pointer",
-                    border: ann.color === c.hex ? "2.5px solid #fff" : "1.5px solid rgba(255,255,255,0.3)",
+                    border: ann.color === c.hex ? "2.5px solid #0D62F2" : "1.5px solid rgba(0,0,0,0.2)",
                     boxSizing: "border-box",
                   }}
                 />
@@ -484,14 +485,14 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
               style={{ cursor: "grab", display: "flex", alignItems: "center", padding: "3px 4px" }}
               title="Drag to move"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#777" strokeWidth="2.5">
                 <circle cx="8" cy="6" r="1.2"/><circle cx="16" cy="6" r="1.2"/>
                 <circle cx="8" cy="12" r="1.2"/><circle cx="16" cy="12" r="1.2"/>
                 <circle cx="8" cy="18" r="1.2"/><circle cx="16" cy="18" r="1.2"/>
               </svg>
             </div>
 
-            <div style={{ width: 1, height: 18, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
+            <div style={{ width: 1, height: 18, background: "#dcdcdc", margin: "0 2px" }} />
 
             <select
               value={ann.fontFamily ?? "times"}
@@ -499,8 +500,8 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
               onMouseDown={e => e.stopPropagation()}
               onChange={e => { e.stopPropagation(); onUpdate({ fontFamily: e.target.value }); }}
               style={{
-                background: "rgba(255,255,255,0.08)", color: "#ddd",
-                border: "1px solid rgba(255,255,255,0.18)", borderRadius: 3,
+                background: "#fff", color: "#333",
+                border: "1px solid #d0d0d0", borderRadius: 3,
                 fontSize: 12, padding: "2px 4px", cursor: "pointer", maxWidth: 96,
               }}
             >
@@ -509,17 +510,17 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
               ))}
             </select>
 
-            <div style={{ width: 1, height: 18, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
+            <div style={{ width: 1, height: 18, background: "#dcdcdc", margin: "0 2px" }} />
 
             <button
               style={tbtnStyle} title="Color"
               onMouseDown={e => e.stopPropagation()}
               onClick={e => { e.stopPropagation(); setShowColorPicker(p => !p); }}
             >
-              <div style={{ width: 15, height: 15, borderRadius: 3, background: ann.color, border: "1.5px solid rgba(255,255,255,0.3)" }} />
+              <div style={{ width: 15, height: 15, borderRadius: 3, background: ann.color, border: "1.5px solid rgba(0,0,0,0.25)" }} />
             </button>
 
-            <div style={{ width: 1, height: 18, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
+            <div style={{ width: 1, height: 18, background: "#dcdcdc", margin: "0 2px" }} />
 
             <button
               style={tbtnStyle} title="Decrease font size"
@@ -530,7 +531,7 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
                 <line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
             </button>
-            <span style={{ color: "#bbb", fontSize: 12, minWidth: 22, textAlign: "center", fontWeight: 500 }}>{Math.round(dispSize)}</span>
+            <span style={{ color: "#555", fontSize: 12, minWidth: 22, textAlign: "center", fontWeight: 500 }}>{Math.round(dispSize)}</span>
             <button
               style={tbtnStyle} title="Increase font size"
               onMouseDown={e => e.stopPropagation()}
@@ -541,13 +542,13 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
               </svg>
             </button>
 
-            <div style={{ width: 1, height: 18, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
+            <div style={{ width: 1, height: 18, background: "#dcdcdc", margin: "0 2px" }} />
 
             <button
               style={{
                 ...tbtnStyle,
                 fontWeight: 800,
-                background: ann.bold ? "rgba(255,255,255,0.22)" : "none",
+                background: ann.bold ? "rgba(13,98,242,0.14)" : "none",
               }}
               title={ann.bold ? "Remove bold" : "Bold"}
               onMouseDown={e => e.stopPropagation()}
@@ -559,7 +560,7 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
                 fontStyle: "italic",
                 fontWeight: 600,
                 fontFamily: "Georgia, 'Times New Roman', serif",
-                background: ann.italic ? "rgba(255,255,255,0.22)" : "none",
+                background: ann.italic ? "rgba(13,98,242,0.14)" : "none",
               }}
               title={ann.italic ? "Remove italic" : "Italic"}
               onMouseDown={e => e.stopPropagation()}
@@ -570,7 +571,7 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
                 ...tbtnStyle,
                 textDecoration: "underline",
                 fontWeight: 700,
-                background: ann.underline ? "rgba(255,255,255,0.22)" : "none",
+                background: ann.underline ? "rgba(13,98,242,0.14)" : "none",
               }}
               title={ann.underline ? "Remove underline" : "Underline"}
               onMouseDown={e => e.stopPropagation()}
@@ -581,14 +582,14 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
                 ...tbtnStyle,
                 textDecoration: "line-through",
                 fontWeight: 700,
-                background: ann.strikethrough ? "rgba(255,255,255,0.22)" : "none",
+                background: ann.strikethrough ? "rgba(13,98,242,0.14)" : "none",
               }}
               title={ann.strikethrough ? "Remove strikethrough" : "Strikethrough"}
               onMouseDown={e => e.stopPropagation()}
               onClick={e => { e.stopPropagation(); onUpdate({ strikethrough: !ann.strikethrough }); }}
             >S</button>
 
-            <div style={{ width: 1, height: 18, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
+            <div style={{ width: 1, height: 18, background: "#dcdcdc", margin: "0 2px" }} />
 
             <button
               style={tbtnStyle} title="Decrease letter spacing"
@@ -613,10 +614,10 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
               </svg>
             </button>
 
-            <div style={{ width: 1, height: 18, background: "rgba(255,255,255,0.15)", margin: "0 2px" }} />
+            <div style={{ width: 1, height: 18, background: "#dcdcdc", margin: "0 2px" }} />
 
             <button
-              style={{ ...tbtnStyle, color: "#ff6b6b" }} title="Delete"
+              style={{ ...tbtnStyle, color: "#d43c3c" }} title="Delete"
               onMouseDown={e => e.stopPropagation()}
               onClick={e => { e.stopPropagation(); onDelete(); }}
             >
