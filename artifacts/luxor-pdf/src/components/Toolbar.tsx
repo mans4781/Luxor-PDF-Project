@@ -8,6 +8,7 @@ import {
   DRAW_THICKNESS,
   allTextFonts,
 } from "@/lib/annotationColors";
+import { loadRecents } from "@/lib/recentFiles";
 
 // Toolbar swatches are derived from the central palette in
 // src/lib/annotationColors.ts. The 30-color DRAW_PALETTE is shared by
@@ -203,6 +204,20 @@ interface ToolbarProps {
   onOpenSettings: () => void;
   showOCR: boolean;
   showAI: boolean;
+  // Menu-bar commands
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onZoomTo: (pct: number) => void;
+  onActualSize: () => void;
+  onFitHeight: () => void;
+  onMarkup: (kind: "underline" | "strike") => void;
+  onCreateNew: () => void;
+  onPageOp: (op: "insert" | "delete" | "rotate") => void;
+  toolbarHidden: boolean;
+  onToggleToolbar: () => void;
+  onPresentation: () => void;
+  onOpenHelp: (s: "guide" | "shortcuts" | "about") => void;
+  onSetSplitView: (v: boolean) => void;
 }
 
 export type ThemeKey = "light" | "sepia" | "navy" | "dark";
@@ -214,9 +229,27 @@ const THEMES: { key: ThemeKey; label: string; swatch: string; ring: string }[] =
   { key: "dark",  label: "Dark",  swatch: "#2b2b2b", ring: "rgba(255,255,255,0.25)" },
 ];
 
-type PopoverType = "file" | "highlight" | "text" | "shapes" | "draw" | null;
+type PopoverType =
+  | "file" | "view" | "annotate" | "tools" | "help"
+  | "highlight" | "text" | "shapes" | "draw" | null;
 
-type RibbonTab = "home" | "comment" | "edit" | "view" | "protect" | "tools" | "ai";
+const MENU_KEYS = ["file", "view", "annotate", "tools", "help"] as const;
+type MenuKey = (typeof MENU_KEYS)[number];
+
+/** One entry in a menu-bar dropdown. */
+type MenuEntry =
+  | { kind: "divider" }
+  | {
+      kind?: "item";
+      label: string;
+      shortcut?: string;
+      checked?: boolean;
+      soon?: boolean;
+      disabled?: boolean;
+      action?: () => void;
+      sub?: MenuEntry[];
+      subContent?: ReactNode;
+    };
 
 const isShapeTool = (t: ToolType) => ["line", "arrow", "oval", "rectangle"].includes(t);
 
@@ -386,10 +419,15 @@ export default function Toolbar({
   theme, onThemeChange,
   onFitWidth, onFitPage, onRotateCw, onRotateCcw, isFullscreen, onToggleFullscreen,
   activePanel, onOpenPanel, onAddComment, onOpenSettings, showOCR, showAI,
+  onZoomIn, onZoomOut, onZoomTo, onActualSize, onFitHeight,
+  onMarkup, onCreateNew, onPageOp,
+  toolbarHidden, onToggleToolbar, onPresentation, onOpenHelp, onSetSplitView,
 }: ToolbarProps) {
   const { beginSignIn, beginSignUp } = useAuthGate();
   const [popover, setPopover] = useState<PopoverType>(null);
-  const [ribbonTab, setRibbonTab] = useState<RibbonTab>("home");
+  /* Which submenu (by label) is expanded inside an open dropdown. */
+  const [openSub, setOpenSub] = useState<string | null>(null);
+  useEffect(() => { setOpenSub(null); }, [popover]);
   const popoverRef = useRef<HTMLDivElement>(null);
   const [eraserIcon, setEraserIcon] = useState<string | null>(null);
   const eraserUploadRef = useRef<HTMLInputElement>(null);
@@ -416,23 +454,6 @@ export default function Toolbar({
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-
-  // Close any open popover when switching ribbon tabs so a panel never
-  // floats over a tab that no longer contains its anchor button.
-  const selectTab = useCallback((t: RibbonTab) => {
-    setRibbonTab(t);
-    setPopover(null);
-  }, []);
-
-  const TABS: { key: RibbonTab; label: string; show?: boolean }[] = [
-    { key: "home",    label: "Home" },
-    { key: "view",    label: "View" },
-    { key: "tools",   label: "Tools" },
-    { key: "edit",    label: "Edit" },
-    { key: "comment", label: "Comment" },
-    { key: "protect", label: "Protect" },
-    { key: "ai",      label: "AI Assistant", show: showAI },
-  ];
 
   /* ── Shared popover-carrying buttons (used on Home + Comment) ──── */
 
@@ -795,217 +816,351 @@ export default function Toolbar({
     />
   );
 
-  /* ── Per-tab ribbon content ─────────────────────────────────────── */
+  /* ── Quick-access ribbon (single fixed row under the menu bar) ─── */
 
-  const ribbonContent: Record<RibbonTab, ReactNode> = {
-    home: (
-      <>
-        <RibbonGroup label="File">
-          <RibbonBtn icon={Icons.open} label="Open" title="Open a PDF (Ctrl+O)" onClick={onOpenFile} />
-          <RibbonBtn icon={Icons.print} label="Print" onClick={onPrint} />
-        </RibbonGroup>
-        <RibbonGroup label="Annotate">
-          {highlightBtn}
-          {textBtn}
-          {penBtn}
-          {shapesBtn}
-          {eraserBtn}
-          {eraseAllBtn}
-        </RibbonGroup>
-        <RibbonGroup label="Navigate">
-          <RibbonBtn icon={Icons.thumbnails} label="Thumbnails" active={showContents} title="Page thumbnails" onClick={onToggleContents} />
-          <RibbonBtn icon={Icons.search} label="Search" active={searchOpen} title="Find in document (Ctrl+F)" onClick={onToggleSearch} />
-          <RibbonBtn icon={Icons.split} label="Two Pages" active={splitView} title="Toggle two-page spread" onClick={onToggleSplit} />
-        </RibbonGroup>
-        <RibbonGroup label="Assist">
-          {readAloudBtn}
-          {screenshotBtn}
-        </RibbonGroup>
-      </>
-    ),
-    comment: (
-      <>
-        <RibbonGroup label="Markup">
-          {highlightBtn}
-          {textBtn}
-          {penBtn}
-          {shapesBtn}
-        </RibbonGroup>
-        <RibbonGroup label="Clean Up">
-          {eraserBtn}
-          {eraseAllBtn}
-        </RibbonGroup>
-        <RibbonGroup label="Review">
+  const quickRibbon: ReactNode = (
+    <>
+      <RibbonGroup label="File">
+        <RibbonBtn icon={Icons.open} label="Open" title="Open a PDF (Ctrl+O)" onClick={onOpenFile} />
+        <RibbonBtn icon={Icons.print} label="Print" onClick={onPrint} />
+      </RibbonGroup>
+      <RibbonGroup label="Annotate">
+        {highlightBtn}
+        {textBtn}
+        {penBtn}
+        {shapesBtn}
+        {eraserBtn}
+        {eraseAllBtn}
+      </RibbonGroup>
+      <RibbonGroup label="Edit">
+        <RibbonBtn
+          icon={Icons.editText}
+          label="Edit Text"
+          active={tool === "edittext"}
+          title="Click existing PDF text to edit it"
+          onClick={() => onToolChange(tool === "edittext" ? "hand" : "edittext")}
+        />
+        <RibbonBtn icon={Icons.image} label="Add Image" title="Insert PNG, JPG or WEBP onto a page" onClick={onAddImage} />
+        {whiteoutBtn}
+      </RibbonGroup>
+      <RibbonGroup label="Protect">
+        <RibbonBtn
+          icon={Icons.redact}
+          label="Redact"
+          active={tool === "redact"}
+          title="Permanently hide sensitive text or areas. Burned into the PDF on save."
+          onClick={() => onToolChange(tool === "redact" ? "hand" : "redact")}
+        />
+        {watermarkBtn}
+        <div style={{ position: "relative", height: "100%" }}>
           <RibbonBtn
-            icon={Icons.stickyNote}
-            label="Comment"
-            title="Add a sticky-note comment to the selected text (or select text and right-click)"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={onAddComment}
+            icon={Icons.pageNo}
+            label="Page Nos."
+            active={pageNoActive}
+            title={pageNoActive ? "Page numbers are on — click to remove them" : "Insert page numbers with custom format and position"}
+            onClick={() => (pageNoActive ? onClearPageNo() : onOpenPageNo())}
           />
+          {pageNoActive && <OnDot />}
+        </div>
+        {compressBtn}
+      </RibbonGroup>
+      <RibbonGroup label="Navigate">
+        <RibbonBtn icon={Icons.thumbnails} label="Thumbnails" active={showContents} title="Page thumbnails" onClick={onToggleContents} />
+        <RibbonBtn icon={Icons.search} label="Search" active={searchOpen} title="Find in document (Ctrl+F)" onClick={onToggleSearch} />
+        <RibbonBtn icon={Icons.split} label="Two Pages" active={splitView} title="Toggle two-page spread" onClick={onToggleSplit} />
+      </RibbonGroup>
+      <RibbonGroup label="Page Theme">
+        {THEMES.map((t) => (
           <RibbonBtn
-            icon={Icons.notes}
-            label="Notes"
-            active={activePanel === "nav"}
-            title="Browse annotations and jump between them"
-            onClick={() => onOpenPanel("nav")}
+            key={t.key}
+            icon={
+              <span
+                style={{
+                  display: "inline-block", width: 18, height: 18, borderRadius: "50%",
+                  background: t.swatch, border: `1px solid ${t.ring}`,
+                }}
+              />
+            }
+            label={t.label}
+            active={theme === t.key}
+            title={`${t.label} reading theme`}
+            onClick={() => onThemeChange(t.key)}
           />
-        </RibbonGroup>
-      </>
-    ),
-    edit: (
-      <>
-        <RibbonGroup label="Content">
+        ))}
+      </RibbonGroup>
+      <RibbonGroup label="Panels">
+        {infoBtn}
+        <RibbonBtn
+          icon={Icons.nav}
+          label="Navigate"
+          active={activePanel === "nav"}
+          title="Outline, bookmarks and annotations"
+          onClick={() => onOpenPanel("nav")}
+        />
+        <RibbonBtn
+          icon={Icons.forms}
+          label="Forms & Sign"
+          active={activePanel === "forms"}
+          title="Fill form fields and sign the document"
+          onClick={() => onOpenPanel("forms")}
+        />
+        {showOCR && (
           <RibbonBtn
-            icon={Icons.editText}
-            label="Edit Text"
-            active={tool === "edittext"}
-            title="Click existing PDF text to edit it"
-            onClick={() => onToolChange(tool === "edittext" ? "hand" : "edittext")}
+            icon={Icons.ocr}
+            label="OCR"
+            active={activePanel === "ocr"}
+            title="Recognize text in scanned pages"
+            onClick={() => onOpenPanel("ocr")}
           />
-          {textBtn}
-          <RibbonBtn icon={Icons.image} label="Add Image" title="Insert PNG, JPG or WEBP onto a page" onClick={onAddImage} />
-          {whiteoutBtn}
-        </RibbonGroup>
-        <RibbonGroup label="Page Marks">
-          {watermarkBtn}
-          <div style={{ position: "relative", height: "100%" }}>
-            <RibbonBtn
-              icon={Icons.pageNo}
-              label="Page Nos."
-              active={pageNoActive}
-              title={pageNoActive ? "Page numbers are on — click to remove them" : "Insert page numbers with custom format and position"}
-              onClick={() => (pageNoActive ? onClearPageNo() : onOpenPageNo())}
-            />
-            {pageNoActive && <OnDot />}
-          </div>
-        </RibbonGroup>
-        <RibbonGroup label="Optimize">
-          {compressBtn}
-        </RibbonGroup>
-      </>
-    ),
-    view: (
-      <>
-        <RibbonGroup label="Page Theme">
-          {THEMES.map((t) => (
-            <RibbonBtn
-              key={t.key}
-              icon={
-                <span
-                  style={{
-                    display: "inline-block", width: 18, height: 18, borderRadius: "50%",
-                    background: t.swatch, border: `1px solid ${t.ring}`,
-                  }}
-                />
-              }
-              label={t.label}
-              active={theme === t.key}
-              title={`${t.label} reading theme`}
-              onClick={() => onThemeChange(t.key)}
-            />
-          ))}
-        </RibbonGroup>
-        <RibbonGroup label="Layout">
-          <RibbonBtn icon={Icons.fitWidth} label="Fit Width" onClick={onFitWidth} />
-          <RibbonBtn icon={Icons.fitPage} label="Fit Page" onClick={onFitPage} />
-          <RibbonBtn
-            icon={Icons.fullscreen}
-            label={isFullscreen ? "Exit Full" : "Full Screen"}
-            active={isFullscreen}
-            title={isFullscreen ? "Exit full screen (F11)" : "Full screen (F11)"}
-            onClick={onToggleFullscreen}
-          />
-          <RibbonBtn icon={Icons.split} label="Two Pages" active={splitView} title="Toggle two-page spread" onClick={onToggleSplit} />
-          <RibbonBtn icon={Icons.thumbnails} label="Thumbnails" active={showContents} title="Page thumbnails" onClick={onToggleContents} />
-        </RibbonGroup>
-        <RibbonGroup label="Rotate">
-          <RibbonBtn icon={Icons.rotateCw} label="Rotate Right" title="Rotate clockwise (90°)" onClick={onRotateCw} />
-          <RibbonBtn icon={Icons.rotateCcw} label="Rotate Left" title="Rotate counter-clockwise (90°)" onClick={onRotateCcw} />
-        </RibbonGroup>
-        <RibbonGroup label="Capture">
-          <RibbonBtn icon={Icons.screenshot} label="Snapshot" title="Capture an area of the page as an image" onClick={onScreenshot} />
-        </RibbonGroup>
-        <RibbonGroup label="Panels">
-          {infoBtn}
-          <RibbonBtn
-            icon={Icons.nav}
-            label="Navigate"
-            active={activePanel === "nav"}
-            title="Outline, bookmarks and annotations"
-            onClick={() => onOpenPanel("nav")}
-          />
-          <RibbonBtn icon={Icons.settings} label="Settings" title="Reader settings" onClick={onOpenSettings} />
-        </RibbonGroup>
-      </>
-    ),
-    protect: (
-      <>
-        <RibbonGroup label="Conceal">
-          <RibbonBtn
-            icon={Icons.redact}
-            label="Redact"
-            active={tool === "redact"}
-            title="Permanently hide sensitive text or areas. Burned into the PDF on save."
-            onClick={() => onToolChange(tool === "redact" ? "hand" : "redact")}
-          />
-          {whiteoutBtn}
-        </RibbonGroup>
-        <RibbonGroup label="Mark Ownership">
-          {watermarkBtn}
-        </RibbonGroup>
-      </>
-    ),
-    tools: (
-      <>
-        <RibbonGroup label="Document Tools">
-          {showOCR && (
-            <RibbonBtn
-              icon={Icons.ocr}
-              label="OCR"
-              active={activePanel === "ocr"}
-              title="Recognize text in scanned pages"
-              onClick={() => onOpenPanel("ocr")}
-            />
-          )}
-          <RibbonBtn
-            icon={Icons.forms}
-            label="Forms & Sign"
-            active={activePanel === "forms"}
-            title="Fill form fields and sign the document"
-            onClick={() => onOpenPanel("forms")}
-          />
-          {compressBtn}
-        </RibbonGroup>
-        <RibbonGroup label="Capture">
-          {screenshotBtn}
-          {readAloudBtn}
-        </RibbonGroup>
-        <RibbonGroup label="Inspect">
-          {infoBtn}
-        </RibbonGroup>
-      </>
-    ),
-    ai: (
-      <>
-        <RibbonGroup label="AI Assistant">
+        )}
+        {showAI && (
           <RibbonBtn
             icon={Icons.ai}
-            label="Open AI"
+            label="AI"
             active={activePanel === "ai"}
             title="Open the AI assistant panel"
             onClick={() => onOpenPanel("ai")}
           />
-          <RibbonBtn icon={Icons.summarize} label="Summarize" title="Summarize this document in the AI panel" onClick={() => onOpenPanel("ai")} />
-          <RibbonBtn icon={Icons.question} label="Ask PDF" title="Ask questions about this document in the AI panel" onClick={() => onOpenPanel("ai")} />
-        </RibbonGroup>
-      </>
-    ),
-  };
+        )}
+        <RibbonBtn icon={Icons.settings} label="Settings" title="Reader settings" onClick={onOpenSettings} />
+      </RibbonGroup>
+      <RibbonGroup label="Assist">
+        {readAloudBtn}
+        {screenshotBtn}
+      </RibbonGroup>
+    </>
+  );
+
+  /* ── Menu-bar dropdown definitions ────────── */
+
+  // Same-origin marketing-site pages (served by the landing artifact).
+  const openSitePage = (path: string) => window.open(path, "_blank", "noopener");
+
+  const recents = popover === "file" ? loadRecents() : [];
+
+  const fileMenu: MenuEntry[] = [
+    { label: "Open PDF", shortcut: "Ctrl+O", action: onOpenFile },
+    {
+      label: "Recent Files",
+      sub: recents.length
+        ? [
+            // The browser can't reopen a file from disk without the user
+            // picking it again, so recents are shown for reference and the
+            // action below opens the picker.
+            ...recents.slice(0, 8).map((r): MenuEntry => ({ label: r.name, disabled: true })),
+            { kind: "divider" } as MenuEntry,
+            { label: "Browse to Reopen", action: onOpenFile } as MenuEntry,
+          ]
+        : [{ label: "No recent files yet", disabled: true }],
+    },
+    { label: "Create New Document", action: onCreateNew },
+    { kind: "divider" },
+    { label: "Save", shortcut: "Ctrl+Shift+S", action: onFileSaveAs },
+    { label: "Save As", action: onFileSaveAs },
+    { label: "Export a Copy", shortcut: "Ctrl+Alt+S", action: onFileSaveCopy },
+    { label: sharing ? "Preparing Share Link" : "Share", action: onShare, disabled: sharing },
+    { label: "Print", shortcut: "Ctrl+P", action: onPrint },
+    { kind: "divider" },
+    { label: "Close Document", shortcut: "Ctrl+W", action: onFileClose },
+    { label: "Exit Reader", action: onFileClose },
+  ];
+
+  const viewMenu: MenuEntry[] = [
+    { label: "Zoom In", shortcut: "+", action: onZoomIn },
+    { label: "Zoom Out", shortcut: "−", action: onZoomOut },
+    {
+      label: "Zoom Level",
+      sub: [50, 75, 100, 125, 150, 200, 400].map((p) => ({
+        label: `${p}%`,
+        action: () => onZoomTo(p),
+      })),
+    },
+    { label: "Actual Size", action: onActualSize },
+    { kind: "divider" },
+    { label: "Fit Page", action: onFitPage },
+    { label: "Fit Width", action: onFitWidth },
+    { label: "Fit Height", action: onFitHeight },
+    { kind: "divider" },
+    { label: "Single Page Scrolling", checked: !splitView, action: () => onSetSplitView(false) },
+    { label: "Two-Page Spread", checked: splitView, action: () => onSetSplitView(true) },
+    { kind: "divider" },
+    { label: "Rotate View Right", action: onRotateCw },
+    { label: "Rotate View Left", action: onRotateCcw },
+    { kind: "divider" },
+    { label: "Page Thumbnails", checked: showContents, action: onToggleContents },
+    { label: "Bookmarks & Annotations", checked: activePanel === "nav", action: () => onOpenPanel("nav") },
+    { label: "Document Info", checked: activePanel === "info", action: () => onOpenPanel("info") },
+    { kind: "divider" },
+    { label: isFullscreen ? "Exit Full Screen" : "Full Screen", shortcut: "F11", checked: isFullscreen, action: onToggleFullscreen },
+    { label: "Presentation Mode", action: onPresentation },
+    { label: "Dark Mode", checked: theme === "dark", action: () => onThemeChange(theme === "dark" ? "light" : "dark") },
+    { label: toolbarHidden ? "Show Toolbar" : "Hide Toolbar", action: onToggleToolbar },
+  ];
+
+  const annotateMenu: MenuEntry[] = [
+    { label: "Highlight Text", checked: tool === "highlight", action: () => onToolChange(tool === "highlight" ? "hand" : "highlight") },
+    { label: "Underline Text", action: () => onMarkup("underline") },
+    { label: "Strikeout Text", action: () => onMarkup("strike") },
+    { label: "Squiggly Underline", soon: true },
+    { kind: "divider" },
+    { label: "Add Text Box", checked: tool === "text", action: () => onToolChange(tool === "text" ? "hand" : "text") },
+    { label: "Sticky Note Comment", action: onAddComment },
+    { kind: "divider" },
+    { label: "Pencil Drawing", checked: tool === "freehand", action: () => onToolChange(tool === "freehand" ? "hand" : "freehand") },
+    { label: "Straight Line", checked: tool === "line", action: () => onToolChange("line") },
+    { label: "Arrow", checked: tool === "arrow", action: () => onToolChange("arrow") },
+    { label: "Rectangle", checked: tool === "rectangle", action: () => onToolChange("rectangle") },
+    { label: "Circle / Oval", checked: tool === "oval", action: () => onToolChange("oval") },
+    { label: "Polygon", soon: true },
+    { label: "Cloud Shape", soon: true },
+    { kind: "divider" },
+    { label: "Stamp Image", action: onAddImage },
+    { label: "Add Signature", action: () => onOpenPanel("forms") },
+    { kind: "divider" },
+    {
+      label: "Annotation Colors",
+      subContent: (
+        <div style={{ padding: "8px 10px 4px" }}>
+          <ColorGrid colors={DRAW_COLORS} selected={drawColor} onSelect={onDrawColorChange} />
+        </div>
+      ),
+    },
+    { label: "Eraser", checked: tool === "eraser", action: () => onToolChange(tool === "eraser" ? "hand" : "eraser") },
+    { label: "Erase All Annotations", action: onEraseAll },
+    { label: "Show All Comments", checked: activePanel === "nav", action: () => onOpenPanel("nav") },
+  ];
+
+  const toolsMenu: MenuEntry[] = [
+    { label: "Insert Blank Page", action: () => onPageOp("insert") },
+    { label: "Delete Current Page", action: () => onPageOp("delete") },
+    { label: "Rotate Current Page", action: () => onPageOp("rotate") },
+    { label: "Crop Pages", soon: true },
+    { kind: "divider" },
+    { label: "Compress PDF", action: onOpenCompress },
+    { label: watermarkActive ? "Remove Watermark" : "Add Watermark", action: watermarkActive ? onClearWatermark : onOpenWatermark },
+    { label: pageNoActive ? "Remove Page Numbers" : "Add Page Numbers", action: pageNoActive ? onClearPageNo : onOpenPageNo },
+    { label: "Redact Content", checked: tool === "redact", action: () => onToolChange(tool === "redact" ? "hand" : "redact") },
+    { label: "Whiteout", checked: tool === "whiteout", action: () => onToolChange(tool === "whiteout" ? "hand" : "whiteout") },
+    { label: "Restrict Printing & Copying", soon: true },
+    { kind: "divider" },
+    { label: "Fill Forms & Sign", checked: activePanel === "forms", action: () => onOpenPanel("forms") },
+    { label: "Create Forms", soon: true },
+    { kind: "divider" },
+    { label: "Edit Text", checked: tool === "edittext", action: () => onToolChange(tool === "edittext" ? "hand" : "edittext") },
+    { label: "Add Image", action: onAddImage },
+    { label: "Take Snapshot", action: onScreenshot },
+    { label: isSpeaking ? "Stop Reading Aloud" : "Read Aloud", action: onReadAloud },
+    ...(showOCR
+      ? [{ label: "Recognize Text (OCR)", checked: activePanel === "ocr", action: () => onOpenPanel("ocr") } as MenuEntry]
+      : []),
+    ...(showAI
+      ? [{ label: "AI Assistant", checked: activePanel === "ai", action: () => onOpenPanel("ai") } as MenuEntry]
+      : []),
+    { kind: "divider" },
+    { label: "Reader Settings", action: onOpenSettings },
+  ];
+
+  const helpMenu: MenuEntry[] = [
+    { label: "User Guide", action: () => onOpenHelp("guide") },
+    { label: "Keyboard Shortcuts", action: () => onOpenHelp("shortcuts") },
+    { label: "Video Tutorials", soon: true },
+    { kind: "divider" },
+    { label: "Check for Updates", action: () => openSitePage("/download") },
+    { label: "Contact Support", action: () => openSitePage("/contact") },
+    { label: "Report a Problem", action: () => openSitePage("/contact") },
+    { kind: "divider" },
+    { label: "Privacy Policy", action: () => openSitePage("/privacy") },
+    { label: "Terms of Use", action: () => openSitePage("/terms") },
+    { label: "License Information", action: () => openSitePage("/licensing") },
+    { kind: "divider" },
+    { label: "About Luxor PDF Reader", action: () => onOpenHelp("about") },
+  ];
+
+  const MENUS: { key: MenuKey; label: string; entries: MenuEntry[] }[] = [
+    { key: "file",     label: "File",     entries: fileMenu },
+    { key: "view",     label: "View",     entries: viewMenu },
+    { key: "annotate", label: "Annotate", entries: annotateMenu },
+    { key: "tools",    label: "Tools",    entries: toolsMenu },
+    { key: "help",     label: "Help",     entries: helpMenu },
+  ];
+
+  /* ── Dropdown entry renderer ─────────── */
+
+  const checkIcon = (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+
+  const subCaret = (
+    <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="7 5 13 10 7 15" />
+    </svg>
+  );
+
+  const renderEntries = (entries: MenuEntry[], depth = 0): ReactNode =>
+    entries.map((entry, i) => {
+      if ("kind" in entry && entry.kind === "divider") {
+        return <div key={`d${depth}-${i}`} style={{ height: 1, background: "rgba(0,0,0,0.08)", margin: "4px 4px" }} />;
+      }
+      const item = entry as Exclude<MenuEntry, { kind: "divider" }>;
+      const hasSub = !!(item.sub || item.subContent);
+      const isOpen = openSub === item.label;
+      const inactive = item.disabled || item.soon;
+      return (
+        <div key={`${depth}-${item.label}-${i}`}>
+          <button
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              if (inactive) return;
+              if (hasSub) { setOpenSub(isOpen ? null : item.label); return; }
+              setPopover(null);
+              item.action?.();
+            }}
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              width: "100%", padding: "6px 10px", marginBottom: 1,
+              paddingLeft: 10 + depth * 14,
+              background: isOpen ? "rgba(13,98,242,0.06)" : "transparent",
+              border: "none", borderRadius: 5,
+              color: inactive ? "#9a9a9a" : "#1a1a1a",
+              cursor: inactive ? "default" : "pointer",
+              fontSize: 13, textAlign: "left", fontWeight: 400,
+            }}
+            onMouseEnter={(e) => {
+              if (inactive) return;
+              e.currentTarget.style.background = "rgba(13,98,242,0.10)";
+              e.currentTarget.style.color = "#0D62F2";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = isOpen ? "rgba(13,98,242,0.06)" : "transparent";
+              e.currentTarget.style.color = inactive ? "#9a9a9a" : "#1a1a1a";
+            }}
+          >
+            <span style={{ display: "inline-flex", width: 14, justifyContent: "center", color: "#0D62F2" }}>
+              {item.checked ? checkIcon : null}
+            </span>
+            <span style={{ flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.label}</span>
+            {item.soon && (
+              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.6, color: "#B45309", background: "rgba(180,83,9,0.10)", borderRadius: 3, padding: "1px 5px", textTransform: "uppercase" }}>
+                Soon
+              </span>
+            )}
+            {item.shortcut && <span style={{ fontSize: 11, color: "#888", letterSpacing: 0.3 }}>{item.shortcut}</span>}
+            {hasSub && <span style={{ display: "inline-flex", color: "#888" }}>{subCaret}</span>}
+          </button>
+          {hasSub && isOpen && (
+            <div style={{ borderLeft: "2px solid rgba(13,98,242,0.18)", marginLeft: 14 }}>
+              {item.subContent ?? renderEntries(item.sub!, depth + 1)}
+            </div>
+          )}
+        </div>
+      );
+    });
 
   return (
     <div className="luxor-toolbar" ref={popoverRef}>
-      {/* ── Row 1: menu strip ─────────────────────────────────── */}
+      {/* ── Row 1: menu bar ─────────── */}
       <div className="luxor-menu-strip">
         <div className="toolbar-brand">
           <img
@@ -1017,79 +1172,40 @@ export default function Toolbar({
           <span className="toolbar-brand-name">Luxor PDF</span>
         </div>
 
-        {/* File dropdown */}
-        <div style={{ position: "relative" }}>
-          <button
-            className={`toolbar-menu-word ${popover === "file" ? "active" : ""}`}
-            onClick={() => toggle("file")}
-            title="File"
-          >
-            File
-            {Icons.chevron}
-          </button>
-
-          {popover === "file" && (
-            <div
-              className="popover-panel edit-menu-panel"
-              style={{
-                left: 0, transform: "none",
-                minWidth: 240, padding: "8px 6px",
-                background: "#FFFFFF", color: "#1a1a1a",
-                border: "1px solid rgba(0,0,0,0.10)",
-                boxShadow: "0 8px 28px rgba(0,0,0,0.18)",
+        {MENUS.map((m) => (
+          <div key={m.key} style={{ position: "relative" }}>
+            <button
+              className={`toolbar-menu-word ${popover === m.key ? "active" : ""}`}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => toggle(m.key)}
+              onMouseEnter={() => {
+                // Browsing behaviour: once one menu is open, hovering
+                // another menu word switches to it.
+                if (popover && popover !== m.key && (MENU_KEYS as readonly string[]).includes(popover)) {
+                  setPopover(m.key);
+                }
               }}
+              title={m.label}
             >
-              {[
-                { key: "open",     label: "Open",        shortcut: "Ctrl+O",       icon: Icons.open },
-                { key: "saveas",   label: "Save As",     shortcut: "Ctrl+Shift+S", icon: Icons.save },
-                { key: "savecopy", label: "Save a Copy", shortcut: "Ctrl+Alt+S",   icon: Icons.saveCopy },
-                { key: "print",    label: "Print",       shortcut: "Ctrl+P",       icon: Icons.print },
-                { key: "close",    label: "Close",       shortcut: "Ctrl+W",       icon: Icons.close },
-              ].map((item, i) => (
-                <div key={item.key}>
-                  {i === 4 && <div style={{ height: 1, background: "rgba(0,0,0,0.08)", margin: "4px 4px" }} />}
-                  <button
-                    onClick={() => {
-                      setPopover(null);
-                      if (item.key === "open") onOpenFile();
-                      else if (item.key === "saveas") onFileSaveAs();
-                      else if (item.key === "savecopy") onFileSaveCopy();
-                      else if (item.key === "print") onPrint();
-                      else if (item.key === "close") onFileClose();
-                    }}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 10,
-                      width: "100%", padding: "7px 10px", marginBottom: 1,
-                      background: "transparent",
-                      border: "none", borderRadius: 5,
-                      color: "#1a1a1a",
-                      cursor: "pointer", fontSize: 13, textAlign: "left",
-                      fontWeight: 400,
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(13,98,242,0.10)"; e.currentTarget.style.color = "#0D62F2"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#1a1a1a"; }}
-                  >
-                    <span style={{ display: "inline-flex", width: 18, justifyContent: "center" }}>
-                      <span style={{ display: "inline-flex", transform: "scale(0.8)" }}>{item.icon}</span>
-                    </span>
-                    <span style={{ flex: 1 }}>{item.label}</span>
-                    <span style={{ fontSize: 11, color: "#888", letterSpacing: 0.3 }}>{item.shortcut}</span>
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Ribbon tab words */}
-        {TABS.filter(t => t.show !== false).map((t) => (
-          <button
-            key={t.key}
-            className={`toolbar-menu-word ${ribbonTab === t.key ? "selected" : ""}`}
-            onClick={() => selectTab(t.key)}
-          >
-            {t.label}
-          </button>
+              {m.label}
+              {Icons.chevron}
+            </button>
+            {popover === m.key && (
+              <div
+                className="popover-panel edit-menu-panel"
+                style={{
+                  left: 0, transform: "none",
+                  minWidth: 260, maxHeight: "72vh", overflowY: "auto",
+                  padding: "8px 6px",
+                  background: "#FFFFFF", color: "#1a1a1a",
+                  border: "1px solid rgba(0,0,0,0.10)",
+                  boxShadow: "0 8px 28px rgba(0,0,0,0.18)",
+                }}
+              >
+                {renderEntries(m.entries)}
+              </div>
+            )}
+          </div>
         ))}
 
         <div style={{ flex: 1 }} />
@@ -1127,10 +1243,8 @@ export default function Toolbar({
         </div>
       </div>
 
-      {/* ── Row 2: ribbon ─────────────────────────────────────── */}
-      <div className="luxor-ribbon">
-        {ribbonContent[showAI ? ribbonTab : (ribbonTab === "ai" ? "home" : ribbonTab)]}
-      </div>
+      {/* ── Row 2: quick-access ribbon (View > Hide Toolbar) ── */}
+      {!toolbarHidden && <div className="luxor-ribbon">{quickRibbon}</div>}
     </div>
   );
 }

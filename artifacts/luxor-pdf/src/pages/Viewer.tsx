@@ -25,6 +25,7 @@ import OCRPanel from "@/components/OCRPanel";
 import AIToolsPanel from "@/components/AIToolsPanel";
 import FormsPanel from "@/components/FormsPanel";
 import SettingsModal from "@/components/SettingsModal";
+import HelpModal from "@/components/HelpModal";
 import { loadSettings, saveSettings, ReaderSettings } from "@/lib/settings";
 import { addRecent } from "@/lib/recentFiles";
 import { detectScanned } from "@/lib/docFeatures";
@@ -208,6 +209,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   const [commentRequest, setCommentRequest] = useState(0);
   const [commentHint, setCommentHint] = useState(false);
   const commentHintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /* Menu-bar text markups (Underline / Strikeout on the current selection). */
+  const [markupRequest, setMarkupRequest] = useState<{ kind: "underline" | "strike"; n: number } | null>(null);
   const handleAddComment = useCallback(() => {
     const sel = window.getSelection();
     const selText = sel?.toString().trim();
@@ -223,6 +226,23 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       return;
     }
     setCommentRequest(n => n + 1);
+  }, []);
+  /* Menu bar Annotate → Underline / Strikeout Text. Same selection
+   * validation and hint as the Comment button; the owning page applies
+   * the markup via its markupRequest effect. */
+  const handleMarkup = useCallback((kind: "underline" | "strike") => {
+    const sel = window.getSelection();
+    const selText = sel?.toString().trim();
+    const anchor = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).commonAncestorContainer : null;
+    const anchorEl = anchor instanceof Element ? anchor : anchor?.parentElement ?? null;
+    const insidePage = !!anchorEl?.closest(".pdf-page-wrapper");
+    if (!selText || !insidePage) {
+      setCommentHint(true);
+      if (commentHintTimer.current) clearTimeout(commentHintTimer.current);
+      commentHintTimer.current = setTimeout(() => setCommentHint(false), 2800);
+      return;
+    }
+    setMarkupRequest(prev => ({ kind, n: (prev?.n ?? 0) + 1 }));
   }, []);
   useEffect(() => () => {
     if (commentHintTimer.current) clearTimeout(commentHintTimer.current);
@@ -558,7 +578,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
 
   // ── Fit to width / fit to page ─────────────────────────────
   // Compute a zoom from the visible viewer area and the page-1 base size.
-  const applyFit = useCallback((mode: "width" | "page") => {
+  const applyFit = useCallback((mode: "width" | "page" | "height") => {
     const container = viewerRef.current;
     if (!container || !basePageSize) return;
     const sideways = rotation % 180 !== 0;
@@ -569,12 +589,22 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     const availH = container.clientHeight - 48;
     if (availW <= 0 || availH <= 0 || baseW <= 0 || baseH <= 0) return;
     const zW = availW / baseW;
-    const z = mode === "width" ? zW : Math.min(zW, availH / baseH);
+    const zH = availH / baseH;
+    const z = mode === "width" ? zW : mode === "height" ? zH : Math.min(zW, zH);
     setZoom(Math.min(7.5, Math.max(0.25, parseFloat(z.toFixed(3)))));
   }, [basePageSize, rotation]);
 
   const handleFitWidth = useCallback(() => applyFit("width"), [applyFit]);
   const handleFitPage = useCallback(() => applyFit("page"), [applyFit]);
+  const handleFitHeight = useCallback(() => applyFit("height"), [applyFit]);
+
+  // ── Menu-bar zoom commands ─────────────────────────────────
+  const handleZoomIn = useCallback(() => setZoom(z => Math.min(7.5, parseFloat((z + 0.25).toFixed(2)))), []);
+  const handleZoomOut = useCallback(() => setZoom(z => Math.max(0.25, parseFloat((z - 0.25).toFixed(2)))), []);
+  const handleZoomTo = useCallback((pct: number) => {
+    setZoom(Math.min(7.5, Math.max(0.25, ZOOM_BASE * (pct / 100))));
+  }, []);
+  const handleActualSize = useCallback(() => setZoom(ZOOM_BASE), []);
 
   // ── Full screen ────────────────────────────────────────────
   const toggleFullscreen = useCallback(() => {
@@ -586,6 +616,28 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   }, []);
   useEffect(() => {
     const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  // ── Toolbar visibility & presentation mode ─────────────────
+  const [toolbarHidden, setToolbarHidden] = useState(false);
+  const presentationRef = useRef(false);
+  const handleToggleToolbar = useCallback(() => setToolbarHidden(h => !h), []);
+  const handlePresentation = useCallback(() => {
+    presentationRef.current = true;
+    setToolbarHidden(true);
+    document.documentElement.requestFullscreen().catch(() => {});
+    // Fit the whole page once the browser has settled into fullscreen.
+    setTimeout(() => applyFit("page"), 350);
+  }, [applyFit]);
+  useEffect(() => {
+    const onChange = () => {
+      if (!document.fullscreenElement && presentationRef.current) {
+        presentationRef.current = false;
+        setToolbarHidden(false);
+      }
+    };
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
@@ -815,6 +867,71 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     if (isDirty) setCloseIntent("close");
     else { speechSynthesis.cancel(); onClose(); }
   }, [file, isDirty, onClose]);
+
+  // ── Help modal (User Guide / Shortcuts / About) ────────────
+  const [helpSection, setHelpSection] = useState<null | "guide" | "shortcuts" | "about">(null);
+
+  // ── File → Create New: open a fresh blank document ─────────
+  const handleCreateNew = useCallback(async () => {
+    try {
+      const { PDFDocument } = await import("pdf-lib");
+      const doc = await PDFDocument.create();
+      doc.addPage([612, 792]); // US Letter
+      const bytes = await doc.save();
+      const f = new File([bytes as BlobPart], "Untitled.pdf", { type: "application/pdf" });
+      if (isDirty) setCloseIntent({ kind: "swap", file: f });
+      else { speechSynthesis.cancel(); onFileLoad(f); }
+    } catch (err) {
+      console.error("Create new PDF failed:", err);
+      alert("Sorry — couldn't create a new document.");
+    }
+  }, [isDirty, onFileLoad]);
+
+  // ── Tools → page operations (insert / delete / rotate) ─────
+  // Rebuild the file with pdf-lib and reload it in place. These are
+  // permanent structural edits, so the reworked file replaces the tab.
+  const [pageOpBusy, setPageOpBusy] = useState(false);
+  const runPageOp = useCallback(async (
+    op: "insert" | "delete" | "rotate",
+  ) => {
+    if (!file) { alert("No PDF is currently open."); return; }
+    if (pageOpBusy) return;
+    if (op === "delete" && totalPages <= 1) {
+      alert("This document only has one page, so it can't be deleted.");
+      return;
+    }
+    if (isDirty) {
+      const ok = window.confirm(
+        "Changing pages reloads the document, and your unsaved annotations for this file will be kept separately. Continue?",
+      );
+      if (!ok) return;
+    }
+    setPageOpBusy(true);
+    try {
+      const { PDFDocument, degrees } = await import("pdf-lib");
+      const src = await PDFDocument.load(await file.arrayBuffer(), { ignoreEncryption: true });
+      const idx = Math.min(Math.max(currentPage - 1, 0), src.getPageCount() - 1);
+      if (op === "insert") {
+        const ref = src.getPage(idx);
+        const { width, height } = ref.getSize();
+        src.insertPage(idx + 1, [width, height]);
+      } else if (op === "delete") {
+        src.removePage(idx);
+      } else {
+        const p = src.getPage(idx);
+        p.setRotation(degrees(((p.getRotation().angle + 90) % 360)));
+      }
+      const bytes = await src.save();
+      const f = new File([bytes as BlobPart], file.name, { type: "application/pdf" });
+      speechSynthesis.cancel();
+      onFileLoad(f);
+    } catch (err) {
+      console.error("Page operation failed:", err);
+      alert("Sorry — couldn't modify the pages of this PDF. It may be encrypted or corrupted.");
+    } finally {
+      setPageOpBusy(false);
+    }
+  }, [file, pageOpBusy, totalPages, isDirty, currentPage, onFileLoad]);
 
   // Resolve a pending close/open intent after the user answers the
   // unsaved-changes confirmation dialog.
@@ -1325,6 +1442,19 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         onOpenSettings={() => setSettingsOpen(true)}
         showOCR={settings.enableOCR}
         showAI={settings.enableAI}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onZoomTo={handleZoomTo}
+        onActualSize={handleActualSize}
+        onFitHeight={handleFitHeight}
+        onMarkup={handleMarkup}
+        onCreateNew={handleCreateNew}
+        onPageOp={runPageOp}
+        toolbarHidden={toolbarHidden}
+        onToggleToolbar={handleToggleToolbar}
+        onPresentation={handlePresentation}
+        onOpenHelp={setHelpSection}
+        onSetSplitView={setSplitView}
       />
       <StatusBar viewControls={viewControls} fileName={file.name} />
 
@@ -1388,6 +1518,14 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
           fileName={file.name}
           currentPage={currentPage}
           onClose={() => setScreenshotActive(false)}
+        />
+      )}
+
+      {helpSection && (
+        <HelpModal
+          section={helpSection}
+          onSectionChange={setHelpSection}
+          onClose={() => setHelpSection(null)}
         />
       )}
 
@@ -1650,6 +1788,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
                     isCurrentPage={left === currentPage} onVisible={handlePageVisible}
                     onSearchTermChange={handleSearchFromContext}
                     commentRequest={commentRequest}
+                    markupRequest={markupRequest ?? undefined}
                     watermark={watermarkCfg} pageNo={pageNoCfg}
                     totalPages={totalPages} currentPage={currentPage}
                     formFillMode={formFillMode}
@@ -1669,6 +1808,7 @@ defaultPageSize={defaultPageSize}
                       isCurrentPage={right === currentPage} onVisible={handlePageVisible}
                       onSearchTermChange={handleSearchFromContext}
                       commentRequest={commentRequest}
+                      markupRequest={markupRequest ?? undefined}
                       watermark={watermarkCfg} pageNo={pageNoCfg}
                       totalPages={totalPages} currentPage={currentPage}
                       formFillMode={formFillMode}
@@ -1694,6 +1834,7 @@ defaultPageSize={defaultPageSize}
                 isCurrentPage={pageNum === currentPage} onVisible={handlePageVisible}
                 onSearchTermChange={handleSearchFromContext}
                 commentRequest={commentRequest}
+                markupRequest={markupRequest ?? undefined}
                 watermark={watermarkCfg} pageNo={pageNoCfg}
                 totalPages={totalPages} currentPage={currentPage}
                 formFillMode={formFillMode}

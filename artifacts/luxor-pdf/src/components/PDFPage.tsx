@@ -92,6 +92,9 @@ interface PDFPageProps {
    *  current text selection (ribbon "Comment" button). Only the page that
    *  owns the selection responds. */
   commentRequest?: number;
+  /** Menu-bar text markup: bump `n` to apply the given markup kind to the
+   *  current text selection. Only the page that owns the selection responds. */
+  markupRequest?: { kind: "underline" | "strike"; n: number };
   watermark?: import("@/lib/editTypes").WatermarkConfig | null;
   pageNo?: import("@/lib/editTypes").PageNoConfig | null;
   totalPages?: number;
@@ -884,6 +887,7 @@ export default function PDFPage({
   formFillMode,
   defaultPageSize,
   commentRequest,
+  markupRequest,
 }: PDFPageProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const pageCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -1045,6 +1049,41 @@ export default function PDFPage({
     setHlSubmenuOpen(false);
     setCommentInput({ open: true, text: "" });
   }, [commentRequest, getSelectionRects, pageSize]);
+
+  /* Menu bar "Underline / Strikeout Text": apply the markup directly to the
+   * current text selection. Same ownership rule as commentRequest — only the
+   * page whose text layer contains the selection responds. */
+  const lastMarkupReq = useRef(markupRequest?.n ?? 0);
+  useEffect(() => {
+    const req = markupRequest?.n ?? 0;
+    if (req === lastMarkupReq.current) return;
+    lastMarkupReq.current = req;
+    if (!markupRequest) return;
+    const wrapper = wrapperRef.current;
+    const sel = window.getSelection();
+    if (!wrapper || !sel || sel.rangeCount === 0) return;
+    const anchor = sel.getRangeAt(0).commonAncestorContainer;
+    if (!wrapper.contains(anchor)) return;
+    const result = getSelectionRects();
+    if (!result || !result.rects.length) return;
+    const ann: Annotation = markupRequest.kind === "underline"
+      ? {
+          id: genId(), type: "underline", page: pageNum,
+          rects: result.rects,
+          color: COLOR_DEFAULTS.underlineColor,
+          selectedText: result.text,
+          createdAt: new Date().toISOString(),
+        }
+      : {
+          id: genId(), type: "strike", page: pageNum,
+          rects: result.rects,
+          color: COLOR_DEFAULTS.strikeColor,
+          selectedText: result.text,
+          createdAt: new Date().toISOString(),
+        };
+    onAnnotationAdd(ann);
+    window.getSelection()?.removeAllRanges();
+  }, [markupRequest, getSelectionRects, pageNum, onAnnotationAdd]);
 
   useEffect(() => {
     const el = wrapperRef.current;
