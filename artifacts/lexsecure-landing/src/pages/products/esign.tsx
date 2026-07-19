@@ -460,28 +460,28 @@ export default function ESignPage() {
       <section className="py-12 lg:py-16 bg-white">
         <div className="container mx-auto px-6 max-w-[88rem]">
           <motion.div {...fadeUp}>
-            <div className="relative mt-16">
+            <div className="relative mt-16 max-w-4xl mx-auto">
               <img
                 src={esignShieldGreen}
                 alt="LUXOR eSign shield badge"
-                className="hidden lg:block absolute -top-14 left-12 w-44 z-20 drop-shadow-xl"
+                className="hidden lg:block absolute -top-14 left-10 w-40 z-20 drop-shadow-xl"
               />
-              <div className="rounded-[28px] bg-gradient-to-br from-[#2cae4f] via-[#149135] to-[#0a6e24] relative overflow-hidden px-8 pt-8 pb-8 lg:px-12 lg:pt-10 lg:pb-10 shadow-2xl shadow-green-900/20">
+              <div className="rounded-[28px] bg-gradient-to-br from-[#2cae4f] via-[#149135] to-[#0a6e24] relative overflow-hidden px-8 pt-8 pb-8 lg:px-10 lg:pt-10 lg:pb-10 shadow-2xl shadow-green-900/20">
               <div className="absolute -top-24 -left-16 w-72 h-72 bg-white/10 rounded-full blur-3xl" aria-hidden="true" />
               <div className="absolute -bottom-28 right-10 w-80 h-80 bg-[#0a6e24]/60 rounded-full blur-3xl" aria-hidden="true" />
               <div className="relative z-10">
-                <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+                <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-10">
                   <img
                     src={esignShieldGreen}
                     alt=""
                     aria-hidden="true"
-                    className="w-36 lg:w-44 shrink-0 lg:invisible"
+                    className="w-36 lg:w-40 shrink-0 lg:invisible"
                   />
                   <div className="flex-1 text-center lg:text-left">
-                    <h2 className="text-3xl lg:text-[38px] font-extrabold text-white tracking-tight leading-[1.15] mb-3">
+                    <h2 className="text-3xl lg:text-[34px] font-extrabold text-white tracking-tight leading-[1.15] mb-3">
                       Ready to<br className="hidden lg:block" /> Simplify eSigning?
                     </h2>
-                    <p className="text-green-50/90 text-base lg:text-lg font-medium max-w-md mx-auto lg:mx-0">
+                    <p className="text-green-50/90 text-base font-medium max-w-md mx-auto lg:mx-0">
                       Join thousands of professionals who trust LUXOR PDF eSign.
                     </p>
                   </div>
