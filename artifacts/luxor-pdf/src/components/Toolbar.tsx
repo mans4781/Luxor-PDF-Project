@@ -26,6 +26,9 @@ import {
 /** Uniform 13px menu icon so every dropdown entry shows its feature icon. */
 const mi = (I: LucideIcon) => <I size={13} strokeWidth={2} />;
 
+/** Uniform 20px ribbon icon matching the existing inline icon style. */
+const ri = (I: LucideIcon) => <I size={20} strokeWidth={1.6} />;
+
 // Toolbar swatches are derived from the central palette in
 // src/lib/annotationColors.ts. The 30-color DRAW_PALETTE is shared by
 // the pen, all shape tools, and the Add-Text color picker so every
@@ -841,23 +844,63 @@ export default function Toolbar({
         icon groups belonging to the last-clicked menu) ─── */
 
   const fileRibbon: ReactNode = (
-    <RibbonGroup label="File">
-      <RibbonBtn icon={Icons.open} label="Open" title="Open a PDF (Ctrl+O)" onClick={onOpenFile} />
-      <RibbonBtn icon={Icons.print} label="Print" onClick={onPrint} />
-    </RibbonGroup>
+    <>
+      <RibbonGroup label="Document">
+        <RibbonBtn icon={Icons.open} label="Open" title="Open a PDF (Ctrl+O)" onClick={onOpenFile} />
+        <RibbonBtn icon={ri(FilePlus)} label="New" title="Create a new blank document" onClick={onCreateNew} />
+        <RibbonBtn icon={ri(Save)} label="Save" title="Save the document (Ctrl+Shift+S)" onClick={onFileSaveAs} />
+        <RibbonBtn icon={ri(Copy)} label="Export" title="Export a copy (Ctrl+Alt+S)" onClick={onFileSaveCopy} />
+      </RibbonGroup>
+      <RibbonGroup label="Output">
+        <RibbonBtn icon={ri(Share2)} label={sharing ? "Sharing" : "Share"} title="Create a share link" onClick={onShare} />
+        <RibbonBtn icon={Icons.print} label="Print" title="Print the document (Ctrl+P)" onClick={onPrint} />
+        <RibbonBtn icon={ri(X)} label="Close" title="Close the document (Ctrl+W)" onClick={onFileClose} />
+      </RibbonGroup>
+    </>
+  );
+
+  const editRibbon: ReactNode = (
+    <>
+      <RibbonGroup label="Insert">
+        {textBtn}
+        <RibbonBtn icon={ri(StickyNote)} label="Sticky Note" title="Attach a sticky note comment" onClick={onAddComment} />
+      </RibbonGroup>
+      <RibbonGroup label="Draw">
+        {penBtn}
+        {shapesBtn}
+        {eraserBtn}
+      </RibbonGroup>
+    </>
   );
 
   const annotateRibbon: ReactNode = (
     <>
-      <RibbonGroup label="Annotate">
+      <RibbonGroup label="Markup">
         {highlightBtn}
-        {textBtn}
-        {penBtn}
-        {shapesBtn}
-        {eraserBtn}
-        {eraseAllBtn}
+        <RibbonBtn icon={ri(Underline)} label="Underline" title="Underline the selected text" onClick={() => onMarkup("underline")} />
+        <RibbonBtn icon={ri(Strikethrough)} label="Strikeout" title="Strike out the selected text" onClick={() => onMarkup("strike")} />
       </RibbonGroup>
-      <RibbonGroup label="Edit">
+      <RibbonGroup label="Manage">
+        {eraseAllBtn}
+        <RibbonBtn
+          icon={ri(MessageSquare)}
+          label="Comments"
+          active={activePanel === "nav"}
+          title="Show all comments and annotations"
+          onClick={() => onOpenPanel("nav")}
+        />
+      </RibbonGroup>
+    </>
+  );
+
+  const toolsRibbon: ReactNode = (
+    <>
+      <RibbonGroup label="Pages">
+        <RibbonBtn icon={ri(FilePlus2)} label="Insert" title="Insert a blank page after the current page" onClick={() => onPageOp("insert")} />
+        <RibbonBtn icon={ri(FileMinus2)} label="Delete" title="Delete the current page" onClick={() => onPageOp("delete")} />
+        <RibbonBtn icon={ri(RotateCw)} label="Rotate" title="Rotate the current page" onClick={() => onPageOp("rotate")} />
+      </RibbonGroup>
+      <RibbonGroup label="Content">
         <RibbonBtn
           icon={Icons.editText}
           label="Edit Text"
@@ -868,11 +911,6 @@ export default function Toolbar({
         <RibbonBtn icon={Icons.image} label="Add Image" title="Insert PNG, JPG or WEBP onto a page" onClick={onAddImage} />
         {whiteoutBtn}
       </RibbonGroup>
-    </>
-  );
-
-  const toolsRibbon: ReactNode = (
-    <>
       <RibbonGroup label="Protect">
         <RibbonBtn
           icon={Icons.redact}
@@ -959,14 +997,45 @@ export default function Toolbar({
     </>
   );
 
+  const stampsRibbon: ReactNode = (
+    <RibbonGroup label="Stamp Sets">
+      {STAMP_CATEGORIES.map((cat) => (
+        <RibbonBtn
+          key={cat.label}
+          icon={ri(Stamp)}
+          label={cat.label}
+          title={`Open the ${cat.label} stamp set`}
+          onClick={() => {
+            setPopover("stamps");
+            setOpenSub(cat.label);
+          }}
+        />
+      ))}
+    </RibbonGroup>
+  );
+
+  const helpRibbon: ReactNode = (
+    <>
+      <RibbonGroup label="Learn">
+        <RibbonBtn icon={ri(BookOpen)} label="Guide" title="Open the user guide" onClick={() => onOpenHelp("guide")} />
+        <RibbonBtn icon={ri(Keyboard)} label="Shortcuts" title="Keyboard shortcuts" onClick={() => onOpenHelp("shortcuts")} />
+      </RibbonGroup>
+      <RibbonGroup label="Support">
+        <RibbonBtn icon={ri(Download)} label="Updates" title="Check for updates" onClick={() => openSitePage("/download")} />
+        <RibbonBtn icon={ri(LifeBuoy)} label="Support" title="Contact support" onClick={() => openSitePage("/contact")} />
+        <RibbonBtn icon={ri(Info)} label="About" title="About Luxor PDF Reader" onClick={() => onOpenHelp("about")} />
+      </RibbonGroup>
+    </>
+  );
+
   const ribbonByMenu: Record<MenuKey, ReactNode | null> = {
     file: fileRibbon,
     view: viewRibbon,
-    edit: annotateRibbon,
+    edit: editRibbon,
     annotate: annotateRibbon,
     tools: toolsRibbon,
-    stamps: null,
-    help: null,
+    stamps: stampsRibbon,
+    help: helpRibbon,
   };
   const activeRibbon = ribbonByMenu[ribbonMenu];
 
