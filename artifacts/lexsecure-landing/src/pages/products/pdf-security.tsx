@@ -12,7 +12,7 @@ import secureEncryptPanel from "@/assets/secure-encrypt-panel.png";
 import secureShield from "@/assets/secure-shield.png";
 import secureCubes from "@/assets/secure-cubes.png";
 
-const APP_URL = "/pdf-expiry/";
+const APP_URL = "/app/";
 const SECURE_INSTALLER_URL = "/api/downloads/luxor-pdf-secure-latest.exe";
 
 const BLUE = "#1d4ed8";

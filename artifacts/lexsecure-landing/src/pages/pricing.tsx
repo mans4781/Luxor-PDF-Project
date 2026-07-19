@@ -40,7 +40,7 @@ type Plan = {
 // pdf-expiry app owns Clerk auth + the checkout-session POST. Buy buttons
 // just deep-link to /pdf-expiry/checkout?plan=... — that page signs the
 // user in (if needed) then redirects to Stripe.
-const CHECKOUT_BASE = "/pdf-expiry/checkout";
+const CHECKOUT_BASE = "/app/checkout";
 
 const PLANS: Plan[] = [
   {

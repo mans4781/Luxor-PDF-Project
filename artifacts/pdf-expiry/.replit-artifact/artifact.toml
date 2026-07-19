@@ -1,5 +1,5 @@
 kind = "web"
-previewPath = "/pdf-expiry/"
+previewPath = "/app/"
 title = "PDF Security Tool"
 version = "1.0.0"
 id = "artifacts/pdf-expiry"
@@ -11,7 +11,7 @@ version = "1.0.0"
 
 [[services]]
 name = "web"
-paths = [ "/pdf-expiry/", "/online-tools", "/tools", "/tools/" ]
+paths = [ "/app/", "/pdf-expiry/", "/online-tools", "/tools", "/tools/" ]
 localPort = 19050
 
 [services.development]
@@ -28,4 +28,4 @@ to = "/index.html"
 
 [services.env]
 PORT = "19050"
-BASE_PATH = "/pdf-expiry/"
+BASE_PATH = "/app/"

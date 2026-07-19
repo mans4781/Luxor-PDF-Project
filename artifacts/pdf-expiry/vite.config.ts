@@ -56,7 +56,9 @@ const cleanToolPathsDevPlugin = {
         p === "/online-tools" ||
         p.startsWith("/online-tools/") ||
         p === "/tools" ||
-        p.startsWith("/tools/")
+        p.startsWith("/tools/") ||
+        p === "/pdf-expiry" ||
+        p.startsWith("/pdf-expiry/")
       ) {
         req.url = prefix + url;
       }

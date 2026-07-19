@@ -1,5 +1,20 @@
 const raw = import.meta.env.BASE_URL;
 
+// Legacy URLs: the app used to live under "/pdf-expiry". Anyone landing on an
+// old link is transparently forwarded to the same page under the new base.
+if (
+  typeof window !== "undefined" &&
+  (window.location.pathname === "/pdf-expiry" ||
+    window.location.pathname.startsWith("/pdf-expiry/"))
+) {
+  const newBase = typeof raw === "string" ? raw.replace(/\/$/, "") : "";
+  window.location.replace(
+    window.location.pathname.replace(/^\/pdf-expiry/, newBase || "") +
+      window.location.search +
+      window.location.hash,
+  );
+}
+
 /**
  * The app's static base path (e.g. "/pdf-expiry"). Used for auth links,
  * account/menu navigation, asset URLs, and Clerk path stripping — these always

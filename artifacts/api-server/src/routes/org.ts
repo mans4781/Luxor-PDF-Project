@@ -103,7 +103,7 @@ router.post("/org/invite", async (req: Request, res: Response): Promise<void> =>
 
     const { invite, rawToken, org } = outcome.result;
     const inviter = await lookupClerkIdentity(userId);
-    const acceptUrl = `${requestOrigin(req)}/pdf-expiry/accept-invite?token=${encodeURIComponent(rawToken)}`;
+    const acceptUrl = `${requestOrigin(req)}/app/accept-invite?token=${encodeURIComponent(rawToken)}`;
     const emailSent = await sendInviteEmail({
       to: invite.email,
       orgName: org.name,

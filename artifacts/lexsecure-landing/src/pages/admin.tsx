@@ -302,7 +302,7 @@ export default function AdminPage() {
     if (token === DEV_SESSION_TOKEN) {
       // Session-based unlock can't be "logged out" here (the sign-in session
       // lives in the PDF app) — send the developer back to their dashboard.
-      window.location.href = "/pdf-expiry/dashboard";
+      window.location.href = "/app/dashboard";
       return;
     }
     setToken("");

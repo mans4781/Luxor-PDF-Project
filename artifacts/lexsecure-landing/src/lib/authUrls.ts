@@ -5,7 +5,7 @@
  * passed from the marketing site, so after auth the user lands on the
  * account dashboard (the sign-in page's default destination).
  */
-const SUITE_AUTH_HOST_BASE = "/pdf-expiry";
+const SUITE_AUTH_HOST_BASE = "/app";
 
 export function suiteAuthUrl(kind: "sign-in" | "sign-up"): string {
   return `${SUITE_AUTH_HOST_BASE}/${kind}`;

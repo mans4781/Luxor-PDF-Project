@@ -33,7 +33,7 @@ const LOAD_MODE: "remote" | "bundled" =
   (process.env["LUXOR_LOAD_MODE"] as "remote" | "bundled" | undefined) ??
   "remote";
 const REMOTE_URL =
-  process.env["LUXOR_REMOTE_URL"] ?? "https://luxorpdf.com/pdf-expiry/";
+  process.env["LUXOR_REMOTE_URL"] ?? "https://luxorpdf.com/app/";
 const BUNDLED_ROOT =
   process.env["LUXOR_BUNDLED_ROOT"] ??
   path.join(process.resourcesPath, "web-bundle");

@@ -341,7 +341,7 @@ router.post(
       const proto =
         (req.get("x-forwarded-proto") ?? "").split(",")[0]?.trim() ||
         (req.secure ? "https" : "http");
-      const fallbackReturnUrl = `${host ? `${proto}://${host}` : ""}/pdf-expiry/dashboard`;
+      const fallbackReturnUrl = `${host ? `${proto}://${host}` : ""}/app/dashboard`;
       // Only accept same-origin return URLs to avoid an open-redirect surface.
       let returnUrl = fallbackReturnUrl;
       if (typeof body.returnUrl === "string" && body.returnUrl) {

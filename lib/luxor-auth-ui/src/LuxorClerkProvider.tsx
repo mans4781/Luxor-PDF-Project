@@ -7,7 +7,7 @@ import { clerkAppearance, clerkLocalization } from "./clerk-appearance";
  * sign-up pages. Other artifacts redirect here for authentication, then bounce
  * back via Clerk's `redirect_url` query parameter.
  */
-export const SUITE_AUTH_HOST_BASE = "/pdf-expiry";
+export const SUITE_AUTH_HOST_BASE = "/app";
 
 export interface LuxorClerkProviderProps {
   children: ReactNode;
