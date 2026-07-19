@@ -358,9 +358,7 @@ export default function PdfReaderPage() {
                     "Free to get started"
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-4 text-slate-900 font-semibold text-[15px]">
-                      <div className="w-6 h-6 rounded-full bg-[#E50914] flex items-center justify-center shrink-0">
-                        <CheckCircle2 className="w-4 h-4 text-white" />
-                      </div>
+                      <CheckCircle2 className="w-6 h-6 text-[#E50914] shrink-0" />
                       {item}
                     </li>
                   ))}
