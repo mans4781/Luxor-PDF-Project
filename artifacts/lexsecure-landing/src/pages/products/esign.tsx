@@ -485,32 +485,32 @@ export default function ESignPage() {
                       Join thousands of professionals who trust LUXOR PDF eSign.
                     </p>
                   </div>
-                  <div className="shrink-0 flex flex-col gap-4 w-full sm:w-auto">
-                    <a href={APP_URL} className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-xl bg-white hover:bg-green-50 text-[#0f8f2f] font-bold text-base shadow-xl transition-colors">
-                      Start Free Trial
-                      <span aria-hidden="true" className="font-extrabold">&rsaquo;</span>
-                    </a>
-                    <span className="inline-flex items-center justify-center gap-2.5 px-10 py-4 rounded-xl bg-[#128a30] text-white font-bold text-base border border-white/70 shadow-lg cursor-default select-none" aria-disabled="true">
-                      <WindowsGlyph className="w-4.5 h-4.5" />
-                      Download for Windows
-                    </span>
+                  <div className="shrink-0 flex justify-center lg:justify-end">
+                    <div className="rounded-2xl bg-[#0a6e24]/45 border border-white/10 px-6 py-4 flex flex-col items-start gap-3">
+                      {[
+                        { icon: CheckCircle2, label: "No credit card required" },
+                        { icon: Zap, label: "Fast setup" },
+                        { icon: History, label: "Cancel anytime" },
+                      ].map(({ icon: Icon, label }) => (
+                        <span key={label} className="inline-flex items-center gap-2.5 text-white text-sm font-semibold">
+                          <span className="w-8 h-8 rounded-full bg-white/15 border border-white/20 flex items-center justify-center">
+                            <Icon className="w-4 h-4 text-white" strokeWidth={2.1} />
+                          </span>
+                          {label}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <div className="mt-8 flex justify-center lg:justify-start lg:pl-56">
-                  <div className="rounded-2xl bg-[#0a6e24]/45 border border-white/10 px-6 py-4 flex flex-col items-start gap-3">
-                    {[
-                      { icon: CheckCircle2, label: "No credit card required" },
-                      { icon: Zap, label: "Fast setup" },
-                      { icon: History, label: "Cancel anytime" },
-                    ].map(({ icon: Icon, label }) => (
-                      <span key={label} className="inline-flex items-center gap-2.5 text-white text-sm font-semibold">
-                        <span className="w-8 h-8 rounded-full bg-white/15 border border-white/20 flex items-center justify-center">
-                          <Icon className="w-4 h-4 text-white" strokeWidth={2.1} />
-                        </span>
-                        {label}
-                      </span>
-                    ))}
-                  </div>
+                <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <a href={APP_URL} className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-xl bg-white hover:bg-green-50 text-[#0f8f2f] font-bold text-base shadow-xl transition-colors w-full sm:w-auto">
+                    Start Free Trial
+                    <span aria-hidden="true" className="font-extrabold">&rsaquo;</span>
+                  </a>
+                  <span className="inline-flex items-center justify-center gap-2.5 px-10 py-4 rounded-xl bg-[#128a30] text-white font-bold text-base border border-white/70 shadow-lg cursor-default select-none w-full sm:w-auto" aria-disabled="true">
+                    <WindowsGlyph className="w-4.5 h-4.5" />
+                    Download for Windows
+                  </span>
                 </div>
               </div>
               </div>
