@@ -114,7 +114,6 @@ const createDedicatedPdfWorker = () => {
 
 // Actual zoom values where 1.875 = "100%" (the new baseline; old 125%)
 const ZOOM_BASE = 1.875;
-const ZOOM_PRESETS = [0.46875, 0.9375, 1.40625, 1.875, 2.34375, 2.8125, 3.75, 4.6875, 5.625, 7.5];
 const zoomLabel = (z: number) => `${Math.round((z / ZOOM_BASE) * 100)}%`;
 
 interface ViewerProps {
@@ -1252,43 +1251,6 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
      in the bottom StatusBar via the `viewControls` prop ── */
   const viewControls = (
     <div className="view-bar">
-      {/* Zoom controls */}
-      <div className="sidebar-group">
-        <button
-          className="sidebar-btn"
-          title="Zoom in"
-          onClick={() => setZoom(z => Math.min(7.5, parseFloat((z + 0.25).toFixed(2))))}
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
-          </svg>
-        </button>
-
-        <select
-          className="sidebar-zoom-select"
-          value={ZOOM_PRESETS.includes(zoom) ? zoom : "custom"}
-          onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setZoom(v); }}
-          title="Zoom level"
-        >
-          {ZOOM_PRESETS.map(z => <option key={z} value={z}>{zoomLabel(z)}</option>)}
-          {!ZOOM_PRESETS.includes(zoom) && <option value="custom">{zoomLabel(zoom)}</option>}
-        </select>
-
-        <button
-          className="sidebar-btn"
-          title="Zoom out"
-          onClick={() => setZoom(z => Math.max(0.25, parseFloat((z - 0.25).toFixed(2))))}
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            <line x1="8" y1="11" x2="14" y2="11"/>
-          </svg>
-        </button>
-      </div>
-
-      <div className="sidebar-sep" />
-
       {/* Page navigation */}
       {totalPages > 0 && (
         <div className="sidebar-group">
