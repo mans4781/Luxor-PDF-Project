@@ -47,7 +47,7 @@ export function Sidebar() {
           <img
             src={shieldLogo}
             alt="Luxor PDF Secure"
-            className="w-9 h-9 object-contain shrink-0"
+            className="w-14 h-14 object-contain shrink-0"
           />
           {!sidebarCollapsed && (
             <div className="flex flex-col whitespace-nowrap">
