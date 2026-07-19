@@ -508,22 +508,22 @@ mark.search-hl {
   position: fixed;
   top: calc(var(--tabbar-height, 0px) + var(--toolbar-height)); bottom: var(--statusbar-height); left: 0;
   width: 164px;
-  background: #1e1e1e;
-  border-right: 1px solid rgba(255,255,255,0.07);
+  background: #F6F6F6;
+  border-right: 1px solid rgba(0,0,0,0.10);
   display: flex;
   flex-direction: column;
   z-index: 85;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.35);
+  box-shadow: 2px 0 8px rgba(0,0,0,0.10);
 }
 
 .thumb-panel-header {
   padding: 10px 12px 8px;
   font-size: 11px;
   font-weight: 600;
-  color: #888;
+  color: #6b7078;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -537,7 +537,7 @@ mark.search-hl {
   display: flex; align-items: center; justify-content: center;
   padding: 0;
 }
-.thumb-collapse-btn:hover { background: rgba(255,255,255,0.10); color: #ccc; }
+.thumb-collapse-btn:hover { background: rgba(0,0,0,0.08); color: #333; }
 
 /* Edge tab shown at the left when the thumbnails panel is collapsed. */
 .thumb-expand-tab {
@@ -567,11 +567,11 @@ mark.search-hl {
   flex-direction: column;
   gap: 10px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.12) transparent;
+  scrollbar-color: rgba(0,0,0,0.18) transparent;
 }
 
 .thumb-list::-webkit-scrollbar { width: 4px; }
-.thumb-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+.thumb-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 2px; }
 
 .thumb-item {
   display: flex;
@@ -585,7 +585,7 @@ mark.search-hl {
   transition: border-color 0.15s, background 0.15s;
 }
 
-.thumb-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); }
+.thumb-item:hover { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); }
 .thumb-active { border-color: #4f8ef7 !important; background: rgba(79,142,247,0.08) !important; }
 
 .thumb-canvas-wrap {
@@ -597,7 +597,8 @@ mark.search-hl {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  border: 1px solid rgba(0,0,0,0.08);
 }
 
 .thumb-canvas {
@@ -609,7 +610,7 @@ mark.search-hl {
 .thumb-placeholder {
   width: 120px;
   height: 160px;
-  background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
+  background: linear-gradient(90deg, #e8e8e8 25%, #f0f0f0 50%, #e8e8e8 75%);
   background-size: 200% 100%;
   animation: shimmer 1.2s infinite;
 }
