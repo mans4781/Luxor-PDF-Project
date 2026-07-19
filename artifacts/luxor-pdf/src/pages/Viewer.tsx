@@ -1774,6 +1774,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       {/* ── Page thumbnails panel ── */}
       {showContents && pdfDoc && (
         <ThumbnailPanel
+          onCollapse={() => setShowContents(false)}
           pdfDoc={pdfDoc}
           totalPages={totalPages}
           currentPage={currentPage}

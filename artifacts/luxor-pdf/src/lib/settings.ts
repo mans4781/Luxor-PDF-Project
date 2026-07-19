@@ -25,7 +25,7 @@ export interface ReaderSettings {
 export const DEFAULT_SETTINGS: ReaderSettings = {
   defaultZoomPct: 100,
   defaultView: "single",
-  showThumbnails: false,
+  showThumbnails: true,
   enableRecents: true,
   enableAI: true,
   enableOCR: true,

@@ -6,6 +6,7 @@ interface ThumbnailPanelProps {
   currentPage: number;
   rotation: number;
   onPageChange: (page: number) => void;
+  onCollapse?: () => void;
 }
 
 function PageThumb({
@@ -97,6 +98,7 @@ export default function ThumbnailPanel({
   currentPage,
   rotation,
   onPageChange,
+  onCollapse,
 }: ThumbnailPanelProps) {
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -108,7 +110,21 @@ export default function ThumbnailPanel({
 
   return (
     <div className="thumb-panel">
-      <div className="thumb-panel-header">Pages</div>
+      <div className="thumb-panel-header">
+        <span>Pages</span>
+        {onCollapse && (
+          <button
+            className="thumb-collapse-btn"
+            title="Collapse panel"
+            aria-label="Collapse thumbnails panel"
+            onClick={onCollapse}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 6l-6 6 6 6" />
+            </svg>
+          </button>
+        )}
+      </div>
       <div className="thumb-list" ref={listRef}>
         {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
           <PageThumb
