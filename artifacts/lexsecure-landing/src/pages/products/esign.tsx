@@ -305,6 +305,9 @@ export default function ESignPage() {
                 <Smile className="w-4 h-4 text-[#0f8f2f]" />
                 Mac, Android and iOS coming soon
               </p>
+              <p className="mt-3 text-sm font-semibold text-[#0f8f2f]">
+                Coming Soon: Luxor PDF eSign is currently in development and will be available soon.
+              </p>
             </motion.div>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.15 }}>
               <div className="relative">
