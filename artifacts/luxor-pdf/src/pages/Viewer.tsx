@@ -13,6 +13,7 @@ import type { Annotation, HighlightAnnotation } from "@/lib/annotationTypes";
 import WatermarkModal from "@/components/WatermarkModal";
 import PageNumberModal from "@/components/PageNumberModal";
 import CompressModal from "@/components/CompressModal";
+import PrintModal from "@/components/PrintModal";
 import ScreenshotOverlay from "@/components/ScreenshotOverlay";
 import type { WatermarkConfig, PageNoConfig } from "@/lib/editTypes";
 import { exportPdfWithEdits } from "@/lib/pdfExport";
@@ -211,6 +212,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   const [watermarkOpen, setWatermarkOpen] = useState(false);
   const [pageNoOpen, setPageNoOpen] = useState(false);
   const [compressOpen, setCompressOpen] = useState(false);
+  const [printOpen, setPrintOpen] = useState(false);
   const [screenshotActive, setScreenshotActive] = useState(false);
   /* Ribbon "Comment" button: bumping this counter tells the page that owns
    * the current text selection to open the sticky-note comment popup. */
@@ -1254,13 +1256,13 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "p") {
         e.preventDefault();
-        handlePrint();
+        setPrintOpen(true);
       }
     };
     if (!active) return;
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [handlePrint, active]);
+  }, [active]);
 
   const handlePageInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -1443,7 +1445,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         onEraseAll={clearHighlights}
         onReadAloud={handleReadAloud}
         onOpenFile={handleOpenFile}
-        onPrint={handlePrint}
+        onPrint={() => setPrintOpen(true)}
         onOpenWatermark={() => setWatermarkOpen(true)}
         onOpenPageNo={() => setPageNoOpen(true)}
         onAddImage={handleAddImage}
@@ -1593,6 +1595,15 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         <CompressModal
           file={file}
           onClose={() => setCompressOpen(false)}
+        />
+      )}
+      {printOpen && pdfDoc && (
+        <PrintModal
+          pdfDoc={pdfDoc}
+          totalPages={totalPages}
+          currentPage={currentPage}
+          onNativePrint={handlePrint}
+          onClose={() => setPrintOpen(false)}
         />
       )}
 
