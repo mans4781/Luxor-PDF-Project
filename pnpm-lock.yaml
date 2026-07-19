@@ -1349,12 +1349,6 @@ importers:
       '@cantoo/pdf-lib':
         specifier: ^2.6.5
         version: 2.6.5
-      '@clerk/react':
-        specifier: ^6.5.0
-        version: 6.5.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@clerk/themes':
-        specifier: ^2.4.57
-        version: 2.4.57(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@neslinesli93/qpdf-wasm':
         specifier: ^0.3.0
         version: 0.3.0
@@ -1500,12 +1494,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: 'catalog:'
         version: 5.1.4(vite@7.3.2(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.3))
-      '@workspace/api-client-react':
-        specifier: workspace:*
-        version: link:../../lib/api-client-react
-      '@workspace/luxor-auth-ui':
-        specifier: workspace:*
-        version: link:../../lib/luxor-auth-ui
       class-variance-authority:
         specifier: 'catalog:'
         version: 0.7.1
