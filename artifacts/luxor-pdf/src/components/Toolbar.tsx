@@ -826,7 +826,6 @@ export default function Toolbar({
   const fileRibbon: ReactNode = (
     <RibbonGroup label="File">
       <RibbonBtn icon={Icons.open} label="Open" title="Open a PDF (Ctrl+O)" onClick={onOpenFile} />
-      <RibbonBtn icon={Icons.thumbnails} label="Thumbnails" active={showContents} title="Page thumbnails" onClick={onToggleContents} />
       <RibbonBtn icon={Icons.print} label="Print" onClick={onPrint} />
     </RibbonGroup>
   );
