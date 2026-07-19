@@ -460,13 +460,13 @@ export default function ESignPage() {
       <section className="py-12 lg:py-16 bg-white">
         <div className="container mx-auto px-6 max-w-[88rem]">
           <motion.div {...fadeUp}>
-            <div className="relative mt-16 max-w-4xl mx-auto">
+            <div className="relative mt-16">
               <img
                 src={esignShieldGreen}
                 alt="LUXOR eSign shield badge"
                 className="hidden lg:block absolute -top-14 left-10 w-40 z-20 drop-shadow-xl"
               />
-              <div className="rounded-[28px] bg-gradient-to-br from-[#2cae4f] via-[#149135] to-[#0a6e24] relative overflow-hidden px-8 pt-8 pb-8 lg:px-10 lg:pt-10 lg:pb-10 shadow-2xl shadow-green-900/20">
+              <div className="rounded-[28px] bg-gradient-to-br from-[#2cae4f] via-[#149135] to-[#0a6e24] relative overflow-hidden px-8 py-6 lg:px-12 lg:py-7 shadow-2xl shadow-green-900/20">
               <div className="absolute -top-24 -left-16 w-72 h-72 bg-white/10 rounded-full blur-3xl" aria-hidden="true" />
               <div className="absolute -bottom-28 right-10 w-80 h-80 bg-[#0a6e24]/60 rounded-full blur-3xl" aria-hidden="true" />
               <div className="relative z-10">
@@ -478,12 +478,22 @@ export default function ESignPage() {
                     className="w-36 lg:w-40 shrink-0 lg:invisible"
                   />
                   <div className="flex-1 text-center lg:text-left">
-                    <h2 className="text-3xl lg:text-[34px] font-extrabold text-white tracking-tight leading-[1.15] mb-3">
+                    <h2 className="text-3xl lg:text-[34px] font-extrabold text-white tracking-tight leading-[1.15] mb-2">
                       Ready to<br className="hidden lg:block" /> Simplify eSigning?
                     </h2>
                     <p className="text-green-50/90 text-base font-medium max-w-md mx-auto lg:mx-0">
                       Join thousands of professionals who trust LUXOR PDF eSign.
                     </p>
+                  </div>
+                  <div className="shrink-0 flex flex-col gap-3 w-full sm:w-auto">
+                    <a href={APP_URL} className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-white hover:bg-green-50 text-[#0f8f2f] font-bold text-base shadow-xl transition-colors">
+                      Start Free Trial
+                      <span aria-hidden="true" className="font-extrabold">&rsaquo;</span>
+                    </a>
+                    <span className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-xl bg-[#128a30] text-white font-bold text-base border border-white/70 shadow-lg cursor-default select-none" aria-disabled="true">
+                      <WindowsGlyph className="w-4.5 h-4.5" />
+                      Download for Windows
+                    </span>
                   </div>
                   <div className="shrink-0 flex justify-center lg:justify-end">
                     <div className="rounded-2xl bg-[#0a6e24]/45 border border-white/10 px-6 py-4 flex flex-col items-start gap-3">
@@ -501,16 +511,6 @@ export default function ESignPage() {
                       ))}
                     </div>
                   </div>
-                </div>
-                <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <a href={APP_URL} className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-xl bg-white hover:bg-green-50 text-[#0f8f2f] font-bold text-base shadow-xl transition-colors w-full sm:w-auto">
-                    Start Free Trial
-                    <span aria-hidden="true" className="font-extrabold">&rsaquo;</span>
-                  </a>
-                  <span className="inline-flex items-center justify-center gap-2.5 px-10 py-4 rounded-xl bg-[#128a30] text-white font-bold text-base border border-white/70 shadow-lg cursor-default select-none w-full sm:w-auto" aria-disabled="true">
-                    <WindowsGlyph className="w-4.5 h-4.5" />
-                    Download for Windows
-                  </span>
                 </div>
               </div>
               </div>
