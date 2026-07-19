@@ -233,10 +233,10 @@ const THEMES: { key: ThemeKey; label: string; swatch: string; ring: string }[] =
 ];
 
 type PopoverType =
-  | "file" | "view" | "annotate" | "tools" | "stamps" | "help"
+  | "file" | "view" | "edit" | "annotate" | "tools" | "stamps" | "help"
   | "highlight" | "text" | "shapes" | "draw" | null;
 
-const MENU_KEYS = ["file", "view", "annotate", "tools", "stamps", "help"] as const;
+const MENU_KEYS = ["file", "view", "edit", "annotate", "tools", "stamps", "help"] as const;
 type MenuKey = (typeof MENU_KEYS)[number];
 
 /** One entry in a menu-bar dropdown. */
@@ -947,6 +947,7 @@ export default function Toolbar({
   const ribbonByMenu: Record<MenuKey, ReactNode | null> = {
     file: fileRibbon,
     view: viewRibbon,
+    edit: annotateRibbon,
     annotate: annotateRibbon,
     tools: toolsRibbon,
     stamps: null,
@@ -1040,12 +1041,7 @@ export default function Toolbar({
     { label: toolbarHidden ? "Show Toolbar" : "Hide Toolbar", action: onToggleToolbar },
   ];
 
-  const annotateMenu: MenuEntry[] = [
-    { label: "Highlight Text", checked: tool === "highlight", action: () => onToolChange(tool === "highlight" ? "hand" : "highlight") },
-    { label: "Underline Text", action: () => onMarkup("underline") },
-    { label: "Strikeout Text", action: () => onMarkup("strike") },
-    { label: "Squiggly Underline", soon: true },
-    { kind: "divider" },
+  const editMenu: MenuEntry[] = [
     { label: "Add Text Box", checked: tool === "text", action: () => onToolChange(tool === "text" ? "hand" : "text") },
     { label: "Sticky Note Comment", action: onAddComment },
     { kind: "divider" },
@@ -1057,6 +1053,15 @@ export default function Toolbar({
     { label: "Polygon", soon: true },
     { label: "Cloud Shape", soon: true },
     { kind: "divider" },
+    { label: "Eraser", checked: tool === "eraser", action: () => onToolChange(tool === "eraser" ? "hand" : "eraser") },
+  ];
+
+  const annotateMenu: MenuEntry[] = [
+    { label: "Highlight Text", checked: tool === "highlight", action: () => onToolChange(tool === "highlight" ? "hand" : "highlight") },
+    { label: "Underline Text", action: () => onMarkup("underline") },
+    { label: "Strikeout Text", action: () => onMarkup("strike") },
+    { label: "Squiggly Underline", soon: true },
+    { kind: "divider" },
     { label: "Stamp Image", action: onAddImage },
     { kind: "divider" },
     {
@@ -1067,7 +1072,6 @@ export default function Toolbar({
         </div>
       ),
     },
-    { label: "Eraser", checked: tool === "eraser", action: () => onToolChange(tool === "eraser" ? "hand" : "eraser") },
     { label: "Erase All Annotations", action: onEraseAll },
     { label: "Show All Comments", checked: activePanel === "nav", action: () => onOpenPanel("nav") },
   ];
@@ -1165,6 +1169,7 @@ export default function Toolbar({
   const MENUS: { key: MenuKey; label: string; entries: MenuEntry[] }[] = [
     { key: "file",     label: "File",     entries: fileMenu },
     { key: "view",     label: "View",     entries: viewMenu },
+    { key: "edit",     label: "Edit",     entries: editMenu },
     { key: "annotate", label: "Annotate", entries: annotateMenu },
     { key: "tools",    label: "Tools",    entries: toolsMenu },
     { key: "stamps",   label: "Stamps",   entries: stampsMenu },
