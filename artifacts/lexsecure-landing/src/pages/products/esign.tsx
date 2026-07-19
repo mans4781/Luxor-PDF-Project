@@ -6,6 +6,7 @@ import {
   Settings, ScrollText, Smile, Lock, Briefcase, Zap, Share2, BarChart3,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import esignShield from "@/assets/esign-shield.png";
 
 const APP_URL = "/esign-app/";
 const ESIGN_INSTALLER_URL = "/api/downloads/luxor-pdf-esign-latest.exe";
@@ -436,31 +437,53 @@ export default function ESignPage() {
       <section className="py-12 lg:py-16 bg-white">
         <div className="container mx-auto px-6 max-w-[88rem]">
           <motion.div {...fadeUp}>
-            <div className="rounded-2xl bg-gradient-to-r from-[#24b34b] via-[#0f8f2f] to-[#0a6e24] relative overflow-hidden px-8 py-8 lg:px-14 lg:py-10">
-              <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "radial-gradient(circle at center, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} aria-hidden="true" />
-              <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-10">
-                <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center shrink-0">
-                  <PenLine className="w-10 h-10 lg:w-12 lg:h-12 text-white" strokeWidth={1.8} />
-                </div>
-                <div className="flex-1 text-center lg:text-left">
-                  <h2 className="text-2xl lg:text-[30px] font-extrabold text-white tracking-tight leading-tight mb-2">Ready to Simplify eSigning?</h2>
-                  <p className="text-green-100 text-sm lg:text-base font-medium mb-4">
-                    Join thousands of professionals who trust LUXOR PDF eSign.
-                  </p>
-                  <div className="flex flex-wrap justify-center lg:justify-start gap-x-5 gap-y-1 text-green-100 text-xs font-medium">
-                    <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> No credit card required</span>
-                    <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Fast setup</span>
-                    <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Cancel anytime</span>
+            <div className="rounded-[28px] bg-gradient-to-br from-[#2cae4f] via-[#149135] to-[#0a6e24] relative overflow-hidden px-8 pt-8 pb-8 lg:px-12 lg:pt-10 lg:pb-10 shadow-2xl shadow-green-900/20">
+              <div className="absolute -top-24 -left-16 w-72 h-72 bg-white/10 rounded-full blur-3xl" aria-hidden="true" />
+              <div className="absolute -bottom-28 right-10 w-80 h-80 bg-[#0a6e24]/60 rounded-full blur-3xl" aria-hidden="true" />
+              <div className="relative z-10">
+                <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+                  <img
+                    src={esignShield}
+                    alt="LUXOR eSign shield badge"
+                    className="w-36 lg:w-44 shrink-0 drop-shadow-[0_18px_30px_rgba(0,40,10,0.45)]"
+                  />
+                  <div className="flex-1 text-center lg:text-left">
+                    <h2 className="text-3xl lg:text-[38px] font-extrabold text-white tracking-tight leading-[1.15] mb-3">
+                      Ready to<br className="hidden lg:block" /> Simplify eSigning?
+                    </h2>
+                    <p className="text-green-50/90 text-base lg:text-lg font-medium max-w-md mx-auto lg:mx-0">
+                      Join thousands of professionals who trust LUXOR PDF eSign.
+                    </p>
+                  </div>
+                  <div className="shrink-0 flex flex-col gap-4 w-full sm:w-auto">
+                    <a href={APP_URL} className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-xl bg-white hover:bg-green-50 text-[#0f8f2f] font-bold text-base shadow-xl transition-colors">
+                      Start Free Trial
+                      <span aria-hidden="true" className="font-extrabold">&rsaquo;</span>
+                    </a>
+                    <a href={ESIGN_INSTALLER_URL} className="inline-flex items-center justify-center gap-2.5 px-10 py-4 rounded-xl bg-[#128a30] hover:bg-[#0f7a2a] text-white font-bold text-base border border-white/70 shadow-lg transition-colors">
+                      <WindowsGlyph className="w-4.5 h-4.5" />
+                      Download for Windows
+                    </a>
                   </div>
                 </div>
-                <div className="shrink-0 flex flex-wrap justify-center gap-3">
-                  <a href={APP_URL} className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/40 transition-colors">
-                    Start Free Trial
-                  </a>
-                  <a href={ESIGN_INSTALLER_URL} className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white hover:bg-green-50 text-[#0a6e24] font-bold shadow-xl transition-colors">
-                    <WindowsGlyph className="w-4 h-4" />
-                    Download for Windows
-                  </a>
+                <div className="mt-8 flex justify-center lg:justify-start lg:pl-56">
+                  <div className="rounded-2xl bg-[#0a6e24]/45 border border-white/10 px-6 py-3.5 flex flex-col sm:flex-row items-center gap-y-2">
+                    {[
+                      { icon: CheckCircle2, label: "No credit card required" },
+                      { icon: Zap, label: "Fast setup" },
+                      { icon: History, label: "Cancel anytime" },
+                    ].map(({ icon: Icon, label }, i) => (
+                      <div key={label} className="flex items-center">
+                        {i > 0 && <span className="hidden sm:block w-px h-6 bg-white/20 mx-6" aria-hidden="true" />}
+                        <span className="inline-flex items-center gap-2.5 text-white text-sm font-semibold">
+                          <span className="w-8 h-8 rounded-full bg-white/15 border border-white/20 flex items-center justify-center">
+                            <Icon className="w-4 h-4 text-white" strokeWidth={2.1} />
+                          </span>
+                          {label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
