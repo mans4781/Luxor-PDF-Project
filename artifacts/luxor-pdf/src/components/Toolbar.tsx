@@ -427,6 +427,8 @@ export default function Toolbar({
   const [popover, setPopover] = useState<PopoverType>(null);
   /* Which submenu (by label) is expanded inside an open dropdown. */
   const [openSub, setOpenSub] = useState<string | null>(null);
+  /** Which menu's icon groups are shown in the ribbon row below. */
+  const [ribbonMenu, setRibbonMenu] = useState<MenuKey>("annotate");
   useEffect(() => { setOpenSub(null); }, [popover]);
   const popoverRef = useRef<HTMLDivElement>(null);
   const [eraserIcon, setEraserIcon] = useState<string | null>(null);
@@ -816,14 +818,18 @@ export default function Toolbar({
     />
   );
 
-  /* ── Quick-access ribbon (single fixed row under the menu bar) ─── */
+  /* ── Quick-access ribbon (row under the menu bar; shows only the
+        icon groups belonging to the last-clicked menu) ─── */
 
-  const quickRibbon: ReactNode = (
+  const fileRibbon: ReactNode = (
+    <RibbonGroup label="File">
+      <RibbonBtn icon={Icons.open} label="Open" title="Open a PDF (Ctrl+O)" onClick={onOpenFile} />
+      <RibbonBtn icon={Icons.print} label="Print" onClick={onPrint} />
+    </RibbonGroup>
+  );
+
+  const annotateRibbon: ReactNode = (
     <>
-      <RibbonGroup label="File">
-        <RibbonBtn icon={Icons.open} label="Open" title="Open a PDF (Ctrl+O)" onClick={onOpenFile} />
-        <RibbonBtn icon={Icons.print} label="Print" onClick={onPrint} />
-      </RibbonGroup>
       <RibbonGroup label="Annotate">
         {highlightBtn}
         {textBtn}
@@ -843,6 +849,11 @@ export default function Toolbar({
         <RibbonBtn icon={Icons.image} label="Add Image" title="Insert PNG, JPG or WEBP onto a page" onClick={onAddImage} />
         {whiteoutBtn}
       </RibbonGroup>
+    </>
+  );
+
+  const toolsRibbon: ReactNode = (
+    <>
       <RibbonGroup label="Protect">
         <RibbonBtn
           icon={Icons.redact}
@@ -864,6 +875,15 @@ export default function Toolbar({
         </div>
         {compressBtn}
       </RibbonGroup>
+      <RibbonGroup label="Assist">
+        {readAloudBtn}
+        {screenshotBtn}
+      </RibbonGroup>
+    </>
+  );
+
+  const viewRibbon: ReactNode = (
+    <>
       <RibbonGroup label="Navigate">
         <RibbonBtn icon={Icons.thumbnails} label="Thumbnails" active={showContents} title="Page thumbnails" onClick={onToggleContents} />
         <RibbonBtn icon={Icons.search} label="Search" active={searchOpen} title="Find in document (Ctrl+F)" onClick={onToggleSearch} />
@@ -924,12 +944,17 @@ export default function Toolbar({
         )}
         <RibbonBtn icon={Icons.settings} label="Settings" title="Reader settings" onClick={onOpenSettings} />
       </RibbonGroup>
-      <RibbonGroup label="Assist">
-        {readAloudBtn}
-        {screenshotBtn}
-      </RibbonGroup>
     </>
   );
+
+  const ribbonByMenu: Record<MenuKey, ReactNode | null> = {
+    file: fileRibbon,
+    view: viewRibbon,
+    annotate: annotateRibbon,
+    tools: toolsRibbon,
+    help: null,
+  };
+  const activeRibbon = ribbonByMenu[ribbonMenu];
 
   /* ── Menu-bar dropdown definitions ────────── */
 
@@ -1177,7 +1202,10 @@ export default function Toolbar({
             <button
               className={`toolbar-menu-word ${popover === m.key ? "active" : ""}`}
               onMouseDown={(e) => e.preventDefault()}
-              onClick={() => toggle(m.key)}
+              onClick={() => {
+                toggle(m.key);
+                setRibbonMenu(m.key);
+              }}
               onMouseEnter={() => {
                 // Browsing behaviour: once one menu is open, hovering
                 // another menu word switches to it.
@@ -1188,7 +1216,6 @@ export default function Toolbar({
               title={m.label}
             >
               {m.label}
-              {Icons.chevron}
             </button>
             {popover === m.key && (
               <div
@@ -1244,7 +1271,7 @@ export default function Toolbar({
       </div>
 
       {/* ── Row 2: quick-access ribbon (View > Hide Toolbar) ── */}
-      {!toolbarHidden && <div className="luxor-ribbon">{quickRibbon}</div>}
+      {!toolbarHidden && activeRibbon && <div className="luxor-ribbon">{activeRibbon}</div>}
     </div>
   );
 }
