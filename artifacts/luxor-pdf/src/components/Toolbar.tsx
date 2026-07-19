@@ -1241,16 +1241,6 @@ export default function Toolbar({
 
       {/* ── Row 1: menu bar ─────────── */}
       <div className="luxor-menu-strip">
-        <div className="toolbar-brand">
-          <img
-            className="toolbar-brand-logo"
-            src={`${import.meta.env.BASE_URL}brand/luxor-icon.png`}
-            alt="Luxor PDF logo"
-            draggable={false}
-          />
-          <span className="toolbar-brand-name">Luxor PDF</span>
-        </div>
-
         {MENUS.map((m) => (
           <div key={m.key} style={{ position: "relative" }}>
             <button

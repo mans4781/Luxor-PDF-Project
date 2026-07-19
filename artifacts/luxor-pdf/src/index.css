@@ -279,31 +279,6 @@ button, input, textarea, select {
   font-weight: 500;
 }
 
-.toolbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-right: 12px;
-  color: var(--toolbar-fg);
-  font-weight: 700;
-  font-size: 14px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.toolbar-brand-logo {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-  border-radius: 5px;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-.toolbar-brand-name {
-  letter-spacing: 0.2px;
-}
-
 .toolbar-menu-word {
   display: flex;
   align-items: center;
