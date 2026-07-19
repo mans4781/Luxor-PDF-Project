@@ -21,8 +21,8 @@
 
   /* Reading themes — defaults below are the Light theme. The Theme menu
      sets data-theme on <html>; the overrides further down remap these.
-     Pages stay bright white; the area around them is a light 5% grey. */
-  --viewer-bg: #F2F2F2;
+     Pages stay bright white; the area around them is a soft light grey. */
+  --viewer-bg: #F7F7F7;
   --page-bg: #ffffff;
   --page-filter: none;
 }
@@ -414,7 +414,7 @@ button, input, textarea, select {
   bottom: var(--statusbar-height);
   left: 0; right: 0;
   overflow-y: auto; overflow-x: auto;
-  background: var(--viewer-bg, #E6E6E6);
+  background: var(--viewer-bg, #F7F7F7);
   display: flex; flex-direction: column;
   align-items: center;
   padding: 20px 20px 80px;
@@ -1116,7 +1116,7 @@ mark.search-hl {
 
 .loading-scr {
   position: fixed; inset: 0;
-  background: var(--viewer-bg, #F2F2F2);
+  background: var(--viewer-bg, #F7F7F7);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 14px; z-index: 200;
