@@ -231,13 +231,15 @@ interface ToolbarProps {
   onZoomTo: (pct: number) => void;
   onActualSize: () => void;
   onFitHeight: () => void;
-  onMarkup: (kind: "underline" | "strike") => void;
+  onMarkup: (kind: "underline" | "strike" | "squiggly") => void;
+  onOpenCrop: () => void;
+  onOpenRestrict: () => void;
   onCreateNew: () => void;
   onPageOp: (op: "insert" | "delete" | "rotate") => void;
   toolbarHidden: boolean;
   onToggleToolbar: () => void;
   onPresentation: () => void;
-  onOpenHelp: (s: "guide" | "shortcuts" | "about") => void;
+  onOpenHelp: (s: "guide" | "shortcuts" | "tutorials" | "about") => void;
   onSetSplitView: (v: boolean) => void;
 }
 
@@ -442,7 +444,7 @@ export default function Toolbar({
   onFitWidth, onFitPage, onRotateCw, onRotateCcw, isFullscreen, onToggleFullscreen,
   activePanel, onOpenPanel, onAddComment, onOpenSettings, showOCR, showAI,
   onZoomIn, onZoomOut, onZoomTo, onActualSize, onFitHeight,
-  onMarkup, onCreateNew, onPageOp,
+  onMarkup, onCreateNew, onPageOp, onOpenCrop, onOpenRestrict,
   toolbarHidden, onToggleToolbar, onPresentation, onOpenHelp, onSetSplitView,
 }: ToolbarProps) {
   const { beginSignIn, beginSignUp } = useAuthGate();
@@ -1131,8 +1133,8 @@ export default function Toolbar({
     { label: "Arrow", icon: mi(ArrowUpRight), checked: tool === "arrow", action: () => onToolChange("arrow") },
     { label: "Rectangle", icon: mi(Square), checked: tool === "rectangle", action: () => onToolChange("rectangle") },
     { label: "Circle / Oval", icon: mi(Circle), checked: tool === "oval", action: () => onToolChange("oval") },
-    { label: "Polygon", icon: mi(Pentagon), soon: true },
-    { label: "Cloud Shape", icon: mi(Cloud), soon: true },
+    { label: "Polygon", icon: mi(Pentagon), checked: tool === "polygon", action: () => onToolChange(tool === "polygon" ? "hand" : "polygon") },
+    { label: "Cloud Shape", icon: mi(Cloud), checked: tool === "cloud", action: () => onToolChange(tool === "cloud" ? "hand" : "cloud") },
     { kind: "divider" },
     { label: "Eraser", icon: mi(Eraser), checked: tool === "eraser", action: () => onToolChange(tool === "eraser" ? "hand" : "eraser") },
   ];
@@ -1141,7 +1143,7 @@ export default function Toolbar({
     { label: "Highlight Text", icon: mi(Highlighter), checked: tool === "highlight", action: () => onToolChange(tool === "highlight" ? "hand" : "highlight") },
     { label: "Underline Text", icon: mi(Underline), action: () => onMarkup("underline") },
     { label: "Strikeout Text", icon: mi(Strikethrough), action: () => onMarkup("strike") },
-    { label: "Squiggly Underline", icon: mi(Waves), soon: true },
+    { label: "Squiggly Underline", icon: mi(Waves), action: () => onMarkup("squiggly") },
     { kind: "divider" },
     {
       label: "Annotation Colors",
@@ -1160,14 +1162,14 @@ export default function Toolbar({
     { label: "Insert Blank Page", icon: mi(FilePlus2), action: () => onPageOp("insert") },
     { label: "Delete Current Page", icon: mi(FileMinus2), action: () => onPageOp("delete") },
     { label: "Rotate Current Page", icon: mi(RotateCw), action: () => onPageOp("rotate") },
-    { label: "Crop Pages", icon: mi(Crop), soon: true },
+    { label: "Crop Pages", icon: mi(Crop), action: onOpenCrop },
     { kind: "divider" },
     { label: "Compress PDF", icon: mi(FileArchive), action: onOpenCompress },
     { label: watermarkActive ? "Remove Watermark" : "Add Watermark", icon: mi(Droplet), action: watermarkActive ? onClearWatermark : onOpenWatermark },
     { label: pageNoActive ? "Remove Page Numbers" : "Add Page Numbers", icon: mi(Hash), action: pageNoActive ? onClearPageNo : onOpenPageNo },
     { label: "Redact Content", icon: mi(EyeOff), checked: tool === "redact", action: () => onToolChange(tool === "redact" ? "hand" : "redact") },
     { label: "Whiteout", icon: mi(PaintRoller), checked: tool === "whiteout", action: () => onToolChange(tool === "whiteout" ? "hand" : "whiteout") },
-    { label: "Restrict Printing & Copying", icon: mi(Lock), soon: true },
+    { label: "Restrict Printing & Copying", icon: mi(Lock), action: onOpenRestrict },
     { kind: "divider" },
     { label: "Edit Text", icon: mi(PenLine), checked: tool === "edittext", action: () => onToolChange(tool === "edittext" ? "hand" : "edittext") },
     { label: "Add Image", icon: mi(ImageIcon), action: onAddImage },
@@ -1186,7 +1188,7 @@ export default function Toolbar({
   const helpMenu: MenuEntry[] = [
     { label: "User Guide", icon: mi(BookOpen), action: () => onOpenHelp("guide") },
     { label: "Keyboard Shortcuts", icon: mi(Keyboard), action: () => onOpenHelp("shortcuts") },
-    { label: "Video Tutorials", icon: mi(Video), soon: true },
+    { label: "Guided Tutorials", icon: mi(Video), action: () => onOpenHelp("tutorials") },
     { kind: "divider" },
     { label: "Check for Updates", icon: mi(Download), action: () => openSitePage("/download") },
     { label: "Contact Support", icon: mi(LifeBuoy), action: () => openSitePage("/contact") },

@@ -1,11 +1,60 @@
 import { useEffect } from "react";
 
-export type HelpSection = "guide" | "shortcuts" | "about";
+export type HelpSection = "guide" | "shortcuts" | "tutorials" | "about";
 
 const SECTIONS: { key: HelpSection; label: string }[] = [
   { key: "guide", label: "User Guide" },
   { key: "shortcuts", label: "Keyboard Shortcuts" },
+  { key: "tutorials", label: "Guided Tutorials" },
   { key: "about", label: "About" },
+];
+
+/** Step-by-step walkthroughs for the most common tasks. */
+const TUTORIALS: { title: string; steps: string[] }[] = [
+  {
+    title: "Highlight and comment on a document",
+    steps: [
+      "Select the words you want to mark with the mouse.",
+      "A small toolbar appears next to the selection — pick a highlight colour, underline, squiggly or strikeout.",
+      "To leave a note, choose Sticky Note Comment from the Annotate menu while the text is still selected.",
+      "Open the comments panel from Annotate > Show All Comments to review everything in one list.",
+    ],
+  },
+  {
+    title: "Draw shapes on a page",
+    steps: [
+      "Open the Edit menu and pick a shape: line, arrow, rectangle, circle, polygon or cloud.",
+      "Drag on the page to place most shapes. For a polygon, click once per corner and double-click (or press Enter) to close it; Escape cancels.",
+      "Change the colour under Annotate > Annotation Colors.",
+      "Made a mistake? The Eraser under Edit removes a single shape.",
+    ],
+  },
+  {
+    title: "Crop pages",
+    steps: [
+      "Open Tools > Crop Pages.",
+      "Enter how many millimetres to trim from each side.",
+      "Choose whether to crop only the current page or every page, then press Crop.",
+      "The document reloads with the new page size. The trimmed area is hidden, not deleted.",
+    ],
+  },
+  {
+    title: "Share a copy that can't be printed or copied",
+    steps: [
+      "Open Tools > Restrict Printing & Copying.",
+      "Choose a permission password and untick anything you still want to allow.",
+      "Press Create Protected Copy, then download the file.",
+      "Send the protected copy — anyone can read it, but printing and copying stay locked without the password.",
+    ],
+  },
+  {
+    title: "Save your finished work",
+    steps: [
+      "Press Ctrl+Shift+S or use File > Save.",
+      "Burned-in edits — edited text, whiteout, redactions, watermarks and page numbers — become a permanent part of the saved file.",
+      "Use File > Export Copy when you want to keep the original untouched.",
+    ],
+  },
 ];
 
 const SHORTCUTS: { keys: string; action: string }[] = [
@@ -153,6 +202,25 @@ export default function HelpModal({
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {section === "tutorials" && (
+            <div>
+              <h2 style={{ margin: "4px 0 4px", fontSize: 17 }}>Guided tutorials</h2>
+              <p style={{ fontSize: 12.5, color: "#666", margin: "0 0 14px", lineHeight: 1.5 }}>
+                Short step-by-step walkthroughs of the most common tasks.
+              </p>
+              {TUTORIALS.map((t) => (
+                <div key={t.title} style={{ marginBottom: 16 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 5 }}>{t.title}</div>
+                  <ol style={{ margin: 0, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 4 }}>
+                    {t.steps.map((s, i) => (
+                      <li key={i} style={{ fontSize: 13, lineHeight: 1.5, color: "#444" }}>{s}</li>
+                    ))}
+                  </ol>
+                </div>
+              ))}
             </div>
           )}
 

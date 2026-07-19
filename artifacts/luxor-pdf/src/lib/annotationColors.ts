@@ -250,6 +250,7 @@ export const DEFAULTS = {
   penWidth: DRAW_THICKNESS.default,            // 3px
   underlineColor: "#0D62F2",
   strikeColor: "#F21E1E",
+  squigglyColor: "#0FA958",
   textColor: "#000000",
   textSize: 16,
   textFont: "times",

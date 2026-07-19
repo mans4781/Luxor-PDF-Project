@@ -51,6 +51,10 @@ export function shapeToCanvasSpace(ann: ShapeAnnotation, w: number, h: number): 
       return { ...ann, cx: ann.cx * w, cy: ann.cy * h, rx: ann.rx * w, ry: ann.ry * h, lineWidth: ann.lineWidth * w };
     case "rect":
       return { ...ann, x: ann.x * w, y: ann.y * h, w: ann.w * w, h: ann.h * h, lineWidth: ann.lineWidth * w };
+    case "polygon":
+      return { ...ann, points: ann.points.map(p => ({ x: p.x * w, y: p.y * h })), lineWidth: ann.lineWidth * w };
+    case "cloud":
+      return { ...ann, x: ann.x * w, y: ann.y * h, w: ann.w * w, h: ann.h * h, lineWidth: ann.lineWidth * w };
   }
 }
 
@@ -144,6 +148,7 @@ export function hitTestAnnotation(ann: Annotation, ctx: HitContext): boolean {
     case "highlight":
     case "underline":
     case "strike":
+    case "squiggly":
       return ann.rects.some((r) =>
         circleIntersectsRect(
           ctx.normX, ctx.normY,
@@ -172,6 +177,19 @@ export function hitTestAnnotation(ann: Annotation, ctx: HitContext): boolean {
       const s = shapeToCanvasSpace(ann, ctx.canvasW, ctx.canvasH) as typeof ann;
       const lw = (s.lineWidth || 1) / 2;
       return pointNearRectOutline(ctx.canvasX, ctx.canvasY, s.x, s.y, s.w, s.h, ctx.radiusCanvas + lw);
+    }
+    case "polygon": {
+      const s = shapeToCanvasSpace(ann, ctx.canvasW, ctx.canvasH) as typeof ann;
+      const lw = (s.lineWidth || 1) / 2;
+      const closed = s.points.length >= 3 ? [...s.points, s.points[0]] : s.points;
+      return segmentNearPolyline(ctx.canvasX, ctx.canvasY, closed, ctx.radiusCanvas + lw);
+    }
+    case "cloud": {
+      const s = shapeToCanvasSpace(ann, ctx.canvasW, ctx.canvasH) as typeof ann;
+      const lw = (s.lineWidth || 1) / 2;
+      // Scallops bulge outward roughly one arc radius; a generous rect
+      // outline test is plenty accurate for the eraser.
+      return pointNearRectOutline(ctx.canvasX, ctx.canvasY, s.x, s.y, s.w, s.h, ctx.radiusCanvas + lw + 8);
     }
     case "redact": {
       // Redactions are filled, so hit anywhere inside the box (in normalized

@@ -692,6 +692,9 @@ importers:
 
   artifacts/luxor-pdf:
     dependencies:
+      '@cantoo/pdf-lib':
+        specifier: ^2.6.5
+        version: 2.6.5
       '@clerk/react':
         specifier: ^6.5.0
         version: 6.5.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)

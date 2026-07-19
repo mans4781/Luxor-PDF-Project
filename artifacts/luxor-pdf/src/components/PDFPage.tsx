@@ -21,7 +21,7 @@ import {
   fontFamilyCss,
 } from "@/lib/annotationColors";
 
-const SHAPE_TOOLS: ToolType[] = ["freehand", "line", "arrow", "oval", "rectangle", "redact", "whiteout"];
+const SHAPE_TOOLS: ToolType[] = ["freehand", "line", "arrow", "oval", "rectangle", "polygon", "cloud", "redact", "whiteout"];
 const isShapeTool = (t: ToolType) => SHAPE_TOOLS.includes(t);
 
 /** Eraser cursor radius in CSS pixels — matches the visual cursor circle. */
@@ -94,7 +94,7 @@ interface PDFPageProps {
   commentRequest?: number;
   /** Menu-bar text markup: bump `n` to apply the given markup kind to the
    *  current text selection. Only the page that owns the selection responds. */
-  markupRequest?: { kind: "underline" | "strike"; n: number };
+  markupRequest?: { kind: "underline" | "strike" | "squiggly"; n: number };
   watermark?: import("@/lib/editTypes").WatermarkConfig | null;
   pageNo?: import("@/lib/editTypes").PageNoConfig | null;
   totalPages?: number;
@@ -870,6 +870,49 @@ function drawArrowhead(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2
   ctx.stroke();
 }
 
+/**
+ * Trace a revision-cloud outline: the rectangle border rendered as a run of
+ * connected outward-bulging semicircle arcs (scallops). Callers stroke the
+ * resulting path themselves.
+ */
+function traceCloudPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+  const r = Math.max(6, Math.min(22, Math.min(Math.abs(w), Math.abs(h)) / 4));
+  // Normalize to a top-left + positive-size rect.
+  if (w < 0) { x += w; w = -w; }
+  if (h < 0) { y += h; h = -h; }
+  ctx.beginPath();
+  // Edges as (start, end, outward-normal angle). Walk clockwise.
+  const edges: [number, number, number, number, number][] = [
+    [x, y, x + w, y, -Math.PI / 2],           // top, bulge up
+    [x + w, y, x + w, y + h, 0],              // right, bulge right
+    [x + w, y + h, x, y + h, Math.PI / 2],    // bottom, bulge down
+    [x, y + h, x, y, Math.PI],                // left, bulge left
+  ];
+  for (const [ax, ay, bx, by, out] of edges) {
+    const len = Math.hypot(bx - ax, by - ay);
+    const n = Math.max(1, Math.round(len / (2 * r)));
+    const step = len / n;
+    const ux = (bx - ax) / len;
+    const uy = (by - ay) / len;
+    for (let i = 0; i < n; i++) {
+      const cx = ax + ux * (i + 0.5) * step;
+      const cy = ay + uy * (i + 0.5) * step;
+      const arcR = step / 2;
+      ctx.arc(cx, cy, arcR, out - Math.PI / 2, out + Math.PI / 2, false);
+    }
+  }
+  ctx.closePath();
+}
+
+/** Stroke (and optionally fill) a closed polygon from its vertex list. */
+function tracePolygonPath(ctx: CanvasRenderingContext2D, points: Point[]) {
+  if (points.length === 0) return;
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+  ctx.closePath();
+}
+
 function drawShapeOnCtx(ctx: CanvasRenderingContext2D, annIn: ShapeAnnotation) {
   // Normalized shapes (norm: true) are stored page-relative; convert to
   // this canvas's pixel space so they track the page through zoom changes.
@@ -926,6 +969,24 @@ function drawShapeOnCtx(ctx: CanvasRenderingContext2D, annIn: ShapeAnnotation) {
         ctx.restore();
       }
       ctx.strokeRect(ann.x, ann.y, ann.w, ann.h);
+      break;
+    }
+    case "polygon": {
+      tracePolygonPath(ctx, ann.points);
+      if (ann.fill) {
+        ctx.save();
+        ctx.fillStyle = ann.color;
+        ctx.globalAlpha = ann.fillOpacity ?? 0.4;
+        ctx.globalCompositeOperation = "multiply";
+        ctx.fill();
+        ctx.restore();
+      }
+      ctx.stroke();
+      break;
+    }
+    case "cloud": {
+      traceCloudPath(ctx, ann.x, ann.y, ann.w, ann.h);
+      ctx.stroke();
       break;
     }
   }
@@ -1121,21 +1182,17 @@ export default function PDFPage({
     if (!wrapper.contains(anchor)) return;
     const result = getSelectionRects();
     if (!result || !result.rects.length) return;
-    const ann: Annotation = markupRequest.kind === "underline"
-      ? {
-          id: genId(), type: "underline", page: pageNum,
-          rects: result.rects,
-          color: COLOR_DEFAULTS.underlineColor,
-          selectedText: result.text,
-          createdAt: new Date().toISOString(),
-        }
-      : {
-          id: genId(), type: "strike", page: pageNum,
-          rects: result.rects,
-          color: COLOR_DEFAULTS.strikeColor,
-          selectedText: result.text,
-          createdAt: new Date().toISOString(),
-        };
+    const markupColor =
+      markupRequest.kind === "underline" ? COLOR_DEFAULTS.underlineColor
+        : markupRequest.kind === "strike" ? COLOR_DEFAULTS.strikeColor
+        : COLOR_DEFAULTS.squigglyColor;
+    const ann: Annotation = {
+      id: genId(), type: markupRequest.kind, page: pageNum,
+      rects: result.rects,
+      color: markupColor,
+      selectedText: result.text,
+      createdAt: new Date().toISOString(),
+    };
     onAnnotationAdd(ann);
     window.getSelection()?.removeAllRanges();
   }, [markupRequest, getSelectionRects, pageNum, onAnnotationAdd]);
@@ -1471,6 +1528,29 @@ export default function PDFPage({
           ctx.stroke();
         }
         ctx.restore();
+      } else if (ann.type === "squiggly") {
+        // Wavy underline: a small sine wave along the bottom edge of each
+        // selected-text rect. Amplitude/wavelength scale with page height
+        // so the wave stays readable at every zoom level.
+        ctx.save();
+        ctx.strokeStyle = ann.color;
+        ctx.lineWidth = Math.max(0.75, canvas.height * 0.0011);
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        const amp = Math.max(1.2, canvas.height * 0.0018);
+        const wave = amp * 4;
+        for (const r of ann.rects) {
+          const x0 = r.x * canvas.width;
+          const x1 = (r.x + r.width) * canvas.width;
+          const y = (r.y + r.height) * canvas.height - amp - ctx.lineWidth * 0.5;
+          ctx.beginPath();
+          ctx.moveTo(x0, y);
+          for (let x = x0; x < x1; x += 1) {
+            ctx.lineTo(x, y + Math.sin(((x - x0) / wave) * 2 * Math.PI) * amp);
+          }
+          ctx.stroke();
+        }
+        ctx.restore();
       } else if (ann.type === "strike") {
         ctx.save();
         ctx.strokeStyle = ann.color;
@@ -1746,9 +1826,95 @@ export default function PDFPage({
     erasedThisDragRef.current = new Set();
   }, []);
 
+  // ── Polygon tool: click to add vertices, double-click closes ──────
+  // Vertices accumulate in canvas-pixel space in polygonRef; the preview
+  // repaints on every move. Escape cancels an in-progress polygon.
+  const polygonRef = useRef<Point[] | null>(null);
+
+  const drawPolygonPreview = useCallback((cursor?: Point) => {
+    const canvas = drawCanvasRef.current;
+    const pts = polygonRef.current;
+    if (!canvas || !pts || pts.length === 0) return;
+    const ctx = canvas.getContext("2d")!;
+    redrawAnnotations();
+    ctx.save();
+    ctx.strokeStyle = drawColor;
+    ctx.lineWidth = drawThickness * (canvas.width / pageSize.w);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    if (cursor) ctx.lineTo(cursor.x, cursor.y);
+    ctx.stroke();
+    // Vertex dots so the user can see committed corners.
+    ctx.fillStyle = drawColor;
+    for (const p of pts) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, Math.max(3, ctx.lineWidth * 1.2), 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    ctx.restore();
+  }, [drawColor, drawThickness, pageSize, annotations]);
+
+  const commitPolygon = useCallback(() => {
+    const canvas = drawCanvasRef.current;
+    const pts = polygonRef.current;
+    polygonRef.current = null;
+    if (!canvas || !pts) return;
+    // Drop near-duplicate consecutive vertices (double-click adds a repeat).
+    const clean: Point[] = [];
+    for (const p of pts) {
+      const last = clean[clean.length - 1];
+      if (!last || Math.hypot(p.x - last.x, p.y - last.y) > 4) clean.push(p);
+    }
+    if (clean.length < 3) { redrawAnnotations(); return; }
+    const cw = canvas.width, ch = canvas.height;
+    const nLw = (drawThickness * (cw / pageSize.w)) / cw;
+    onAnnotationAdd({
+      id: genId(), type: "polygon", page: pageNum,
+      points: clean.map(p => ({ x: p.x / cw, y: p.y / ch })),
+      color: drawColor, lineWidth: nLw,
+      fill: shapeFill, fillOpacity: shapeFillOpacity ?? 0.4,
+      norm: true,
+    });
+  }, [drawColor, drawThickness, pageSize, pageNum, shapeFill, shapeFillOpacity, onAnnotationAdd]);
+
+  // Cancel an in-progress polygon on Escape or when the tool changes.
+  useEffect(() => {
+    if (tool !== "polygon" && polygonRef.current) {
+      polygonRef.current = null;
+      redrawAnnotations();
+    }
+    if (tool !== "polygon") return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && polygonRef.current) {
+        polygonRef.current = null;
+        redrawAnnotations();
+      } else if (e.key === "Enter" && polygonRef.current) {
+        commitPolygon();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [tool, commitPolygon]);
+
+  const onShapeDoubleClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (tool !== "polygon") return;
+    e.preventDefault();
+    commitPolygon();
+  }, [tool, commitPolygon]);
+
   const onShapeMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (e.button !== 0) return;
     const pos = getCanvasPos(e);
+    if (tool === "polygon") {
+      const pts = polygonRef.current ?? [];
+      pts.push({ x: pos.x, y: pos.y });
+      polygonRef.current = pts;
+      drawPolygonPreview();
+      return;
+    }
     shapeDrawRef.current = {
       active: true,
       startX: pos.x,
@@ -1756,9 +1922,13 @@ export default function PDFPage({
       points: [{ x: pos.x, y: pos.y }],
       shiftKey: e.shiftKey,
     };
-  }, []);
+  }, [tool, drawPolygonPreview]);
 
   const onShapeMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (tool === "polygon") {
+      if (polygonRef.current?.length) drawPolygonPreview(getCanvasPos(e));
+      return;
+    }
     const state = shapeDrawRef.current;
     if (!state?.active) return;
     const pos = getCanvasPos(e);
@@ -1862,9 +2032,14 @@ export default function PDFPage({
         ctx.restore();
         break;
       }
+      case "cloud": {
+        traceCloudPath(ctx, startX, startY, pos.x - startX, pos.y - startY);
+        ctx.stroke();
+        break;
+      }
     }
     ctx.restore();
-  }, [tool, drawColor, annotations, pageSize, shapeFill, shapeFillOpacity]);
+  }, [tool, drawColor, annotations, pageSize, shapeFill, shapeFillOpacity, drawPolygonPreview]);
 
   const onShapeMouseUp = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const state = shapeDrawRef.current;
@@ -1928,6 +2103,15 @@ export default function PDFPage({
         }
         if (Math.abs(w) > 3 && Math.abs(h) > 3) {
           ann = { id: genId(), type: "rect", page: pageNum, x: startX / cw, y: startY / ch, w: w / cw, h: h / ch, color: drawColor, lineWidth: nLw, fill: shapeFill, fillOpacity: shapeFillOpacity ?? 0.4, norm: true };
+        }
+        break;
+      }
+      case "cloud": {
+        let x = startX, y = startY, w = pos.x - startX, h = pos.y - startY;
+        if (w < 0) { x = pos.x; w = -w; }
+        if (h < 0) { y = pos.y; h = -h; }
+        if (w > 3 && h > 3) {
+          ann = { id: genId(), type: "cloud", page: pageNum, x: x / cw, y: y / ch, w: w / cw, h: h / ch, color: drawColor, lineWidth: nLw, norm: true };
         }
         break;
       }
@@ -2280,6 +2464,7 @@ export default function PDFPage({
             : isShapeTool(tool) ? onShapeMouseUp
             : undefined
         }
+        onDoubleClick={tool === "polygon" ? onShapeDoubleClick : undefined}
       />
 
       {tool === "eraser" && (

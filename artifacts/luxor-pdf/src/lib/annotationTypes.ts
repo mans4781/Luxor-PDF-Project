@@ -1,4 +1,4 @@
-export type ToolType = "hand" | "highlight" | "eraser" | "text" | "freehand" | "line" | "arrow" | "oval" | "rectangle" | "redact" | "whiteout" | "image" | "edittext";
+export type ToolType = "hand" | "highlight" | "eraser" | "text" | "freehand" | "line" | "arrow" | "oval" | "rectangle" | "polygon" | "cloud" | "redact" | "whiteout" | "image" | "edittext";
 
 export interface Point { x: number; y: number; }
 
@@ -47,7 +47,22 @@ export interface StrikeAnnotation {
   createdAt?: string;
 }
 
-export type TextMarkupAnnotation = HighlightAnnotation | UnderlineAnnotation | StrikeAnnotation;
+/**
+ * Squiggly (wavy) underline text markup. Same per-line rect geometry as
+ * UnderlineAnnotation; the renderer draws a small sine wave along the
+ * bottom edge of each rect instead of a straight line.
+ */
+export interface SquigglyAnnotation {
+  id: string;
+  type: "squiggly";
+  page: number;
+  rects: { x: number; y: number; width: number; height: number }[];
+  color: string;
+  selectedText?: string;
+  createdAt?: string;
+}
+
+export type TextMarkupAnnotation = HighlightAnnotation | UnderlineAnnotation | StrikeAnnotation | SquigglyAnnotation;
 
 export interface TextAnnotation {
   id: string;
@@ -159,7 +174,42 @@ export interface RectAnnotation {
   norm?: boolean;
 }
 
-export type ShapeAnnotation = FreehandAnnotation | LineAnnotation | ArrowAnnotation | OvalAnnotation | RectAnnotation;
+/**
+ * Closed polygon drawn vertex-by-vertex (click to add points, double-click
+ * to close). Points are NORMALIZED 0..1 when `norm` is true, matching the
+ * other shape annotations.
+ */
+export interface PolygonAnnotation {
+  id: string;
+  type: "polygon";
+  page: number;
+  points: Point[];
+  color: string;
+  lineWidth: number;
+  fill?: boolean;
+  fillOpacity?: number;
+  norm?: boolean;
+}
+
+/**
+ * Revision-cloud style rectangle: a drag rect whose border is rendered as
+ * a run of connected outward arcs (scallops). Geometry is the top-left +
+ * size rect, NORMALIZED 0..1 when `norm` is true.
+ */
+export interface CloudAnnotation {
+  id: string;
+  type: "cloud";
+  page: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  color: string;
+  lineWidth: number;
+  norm?: boolean;
+}
+
+export type ShapeAnnotation = FreehandAnnotation | LineAnnotation | ArrowAnnotation | OvalAnnotation | RectAnnotation | PolygonAnnotation | CloudAnnotation;
 
 /**
  * Permanent redaction box. Coordinates are NORMALIZED 0..1 against the
@@ -255,6 +305,7 @@ export type Annotation =
   | HighlightAnnotation
   | UnderlineAnnotation
   | StrikeAnnotation
+  | SquigglyAnnotation
   | TextAnnotation
   | CommentAnnotation
   | ShapeAnnotation

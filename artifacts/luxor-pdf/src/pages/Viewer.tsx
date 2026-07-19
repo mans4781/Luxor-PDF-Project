@@ -13,6 +13,8 @@ import type { Annotation, HighlightAnnotation } from "@/lib/annotationTypes";
 import WatermarkModal from "@/components/WatermarkModal";
 import PageNumberModal from "@/components/PageNumberModal";
 import CompressModal from "@/components/CompressModal";
+import CropModal from "@/components/CropModal";
+import RestrictModal from "@/components/RestrictModal";
 import PrintModal from "@/components/PrintModal";
 import ScreenshotOverlay from "@/components/ScreenshotOverlay";
 import type { WatermarkConfig, PageNoConfig } from "@/lib/editTypes";
@@ -47,6 +49,8 @@ const TOOL_LABELS: Record<Exclude<ToolType, "hand">, string> = {
   arrow: "Shapes",
   oval: "Shapes",
   rectangle: "Shapes",
+  polygon: "Shapes",
+  cloud: "Shapes",
   redact: "Redaction",
   whiteout: "Whiteout",
   image: "Add Image",
@@ -212,6 +216,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   const [watermarkOpen, setWatermarkOpen] = useState(false);
   const [pageNoOpen, setPageNoOpen] = useState(false);
   const [compressOpen, setCompressOpen] = useState(false);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [restrictOpen, setRestrictOpen] = useState(false);
   const [printOpen, setPrintOpen] = useState(false);
   const [screenshotActive, setScreenshotActive] = useState(false);
   /* Ribbon "Comment" button: bumping this counter tells the page that owns
@@ -220,7 +226,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   const [commentHint, setCommentHint] = useState(false);
   const commentHintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   /* Menu-bar text markups (Underline / Strikeout on the current selection). */
-  const [markupRequest, setMarkupRequest] = useState<{ kind: "underline" | "strike"; n: number } | null>(null);
+  const [markupRequest, setMarkupRequest] = useState<{ kind: "underline" | "strike" | "squiggly"; n: number } | null>(null);
   const handleAddComment = useCallback(() => {
     const sel = window.getSelection();
     const selText = sel?.toString().trim();
@@ -240,7 +246,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   /* Menu bar Annotate → Underline / Strikeout Text. Same selection
    * validation and hint as the Comment button; the owning page applies
    * the markup via its markupRequest effect. */
-  const handleMarkup = useCallback((kind: "underline" | "strike") => {
+  const handleMarkup = useCallback((kind: "underline" | "strike" | "squiggly") => {
     const sel = window.getSelection();
     const selText = sel?.toString().trim();
     const anchor = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).commonAncestorContainer : null;
@@ -896,7 +902,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   }, [isDirty, onFileLoad]);
 
   // ── Help modal (User Guide / Shortcuts / About) ────────────
-  const [helpSection, setHelpSection] = useState<null | "guide" | "shortcuts" | "about">(null);
+  const [helpSection, setHelpSection] = useState<null | "guide" | "shortcuts" | "tutorials" | "about">(null);
 
   // ── File → Create New: open a fresh blank document ─────────
   const handleCreateNew = useCallback(async () => {
@@ -1451,6 +1457,22 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         onAddImage={handleAddImage}
         onPlaceStamp={handlePlaceStamp}
         onOpenCompress={() => setCompressOpen(true)}
+        onOpenCrop={() => {
+          // Cropping reloads the document like other page operations, so
+          // warn about unsaved annotations before opening the modal.
+          if (isDirty) {
+            const ok = window.confirm(
+              "Cropping reloads the document, and your unsaved annotations for this file will be kept separately. Continue?",
+            );
+            if (!ok) return;
+          }
+          setCropOpen(true);
+        }}
+        onOpenRestrict={() => {
+          // Restrict is a Protect feature — premium only, gated at the
+          // execution point like watermark and redaction burn-in.
+          if (requirePremium("Restrict Printing & Copying")) setRestrictOpen(true);
+        }}
         onScreenshot={() => setScreenshotActive(true)}
         onClearWatermark={() => setWatermarkCfg(null)}
         onClearPageNo={() => setPageNoCfg(null)}
@@ -1595,6 +1617,26 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         <CompressModal
           file={file}
           onClose={() => setCompressOpen(false)}
+        />
+      )}
+      {cropOpen && (
+        <CropModal
+          file={file}
+          totalPages={totalPages}
+          currentPage={currentPage}
+          onApply={(f) => {
+            setCropOpen(false);
+            speechSynthesis.cancel();
+            onFileLoad(f);
+          }}
+          onClose={() => setCropOpen(false)}
+        />
+      )}
+      {restrictOpen && (
+        <RestrictModal
+          file={file}
+          requirePremium={requirePremium}
+          onClose={() => setRestrictOpen(false)}
         />
       )}
       {printOpen && pdfDoc && (
