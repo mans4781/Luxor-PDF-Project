@@ -243,6 +243,7 @@ type MenuEntry =
   | {
       kind?: "item";
       label: string;
+      icon?: ReactNode;
       shortcut?: string;
       checked?: boolean;
       soon?: boolean;
@@ -968,6 +969,12 @@ export default function Toolbar({
     { label: "Open PDF", shortcut: "Ctrl+O", action: onOpenFile },
     {
       label: "Recent Files",
+      icon: (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+      ),
       sub: recents.length
         ? [
             // Reopens from the local byte cache; falls back to the file
@@ -984,7 +991,18 @@ export default function Toolbar({
     },
     { label: "Create New Document", action: onCreateNew },
     { kind: "divider" },
-    { label: "Save", shortcut: "Ctrl+Shift+S", action: onFileSaveAs },
+    {
+      label: "Save",
+      icon: (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+          <path d="M17 21v-8H7v8" />
+          <path d="M7 3v5h8" />
+        </svg>
+      ),
+      shortcut: "Ctrl+Shift+S",
+      action: onFileSaveAs,
+    },
     { label: "Save As", action: onFileSaveAs },
     { label: "Export a Copy", shortcut: "Ctrl+Alt+S", action: onFileSaveCopy },
     { label: sharing ? "Preparing Share Link" : "Share", action: onShare, disabled: sharing },
@@ -1167,7 +1185,7 @@ export default function Toolbar({
             }}
           >
             <span style={{ display: "inline-flex", width: 14, justifyContent: "center", color: "#0D62F2" }}>
-              {item.checked ? checkIcon : null}
+              {item.checked ? checkIcon : item.icon ?? null}
             </span>
             <span style={{ flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.label}</span>
             {item.soon && (
