@@ -11,8 +11,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex flex-1 overflow-hidden">
           <Sidebar />
           <main className="flex-1 overflow-y-auto bg-[#F3F7FF] p-8 custom-scrollbar relative">
-            <div className="max-w-[1000px] mx-auto">
-              {children}
+            <div className="max-w-[1000px] mx-auto flex flex-col min-h-full">
+              <div className="flex-1">
+                {children}
+              </div>
+              <footer className="pt-8 pb-2 text-center text-xs text-[#071747]/50">
+                Copyright &copy; 2026 Luxor PDF Secure. Part of the Luxor PDF Suite.
+              </footer>
             </div>
           </main>
         </div>
