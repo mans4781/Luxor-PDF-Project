@@ -287,35 +287,51 @@ export default function PdfReaderPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Windows */}
-              <div className="rounded-2xl border-2 border-[#E50914] bg-[#FFF5F5] p-8 relative overflow-hidden flex flex-col items-center text-center shadow-lg min-w-0">
-                <div className="absolute top-4 right-4 bg-[#E50914] text-white text-[10px] font-bold px-2.5 py-1 rounded tracking-wider">AVAILABLE NOW</div>
-                <WindowsLogo className="w-12 h-12 text-[#E50914] mb-5" />
-                <h3 className="text-xl font-bold text-[#E50914] mb-2">Windows</h3>
-                <p className="text-sm text-[#E50914]/80 font-medium">Windows 10/11 (64-bit)</p>
+              <div className="rounded-2xl border-2 border-[#E50914] bg-[#FFF5F5] p-6 lg:p-7 relative overflow-hidden flex items-center gap-4 text-left shadow-lg min-w-0">
+                <WindowsLogo className="w-11 h-11 text-[#E50914] shrink-0" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <h3 className="text-lg font-bold text-[#E50914]">Windows</h3>
+                    <span className="bg-[#E50914] text-white text-[9px] font-bold px-2 py-0.5 rounded tracking-wider">AVAILABLE NOW</span>
+                  </div>
+                  <p className="text-sm text-[#E50914]/80 font-medium">Windows 10/11 (64-bit)</p>
+                </div>
               </div>
 
               {/* Mac */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-8 relative flex flex-col items-center text-center opacity-70 hover:opacity-100 transition-opacity min-w-0">
-                <div className="absolute top-4 right-4 bg-slate-100 text-slate-500 text-[10px] font-bold px-2.5 py-1 rounded tracking-wider">COMING SOON</div>
-                <AppleLogo className="w-12 h-12 text-slate-400 mb-5" />
-                <h3 className="text-xl font-bold text-slate-800 mb-2">Mac</h3>
-                <p className="text-sm text-slate-500 font-medium">macOS</p>
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:p-7 relative flex items-center gap-4 text-left opacity-70 hover:opacity-100 transition-opacity min-w-0">
+                <AppleLogo className="w-11 h-11 text-slate-400 shrink-0" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <h3 className="text-lg font-bold text-slate-800">Mac</h3>
+                    <span className="bg-slate-100 text-slate-500 text-[9px] font-bold px-2 py-0.5 rounded tracking-wider">COMING SOON</span>
+                  </div>
+                  <p className="text-sm text-slate-500 font-medium">macOS</p>
+                </div>
               </div>
 
               {/* Android */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-8 relative flex flex-col items-center text-center opacity-70 hover:opacity-100 transition-opacity min-w-0">
-                <div className="absolute top-4 right-4 bg-slate-100 text-slate-500 text-[10px] font-bold px-2.5 py-1 rounded tracking-wider">COMING SOON</div>
-                <AndroidLogo className="w-12 h-12 text-slate-400 mb-5" />
-                <h3 className="text-xl font-bold text-slate-800 mb-2">Android</h3>
-                <p className="text-sm text-slate-500 font-medium">Android phones and tablets</p>
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:p-7 relative flex items-center gap-4 text-left opacity-70 hover:opacity-100 transition-opacity min-w-0">
+                <AndroidLogo className="w-11 h-11 text-slate-400 shrink-0" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <h3 className="text-lg font-bold text-slate-800">Android</h3>
+                    <span className="bg-slate-100 text-slate-500 text-[9px] font-bold px-2 py-0.5 rounded tracking-wider">COMING SOON</span>
+                  </div>
+                  <p className="text-sm text-slate-500 font-medium">Android phones and tablets</p>
+                </div>
               </div>
 
               {/* iOS */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-8 relative flex flex-col items-center text-center opacity-70 hover:opacity-100 transition-opacity min-w-0">
-                <div className="absolute top-4 right-4 bg-slate-100 text-slate-500 text-[10px] font-bold px-2.5 py-1 rounded tracking-wider">COMING SOON</div>
-                <AppleLogo className="w-12 h-12 text-slate-400 mb-5" />
-                <h3 className="text-xl font-bold text-slate-800 mb-2">iOS</h3>
-                <p className="text-sm text-slate-500 font-medium">iPhone and iPad</p>
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:p-7 relative flex items-center gap-4 text-left opacity-70 hover:opacity-100 transition-opacity min-w-0">
+                <AppleLogo className="w-11 h-11 text-slate-400 shrink-0" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <h3 className="text-lg font-bold text-slate-800">iOS</h3>
+                    <span className="bg-slate-100 text-slate-500 text-[9px] font-bold px-2 py-0.5 rounded tracking-wider">COMING SOON</span>
+                  </div>
+                  <p className="text-sm text-slate-500 font-medium">iPhone and iPad</p>
+                </div>
               </div>
             </div>
           </div>
