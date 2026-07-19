@@ -8,7 +8,7 @@ import {
   DRAW_THICKNESS,
   allTextFonts,
 } from "@/lib/annotationColors";
-import { loadRecents } from "@/lib/recentFiles";
+import { loadRecents, formatFileSize, type RecentFileEntry } from "@/lib/recentFiles";
 
 // Toolbar swatches are derived from the central palette in
 // src/lib/annotationColors.ts. The 30-color DRAW_PALETTE is shared by
@@ -185,6 +185,7 @@ interface ToolbarProps {
   sharing: boolean;
   // File menu
   onFileSaveAs: () => void;
+  onOpenRecent: (entry: RecentFileEntry) => void;
   onFileSaveCopy: () => void;
   onFileClose: () => void;
   // Theme menu
@@ -415,7 +416,7 @@ export default function Toolbar({
   onClearWatermark, onClearPageNo,
   watermarkActive, pageNoActive,
   onShare, sharing,
-  onFileSaveAs, onFileSaveCopy, onFileClose,
+  onFileSaveAs, onOpenRecent, onFileSaveCopy, onFileClose,
   theme, onThemeChange,
   onFitWidth, onFitPage, onRotateCw, onRotateCcw, isFullscreen, onToggleFullscreen,
   activePanel, onOpenPanel, onAddComment, onOpenSettings, showOCR, showAI,
@@ -969,12 +970,15 @@ export default function Toolbar({
       label: "Recent Files",
       sub: recents.length
         ? [
-            // The browser can't reopen a file from disk without the user
-            // picking it again, so recents are shown for reference and the
-            // action below opens the picker.
-            ...recents.slice(0, 8).map((r): MenuEntry => ({ label: r.name, disabled: true })),
+            // Reopens from the local byte cache; falls back to the file
+            // picker if the cached copy is gone.
+            ...recents.slice(0, 8).map((r): MenuEntry => ({
+              label: r.name,
+              shortcut: formatFileSize(r.size),
+              action: () => onOpenRecent(r),
+            })),
             { kind: "divider" } as MenuEntry,
-            { label: "Browse to Reopen", action: onOpenFile } as MenuEntry,
+            { label: "Browse for a File", action: onOpenFile } as MenuEntry,
           ]
         : [{ label: "No recent files yet", disabled: true }],
     },

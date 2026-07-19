@@ -27,7 +27,7 @@ import FormsPanel from "@/components/FormsPanel";
 import SettingsModal from "@/components/SettingsModal";
 import HelpModal from "@/components/HelpModal";
 import { loadSettings, saveSettings, ReaderSettings } from "@/lib/settings";
-import { addRecent } from "@/lib/recentFiles";
+import { addRecent, saveRecentBlob, loadRecentBlob, type RecentFileEntry } from "@/lib/recentFiles";
 import { detectScanned } from "@/lib/docFeatures";
 
 /** Right-hand side panels — only one can be open at a time. */
@@ -393,9 +393,11 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         }, 80);
       }
 
-      // Record in recents (metadata only) unless disabled.
+      // Record in recents unless disabled — metadata in localStorage plus
+      // a byte cache in IndexedDB so File > Recent Files can reopen it.
       if (prefs.enableRecents) {
         addRecent({ name: file.name, size: file.size, lastModified: file.lastModified, pages: doc.numPages });
+        void saveRecentBlob(file);
       }
 
       // Detect scanned pages in the background (used by the search UI).
@@ -867,6 +869,18 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     if (isDirty) setCloseIntent("close");
     else { speechSynthesis.cancel(); onClose(); }
   }, [file, isDirty, onClose]);
+
+  // ── File → Recent Files: reopen from the IndexedDB byte cache ──
+  const handleOpenRecent = useCallback(async (entry: RecentFileEntry) => {
+    const cached = await loadRecentBlob(entry);
+    if (!cached) {
+      alert(`"${entry.name}" isn't cached anymore — please pick it from your device.`);
+      fileInputRef.current?.click();
+      return;
+    }
+    if (isDirty) setCloseIntent({ kind: "swap", file: cached });
+    else { speechSynthesis.cancel(); onFileLoad(cached); }
+  }, [isDirty, onFileLoad]);
 
   // ── Help modal (User Guide / Shortcuts / About) ────────────
   const [helpSection, setHelpSection] = useState<null | "guide" | "shortcuts" | "about">(null);
@@ -1426,6 +1440,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         onShare={handleShare}
         sharing={sharing}
         onFileSaveAs={handleFileSaveAs}
+        onOpenRecent={handleOpenRecent}
         onFileSaveCopy={handleFileSaveCopy}
         onFileClose={handleFileClose}
         theme={theme}
