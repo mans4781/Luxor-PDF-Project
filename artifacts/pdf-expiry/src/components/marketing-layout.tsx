@@ -29,7 +29,6 @@ const NAV_LINKS: { label: string; href: string; icon: typeof Home }[] = [
   { label: "About", href: "/about", icon: Info },
   { label: "Products", href: "/products/pdf-reader", icon: Layers },
   { label: "Online Tools", href: "/online-tools", icon: Wrench },
-  { label: "Features", href: "/features", icon: Sparkles },
   { label: "Pricing", href: "/pricing", icon: Tag },
 ];
 
@@ -41,7 +40,6 @@ const PRODUCT_LINKS: LinkItem[] = [
 
 const COMPANY_LINKS: LinkItem[] = [
   { label: "About Us", href: "/about" },
-  { label: "Features", href: "/features" },
   { label: "Pricing", href: "/pricing" },
 ];
 
@@ -272,7 +270,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
               src={`${baseUrl}brand/luxor-icon-nav.webp`}
               alt=""
               aria-hidden="true"
-              className="h-[53px] w-[53px] select-none rounded-[15%] border border-[#DC2626]/40 bg-white shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:border-[#DC2626]/70 group-hover:shadow-md"
+              className="h-[53px] w-auto select-none transition-transform duration-300 group-hover:scale-105"
               draggable={false}
             />
             <div className="flex flex-col leading-none">
