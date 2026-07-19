@@ -14,7 +14,7 @@ import {
   FolderOpen, Clock, FilePlus, Save, SaveAll, Copy, Share2, Printer, X, LogOut,
   ZoomIn, ZoomOut, Search, Scan, Maximize, MoveHorizontal, MoveVertical,
   File as FileIcon, BookOpen, RotateCw, RotateCcw, LayoutGrid, Bookmark, Info,
-  Expand, MonitorPlay, Moon, PanelTop,
+  Expand, MonitorPlay, Moon, PanelTop, ChevronUp, ChevronDown,
   Type, StickyNote, Pencil, Minus, ArrowUpRight, Square, Circle, Pentagon, Cloud, Eraser,
   Highlighter, Underline, Strikethrough, Waves, Palette, Trash2, MessageSquare,
   FilePlus2, FileMinus2, Crop, FileArchive, Droplet, Hash, EyeOff, PaintRoller,
@@ -450,7 +450,8 @@ export default function Toolbar({
   /* Which submenu (by label) is expanded inside an open dropdown. */
   const [openSub, setOpenSub] = useState<string | null>(null);
   /** Which menu's icon groups are shown in the ribbon row below. */
-  const [ribbonMenu, setRibbonMenu] = useState<MenuKey>("annotate");
+  const [ribbonMenu, setRibbonMenu] = useState<MenuKey>("file");
+  const [ribbonCollapsed, setRibbonCollapsed] = useState(false);
   useEffect(() => { setOpenSub(null); }, [popover]);
   const popoverRef = useRef<HTMLDivElement>(null);
   const [eraserIcon, setEraserIcon] = useState<string | null>(null);
@@ -1363,6 +1364,7 @@ export default function Toolbar({
               onClick={() => {
                 toggle(m.key);
                 setRibbonMenu(m.key);
+                setRibbonCollapsed(false);
               }}
               onMouseEnter={() => {
                 // Browsing behaviour: once one menu is open, hovering
@@ -1429,7 +1431,39 @@ export default function Toolbar({
       </div>
 
       {/* ── Row 2: quick-access ribbon (View > Hide Toolbar) ── */}
-      {!toolbarHidden && activeRibbon && <div className="luxor-ribbon">{activeRibbon}</div>}
+      {!toolbarHidden && activeRibbon && !ribbonCollapsed && (
+        <div className="luxor-ribbon" style={{ position: "relative" }}>
+          {activeRibbon}
+          <button
+            className="ribbon-collapse-btn"
+            title="Collapse toolbar icons"
+            onClick={() => setRibbonCollapsed(true)}
+            style={{
+              position: "absolute", right: 6, top: 4,
+              background: "transparent", border: "none", cursor: "pointer",
+              color: "inherit", opacity: 0.55, padding: 3, borderRadius: 4,
+              display: "flex", alignItems: "center",
+            }}
+          >
+            <ChevronUp size={15} strokeWidth={2} />
+          </button>
+        </div>
+      )}
+      {!toolbarHidden && activeRibbon && ribbonCollapsed && (
+        <div style={{ display: "flex", justifyContent: "flex-end", background: "var(--toolbar-bg)" }}>
+          <button
+            title="Expand toolbar icons"
+            onClick={() => setRibbonCollapsed(false)}
+            style={{
+              background: "transparent", border: "none", cursor: "pointer",
+              color: "inherit", opacity: 0.55, padding: "1px 8px",
+              display: "flex", alignItems: "center",
+            }}
+          >
+            <ChevronDown size={15} strokeWidth={2} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
