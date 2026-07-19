@@ -91,8 +91,38 @@ export default function DeveloperDashboardPage() {
 
   function logout() {
     setDevAuthed(false);
-    setLocation("/developer/login");
+    // Also drop any admin-console token held in this browser session so the
+    // developer is fully logged out of every privileged surface.
+    try {
+      sessionStorage.removeItem("luxor_admin_token");
+      sessionStorage.removeItem("luxor_admin_dev_preview");
+    } catch {
+      /* ignore */
+    }
+    // Hard navigation to the public homepage (not the login page), so no
+    // in-memory dashboard state survives.
+    window.location.href = "/";
   }
+
+  // Auto-logout after 60 seconds of inactivity, for security.
+  useEffect(() => {
+    const INACTIVITY_LIMIT_MS = 60 * 1000;
+    let timer: ReturnType<typeof setTimeout>;
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (isDevAuthed()) logout();
+      }, INACTIVITY_LIMIT_MS);
+    };
+    const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "wheel"] as const;
+    for (const ev of events) window.addEventListener(ev, reset, { passive: true });
+    reset();
+    return () => {
+      clearTimeout(timer);
+      for (const ev of events) window.removeEventListener(ev, reset);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans flex">
