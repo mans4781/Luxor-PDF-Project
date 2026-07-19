@@ -427,20 +427,21 @@ export default function PdfReaderPage() {
         </section>
 
         {/* FINAL CTA */}
-        <section className="py-24 lg:py-32 bg-gradient-to-br from-[#E50914] to-[#990000] relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: 'radial-gradient(circle at center, white 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
-          <div className="container mx-auto px-6 max-w-[88rem] relative z-10">
-            <div className="max-w-3xl mx-auto text-center flex flex-col items-center">
-              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-8 shadow-2xl">
-                <img src={`${import.meta.env.BASE_URL}brand/luxor-reader-logo.png`} alt="" className="w-10 h-10" />
-              </div>
-              <h2 className="text-4xl lg:text-5xl font-extrabold text-white mb-6 tracking-tight">Ready to read PDFs smarter?</h2>
-              <p className="text-xl text-red-100 mb-10 leading-relaxed font-medium">
-                Join thousands of users who trust Luxor PDF Reader for their daily document needs.
-              </p>
-              <div className="flex flex-col items-center gap-4 w-full">
-                <DownloadButton variant="white" className="px-10 py-4 text-lg shadow-xl" />
-                <p className="text-red-200 text-sm mt-2">Requires Windows 10 or 11 (64-bit)</p>
+        <section className="py-12 lg:py-16 bg-white">
+          <div className="container mx-auto px-6 max-w-[88rem]">
+            <div className="rounded-2xl bg-gradient-to-r from-[#E50914] via-[#C4060F] to-[#990000] relative overflow-hidden px-8 py-10 lg:px-14 lg:py-12">
+              <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: 'radial-gradient(circle at center, white 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
+              <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+                <img src={`${import.meta.env.BASE_URL}brand/luxor-reader-logo.png`} alt="" className="w-20 h-20 lg:w-24 lg:h-24 shrink-0 drop-shadow-xl" />
+                <div className="flex-1 text-center lg:text-left">
+                  <h2 className="text-2xl lg:text-[32px] font-extrabold text-white tracking-tight leading-tight mb-3">
+                    Ready to read PDFs the<br className="hidden lg:block" /> fast and secure way?
+                  </h2>
+                  <p className="text-red-100 text-base lg:text-lg font-medium">Download Luxor PDF Reader for Windows today.</p>
+                </div>
+                <div className="shrink-0">
+                  <DownloadButton variant="white" className="px-8 py-4 text-base shadow-xl" />
+                </div>
               </div>
             </div>
           </div>
