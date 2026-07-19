@@ -7,6 +7,7 @@ import {
   Settings, FolderLock, Download,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import secureHeroDashboard from "@/assets/secure-hero-dashboard.png";
 
 const APP_URL = "/pdf-expiry/";
 const SECURE_INSTALLER_URL = "/api/downloads/luxor-pdf-secure-latest.exe";
@@ -323,23 +324,11 @@ export default function PdfSecurityPage() {
               className="relative"
             >
               <div className="absolute -inset-6 bg-gradient-to-br from-blue-300/25 to-sky-300/25 rounded-3xl blur-2xl" aria-hidden="true" />
-              <div className="relative">
-                <DashboardMockup />
-                {/* Floating encryption badge */}
-                <div className="hidden md:flex absolute -top-6 -right-4 items-center gap-3 bg-white rounded-xl shadow-xl border border-blue-100 px-4 py-3">
-                  <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
-                    <Lock className="w-4.5 h-4.5 text-[#1d4ed8]" strokeWidth={2.2} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-900">Encryption AES-256</p>
-                    <p className="text-[10px] text-slate-500">Bank-level security</p>
-                  </div>
-                </div>
-                {/* Floating shield */}
-                <div className="hidden md:block absolute -bottom-8 -left-8">
-                  <ShieldBadge className="w-24 h-28 drop-shadow-xl" />
-                </div>
-              </div>
+              <img
+                src={secureHeroDashboard}
+                alt="Luxor PDF Secure dashboard"
+                className="relative w-full max-w-[640px] mx-auto drop-shadow-2xl"
+              />
             </motion.div>
           </div>
         </div>
