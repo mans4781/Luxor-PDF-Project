@@ -12,9 +12,9 @@ import {
   HardDrive, 
   Settings,
   ChevronLeft,
-  ChevronRight,
-  Shield
+  ChevronRight
 } from 'lucide-react';
+import shieldLogo from '../assets/luxor-secure-shield.png';
 import { useAppStore } from '../store/useAppStore';
 import { cn } from '../utils/cn';
 
@@ -44,9 +44,11 @@ export function Sidebar() {
     >
       <div className="h-16 flex items-center px-6 pt-4 shrink-0 overflow-hidden">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
-            <Shield className="w-5 h-5 text-white" />
-          </div>
+          <img
+            src={shieldLogo}
+            alt="Luxor PDF Secure"
+            className="w-9 h-9 object-contain shrink-0"
+          />
           {!sidebarCollapsed && (
             <div className="flex flex-col whitespace-nowrap">
               <span className="font-bold tracking-wide text-lg leading-tight">LUXOR</span>
