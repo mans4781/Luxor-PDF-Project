@@ -1471,7 +1471,41 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         onOpenHelp={setHelpSection}
         onSetSplitView={setSplitView}
       />
-      <StatusBar viewControls={viewControls} />
+      <StatusBar
+        viewControls={viewControls}
+        zoomSlider={
+          <div className="zoom-slider-group" title="Zoom">
+            <button
+              className="zoom-slider-btn"
+              aria-label="Zoom out"
+              onClick={() => setZoom(z => Math.max(0.25, parseFloat((z - 0.25).toFixed(2))))}
+            >
+              −
+            </button>
+            <input
+              type="range"
+              className="zoom-slider"
+              min={25}
+              max={500}
+              step={5}
+              value={Math.round((zoom / ZOOM_BASE) * 100)}
+              onChange={e => {
+                const pct = parseInt(e.target.value, 10);
+                if (!isNaN(pct)) setZoom(Math.min(7.5, Math.max(0.25, ZOOM_BASE * (pct / 100))));
+              }}
+              aria-label="Zoom level"
+            />
+            <button
+              className="zoom-slider-btn"
+              aria-label="Zoom in"
+              onClick={() => setZoom(z => Math.min(7.5, parseFloat((z + 0.25).toFixed(2))))}
+            >
+              +
+            </button>
+            <span className="zoom-slider-pct">{zoomLabel(zoom)}</span>
+          </div>
+        }
+      />
 
       {/* Transient hint when Comment ribbon button is used with no text selected. */}
       {commentHint && (
