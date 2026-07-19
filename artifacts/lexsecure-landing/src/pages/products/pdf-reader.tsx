@@ -179,12 +179,6 @@ export default function PdfReaderPage() {
               {/* Right Side */}
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="relative flex flex-col items-center lg:items-end min-w-0">
                 <div className="relative w-full max-w-[640px]">
-                  {/* Red Curled Badge */}
-                  <div className="absolute -top-5 -left-6 z-20 bg-[#E50914] text-white text-sm font-black italic tracking-widest px-6 py-3 shadow-xl transform -rotate-6 rounded-lg rounded-bl-none">
-                    LUXOR PDF
-                    <div className="absolute bottom-0 left-0 w-4 h-4 bg-[#B8000B] translate-y-full clip-path-triangle" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%)' }} />
-                  </div>
-
                   <img
                     src={readerHeroApp}
                     alt="Luxor PDF Reader application window showing the About page"
