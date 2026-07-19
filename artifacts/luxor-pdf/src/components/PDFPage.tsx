@@ -83,6 +83,9 @@ interface PDFPageProps {
   shapeFill: boolean;
   shapeFillOpacity?: number;
   onAnnotationAdd: (a: Annotation) => void;
+  /** Called after a double-click finishes (commits) a polygon, so the
+   *  owner can deactivate the polygon tool (switch back to hand). */
+  onPolygonDone?: () => void;
   onAnnotationUpdate: (id: string, updates: Partial<Annotation>) => void;
   onAnnotationRemove: (id: string) => void;
   isCurrentPage: boolean;
@@ -997,7 +1000,7 @@ export default function PDFPage({
   pdfDocument, pageNum, zoom, rotation, searchTerm, tool, annotations,
   highlightColor, textColor, textSize, textFont, textUnderline, textStrike, drawThickness, drawColor,
   shapeFill, shapeFillOpacity,
-  onAnnotationAdd, onAnnotationUpdate, onAnnotationRemove,
+  onAnnotationAdd, onPolygonDone, onAnnotationUpdate, onAnnotationRemove,
   onVisible, onSearchTermChange,
   watermark, pageNo, totalPages, currentPage,
   formFillMode,
@@ -1903,7 +1906,9 @@ export default function PDFPage({
     if (tool !== "polygon") return;
     e.preventDefault();
     commitPolygon();
-  }, [tool, commitPolygon]);
+    // Double-click both closes the polygon and stops the tool.
+    onPolygonDone?.();
+  }, [tool, commitPolygon, onPolygonDone]);
 
   const onShapeMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (e.button !== 0) return;

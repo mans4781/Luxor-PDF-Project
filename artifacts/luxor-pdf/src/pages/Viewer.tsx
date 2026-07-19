@@ -318,6 +318,10 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     setTool(t);
   }, [requirePremium]);
 
+  // Double-clicking closes an in-progress polygon AND deactivates the
+  // polygon tool, returning to the hand tool.
+  const handlePolygonDone = useCallback(() => setTool("hand"), []);
+
   // Stable per-document key for persisting highlights across reloads.
   const docKey = useMemo(
     () => `${file.name}::${file.size}::${file.lastModified}`,
@@ -1943,6 +1947,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
                     shapeFill={shapeFill}
                     onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                     onAnnotationRemove={removeAnnotation}
+                    onPolygonDone={handlePolygonDone}
                     isCurrentPage={left === currentPage} onVisible={handlePageVisible}
                     onSearchTermChange={handleSearchFromContext}
                     commentRequest={commentRequest}
@@ -1963,6 +1968,7 @@ defaultPageSize={defaultPageSize}
                       shapeFill={shapeFill}
                       onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                       onAnnotationRemove={removeAnnotation}
+                      onPolygonDone={handlePolygonDone}
                       isCurrentPage={right === currentPage} onVisible={handlePageVisible}
                       onSearchTermChange={handleSearchFromContext}
                       commentRequest={commentRequest}
@@ -1989,6 +1995,7 @@ defaultPageSize={defaultPageSize}
                 shapeFill={shapeFill}
                 onAnnotationAdd={addAnnotation} onAnnotationUpdate={updateAnnotation}
                 onAnnotationRemove={removeAnnotation}
+                onPolygonDone={handlePolygonDone}
                 isCurrentPage={pageNum === currentPage} onVisible={handlePageVisible}
                 onSearchTermChange={handleSearchFromContext}
                 commentRequest={commentRequest}
