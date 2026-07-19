@@ -293,10 +293,9 @@ export default function ESignPage() {
                 LUXOR PDF eSign makes it easy to sign, request signatures, approve documents and automate your workflow. Secure, compliant and legally trusted eSigning for modern teams and professionals.
               </p>
               <div className="flex flex-wrap gap-3 mb-5 items-center">
-                <span className="relative inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[#0f8f2f]/50 text-white/90 font-bold cursor-not-allowed select-none" aria-disabled="true" title="Coming soon">
+                <span className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[#0f8f2f] hover:bg-[#0a6e24] text-white font-bold shadow-lg shadow-green-600/20 transition-colors cursor-default select-none" aria-disabled="true">
                   <WindowsGlyph className="w-4 h-4" />
                   Download for Windows
-                  <span className="absolute -top-2.5 -right-2.5 rounded-full bg-amber-400 text-[#111827] text-[10px] font-extrabold px-2 py-0.5 shadow">Coming Soon</span>
                 </span>
                 <a href={APP_URL} className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white hover:bg-[#dff5e5] text-[#0f8f2f] font-bold border border-[#0f8f2f]/40 transition-colors">
                   Start Free Trial
@@ -485,7 +484,7 @@ export default function ESignPage() {
                       Start Free Trial
                       <span aria-hidden="true" className="font-extrabold">&rsaquo;</span>
                     </a>
-                    <span className="inline-flex items-center justify-center gap-2.5 px-10 py-4 rounded-xl bg-[#128a30]/60 text-white/80 font-bold text-base border border-white/40 cursor-not-allowed select-none" aria-disabled="true" title="Coming soon">
+                    <span className="inline-flex items-center justify-center gap-2.5 px-10 py-4 rounded-xl bg-[#128a30] text-white font-bold text-base border border-white/70 shadow-lg cursor-default select-none" aria-disabled="true">
                       <WindowsGlyph className="w-4.5 h-4.5" />
                       Download for Windows
                     </span>
