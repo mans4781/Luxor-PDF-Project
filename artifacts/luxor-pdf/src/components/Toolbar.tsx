@@ -14,7 +14,7 @@ import {
   FolderOpen, Clock, FilePlus, Save, SaveAll, Copy, Share2, Printer, X, LogOut,
   ZoomIn, ZoomOut, Search, Scan, Maximize, MoveHorizontal, MoveVertical,
   File as FileIcon, BookOpen, RotateCw, RotateCcw, LayoutGrid, Bookmark, Info,
-  Expand, MonitorPlay, Moon, PanelTop, ChevronUp, ChevronDown,
+  Expand, MonitorPlay, PanelTop, ChevronUp, ChevronDown,
   Type, StickyNote, Pencil, Minus, ArrowUpRight, Square, Circle, Pentagon, Cloud, Eraser,
   Highlighter, Underline, Strikethrough, Waves, Palette, Trash2, MessageSquare,
   FilePlus2, FileMinus2, Crop, FileArchive, Droplet, Hash, EyeOff, PaintRoller,
@@ -1120,7 +1120,6 @@ export default function Toolbar({
     { kind: "divider" },
     { label: isFullscreen ? "Exit Full Screen" : "Full Screen", icon: mi(Expand), shortcut: "F11", checked: isFullscreen, action: onToggleFullscreen },
     { label: "Presentation Mode", icon: mi(MonitorPlay), action: onPresentation },
-    { label: "Dark Mode", icon: mi(Moon), checked: theme === "dark", action: () => onThemeChange(theme === "dark" ? "light" : "dark") },
     { label: toolbarHidden ? "Show Toolbar" : "Hide Toolbar", icon: mi(PanelTop), action: onToggleToolbar },
   ];
 
