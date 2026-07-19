@@ -6,8 +6,32 @@ import { DownloadButton } from "@/components/reader/DownloadButton";
 import { ReaderMockup } from "@/components/reader/ReaderMockup";
 import { ProductivityMockup } from "@/components/reader/ProductivityMockup";
 import { benefits, features, faqs } from "@/components/reader/data";
-import { CheckCircle2, Plus, Monitor, Smartphone, Apple, XCircle, ArrowLeft, ArrowRight, Star } from "lucide-react";
+import { CheckCircle2, Plus, Monitor, Smartphone, XCircle, ArrowLeft, ArrowRight, Star } from "lucide-react";
 import { motion, AnimatePresence, MotionConfig } from "framer-motion";
+
+function WindowsLogo({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M3 5.1 10.6 4v7.6H3V5.1zm0 13.8V12.4h7.6V20L3 18.9zM11.6 3.85 21 2.5v9.1h-9.4V3.85zm0 16.3V12.4H21v9.1l-9.4-1.35z" />
+    </svg>
+  );
+}
+
+function AppleLogo({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M16.365 12.789c.024 2.605 2.285 3.472 2.31 3.483-.019.061-.361 1.236-1.191 2.449-.717 1.049-1.462 2.093-2.636 2.115-1.153.021-1.524-.684-2.842-.684-1.319 0-1.731.663-2.822.705-1.133.043-1.995-1.134-2.719-2.179-1.478-2.137-2.608-6.04-1.091-8.674.753-1.308 2.1-2.137 3.562-2.158 1.112-.021 2.162.748 2.842.748.679 0 1.955-.925 3.296-.789.561.023 2.137.227 3.148 1.708-.081.05-1.879 1.098-1.857 3.276zM14.19 5.246c.601-.728 1.006-1.741.895-2.746-.866.035-1.913.577-2.534 1.304-.557.644-1.045 1.675-.913 2.663.966.075 1.951-.491 2.552-1.221z" />
+    </svg>
+  );
+}
+
+function AndroidLogo({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.523 15.341a.996.996 0 1 1 .002-1.992.996.996 0 0 1-.002 1.992m-11.046 0a.996.996 0 1 1 .002-1.992.996.996 0 0 1-.002 1.992m11.405-6.02 1.997-3.46a.416.416 0 0 0-.152-.567.416.416 0 0 0-.568.152l-2.022 3.503A12.05 12.05 0 0 0 12 7.921c-1.849 0-3.6.375-5.137 1.028L4.841 5.446a.416.416 0 0 0-.568-.152.416.416 0 0 0-.152.567l1.997 3.46C2.688 11.187.343 14.658 0 18.761h24c-.344-4.103-2.688-7.574-6.118-9.44" />
+    </svg>
+  );
+}
 
 function Accordion({ faqs }: { faqs: { q: string, a: string }[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -278,7 +302,7 @@ export default function PdfReaderPage() {
               {/* Windows */}
               <div className="rounded-2xl border-2 border-[#E50914] bg-[#FFF5F5] p-8 relative overflow-hidden flex flex-col items-center text-center shadow-lg min-w-0">
                 <div className="absolute top-4 right-4 bg-[#E50914] text-white text-[10px] font-bold px-2.5 py-1 rounded tracking-wider">AVAILABLE NOW</div>
-                <Monitor className="w-12 h-12 text-[#E50914] mb-5" />
+                <WindowsLogo className="w-12 h-12 text-[#E50914] mb-5" />
                 <h3 className="text-xl font-bold text-[#E50914] mb-2">Windows</h3>
                 <p className="text-sm text-[#E50914]/80 font-medium">Windows 10/11 (64-bit)</p>
               </div>
@@ -286,7 +310,7 @@ export default function PdfReaderPage() {
               {/* Mac */}
               <div className="rounded-2xl border border-slate-200 bg-white p-8 relative flex flex-col items-center text-center opacity-70 hover:opacity-100 transition-opacity min-w-0">
                 <div className="absolute top-4 right-4 bg-slate-100 text-slate-500 text-[10px] font-bold px-2.5 py-1 rounded tracking-wider">COMING SOON</div>
-                <Apple className="w-12 h-12 text-slate-400 mb-5" />
+                <AppleLogo className="w-12 h-12 text-slate-400 mb-5" />
                 <h3 className="text-xl font-bold text-slate-800 mb-2">Mac</h3>
                 <p className="text-sm text-slate-500 font-medium">macOS</p>
               </div>
@@ -294,7 +318,7 @@ export default function PdfReaderPage() {
               {/* Android */}
               <div className="rounded-2xl border border-slate-200 bg-white p-8 relative flex flex-col items-center text-center opacity-70 hover:opacity-100 transition-opacity min-w-0">
                 <div className="absolute top-4 right-4 bg-slate-100 text-slate-500 text-[10px] font-bold px-2.5 py-1 rounded tracking-wider">COMING SOON</div>
-                <Smartphone className="w-12 h-12 text-slate-400 mb-5" />
+                <AndroidLogo className="w-12 h-12 text-slate-400 mb-5" />
                 <h3 className="text-xl font-bold text-slate-800 mb-2">Android</h3>
                 <p className="text-sm text-slate-500 font-medium">Android phones and tablets</p>
               </div>
@@ -302,7 +326,7 @@ export default function PdfReaderPage() {
               {/* iOS */}
               <div className="rounded-2xl border border-slate-200 bg-white p-8 relative flex flex-col items-center text-center opacity-70 hover:opacity-100 transition-opacity min-w-0">
                 <div className="absolute top-4 right-4 bg-slate-100 text-slate-500 text-[10px] font-bold px-2.5 py-1 rounded tracking-wider">COMING SOON</div>
-                <Smartphone className="w-12 h-12 text-slate-400 mb-5" />
+                <AppleLogo className="w-12 h-12 text-slate-400 mb-5" />
                 <h3 className="text-xl font-bold text-slate-800 mb-2">iOS</h3>
                 <p className="text-sm text-slate-500 font-medium">iPhone and iPad</p>
               </div>
