@@ -6,6 +6,7 @@ import {
   ArrowRightLeft, CheckCircle2, FileIcon
 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
+import { canvasToBmpBlob } from '../lib/bmp-encode';
 
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
@@ -21,11 +22,35 @@ import autoTable from 'jspdf-autotable';
 
 type ConversionType = 'pdf-to-img' | 'pdf-to-word' | 'pdf-to-excel' | 'img-to-pdf' | 'word-to-pdf' | 'excel-to-pdf';
 
+type ImageDpi = 72 | 144 | 216;
+type ImageFormat = 'png' | 'jpg' | 'webp' | 'bmp';
+
+const DPI_OPTIONS: { value: ImageDpi; label: string; hint: string }[] = [
+  { value: 72, label: 'Standard', hint: '72 DPI' },
+  { value: 144, label: 'High', hint: '144 DPI' },
+  { value: 216, label: 'Ultra', hint: '216 DPI' },
+];
+
+const FORMAT_OPTIONS: { value: ImageFormat; label: string }[] = [
+  { value: 'png', label: 'PNG' },
+  { value: 'jpg', label: 'JPG' },
+  { value: 'webp', label: 'WEBP' },
+  { value: 'bmp', label: 'BMP' },
+];
+
+async function canvasToImageBlob(canvas: HTMLCanvasElement, format: ImageFormat): Promise<Blob | null> {
+  if (format === 'bmp') return canvasToBmpBlob(canvas);
+  const mime = format === 'jpg' ? 'image/jpeg' : format === 'webp' ? 'image/webp' : 'image/png';
+  return new Promise<Blob | null>(res => canvas.toBlob(res, mime, format === 'png' ? undefined : 0.92));
+}
+
 export function Edit() {
   const [conversionType, setConversionType] = useState<ConversionType>('pdf-to-word');
   const [files, setFiles] = useState<File[]>([]);
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [imageDpi, setImageDpi] = useState<ImageDpi>(144);
+  const [imageFormat, setImageFormat] = useState<ImageFormat>('png');
   const { addActivity } = useAppStore();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,10 +72,12 @@ export function Edit() {
   const processPdfToImg = async (file: File) => {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    
+    const scale = imageDpi / 72;
+    const ext = imageFormat;
+
     if (pdf.numPages === 1) {
       const page = await pdf.getPage(1);
-      const viewport = page.getViewport({ scale: 2.0 });
+      const viewport = page.getViewport({ scale });
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('Canvas not supported');
@@ -59,13 +86,13 @@ export function Edit() {
       canvas.width = viewport.width;
       await page.render({ canvas, canvasContext: ctx, viewport }).promise;
       
-      const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, 'image/png'));
-      if (blob) downloadBlob(blob, file.name.replace(/\.pdf$/i, '.png'));
+      const blob = await canvasToImageBlob(canvas, imageFormat);
+      if (blob) downloadBlob(blob, file.name.replace(/\.pdf$/i, `.${ext}`));
     } else {
       const zip = new JSZip();
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 2.0 });
+        const viewport = page.getViewport({ scale });
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         if (!ctx) continue;
@@ -74,8 +101,8 @@ export function Edit() {
         canvas.width = viewport.width;
         await page.render({ canvas, canvasContext: ctx, viewport }).promise;
         
-        const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, 'image/png'));
-        if (blob) zip.file(`page_${i}.png`, blob);
+        const blob = await canvasToImageBlob(canvas, imageFormat);
+        if (blob) zip.file(`page_${i}.${ext}`, blob);
       }
       const zipBlob = await zip.generateAsync({ type: 'blob' });
       downloadBlob(zipBlob, file.name.replace(/\.pdf$/i, '_images.zip'));
@@ -331,6 +358,42 @@ export function Edit() {
                 </div>
               </div>
               
+              {conversionType === 'pdf-to-img' && (
+                <div className="mb-4 space-y-3">
+                  <div>
+                    <p className="text-xs font-semibold text-[#071747]/70 mb-1.5">Image quality</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {DPI_OPTIONS.map(opt => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setImageDpi(opt.value)}
+                          className={`px-2 py-2 rounded-lg border text-center transition-colors ${imageDpi === opt.value ? 'border-[#075BE8] bg-blue-50 text-[#075BE8]' : 'border-[#DCE7FA] text-[#071747]/70 hover:border-[#075BE8]/40'}`}
+                        >
+                          <span className="block text-sm font-semibold">{opt.label}</span>
+                          <span className="block text-[11px] opacity-70">{opt.hint}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-[#071747]/70 mb-1.5">Output format</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {FORMAT_OPTIONS.map(opt => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setImageFormat(opt.value)}
+                          className={`px-2 py-1.5 rounded-lg border text-sm font-semibold transition-colors ${imageFormat === opt.value ? 'border-[#075BE8] bg-blue-50 text-[#075BE8]' : 'border-[#DCE7FA] text-[#071747]/70 hover:border-[#075BE8]/40'}`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1" onClick={() => setFiles([])} disabled={processing}>Cancel</Button>
                 <Button className="flex-1" onClick={handleConvert} disabled={processing}>
