@@ -344,7 +344,7 @@ export default function PdfReaderPage() {
             
             <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
               {/* Card 1: Luxor */}
-              <div className="rounded-3xl border-2 border-[#E50914] bg-white p-8 lg:p-10 shadow-xl relative z-10 flex flex-col md:-my-4">
+              <div className="rounded-3xl border-2 border-[#E50914] bg-white p-8 lg:p-10 shadow-xl relative z-10 flex flex-col">
                 <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-100 mt-4">
                   <div className="w-12 h-12 bg-[#FFF5F5] rounded-xl flex items-center justify-center shrink-0">
                     <img src={`${import.meta.env.BASE_URL}brand/luxor-reader-logo.png`} alt="" className="w-7 h-7" />
