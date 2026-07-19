@@ -2,7 +2,7 @@ import {
   Zap,
   Feather,
   Shield,
-  ThumbsUp,
+  MousePointerClick,
   Monitor,
   Search,
   ZoomIn,
@@ -18,10 +18,10 @@ import {
 } from "lucide-react";
 
 export const benefits = [
-  { icon: Zap, title: "Fast", text: "Open large PDFs in seconds with optimized performance." },
-  { icon: Feather, title: "Lightweight", text: "Minimal resource usage for a smooth reading experience." },
-  { icon: Shield, title: "Secure", text: "Your files remain private with no unnecessary cloud uploads." },
-  { icon: ThumbsUp, title: "Easy to Use", text: "A clean, intuitive interface designed for productivity." },
+  { icon: Zap, filled: true, title: "Fast", text: "Open large PDFs in seconds with optimized performance." },
+  { icon: Feather, filled: false, title: "Lightweight", text: "Minimal resource usage for a smooth reading experience." },
+  { icon: Shield, filled: false, title: "Secure", text: "Your files remain private with no unnecessary cloud uploads." },
+  { icon: MousePointerClick, filled: false, title: "Easy to Use", text: "A clean, intuitive interface designed for productivity." },
 ];
 
 export const features = [

@@ -191,10 +191,12 @@ export default function PdfReaderPage() {
             <div className="bg-white rounded-2xl border border-slate-200 shadow-lg shadow-slate-200/50 p-8 lg:p-10">
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 lg:divide-x divide-slate-100">
                 {benefits.map((benefit, i) => (
-                  <div key={i} className="flex flex-col gap-4 lg:pl-12 first:lg:pl-0">
-                    <div className="w-12 h-12 rounded-2xl bg-[#FFF5F5] text-[#E50914] flex items-center justify-center shrink-0">
-                      <benefit.icon className="w-6 h-6" />
-                    </div>
+                  <div key={i} className="flex items-start gap-4 lg:pl-12 first:lg:pl-0">
+                    <benefit.icon
+                      className="w-7 h-7 text-[#E50914] shrink-0 mt-0.5"
+                      strokeWidth={2.25}
+                      {...(benefit.filled ? { fill: "#E50914" } : {})}
+                    />
                     <div>
                       <h3 className="font-bold text-slate-900 text-lg mb-1">{benefit.title}</h3>
                       <p className="text-sm text-slate-500 leading-relaxed">{benefit.text}</p>
