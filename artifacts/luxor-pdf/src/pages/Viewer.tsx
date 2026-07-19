@@ -112,9 +112,9 @@ const createDedicatedPdfWorker = () => {
   return { port, worker };
 };
 
-// Actual zoom values where 1.5 = "100%" (the new baseline)
-const ZOOM_BASE = 1.5;
-const ZOOM_PRESETS = [0.375, 0.75, 1.125, 1.5, 1.875, 2.25, 3.0, 3.75, 4.5, 6.0, 7.5];
+// Actual zoom values where 1.875 = "100%" (the new baseline; old 125%)
+const ZOOM_BASE = 1.875;
+const ZOOM_PRESETS = [0.46875, 0.9375, 1.40625, 1.875, 2.34375, 2.8125, 3.75, 4.6875, 5.625, 7.5];
 const zoomLabel = (z: number) => `${Math.round((z / ZOOM_BASE) * 100)}%`;
 
 interface ViewerProps {
@@ -1486,7 +1486,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
               type="range"
               className="zoom-slider"
               min={25}
-              max={500}
+              max={400}
               step={5}
               value={Math.round((zoom / ZOOM_BASE) * 100)}
               onChange={e => {
