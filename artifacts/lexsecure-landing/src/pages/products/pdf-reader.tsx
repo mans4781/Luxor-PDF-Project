@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { DownloadButton } from "@/components/reader/DownloadButton";
-import { ReaderMockup } from "@/components/reader/ReaderMockup";
+import readerHeroApp from "@/assets/reader-hero-app.png";
 import { ProductivityMockup } from "@/components/reader/ProductivityMockup";
 import { benefits, features, faqs } from "@/components/reader/data";
 import { CheckCircle2, Plus, Monitor, Smartphone, XCircle, ArrowLeft, ArrowRight, Star } from "lucide-react";
@@ -185,9 +185,12 @@ export default function PdfReaderPage() {
                     <div className="absolute bottom-0 left-0 w-4 h-4 bg-[#B8000B] translate-y-full clip-path-triangle" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%)' }} />
                   </div>
 
-                  <div className="bg-white p-2.5 rounded-2xl shadow-2xl border border-slate-200">
-                    <ReaderMockup />
-                  </div>
+                  <img
+                    src={readerHeroApp}
+                    alt="Luxor PDF Reader application window showing the About page"
+                    className="w-full h-auto drop-shadow-2xl"
+                    loading="eager"
+                  />
                 </div>
 
                 {/* Pagination Dots/Arrows under mockup */}
