@@ -9,6 +9,7 @@ import {
 import { motion } from "framer-motion";
 import secureHeroDashboard from "@/assets/secure-hero-dashboard.png";
 import secureEncryptPanel from "@/assets/secure-encrypt-panel.png";
+import secureShield from "@/assets/secure-shield.png";
 
 const APP_URL = "/pdf-expiry/";
 const SECURE_INSTALLER_URL = "/api/downloads/luxor-pdf-secure-latest.exe";
@@ -462,7 +463,7 @@ export default function PdfSecurityPage() {
             <div className="rounded-2xl bg-gradient-to-r from-[#2563eb] via-[#1d4ed8] to-[#1e3a8a] relative overflow-hidden px-8 py-8 lg:px-14 lg:py-10">
               <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "radial-gradient(circle at center, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} aria-hidden="true" />
               <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-                <ShieldBadge className="w-16 h-[76px] lg:w-20 lg:h-24 shrink-0 drop-shadow-xl" />
+                <img src={secureShield} alt="" className="w-20 lg:w-24 shrink-0 drop-shadow-xl" />
                 <div className="flex-1 text-center lg:text-left">
                   <h2 className="text-2xl lg:text-[30px] font-extrabold text-white tracking-tight leading-tight mb-2">Ready to Secure Your PDFs?</h2>
                   <p className="text-blue-100 text-base lg:text-lg font-medium mb-4 lg:mb-0">
