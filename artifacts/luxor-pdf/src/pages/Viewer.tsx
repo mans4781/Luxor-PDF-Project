@@ -243,10 +243,20 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     }
     setCommentRequest(n => n + 1);
   }, []);
+  // Premium gate: everything is free except the AI Assistant, the
+  // Protect features, the Tools-menu features, cloud shapes, squiggly
+  // underline, and stamp placement (requirePremium shows the sign-in /
+  // upgrade prompt when not eligible).
+  const { requirePremium } = useAuthGate();
+
   /* Menu bar Annotate → Underline / Strikeout Text. Same selection
    * validation and hint as the Comment button; the owning page applies
    * the markup via its markupRequest effect. */
   const handleMarkup = useCallback((kind: "underline" | "strike" | "squiggly") => {
+    // Squiggly underline is a premium markup style; the plain underline
+    // and strikeout stay free. Gated here (the execution point) so every
+    // entry path is covered.
+    if (kind === "squiggly" && !requirePremium("Squiggly underline")) return;
     const sel = window.getSelection();
     const selText = sel?.toString().trim();
     const anchor = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).commonAncestorContainer : null;
@@ -259,7 +269,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       return;
     }
     setMarkupRequest(prev => ({ kind, n: (prev?.n ?? 0) + 1 }));
-  }, []);
+  }, [requirePremium]);
   useEffect(() => () => {
     if (commentHintTimer.current) clearTimeout(commentHintTimer.current);
   }, []);
@@ -300,17 +310,11 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
 
   const { annotations, addAnnotation, updateAnnotation, removeAnnotation, clearHighlights, undo, getPageAnnotations, replaceHighlights } = useAnnotations();
 
-  // Premium gate: everything is free except the AI Assistant and the
-  // Protect features (Redact, Whiteout, Watermark), which require a
-  // signed-in user with an active paid plan (requirePremium shows the
-  // sign-in / upgrade prompt when not).
-  const { requirePremium } = useAuthGate();
-
   const handleToolChange = useCallback((t: ToolType) => {
-    // All annotation tools are free except the Protect tools (Redact and
-    // Whiteout), which are premium. (Exports containing Protect edits
-    // stay gated at the export point.)
-    if ((t === "redact" || t === "whiteout") && !requirePremium(TOOL_LABELS[t])) return;
+    // Most annotation tools are free; the Protect tools (Redact and
+    // Whiteout) and the Cloud shape are premium. (Exports containing
+    // Protect edits stay gated at the export point.)
+    if ((t === "redact" || t === "whiteout" || t === "cloud") && !requirePremium(t === "cloud" ? "Cloud shapes" : TOOL_LABELS[t])) return;
     setTool(t);
   }, [requirePremium]);
 
@@ -1458,6 +1462,9 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         onPlaceStamp={handlePlaceStamp}
         onOpenCompress={() => setCompressOpen(true)}
         onOpenCrop={() => {
+          // Crop is a Tools feature — premium only, gated at the
+          // execution point.
+          if (!requirePremium("Crop Pages")) return;
           // Cropping reloads the document like other page operations, so
           // warn about unsaved annotations before opening the modal.
           if (isDirty) {

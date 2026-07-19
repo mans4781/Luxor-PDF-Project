@@ -269,6 +269,10 @@ type MenuEntry =
       shortcut?: string;
       checked?: boolean;
       soon?: boolean;
+      /** Premium-only entry shown greyed out (with a badge) to users
+       *  without an active plan. Still clickable — the click runs the
+       *  action, whose premium gate shows the upgrade prompt. */
+      premium?: boolean;
       disabled?: boolean;
       action?: () => void;
       sub?: MenuEntry[];
@@ -447,7 +451,13 @@ export default function Toolbar({
   onMarkup, onCreateNew, onPageOp, onOpenCrop, onOpenRestrict,
   toolbarHidden, onToggleToolbar, onPresentation, onOpenHelp, onSetSplitView,
 }: ToolbarProps) {
-  const { beginSignIn, beginSignUp } = useAuthGate();
+  const { beginSignIn, beginSignUp, requirePremium, hasPremium } = useAuthGate();
+  /* Wrap an action behind the premium gate: without an active plan the
+   * click shows the upgrade prompt instead of running the action. */
+  const premGate = (label: string, fn: () => void) => () => {
+    if (!requirePremium(label)) return;
+    fn();
+  };
   const [popover, setPopover] = useState<PopoverType>(null);
   /* Which submenu (by label) is expanded inside an open dropdown. */
   const [openSub, setOpenSub] = useState<string | null>(null);
@@ -896,8 +906,20 @@ export default function Toolbar({
     </>
   );
 
+  /* The Tools ribbon mirrors the Tools menu, so its buttons carry the
+     same premium treatment: greyed out for free users, and a capture-
+     phase gate shows the upgrade prompt instead of running the action. */
   const toolsRibbon: ReactNode = (
-    <>
+    <div
+      style={{ display: "flex", height: "100%", opacity: hasPremium ? 1 : 0.55 }}
+      onClickCapture={(e) => {
+        if (hasPremium) return;
+        if (!requirePremium("Tools")) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
+    >
       <RibbonGroup label="Pages">
         <RibbonBtn icon={ri(FilePlus2)} label="Insert" title="Insert a blank page after the current page" onClick={() => onPageOp("insert")} />
         <RibbonBtn icon={ri(FileMinus2)} label="Delete" title="Delete the current page" onClick={() => onPageOp("delete")} />
@@ -939,7 +961,7 @@ export default function Toolbar({
         {readAloudBtn}
         {screenshotBtn}
       </RibbonGroup>
-    </>
+    </div>
   );
 
   const viewRibbon: ReactNode = (
@@ -1133,7 +1155,7 @@ export default function Toolbar({
     { label: "Rectangle", icon: mi(Square), checked: tool === "rectangle", action: () => onToolChange("rectangle") },
     { label: "Circle / Oval", icon: mi(Circle), checked: tool === "oval", action: () => onToolChange("oval") },
     { label: "Polygon", icon: mi(Pentagon), checked: tool === "polygon", action: () => onToolChange(tool === "polygon" ? "hand" : "polygon") },
-    { label: "Cloud Shape", icon: mi(Cloud), checked: tool === "cloud", action: () => onToolChange(tool === "cloud" ? "hand" : "cloud") },
+    { label: "Cloud Shape", icon: mi(Cloud), checked: tool === "cloud", premium: !hasPremium, action: premGate("Cloud shapes", () => onToolChange(tool === "cloud" ? "hand" : "cloud")) },
     { kind: "divider" },
     { label: "Eraser", icon: mi(Eraser), checked: tool === "eraser", action: () => onToolChange(tool === "eraser" ? "hand" : "eraser") },
   ];
@@ -1142,7 +1164,7 @@ export default function Toolbar({
     { label: "Highlight Text", icon: mi(Highlighter), checked: tool === "highlight", action: () => onToolChange(tool === "highlight" ? "hand" : "highlight") },
     { label: "Underline Text", icon: mi(Underline), action: () => onMarkup("underline") },
     { label: "Strikeout Text", icon: mi(Strikethrough), action: () => onMarkup("strike") },
-    { label: "Squiggly Underline", icon: mi(Waves), action: () => onMarkup("squiggly") },
+    { label: "Squiggly Underline", icon: mi(Waves), premium: !hasPremium, action: premGate("Squiggly underline", () => onMarkup("squiggly")) },
     { kind: "divider" },
     {
       label: "Annotation Colors",
@@ -1157,31 +1179,35 @@ export default function Toolbar({
     { label: "Show All Comments", icon: mi(MessageSquare), checked: activePanel === "nav", action: () => onOpenPanel("nav") },
   ];
 
+  /* Every Tools-menu feature is part of the paid plans. Entries stay
+   * visible but greyed out for free users; clicking one shows the
+   * upgrade prompt via the premium gate. */
+  const toolsPrem = !hasPremium;
   const toolsMenu: MenuEntry[] = [
-    { label: "Insert Blank Page", icon: mi(FilePlus2), action: () => onPageOp("insert") },
-    { label: "Delete Current Page", icon: mi(FileMinus2), action: () => onPageOp("delete") },
-    { label: "Rotate Current Page", icon: mi(RotateCw), action: () => onPageOp("rotate") },
-    { label: "Crop Pages", icon: mi(Crop), action: onOpenCrop },
+    { label: "Insert Blank Page", icon: mi(FilePlus2), premium: toolsPrem, action: premGate("Page tools", () => onPageOp("insert")) },
+    { label: "Delete Current Page", icon: mi(FileMinus2), premium: toolsPrem, action: premGate("Page tools", () => onPageOp("delete")) },
+    { label: "Rotate Current Page", icon: mi(RotateCw), premium: toolsPrem, action: premGate("Page tools", () => onPageOp("rotate")) },
+    { label: "Crop Pages", icon: mi(Crop), premium: toolsPrem, action: premGate("Crop Pages", onOpenCrop) },
     { kind: "divider" },
-    { label: "Compress PDF", icon: mi(FileArchive), action: onOpenCompress },
-    { label: watermarkActive ? "Remove Watermark" : "Add Watermark", icon: mi(Droplet), action: watermarkActive ? onClearWatermark : onOpenWatermark },
-    { label: pageNoActive ? "Remove Page Numbers" : "Add Page Numbers", icon: mi(Hash), action: pageNoActive ? onClearPageNo : onOpenPageNo },
-    { label: "Redact Content", icon: mi(EyeOff), checked: tool === "redact", action: () => onToolChange(tool === "redact" ? "hand" : "redact") },
-    { label: "Whiteout", icon: mi(PaintRoller), checked: tool === "whiteout", action: () => onToolChange(tool === "whiteout" ? "hand" : "whiteout") },
-    { label: "Restrict Printing & Copying", icon: mi(Lock), action: onOpenRestrict },
+    { label: "Compress PDF", icon: mi(FileArchive), premium: toolsPrem, action: premGate("Compress PDF", onOpenCompress) },
+    { label: watermarkActive ? "Remove Watermark" : "Add Watermark", icon: mi(Droplet), premium: toolsPrem, action: premGate("Watermark", watermarkActive ? onClearWatermark : onOpenWatermark) },
+    { label: pageNoActive ? "Remove Page Numbers" : "Add Page Numbers", icon: mi(Hash), premium: toolsPrem, action: premGate("Page numbers", pageNoActive ? onClearPageNo : onOpenPageNo) },
+    { label: "Redact Content", icon: mi(EyeOff), checked: tool === "redact", premium: toolsPrem, action: premGate("Redaction", () => onToolChange(tool === "redact" ? "hand" : "redact")) },
+    { label: "Whiteout", icon: mi(PaintRoller), checked: tool === "whiteout", premium: toolsPrem, action: premGate("Whiteout", () => onToolChange(tool === "whiteout" ? "hand" : "whiteout")) },
+    { label: "Restrict Printing & Copying", icon: mi(Lock), premium: toolsPrem, action: premGate("Restrict Printing & Copying", onOpenRestrict) },
     { kind: "divider" },
-    { label: "Edit Text", icon: mi(PenLine), checked: tool === "edittext", action: () => onToolChange(tool === "edittext" ? "hand" : "edittext") },
-    { label: "Add Image", icon: mi(ImageIcon), action: onAddImage },
-    { label: "Take Snapshot", icon: mi(Camera), action: onScreenshot },
-    { label: isSpeaking ? "Stop Reading Aloud" : "Read Aloud", icon: mi(Volume2), action: onReadAloud },
+    { label: "Edit Text", icon: mi(PenLine), checked: tool === "edittext", premium: toolsPrem, action: premGate("Edit Text", () => onToolChange(tool === "edittext" ? "hand" : "edittext")) },
+    { label: "Add Image", icon: mi(ImageIcon), premium: toolsPrem, action: premGate("Add Image", onAddImage) },
+    { label: "Take Snapshot", icon: mi(Camera), premium: toolsPrem, action: premGate("Snapshots", onScreenshot) },
+    { label: isSpeaking ? "Stop Reading Aloud" : "Read Aloud", icon: mi(Volume2), premium: toolsPrem, action: premGate("Read Aloud", onReadAloud) },
     ...(showOCR
-      ? [{ label: "Recognize Text (OCR)", icon: mi(ScanText), checked: activePanel === "ocr", action: () => onOpenPanel("ocr") } as MenuEntry]
+      ? [{ label: "Recognize Text (OCR)", icon: mi(ScanText), checked: activePanel === "ocr", premium: toolsPrem, action: premGate("OCR", () => onOpenPanel("ocr")) } as MenuEntry]
       : []),
     ...(showAI
-      ? [{ label: "AI Assistant", icon: mi(Sparkles), checked: activePanel === "ai", action: () => onOpenPanel("ai") } as MenuEntry]
+      ? [{ label: "AI Assistant", icon: mi(Sparkles), checked: activePanel === "ai", premium: toolsPrem, action: premGate("the AI Assistant", () => onOpenPanel("ai")) } as MenuEntry]
       : []),
     { kind: "divider" },
-    { label: "Reader Settings", icon: mi(Settings), action: onOpenSettings },
+    { label: "Reader Settings", icon: mi(Settings), premium: toolsPrem, action: premGate("Reader tools", onOpenSettings) },
   ];
 
   const helpMenu: MenuEntry[] = [
@@ -1211,6 +1237,8 @@ export default function Toolbar({
             key={def.text}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => {
+              // Browsing stamps is free; placing one is a premium feature.
+              if (!requirePremium("Stamps")) return;
               setPopover(null);
               setOpenSub(null);
               onPlaceStamp(def);
@@ -1242,9 +1270,12 @@ export default function Toolbar({
     </div>
   );
 
+  /* Stamp sets stay browsable for everyone (categories open, previews
+     visible); only placing a stamp is premium — gated in the grid above. */
   const stampsMenu: MenuEntry[] = STAMP_CATEGORIES.map((cat) => ({
     label: cat.label,
     icon: mi(Stamp),
+    premium: !hasPremium,
     subContent: stampPreviewGrid(cat.items),
   }));
 
@@ -1281,6 +1312,7 @@ export default function Toolbar({
       const hasSub = !!(item.sub || item.subContent);
       const isOpen = openSub === item.label;
       const inactive = item.disabled || item.soon;
+      const locked = !!item.premium && !inactive;
       return (
         <div key={`${depth}-${item.label}-${i}`}>
           <button
@@ -1297,7 +1329,7 @@ export default function Toolbar({
               paddingLeft: 10 + depth * 14,
               background: isOpen ? "rgba(13,98,242,0.06)" : "transparent",
               border: "none", borderRadius: 5,
-              color: inactive ? "#9a9a9a" : "#1a1a1a",
+              color: inactive || locked ? "#9a9a9a" : "#1a1a1a",
               cursor: inactive ? "default" : "pointer",
               fontSize: 13, textAlign: "left", fontWeight: 400,
             }}
@@ -1308,7 +1340,7 @@ export default function Toolbar({
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = isOpen ? "rgba(13,98,242,0.06)" : "transparent";
-              e.currentTarget.style.color = inactive ? "#9a9a9a" : "#1a1a1a";
+              e.currentTarget.style.color = inactive || locked ? "#9a9a9a" : "#1a1a1a";
             }}
           >
             <span style={{ display: "inline-flex", width: 14, justifyContent: "center", color: "#0D62F2" }}>
@@ -1318,6 +1350,11 @@ export default function Toolbar({
             {item.soon && (
               <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.6, color: "#B45309", background: "rgba(180,83,9,0.10)", borderRadius: 3, padding: "1px 5px", textTransform: "uppercase" }}>
                 Soon
+              </span>
+            )}
+            {locked && (
+              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.6, color: "#7C3AED", background: "rgba(124,58,237,0.10)", borderRadius: 3, padding: "1px 5px", textTransform: "uppercase" }}>
+                Premium
               </span>
             )}
             {item.shortcut && <span style={{ fontSize: 11, color: "#888", letterSpacing: 0.3 }}>{item.shortcut}</span>}

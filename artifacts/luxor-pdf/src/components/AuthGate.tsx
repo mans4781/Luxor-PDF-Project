@@ -48,6 +48,10 @@ interface AuthGateContextValue {
   isLoaded: boolean;
   /** Whether a user is currently signed in (false until loaded). */
   isSignedIn: boolean;
+  /** Whether the signed-in user has an active paid plan (always true in
+   *  dev preview builds). Use for advisory UI only (greying out premium
+   *  menu items) — the real gate is `requirePremium` at execution. */
+  hasPremium: boolean;
 }
 
 const AuthGateContext = createContext<AuthGateContextValue | null>(null);
@@ -302,8 +306,9 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
       beginSignUp,
       isLoaded: DEV_BYPASS || isLoaded,
       isSignedIn: DEV_BYPASS || isSignedIn === true,
+      hasPremium: DEV_BYPASS || licenseState === "active",
     }),
-    [requireAuth, requirePremium, beginSignIn, beginSignUp, isLoaded, isSignedIn],
+    [requireAuth, requirePremium, beginSignIn, beginSignUp, isLoaded, isSignedIn, licenseState],
   );
 
   const offline = typeof navigator !== "undefined" && !navigator.onLine;
@@ -379,14 +384,14 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
             </h2>
             <p style={{ margin: "0 0 18px", fontSize: 13.5, lineHeight: 1.55, color: "#475569" }}>
               {promptMode === "upgrade"
-                ? "This feature is part of the Luxor PDF paid plans. Everything else in the reader stays free — pick a plan to unlock text editing and the AI Assistant."
+                ? "This feature is part of the Luxor PDF paid plans. Reading and everyday annotation stay free — pick a plan to unlock the document tools, stamps, and the AI Assistant."
                 : offline
                   ? "You're offline right now. Reading works without internet, but you'll need to connect and sign in to use this feature."
                   : desktopWait === "waiting"
                     ? "We've opened your web browser. Sign in (or create an account) there — this app will finish signing you in automatically."
                     : desktopWait === "failed"
                       ? "That sign-in attempt didn't complete. Please try again."
-                      : "Reading and everyday tools are free. Sign in to use text editing and the AI Assistant with a Luxor PDF plan."}
+                      : "Reading and everyday annotation are free. Sign in to use the document tools, stamps, and the AI Assistant with a Luxor PDF plan."}
             </p>
             {desktopWait === "waiting" && (
               <div

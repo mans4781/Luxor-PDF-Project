@@ -3,7 +3,7 @@ name: Reader feature gating
 description: Which luxor-pdf features are premium and how they must be gated without breaking free/offline reading
 ---
 
-**Model (current):** Only two feature groups are premium — the AI Assistant and the Protect features (Redact, Whiteout, Watermark). They require sign-in AND an active paid plan (`requirePremium(label)` in `AuthGate`, backed by `GET /api/license/status` → `canUsePdfTools`; unknown status fails closed). Everything else (reading, annotations, **edit text**, page numbers, compress, screenshot, form filling, share, save/export) is free with no login.
+**Model (current):** Premium = the AI Assistant, ALL Tools-menu features (page ops, crop, compress, watermark, page numbers, redact, whiteout, restrict, edit text, add image, snapshot, read aloud, OCR, reader settings), Cloud shape, Squiggly underline, and stamp *placement* (stamp sets stay browsable free). Premium requires sign-in AND an active paid plan (`requirePremium(label)` in `AuthGate`, backed by `GET /api/license/status` → `canUsePdfTools`; unknown status fails closed). `hasPremium` in the AuthGate context is advisory only (grey styling + Premium badge; true in dev builds). Reading and basic annotation (highlight, underline, strike, pen, basic shapes, sticky notes) stay free with no login.
 
 **Rule:** Gate premium behavior at the execution point (the export/save function itself), never only at the UI trigger (toolbar button / menu item).
 
