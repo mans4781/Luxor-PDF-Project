@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import esignShield from "@/assets/esign-shield.png";
+import esignHeroDashboard from "@/assets/esign-hero-dashboard.png";
 
 const APP_URL = "/esign-app/";
 const ESIGN_INSTALLER_URL = "/api/downloads/luxor-pdf-esign-latest.exe";
@@ -305,7 +306,25 @@ export default function ESignPage() {
               </p>
             </motion.div>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.15 }}>
-              <ESignDashboardMockup />
+              <div className="relative">
+                <img
+                  src={esignHeroDashboard}
+                  alt="LUXOR PDF eSign dashboard"
+                  className="w-full rounded-2xl shadow-2xl border border-green-100"
+                />
+                <div className="absolute -right-4 top-24 hidden lg:block bg-white rounded-xl shadow-xl border border-green-100 px-4 py-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-full bg-[#0f8f2f] flex items-center justify-center">
+                      <ShieldCheck className="w-5 h-5 text-white" strokeWidth={2.2} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-extrabold text-slate-900">Secure eSign</p>
+                      <p className="text-[10px] text-slate-500 flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-[#0f8f2f]" /> Verified &amp; Encrypted</p>
+                      <p className="text-[10px] text-slate-500 flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-[#0f8f2f]" /> Legally Compliant</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>
