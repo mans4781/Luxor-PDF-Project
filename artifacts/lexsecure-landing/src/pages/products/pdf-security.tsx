@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import secureHeroDashboard from "@/assets/secure-hero-dashboard.png";
+import secureEncryptPanel from "@/assets/secure-encrypt-panel.png";
 
 const APP_URL = "/pdf-expiry/";
 const SECURE_INSTALLER_URL = "/api/downloads/luxor-pdf-secure-latest.exe";
@@ -406,7 +407,11 @@ export default function PdfSecurityPage() {
         <div className="container mx-auto px-6 max-w-[88rem]">
           <div className="grid lg:grid-cols-2 gap-14 items-center">
             <motion.div {...fadeUp}>
-              <EncryptMockup />
+              <img
+                src={secureEncryptPanel}
+                alt="Encrypt PDF security settings"
+                className="w-full max-w-[680px] mx-auto drop-shadow-2xl"
+              />
             </motion.div>
             <motion.div {...fadeUp}>
               <div className="space-y-7">
