@@ -497,21 +497,18 @@ export default function ESignPage() {
                   </div>
                 </div>
                 <div className="mt-8 flex justify-center lg:justify-start lg:pl-56">
-                  <div className="rounded-2xl bg-[#0a6e24]/45 border border-white/10 px-6 py-3.5 flex flex-col sm:flex-row items-center gap-y-2">
+                  <div className="rounded-2xl bg-[#0a6e24]/45 border border-white/10 px-6 py-4 flex flex-col items-start gap-3">
                     {[
                       { icon: CheckCircle2, label: "No credit card required" },
                       { icon: Zap, label: "Fast setup" },
                       { icon: History, label: "Cancel anytime" },
-                    ].map(({ icon: Icon, label }, i) => (
-                      <div key={label} className="flex items-center">
-                        {i > 0 && <span className="hidden sm:block w-px h-6 bg-white/20 mx-6" aria-hidden="true" />}
-                        <span className="inline-flex items-center gap-2.5 text-white text-sm font-semibold">
-                          <span className="w-8 h-8 rounded-full bg-white/15 border border-white/20 flex items-center justify-center">
-                            <Icon className="w-4 h-4 text-white" strokeWidth={2.1} />
-                          </span>
-                          {label}
+                    ].map(({ icon: Icon, label }) => (
+                      <span key={label} className="inline-flex items-center gap-2.5 text-white text-sm font-semibold">
+                        <span className="w-8 h-8 rounded-full bg-white/15 border border-white/20 flex items-center justify-center">
+                          <Icon className="w-4 h-4 text-white" strokeWidth={2.1} />
                         </span>
-                      </div>
+                        {label}
+                      </span>
                     ))}
                   </div>
                 </div>
