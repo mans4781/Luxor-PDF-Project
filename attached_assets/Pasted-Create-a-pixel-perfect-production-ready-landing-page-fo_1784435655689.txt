@@ -1,0 +1,240 @@
+Create a pixel-perfect, production-ready landing page for “LUXOR PDF eSign” that matches a premium modern SaaS website design.
+
+TECH STACK
+- Build with React + Vite
+- Use Tailwind CSS
+- Use clean reusable components
+- Use lucide-react icons
+- Make it fully responsive, but desktop-first
+- Use a soft white background with green brand accents
+- Use smooth hover states, subtle shadows, rounded corners, and clean spacing
+- Use modern sans-serif typography similar to Inter
+
+BRAND / THEME
+- Product name: LUXOR PDF eSign
+- Main color theme must match the attached brand icon style:
+  - Primary green: #0f8f2f
+  - Dark green: #0a6e24
+  - Light green: #dff5e5
+  - Accent green: #24b34b
+  - White: #ffffff
+  - Text dark: #111827
+  - Muted text: #4b5563
+  - Border: #e5e7eb
+- The overall look must feel premium, secure, elegant, minimal, and trustworthy
+- Use the provided LUXOR PDF eSign logo in the header and footer
+
+PAGE GOAL
+This is a full landing page dedicated to LUXOR PDF eSign desktop software. The page should promote eSigning features and drive downloads and free trial signups.
+
+HEADER
+Create a sticky top navbar with:
+- Left: logo + text “LUXOR PDF eSign”
+- Center nav links:
+  - Home
+  - Features
+  - Solutions
+  - Pricing
+  - Support
+- Right side buttons:
+  - “Free Trial” (outlined green)
+  - “Download for Windows” (solid green with Windows icon)
+- Active link underline on “Home”
+
+HERO SECTION
+Two-column layout.
+
+LEFT SIDE:
+- Large headline:
+  “Sign Every PDF”
+  “with Confidence”
+- Make “with Confidence” green and visually emphasized
+- Supporting paragraph:
+  “LUXOR PDF eSign makes it easy to sign, request signatures, approve documents and automate your workflow. Secure, compliant and legally trusted eSigning for modern teams and professionals.”
+- CTA buttons:
+  - Download for Windows
+  - Start Free Trial
+- Small platform note below:
+  “Mac, Android and iOS coming soon”
+- Add tiny Apple / Android / iOS indicators
+
+RIGHT SIDE:
+Show a premium product mockup inside a rounded card/window:
+- Green sidebar navigation with menu items:
+  - Dashboard
+  - Documents
+  - Upload Document
+  - Add Signature
+  - Request Signatures
+  - Signers
+  - Templates
+  - Audit Trail
+  - Settings
+- Main dashboard content should include:
+  - Small top stats cards:
+    - Total Documents: 24
+    - Pending Signatures: 7
+    - Completed: 17
+    - Templates: 12
+  - Recent documents table/list with statuses such as Signed / Pending
+  - Document preview panel with signature preview “John Doe”
+  - Signer field list with statuses
+- Floating badge card on the right:
+  - Shield icon
+  - “Secure eSign”
+  - “Verified & Encrypted”
+  - “Legally Compliant”
+
+Also add a subtle green gradient / abstract wave background behind the hero.
+
+BENEFITS STRIP UNDER HERO
+Create 4 equal cards in one row:
+1. Legally Trusted eSignatures
+   - “ESIGN, UETA & global standards compliant.”
+2. Fast Document Signing
+   - “Sign and send in seconds. Anywhere, anytime.”
+3. Multi-Signer Workflows
+   - “Collect signatures in order or in parallel.”
+4. Secure Sharing & Tracking
+   - “Track every action with complete transparency.”
+
+FEATURES SECTION
+Section title:
+- Eyebrow: “Everything You Need”
+- Heading: “Everything You Need for Fast & Secure eSigning”
+- Highlight “Fast & Secure” in green
+
+Create 8 feature cards in a 4x2 grid with icon, title, and short description:
+1. Draw / Type / Upload eSignature
+2. Request Signatures
+3. Drag-and-Drop Signature Fields
+4. Multi-Signer Routing
+5. Audit Trail
+6. Document Templates
+7. Reminders & Notifications
+8. Secure PDF Signing
+
+Each card should be rounded, white, lightly shadowed, with green line icons.
+
+HOW IT WORKS SECTION
+Section title:
+“How LUXOR PDF eSign Works”
+
+Create a horizontal 4-step flow with icons and connectors:
+1. Upload PDF
+   - “Upload your document in seconds.”
+2. Add Signers & Fields
+   - “Add signers and place signature fields.”
+3. Send or Sign
+   - “Send for signatures or sign yourself.”
+4. Track Status
+   - “Track progress in real time until completion.”
+
+PRODUCT SHOWCASE SECTION
+Two-column section.
+
+LEFT:
+Create a large document-signing UI mockup with:
+- File name: “Employment Agreement.pdf”
+- Left signer panel:
+  - John Doe (You) – Signed
+  - Jane Smith – Pending
+  - Robert Brown – Pending
+- Main document preview with placeholder text and two signature boxes
+- Right form panel:
+  - “Send for Signatures”
+  - Signing order dropdown
+  - Optional message box
+  - Green “Send” button
+- Progress bar at bottom: 66%
+
+RIGHT:
+Large headline:
+“A Smarter Way to Get Documents Signed”
+Make “Smarter” green.
+
+Add 4 bullet benefits with green check icons:
+- Secure Workflow
+- Team Collaboration
+- Business Ready
+- Save Time & Effort
+
+Add a decorative signature pen illustration on the right side.
+
+TRUST / WHY CHOOSE SECTION
+Centered heading:
+“Built for Speed. Designed for Trust.”
+
+Add 4 inline benefit blocks with icon + title + short text:
+1. Easy to Use
+2. Secure & Private
+3. Team Ready
+4. Professional Workflow
+
+CTA BANNER
+Create a large green gradient rounded banner near the bottom.
+
+LEFT:
+- Brand icon/logo
+- Heading:
+  “Ready to Simplify eSigning?”
+- Text:
+  “Join thousands of professionals who trust LUXOR PDF eSign.”
+
+RIGHT:
+Buttons:
+- Start Free Trial
+- Download for Windows
+
+Below or inside the banner add 3 tiny trust notes:
+- No credit card required
+- Fast setup
+- Cancel anytime
+
+FOOTER
+Clean multi-column footer with light background:
+Column 1:
+- Logo
+- Brand name: LUXOR PDF eSign
+- Short text:
+  “Secure, simple and powerful eSigning solution for individuals and businesses. Sign. Send. Track. Done.”
+- Social icons
+
+Column 2: Quick Links
+- Home
+- Features
+- Solutions
+- Pricing
+- Support
+- Privacy Policy
+- Terms of Service
+
+Column 3: Product
+- Download for Windows
+- Free Trial
+- What’s New
+- Roadmap
+- Integrations
+
+Column 4: Contact Us
+- Website: luxorpdf.com
+- Email: enquiry@luxorpdf.com
+
+Bottom line:
+“© 2024 LUXOR PDF eSign. All rights reserved.”
+
+DESIGN REQUIREMENTS
+- The page must feel extremely close to a polished SaaS marketing page
+- Use rounded cards, soft shadows, light borders, subtle green gradients
+- Maintain strong hierarchy and clean whitespace
+- All buttons should have hover states
+- Animate cards and buttons slightly on hover
+- Add smooth scroll behavior
+- Make the layout responsive for tablet and mobile
+
+DELIVERABLES
+- Build the full page in React components
+- Create reusable sections: Header, Hero, Benefits, Features, HowItWorks, ProductShowcase, TrustSection, CTASection, Footer
+- Put all content directly in the page
+- Use placeholder illustrations/icons where necessary
+- Ensure the final result looks premium and as close as possible to a modern commercial landing page for an eSign product

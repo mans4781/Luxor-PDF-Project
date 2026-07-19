@@ -1,196 +1,470 @@
 import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
-import { FileSignature, ShieldCheck, Mail, Clock, Users, BarChart3, Globe } from "lucide-react";
+import {
+  PenTool, Send, MousePointer2, Users, History, LayoutTemplate,
+  BellRing, ShieldCheck, Upload, UserPlus, CheckCircle2, Shield,
+  LayoutDashboard, FileText, FilePlus2, PenLine, Mail, UsersRound,
+  Settings, ScrollText, Smile, Lock, Briefcase, Zap, Share2, BarChart3,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
-const features = [
-  { icon: ShieldCheck, title: "Legally Binding",         desc: "Signatures meet eIDAS, ESIGN Act, and UETA standards — fully admissible in courts across 40+ countries." },
-  { icon: Mail,        title: "Email Workflow",          desc: "Send documents for signature directly from the app. Recipients get a secure link — no account required." },
-  { icon: Clock,       title: "Signature Audit Trail",   desc: "Every signing action is timestamped with IP, device, and identity data sealed inside the PDF." },
-  { icon: Users,       title: "Multi-party Signing",     desc: "Define signing order and roles — signer, approver, witness. Route documents through complex approval chains." },
-  { icon: BarChart3,   title: "Status Dashboard",        desc: "Track which recipients have signed, viewed, or declined. Send automated reminders with one click." },
-  { icon: Globe,       title: "Any Device, Anywhere",    desc: "Recipients can sign on desktop or mobile without installing anything. Touch-friendly signature pad included." },
-];
+const APP_URL = "/esign-app/";
+const ESIGN_INSTALLER_URL = "/api/downloads/luxor-pdf-esign-latest.exe";
 
-const steps = [
-  { n: "1", title: "Upload your document", desc: "Drag in any PDF contract, agreement, or form." },
-  { n: "2", title: "Place signature fields", desc: "Drag signature, initials, date, and text fields onto the page." },
-  { n: "3", title: "Send & track", desc: "Add recipient emails and hit Send. Watch signatures come in live." },
-  { n: "4", title: "Download sealed PDF", desc: "Get a legally certified PDF with the full audit trail embedded." },
-];
+const GREEN = "#0f8f2f";
+const GREEN_DARK = "#0a6e24";
 
-function ESignMockup() {
+const fadeUp = {
+  initial: { opacity: 0, y: 30 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-60px" },
+  transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
+};
+
+function WindowsGlyph({ className = "w-4 h-4" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 520 340" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full drop-shadow-2xl">
-      <rect width="520" height="340" rx="12" fill="#022c22" />
-      <rect x="0" y="0" width="520" height="36" rx="12" fill="#014737" />
-      <circle cx="18" cy="18" r="5" fill="#ef4444" />
-      <circle cx="34" cy="18" r="5" fill="#f59e0b" />
-      <circle cx="50" cy="18" r="5" fill="#22c55e" />
-      {/* Top bar */}
-      <rect x="0" y="36" width="520" height="32" fill="#065f46" />
-      <rect x="10" y="44" width="80" height="16" rx="4" fill="#059669" />
-      <text x="50" y="55" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold">+ Send for Sign</text>
-      <rect x="300" y="44" width="60" height="16" rx="4" fill="#064e3b" />
-      <rect x="368" y="44" width="60" height="16" rx="4" fill="#064e3b" />
-      {/* Doc list sidebar */}
-      <rect x="0" y="68" width="140" height="272" fill="#014737" />
-      <text x="10" y="84" fill="#6ee7b7" fontSize="8" fontWeight="bold">DOCUMENTS</text>
-      {[
-        { name: "NDA_2024.pdf",      status: "Signed",  color: "#059669" },
-        { name: "Contract_v2.pdf",   status: "Pending", color: "#d97706" },
-        { name: "Invoice_007.pdf",   status: "Pending", color: "#d97706" },
-        { name: "Agreement.pdf",     status: "Viewed",  color: "#0284c7" },
-      ].map((doc, i) => (
-        <g key={doc.name}>
-          <rect x="8" y={90 + i * 54} width="124" height="46" rx="4" fill={i === 0 ? "#065f46" : "#022c22"} />
-          <text x="16" y={106 + i * 54} fill="#d1fae5" fontSize="8" fontWeight="bold">{doc.name}</text>
-          <rect x="16" y={110 + i * 54} width="50" height="12" rx="3" fill={doc.color + "33"} />
-          <text x="41" y={120 + i * 54} textAnchor="middle" fill={doc.color} fontSize="7">{doc.status}</text>
-        </g>
-      ))}
-      {/* Main document view */}
-      <rect x="140" y="68" width="240" height="272" fill="white" />
-      <rect x="160" y="86" width="160" height="12" rx="2" fill="#064e3b" />
-      <rect x="160" y="104" width="200" height="4" rx="1" fill="#e2e8f0" />
-      <rect x="160" y="111" width="185" height="4" rx="1" fill="#e2e8f0" />
-      <rect x="160" y="118" width="195" height="4" rx="1" fill="#e2e8f0" />
-      <rect x="160" y="135" width="200" height="4" rx="1" fill="#e2e8f0" />
-      <rect x="160" y="142" width="170" height="4" rx="1" fill="#e2e8f0" />
-      {/* Signature field */}
-      <rect x="160" y="162" width="120" height="40" rx="4" fill="#ecfdf5" stroke="#059669" strokeWidth="1.5" strokeDasharray="4 2" />
-      <text x="172" y="179" fill="#059669" fontSize="8">Signature</text>
-      {/* Signature SVG path */}
-      <path d="M168 192 Q178 182 190 188 Q202 194 215 186 Q222 182 228 188" stroke="#059669" strokeWidth="2" fill="none" strokeLinecap="round" />
-      <rect x="160" y="212" width="80" height="20" rx="4" fill="#ecfdf5" stroke="#059669" strokeWidth="1" strokeDasharray="3 2" />
-      <text x="172" y="226" fill="#059669" fontSize="8">Date</text>
-      {/* Checkmark seal */}
-      <circle cx="300" cy="190" r="22" fill="#059669" opacity="0.1" />
-      <circle cx="300" cy="190" r="16" fill="#059669" opacity="0.15" />
-      <text x="300" y="196" textAnchor="middle" fill="#059669" fontSize="14" fontWeight="bold">✓</text>
-      <rect x="160" y="245" width="200" height="4" rx="1" fill="#e2e8f0" />
-      <rect x="160" y="252" width="180" height="4" rx="1" fill="#e2e8f0" />
-      {/* Right panel */}
-      <rect x="380" y="68" width="140" height="272" fill="#014737" />
-      <text x="390" y="84" fill="#6ee7b7" fontSize="8" fontWeight="bold">RECIPIENTS</text>
-      {[
-        { name: "Alice Wong", role: "Signer", done: true },
-        { name: "Bob Chen",   role: "Approver", done: false },
-        { name: "Carol Diaz", role: "Witness", done: false },
-      ].map((r, i) => (
-        <g key={r.name}>
-          <rect x="388" y={90 + i * 64} width="120" height="54" rx="4" fill="#022c22" />
-          <circle cx="404" cy={108 + i * 64} r="8" fill={r.done ? "#059669" : "#064e3b"} />
-          <text x="404" y={112 + i * 64} textAnchor="middle" fill="white" fontSize="8">{r.name[0]}</text>
-          <text x="418" y={106 + i * 64} fill="#d1fae5" fontSize="8" fontWeight="bold">{r.name}</text>
-          <text x="418" y={116 + i * 64} fill="#6ee7b7" fontSize="7">{r.role}</text>
-          <rect x="418" y={122 + i * 64} width="48" height="10" rx="3" fill={r.done ? "#059669" : "#d97706"} opacity="0.3" />
-          <text x="442" y={131 + i * 64} textAnchor="middle" fill={r.done ? "#059669" : "#d97706"} fontSize="7">{r.done ? "Signed" : "Waiting"}</text>
-        </g>
-      ))}
+    <svg viewBox="0 0 16 16" className={className} fill="currentColor" aria-hidden="true">
+      <rect x="0" y="0" width="7.4" height="7.4" />
+      <rect x="8.6" y="0" width="7.4" height="7.4" />
+      <rect x="0" y="8.6" width="7.4" height="7.4" />
+      <rect x="8.6" y="8.6" width="7.4" height="7.4" />
     </svg>
   );
 }
 
+/* === Hero dashboard mockup === */
+function ESignDashboardMockup() {
+  const sideItems = [
+    { icon: LayoutDashboard, label: "Dashboard", active: true },
+    { icon: FileText, label: "Documents" },
+    { icon: FilePlus2, label: "Upload Document" },
+    { icon: PenLine, label: "Add Signature" },
+    { icon: Mail, label: "Request Signatures" },
+    { icon: UsersRound, label: "Signers" },
+    { icon: LayoutTemplate, label: "Templates" },
+    { icon: ScrollText, label: "Audit Trail" },
+    { icon: Settings, label: "Settings" },
+  ];
+  const stats = [
+    { label: "Total Documents", value: "24" },
+    { label: "Pending Signatures", value: "7" },
+    { label: "Completed", value: "17" },
+    { label: "Templates", value: "12" },
+  ];
+  const docs = [
+    { name: "Contract_2026.pdf", status: "Pending", pending: true },
+    { name: "NDA_Agreement.pdf", status: "Signed", pending: false },
+    { name: "Offer_Letter.pdf", status: "Pending", pending: true },
+    { name: "Invoice_March.pdf", status: "Signed", pending: false },
+    { name: "Policy_Document.pdf", status: "Pending", pending: true },
+  ];
+  const signers = [
+    { name: "John Doe (You)", status: "Signed", pending: false },
+    { name: "Jane Smith", status: "Pending", pending: true },
+    { name: "Robert Brown", status: "Pending", pending: true },
+  ];
+  return (
+    <div className="relative">
+      <div className="rounded-2xl bg-white shadow-2xl border border-green-100 overflow-hidden text-left">
+        <div className="flex items-center justify-between px-4 py-2.5 bg-[#0a6e24]">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-white flex items-center justify-center">
+              <PenLine className="w-3.5 h-3.5 text-[#0f8f2f]" strokeWidth={2.5} />
+            </div>
+            <span className="text-white text-xs font-bold">LUXOR PDF eSign</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-green-300/60" />
+            <span className="w-2.5 h-2.5 rounded-full bg-green-300/60" />
+            <span className="w-2.5 h-2.5 rounded-full bg-green-300/60" />
+          </div>
+        </div>
+        <div className="flex">
+          <div className="w-[150px] shrink-0 bg-gradient-to-b from-[#0f8f2f] to-[#0a5c1e] py-3 px-2 space-y-0.5">
+            {sideItems.map(({ icon: Icon, label, active }) => (
+              <div key={label} className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold ${active ? "bg-white text-[#0f8f2f]" : "text-green-100"}`}>
+                <Icon className="w-3 h-3 shrink-0" strokeWidth={2.4} />
+                {label}
+              </div>
+            ))}
+          </div>
+          <div className="flex-1 bg-slate-50 p-4">
+            <p className="text-[11px] font-bold text-slate-900 mb-2.5">Dashboard</p>
+            <div className="grid grid-cols-4 gap-2 mb-3">
+              {stats.map((s) => (
+                <div key={s.label} className="bg-white rounded-lg border border-slate-100 px-2 py-1.5">
+                  <p className="text-[12px] font-extrabold text-slate-900">{s.value}</p>
+                  <p className="text-[6.5px] text-slate-500 leading-tight">{s.label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-[3fr_2.6fr] gap-3">
+              <div>
+                <p className="text-[8.5px] font-bold text-slate-700 mb-1.5">Recent Documents</p>
+                <div className="space-y-1.5">
+                  {docs.map((d) => (
+                    <div key={d.name} className="flex items-center gap-2 bg-white rounded-lg border border-slate-100 px-2 py-1.5">
+                      <div className="w-5 h-6 rounded-sm bg-green-50 border border-green-200 flex items-center justify-center">
+                        <span className="text-[5px] font-bold text-green-600">PDF</span>
+                      </div>
+                      <p className="text-[8px] font-bold text-slate-800 truncate flex-1">{d.name}</p>
+                      <span className={`text-[6.5px] font-bold px-1.5 py-0.5 rounded-full ${d.pending ? "bg-amber-50 text-amber-600" : "bg-green-50 text-green-600"}`}>{d.status}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-[8.5px] font-bold text-slate-700 mb-1.5">Document Preview</p>
+                <div className="bg-white rounded-lg border border-slate-100 p-2.5 mb-2">
+                  <p className="text-[7.5px] font-bold text-slate-800 mb-1.5">Employment Agreement</p>
+                  <div className="space-y-1 mb-2">
+                    <div className="h-1 rounded bg-slate-100 w-full" />
+                    <div className="h-1 rounded bg-slate-100 w-11/12" />
+                    <div className="h-1 rounded bg-slate-100 w-full" />
+                    <div className="h-1 rounded bg-slate-100 w-4/5" />
+                  </div>
+                  <div className="rounded border border-dashed border-green-400 bg-green-50/60 px-2 py-1.5">
+                    <p className="text-[10px] italic text-slate-700" style={{ fontFamily: "cursive" }}>John Doe</p>
+                  </div>
+                </div>
+                <p className="text-[8.5px] font-bold text-slate-700 mb-1">Signer Fields</p>
+                <div className="space-y-1">
+                  {signers.map((s) => (
+                    <div key={s.name} className="flex items-center justify-between bg-white rounded-lg border border-slate-100 px-2 py-1">
+                      <span className="text-[7px] font-semibold text-slate-700">{s.name}</span>
+                      <span className={`text-[6.5px] font-bold ${s.pending ? "text-amber-600" : "text-green-600"}`}>{s.status}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute -right-4 top-24 hidden lg:block bg-white rounded-xl shadow-xl border border-green-100 px-4 py-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-full bg-[#0f8f2f] flex items-center justify-center">
+            <ShieldCheck className="w-5 h-5 text-white" strokeWidth={2.2} />
+          </div>
+          <div>
+            <p className="text-xs font-extrabold text-slate-900">Secure eSign</p>
+            <p className="text-[10px] text-slate-500 flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-[#0f8f2f]" /> Verified &amp; Encrypted</p>
+            <p className="text-[10px] text-slate-500 flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-[#0f8f2f]" /> Legally Compliant</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* === Showcase signing mockup === */
+function SigningMockup() {
+  const signers = [
+    { name: "John Doe (You)", status: "Signed", pending: false },
+    { name: "Jane Smith", status: "Pending", pending: true },
+    { name: "Robert Brown", status: "Pending", pending: true },
+  ];
+  return (
+    <div className="rounded-2xl bg-white shadow-2xl border border-green-100 overflow-hidden text-left">
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border-b border-slate-100">
+        <FileText className="w-4 h-4 text-[#0f8f2f]" />
+        <span className="text-xs font-bold text-slate-800">Employment Agreement.pdf</span>
+      </div>
+      <div className="grid grid-cols-[1.1fr_2fr_1.3fr]">
+        <div className="border-r border-slate-100 p-3">
+          <p className="text-[9px] font-bold text-slate-700 mb-2">Signers</p>
+          <div className="space-y-1.5">
+            {signers.map((s) => (
+              <div key={s.name} className="rounded-lg border border-slate-100 px-2 py-1.5">
+                <p className="text-[8px] font-bold text-slate-800">{s.name}</p>
+                <span className={`text-[7px] font-bold ${s.pending ? "text-amber-600" : "text-green-600"}`}>{s.status}</span>
+              </div>
+            ))}
+            <button type="button" className="w-full rounded-lg border border-dashed border-green-300 px-2 py-1.5 text-[8px] font-semibold text-[#0f8f2f]">+ Add Signer</button>
+          </div>
+        </div>
+        <div className="p-4 bg-slate-50/60">
+          <div className="bg-white rounded-lg border border-slate-100 p-3 h-full">
+            <p className="text-[9px] font-extrabold text-slate-900 text-center mb-2 tracking-wide">EMPLOYMENT AGREEMENT</p>
+            <div className="space-y-1.5 mb-3">
+              <div className="h-1 rounded bg-slate-100 w-full" />
+              <div className="h-1 rounded bg-slate-100 w-11/12" />
+              <div className="h-1 rounded bg-slate-100 w-full" />
+              <div className="h-1 rounded bg-slate-100 w-3/4" />
+              <div className="h-1 rounded bg-slate-100 w-full" />
+              <div className="h-1 rounded bg-slate-100 w-5/6" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded border border-dashed border-slate-300 px-2 py-2">
+                <p className="text-[7px] text-slate-400 mb-1">Signature</p>
+                <div className="h-3" />
+              </div>
+              <div className="rounded border border-dashed border-green-400 bg-green-50/60 px-2 py-2">
+                <p className="text-[7px] text-slate-400 mb-1">Signature</p>
+                <p className="text-[11px] italic text-slate-700" style={{ fontFamily: "cursive" }}>Jane Smith</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="border-l border-slate-100 p-3">
+          <p className="text-[9px] font-bold text-slate-700 mb-2">Send for Signatures</p>
+          <p className="text-[7.5px] font-semibold text-slate-500 mb-1">Signing Order</p>
+          <div className="rounded-lg border border-slate-200 px-2 py-1.5 text-[8px] text-slate-700 mb-2">Sequential</div>
+          <p className="text-[7.5px] font-semibold text-slate-500 mb-1">Message (Optional)</p>
+          <div className="rounded-lg border border-slate-200 px-2 py-1.5 text-[8px] text-slate-400 mb-3 h-12">Please review and sign the document.</div>
+          <button type="button" className="w-full rounded-lg bg-[#0f8f2f] text-white text-[9px] font-bold py-1.5 flex items-center justify-center gap-1">
+            <Send className="w-2.5 h-2.5" /> Send
+          </button>
+        </div>
+      </div>
+      <div className="px-4 py-2.5 border-t border-slate-100">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[8px] font-semibold text-slate-500">Signing Progress</span>
+          <span className="text-[8px] font-bold text-[#0f8f2f]">66%</span>
+        </div>
+        <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+          <div className="h-full rounded-full bg-gradient-to-r from-[#24b34b] to-[#0f8f2f]" style={{ width: "66%" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const benefits = [
+  { icon: ShieldCheck, title: "Legally Trusted eSignatures", desc: "ESIGN, UETA & global standards compliant." },
+  { icon: Zap, title: "Fast Document Signing", desc: "Sign and send in seconds. Anywhere, anytime." },
+  { icon: Users, title: "Multi-Signer Workflows", desc: "Collect signatures in order or in parallel." },
+  { icon: Share2, title: "Secure Sharing & Tracking", desc: "Track every action with complete transparency." },
+];
+
+const features = [
+  { icon: PenTool, title: "Draw / Type / Upload eSignature", desc: "Create your signature the way you like." },
+  { icon: Send, title: "Request Signatures", desc: "Invite others to sign with ease." },
+  { icon: MousePointer2, title: "Drag-and-Drop Signature Fields", desc: "Place fields anywhere on your PDF." },
+  { icon: Users, title: "Multi-Signer Routing", desc: "Set signing order or allow parallel signing." },
+  { icon: History, title: "Audit Trail", desc: "Track every action with date, time and IP logs." },
+  { icon: LayoutTemplate, title: "Document Templates", desc: "Save and reuse templates for faster workflows." },
+  { icon: BellRing, title: "Reminders & Notifications", desc: "Automatic emails to keep signers on track." },
+  { icon: ShieldCheck, title: "Secure PDF Signing", desc: "256-bit encryption and secure cloud storage." },
+];
+
+const steps = [
+  { icon: Upload, n: 1, title: "Upload PDF", desc: "Upload your document in seconds." },
+  { icon: UserPlus, n: 2, title: "Add Signers & Fields", desc: "Add signers and place signature fields." },
+  { icon: Send, n: 3, title: "Send or Sign", desc: "Send for signatures or sign yourself." },
+  { icon: BarChart3, n: 4, title: "Track Status", desc: "Track progress in real time until completion." },
+];
+
+const smarterPoints = [
+  { title: "Secure Workflow", desc: "Your documents are encrypted and protected at every step." },
+  { title: "Team Collaboration", desc: "Work together seamlessly across teams and departments." },
+  { title: "Business Ready", desc: "From contracts to HR forms, handle it all professionally." },
+  { title: "Save Time & Effort", desc: "Automate reminders and reduce turnaround time." },
+];
+
+const trustBlocks = [
+  { icon: Smile, title: "Easy to Use", desc: "Intuitive interface that anyone can use instantly." },
+  { icon: Lock, title: "Secure & Private", desc: "Bank-grade encryption keeps your data safe." },
+  { icon: Users, title: "Team Ready", desc: "Collaborate with your team from anywhere." },
+  { icon: Briefcase, title: "Professional Workflow", desc: "Look professional and stay compliant every time." },
+];
+
 export default function ESignPage() {
   return (
     <ProductPageLayout>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-950 via-teal-900 to-green-900 text-white py-24">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-teal-400/10 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4" />
-        <div className="container mx-auto px-6 relative">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+      {/* === HERO === */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#f2fbf4] via-white to-[#e8f8ec] py-16 lg:py-20">
+        <div className="absolute -top-32 -right-32 w-[500px] h-[500px] bg-[#24b34b]/10 rounded-full blur-3xl" aria-hidden="true" />
+        <div className="absolute -bottom-40 -left-24 w-[420px] h-[420px] bg-[#0f8f2f]/10 rounded-full blur-3xl" aria-hidden="true" />
+        <div className="container mx-auto px-6 max-w-[88rem] relative">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }}>
-              <div className="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/30 rounded-full px-4 py-1.5 text-emerald-300 text-sm font-medium mb-6">
-                <FileSignature className="w-4 h-4" strokeWidth={1.75} />
-                Luxor eSign
+              <div className="inline-flex items-center gap-2 bg-[#dff5e5] border border-[#24b34b]/30 rounded-full px-4 py-1.5 text-[#0a6e24] text-sm font-semibold mb-6">
+                <ShieldCheck className="w-4 h-4" strokeWidth={2} />
+                Trusted eSigning for Professionals
               </div>
-              <h1 className="text-5xl font-bold leading-tight mb-6 text-white">
-                Collect signatures <span className="text-emerald-300">faster & legally</span>
+              <h1 className="text-4xl lg:text-[52px] font-extrabold tracking-tight leading-[1.08] text-[#111827] mb-6">
+                Sign Every PDF<br />
+                <span className="text-[#0f8f2f]">with Confidence</span>
               </h1>
-              <p className="text-teal-200 text-lg leading-relaxed mb-8">
-                Send contracts, NDAs, and agreements for legally binding e-signatures in seconds. Track who has signed, send reminders, and download certified PDFs — all from your desktop.
+              <p className="text-[#4b5563] text-base lg:text-lg leading-relaxed mb-8 max-w-xl">
+                LUXOR PDF eSign makes it easy to sign, request signatures, approve documents and automate your workflow. Secure, compliant and legally trusted eSigning for modern teams and professionals.
               </p>
-              <div className="flex flex-wrap gap-4 items-center">
-                <span className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 font-semibold cursor-default select-none">
-                  <Clock className="w-4 h-4" strokeWidth={2} />
-                  Coming soon
-                </span>
-                <a href="#how-it-works" className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 transition-colors">
-                  How It Works
+              <div className="flex flex-wrap gap-3 mb-5">
+                <a href={ESIGN_INSTALLER_URL} className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[#0f8f2f] hover:bg-[#0a6e24] text-white font-bold shadow-lg shadow-green-600/20 transition-colors">
+                  <WindowsGlyph className="w-4 h-4" />
+                  Download for Windows
+                </a>
+                <a href={APP_URL} className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white hover:bg-[#dff5e5] text-[#0f8f2f] font-bold border border-[#0f8f2f]/40 transition-colors">
+                  Start Free Trial
                 </a>
               </div>
+              <p className="text-sm text-[#4b5563] flex items-center gap-2">
+                <Smile className="w-4 h-4 text-[#0f8f2f]" />
+                Mac, Android and iOS coming soon
+              </p>
             </motion.div>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.15 }}>
-              <ESignMockup />
+              <ESignDashboardMockup />
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Stats strip */}
-      <section className="bg-emerald-600 py-6">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-white text-center">
-            {[["AES-256 secure","Bank-grade encryption"], ["40+ Countries","Global recognition"], ["Tamper-proof Seal","Cryptographic lock"], ["Instant Delivery","Signed in minutes"]].map(([val, lbl]) => (
-              <div key={lbl}><p className="text-xl font-bold">{val}</p><p className="text-emerald-200 text-sm">{lbl}</p></div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section id="how-it-works" className="py-20 bg-slate-50">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-slate-800 mb-3">Four steps to a signed document</h2>
-            <p className="text-slate-500 max-w-xl mx-auto">No complex setup. Get your first document signed in under three minutes.</p>
-          </div>
-          <div className="grid md:grid-cols-4 gap-6">
-            {steps.map(({ n, title, desc }, i) => (
-              <div key={n} className="relative flex flex-col items-center text-center">
-                <div className="w-14 h-14 rounded-full bg-emerald-500 text-white font-bold text-xl flex items-center justify-center mb-4 shadow-lg shadow-emerald-500/30">
-                  {n}
+      {/* === BENEFITS STRIP === */}
+      <section className="py-10 bg-white border-b border-[#e5e7eb]">
+        <div className="container mx-auto px-6 max-w-[88rem]">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {benefits.map(({ icon: Icon, title, desc }) => (
+              <motion.div key={title} {...fadeUp} whileHover={{ y: -3 }} className="flex items-start gap-3.5 rounded-2xl border border-[#e5e7eb] bg-white shadow-sm hover:shadow-md transition-shadow px-5 py-4">
+                <div className="w-10 h-10 rounded-xl bg-[#dff5e5] flex items-center justify-center shrink-0">
+                  <Icon className="w-5 h-5 text-[#0f8f2f]" strokeWidth={2} />
                 </div>
-                {i < 3 && <div className="hidden md:block absolute top-7 left-[calc(50%+28px)] w-[calc(100%-56px)] h-0.5 bg-emerald-200" />}
-                <h3 className="font-semibold text-slate-800 mb-1">{title}</h3>
-                <p className="text-slate-500 text-sm">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-slate-800 mb-3">Enterprise-grade, startup-friendly</h2>
-            <p className="text-slate-500 max-w-xl mx-auto">All the compliance and audit features of enterprise solutions — at a fraction of the cost.</p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map(({ icon: Icon, title, desc }) => (
-              <motion.div key={title} whileHover={{ y: -4 }} className="bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center mb-4">
-                  <Icon className="w-5 h-5 text-emerald-600" strokeWidth={1.75} />
+                <div>
+                  <p className="font-bold text-[#111827] text-sm mb-0.5">{title}</p>
+                  <p className="text-[#4b5563] text-xs leading-relaxed">{desc}</p>
                 </div>
-                <h3 className="font-semibold text-slate-800 mb-2">{title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-16 bg-gradient-to-br from-emerald-900 to-teal-900 text-white text-center">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold mb-4">Stop chasing signatures by email</h2>
-          <p className="text-emerald-200 mb-8 max-w-md mx-auto">Luxor eSign is launching soon. We're putting the finishing touches on it — check back shortly.</p>
-          <span className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-100 font-bold cursor-default select-none">
-            <Clock className="w-4 h-4" strokeWidth={2} />
-            Coming soon
-          </span>
+      {/* === FEATURES === */}
+      <section className="py-16 lg:py-20 bg-[#f8fdf9]">
+        <div className="container mx-auto px-6 max-w-[88rem]">
+          <motion.div {...fadeUp} className="text-center mb-12">
+            <p className="text-[#0f8f2f] text-xs font-bold tracking-[0.2em] uppercase mb-3">Everything You Need</p>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#111827] tracking-tight">
+              Everything You Need for <span className="text-[#0f8f2f]">Fast &amp; Secure</span> eSigning
+            </h2>
+          </motion.div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {features.map(({ icon: Icon, title, desc }) => (
+              <motion.div key={title} {...fadeUp} whileHover={{ y: -4 }} className="bg-white rounded-2xl border border-[#e5e7eb] shadow-sm hover:shadow-md transition-shadow p-6">
+                <div className="w-11 h-11 rounded-xl bg-[#dff5e5] flex items-center justify-center mb-4">
+                  <Icon className="w-5 h-5 text-[#0f8f2f]" strokeWidth={1.9} />
+                </div>
+                <h3 className="font-bold text-[#111827] text-sm mb-1.5">{title}</h3>
+                <p className="text-[#4b5563] text-xs leading-relaxed">{desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* === HOW IT WORKS === */}
+      <section className="py-16 lg:py-20 bg-white">
+        <div className="container mx-auto px-6 max-w-[88rem]">
+          <motion.div {...fadeUp} className="text-center mb-14">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#111827] tracking-tight">
+              How <span className="text-[#0f8f2f]">LUXOR PDF eSign</span> Works
+            </h2>
+          </motion.div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-6">
+            {steps.map(({ icon: Icon, n, title, desc }, i) => (
+              <motion.div key={title} {...fadeUp} className="relative flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-full bg-[#0f8f2f] flex items-center justify-center mb-4 shadow-lg shadow-green-600/25">
+                  <Icon className="w-7 h-7 text-white" strokeWidth={1.9} />
+                </div>
+                {i < 3 && <div className="hidden lg:block absolute top-8 left-[calc(50%+40px)] w-[calc(100%-80px)] border-t-2 border-dashed border-[#24b34b]/40" aria-hidden="true" />}
+                <p className="font-bold text-[#111827] mb-1">
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#dff5e5] text-[#0f8f2f] text-[11px] font-extrabold mr-1.5 align-middle">{n}</span>
+                  {title}
+                </p>
+                <p className="text-[#4b5563] text-sm max-w-[220px]">{desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* === PRODUCT SHOWCASE === */}
+      <section className="py-16 lg:py-20 bg-[#f8fdf9]">
+        <div className="container mx-auto px-6 max-w-[88rem]">
+          <div className="grid lg:grid-cols-[1.25fr_1fr] gap-12 lg:gap-16 items-center">
+            <motion.div {...fadeUp}>
+              <SigningMockup />
+            </motion.div>
+            <motion.div {...fadeUp}>
+              <h2 className="text-3xl lg:text-4xl font-extrabold text-[#111827] tracking-tight leading-tight mb-8">
+                A <span className="text-[#0f8f2f]">Smarter</span> Way to Get Documents Signed
+              </h2>
+              <div className="space-y-5">
+                {smarterPoints.map(({ title, desc }) => (
+                  <div key={title} className="flex items-start gap-3.5">
+                    <div className="w-8 h-8 rounded-full bg-[#dff5e5] flex items-center justify-center shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-4.5 h-4.5 text-[#0f8f2f]" strokeWidth={2.2} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-[#111827] mb-0.5">{title}</p>
+                      <p className="text-[#4b5563] text-sm leading-relaxed">{desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* === TRUST === */}
+      <section className="py-16 lg:py-20 bg-white">
+        <div className="container mx-auto px-6 max-w-[88rem]">
+          <motion.div {...fadeUp} className="text-center mb-12">
+            <p className="text-[#0f8f2f] text-xs font-bold tracking-[0.2em] uppercase mb-3">Why Choose LUXOR PDF eSign</p>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#111827] tracking-tight">
+              Built for Speed. <span className="text-[#0f8f2f]">Designed for Trust.</span>
+            </h2>
+          </motion.div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {trustBlocks.map(({ icon: Icon, title, desc }) => (
+              <motion.div key={title} {...fadeUp} className="flex items-start gap-3.5">
+                <div className="w-11 h-11 rounded-full bg-[#dff5e5] flex items-center justify-center shrink-0">
+                  <Icon className="w-5 h-5 text-[#0f8f2f]" strokeWidth={1.9} />
+                </div>
+                <div>
+                  <p className="font-bold text-[#111827] mb-1">{title}</p>
+                  <p className="text-[#4b5563] text-sm leading-relaxed">{desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* === CTA BANNER === */}
+      <section className="py-12 lg:py-16 bg-white">
+        <div className="container mx-auto px-6 max-w-[88rem]">
+          <motion.div {...fadeUp}>
+            <div className="rounded-2xl bg-gradient-to-r from-[#24b34b] via-[#0f8f2f] to-[#0a6e24] relative overflow-hidden px-8 py-8 lg:px-14 lg:py-10">
+              <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "radial-gradient(circle at center, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} aria-hidden="true" />
+              <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-10">
+                <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center shrink-0">
+                  <PenLine className="w-10 h-10 lg:w-12 lg:h-12 text-white" strokeWidth={1.8} />
+                </div>
+                <div className="flex-1 text-center lg:text-left">
+                  <h2 className="text-2xl lg:text-[30px] font-extrabold text-white tracking-tight leading-tight mb-2">Ready to Simplify eSigning?</h2>
+                  <p className="text-green-100 text-sm lg:text-base font-medium mb-4">
+                    Join thousands of professionals who trust LUXOR PDF eSign.
+                  </p>
+                  <div className="flex flex-wrap justify-center lg:justify-start gap-x-5 gap-y-1 text-green-100 text-xs font-medium">
+                    <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> No credit card required</span>
+                    <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Fast setup</span>
+                    <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Cancel anytime</span>
+                  </div>
+                </div>
+                <div className="shrink-0 flex flex-wrap justify-center gap-3">
+                  <a href={APP_URL} className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/40 transition-colors">
+                    Start Free Trial
+                  </a>
+                  <a href={ESIGN_INSTALLER_URL} className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white hover:bg-green-50 text-[#0a6e24] font-bold shadow-xl transition-colors">
+                    <WindowsGlyph className="w-4 h-4" />
+                    Download for Windows
+                  </a>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
     </ProductPageLayout>
