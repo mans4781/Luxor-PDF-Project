@@ -1503,6 +1503,19 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
               +
             </button>
             <span className="zoom-slider-pct">{zoomLabel(zoom)}</span>
+            <button
+              className="zoom-slider-btn"
+              title="Reset zoom to 100%"
+              aria-label="Reset zoom to 100%"
+              onClick={handleActualSize}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9" />
+                <path d="M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9" />
+                <path d="M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15" />
+                <path d="M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15" />
+              </svg>
+            </button>
           </div>
         }
       />
