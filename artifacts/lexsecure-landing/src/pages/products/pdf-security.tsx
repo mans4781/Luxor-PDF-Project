@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import secureHeroDashboard from "@/assets/secure-hero-dashboard.png";
 import secureEncryptPanel from "@/assets/secure-encrypt-panel.png";
 import secureShield from "@/assets/secure-shield.png";
+import secureCubes from "@/assets/secure-cubes.png";
 
 const APP_URL = "/pdf-expiry/";
 const SECURE_INSTALLER_URL = "/api/downloads/luxor-pdf-secure-latest.exe";
@@ -486,6 +487,7 @@ export default function PdfSecurityPage() {
                     <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Cancel anytime</span>
                   </div>
                 </div>
+                <img src={secureCubes} alt="" className="w-32 lg:w-40 shrink-0 drop-shadow-xl" />
               </div>
             </div>
           </motion.div>
