@@ -318,7 +318,7 @@ export default function PdfReaderPage() {
                     <h3 className="text-lg font-bold text-slate-800">Android</h3>
                     <span className="bg-slate-100 text-slate-500 text-[9px] font-bold px-2 py-0.5 rounded tracking-wider">COMING SOON</span>
                   </div>
-                  <p className="text-sm text-slate-500 font-medium">Android phones and tablets</p>
+                  <p className="text-sm text-slate-500 font-medium">Android Phones and Tablets</p>
                 </div>
               </div>
 
