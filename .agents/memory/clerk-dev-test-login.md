@@ -5,7 +5,7 @@ description: How the seeded dev login works and how to bypass Clerk Client Trust
 
 # Seeded dev login
 
-- A demo/dev account `test@luxorpdf.com` exists (development-only; password known to the user, never store it here). It signs in through the real form at `/pdf-expiry/sign-in` and lands on `/pdf-expiry/dashboard`.
+- A development-only demo account exists (a "test@" address on the product's own domain; password known to the user, never store credentials here). It signs in through the real form at `/pdf-expiry/sign-in` and lands on `/pdf-expiry/dashboard`.
 
 # Gates that block seeded password sign-ins (and their fixes)
 

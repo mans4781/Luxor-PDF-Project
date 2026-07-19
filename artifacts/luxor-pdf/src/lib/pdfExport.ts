@@ -83,7 +83,7 @@ export async function exportPdfWithEdits(file: File, edits: ExportEdits): Promis
   if (textsByPage.size > 0) {
     const needed = new Set<StandardFonts>();
     for (const list of textsByPage.values()) {
-      for (const t of list) needed.add(standardFontForKey(t.fontFamily));
+      for (const t of list) needed.add(standardFontForText(t));
     }
     for (const sf of needed) textFontCache.set(sf, await pdf.embedFont(sf));
   }
@@ -403,6 +403,27 @@ function standardFontForKey(key?: string): StandardFonts {
   }
 }
 
+/** Pick the base-14 variant matching the annotation's bold/italic flags. */
+function standardFontForText(t: TextAnnotation): StandardFonts {
+  const base = standardFontForKey(t.fontFamily);
+  const b = !!t.bold, i = !!t.italic;
+  if (!b && !i) return base;
+  switch (base) {
+    case StandardFonts.Helvetica:
+      return b && i ? StandardFonts.HelveticaBoldOblique
+        : b ? StandardFonts.HelveticaBold
+        : StandardFonts.HelveticaOblique;
+    case StandardFonts.Courier:
+      return b && i ? StandardFonts.CourierBoldOblique
+        : b ? StandardFonts.CourierBold
+        : StandardFonts.CourierOblique;
+    default:
+      return b && i ? StandardFonts.TimesRomanBoldItalic
+        : b ? StandardFonts.TimesRomanBold
+        : StandardFonts.TimesRomanItalic;
+  }
+}
+
 /**
  * Flatten free-text (Add Text) annotations into the page. Coordinates
  * come from the zoom-stable `norm` record: x & font size are fractions
@@ -421,7 +442,7 @@ function drawTextsOnPage(
 ) {
   for (const t of texts) {
     if (!t.norm) continue;
-    const font = fonts.get(standardFontForKey(t.fontFamily));
+    const font = fonts.get(standardFontForText(t));
     if (!font) continue;
     const c = hexToRgb01(t.color || "#000000");
     const size = t.norm.size * w;

@@ -364,6 +364,7 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
   const startDrag = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    let moved = false;
     dragRef.current = {
       startMouseX: e.clientX,
       startMouseY: e.clientY,
@@ -372,16 +373,24 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
     };
     const handleDragMove = (me: MouseEvent) => {
       if (!dragRef.current) return;
+      const dx = me.clientX - dragRef.current.startMouseX;
+      const dy = me.clientY - dragRef.current.startMouseY;
+      if (!moved && Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+      moved = true;
       setLocalPos({
-        x: dragRef.current.startX + (me.clientX - dragRef.current.startMouseX),
-        y: dragRef.current.startY + (me.clientY - dragRef.current.startMouseY),
+        x: dragRef.current.startX + dx,
+        y: dragRef.current.startY + dy,
       });
     };
     const handleDragUp = (me: MouseEvent) => {
       if (!dragRef.current) return;
+      const wasMoved = moved;
       const newX = dragRef.current.startX + (me.clientX - dragRef.current.startMouseX);
       const newY = dragRef.current.startY + (me.clientY - dragRef.current.startMouseY);
       dragRef.current = null;
+      document.removeEventListener("mousemove", handleDragMove);
+      document.removeEventListener("mouseup", handleDragUp);
+      if (!wasMoved) return; // plain click: just select, don't persist a move
       setLocalPos({ x: newX, y: newY });
       // Persist both raw pixels (legacy readers) and normalized coords
       // so the box stays anchored across zoom changes.
@@ -389,8 +398,6 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
         x: newX, y: newY,
         norm: { x: newX / pageWidth, y: newY / pageHeight, size: dispSize / pageWidth },
       });
-      document.removeEventListener("mousemove", handleDragMove);
-      document.removeEventListener("mouseup", handleDragUp);
     };
     document.addEventListener("mousemove", handleDragMove);
     document.addEventListener("mouseup", handleDragUp);
@@ -408,6 +415,8 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
   const ls = ann.letterSpacing ?? 0;
   const textDeco = [ann.underline && "underline", ann.strikethrough && "line-through"]
     .filter(Boolean).join(" ") || undefined;
+  const fontWeight = ann.bold ? 700 : 400;
+  const fontStyle = ann.italic ? "italic" : "normal";
   const showControls = selected || editing || showColorPicker;
 
   const updateInputWidth = useCallback(() => {
@@ -537,6 +546,28 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
             <button
               style={{
                 ...tbtnStyle,
+                fontWeight: 800,
+                background: ann.bold ? "rgba(255,255,255,0.22)" : "none",
+              }}
+              title={ann.bold ? "Remove bold" : "Bold"}
+              onMouseDown={e => e.stopPropagation()}
+              onClick={e => { e.stopPropagation(); onUpdate({ bold: !ann.bold }); }}
+            >B</button>
+            <button
+              style={{
+                ...tbtnStyle,
+                fontStyle: "italic",
+                fontWeight: 600,
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                background: ann.italic ? "rgba(255,255,255,0.22)" : "none",
+              }}
+              title={ann.italic ? "Remove italic" : "Italic"}
+              onMouseDown={e => e.stopPropagation()}
+              onClick={e => { e.stopPropagation(); onUpdate({ italic: !ann.italic }); }}
+            >I</button>
+            <button
+              style={{
+                ...tbtnStyle,
                 textDecoration: "underline",
                 fontWeight: 700,
                 background: ann.underline ? "rgba(255,255,255,0.22)" : "none",
@@ -605,6 +636,7 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
         style={{
           position: "absolute", visibility: "hidden", whiteSpace: "pre",
           fontSize: dispSize, fontFamily: fontFamilyCss(ann.fontFamily),
+          fontWeight, fontStyle,
           letterSpacing: ls, padding: "0 5px",
         }}
         aria-hidden="true"
@@ -620,6 +652,7 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
             fontSize: dispSize,
             color: ann.color,
             fontFamily: fontFamilyCss(ann.fontFamily),
+            fontWeight, fontStyle,
             letterSpacing: ls,
             textDecoration: textDeco,
             background: "rgba(255,255,255,0.97)",
@@ -659,16 +692,18 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
       ) : (
         <div
           onDoubleClick={() => setEditing(true)}
+          onMouseDown={e => { setSelected(true); startDrag(e); }}
           style={{
             fontSize: dispSize,
             color: ann.color,
             fontFamily: fontFamilyCss(ann.fontFamily),
+            fontWeight, fontStyle,
             letterSpacing: ls,
             textDecoration: textDeco,
             lineHeight: `${lineH}px`,
             minHeight: lineH,
             maxWidth: maxW,
-            cursor: "default",
+            cursor: selected ? "move" : "default",
             pointerEvents: "all",
             borderRadius: 3,
             border: showControls ? "2.5px dashed #4169E1" : "2.5px dashed transparent",
