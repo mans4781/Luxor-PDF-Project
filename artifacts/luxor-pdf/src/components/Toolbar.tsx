@@ -9,6 +9,7 @@ import {
   allTextFonts,
 } from "@/lib/annotationColors";
 import { loadRecents, formatFileSize, type RecentFileEntry } from "@/lib/recentFiles";
+import { desktopWindowControl, isDesktopShell } from "@/lib/desktopBridge";
 import { STAMP_CATEGORIES, STAMP_INK_COLORS, type StampDef } from "@/lib/stamps";
 import {
   FolderOpen, Clock, FilePlus, Save, SaveAll, Copy, Share2, Printer, X, LogOut,
@@ -1380,7 +1381,12 @@ export default function Toolbar({
         />
         <span className="lxh-title">Luxor PDF Reader</span>
         <div className="lxh-winbtns">
-          <button className="lxh-winbtn" aria-disabled="true" title="Minimize" aria-label="Minimize">
+          <button
+            className="lxh-winbtn"
+            aria-disabled={isDesktopShell() ? undefined : "true"}
+            title="Minimize" aria-label="Minimize"
+            onClick={() => desktopWindowControl("minimize")}
+          >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
               <path d="M5 12h14" />
             </svg>
@@ -1389,13 +1395,22 @@ export default function Toolbar({
             className="lxh-winbtn"
             title={isFullscreen ? "Restore" : "Maximize"}
             aria-label={isFullscreen ? "Restore" : "Maximize"}
-            onClick={onToggleFullscreen}
+            onClick={() => {
+              if (!desktopWindowControl("maximize-toggle")) onToggleFullscreen();
+            }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
               <rect x="5" y="5" width="14" height="14" rx="1.5" />
             </svg>
           </button>
-          <button className="lxh-winbtn close" title="Close document" aria-label="Close document" onClick={onFileClose}>
+          <button
+            className="lxh-winbtn close"
+            title={isDesktopShell() ? "Close" : "Close document"}
+            aria-label={isDesktopShell() ? "Close" : "Close document"}
+            onClick={() => {
+              if (!desktopWindowControl("close")) onFileClose();
+            }}
+          >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>

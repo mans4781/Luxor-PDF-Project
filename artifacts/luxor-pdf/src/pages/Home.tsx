@@ -3,6 +3,7 @@ import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { useAuthGate } from "@/components/AuthGate";
 import { loadRecents, clearRecents, formatFileSize, type RecentFileEntry } from "@/lib/recentFiles";
 import { loadSettings } from "@/lib/settings";
+import { desktopWindowControl, isDesktopShell } from "@/lib/desktopBridge";
 
 interface HomeProps {
   onFileLoad: (file: File) => void;
@@ -180,9 +181,11 @@ export default function Home({ onFileLoad }: HomeProps) {
   };
 
   const toggleMaximize = () => {
+    if (desktopWindowControl("maximize-toggle")) return;
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     else document.documentElement.requestFullscreen().catch(() => {});
   };
+  const inDesktop = isDesktopShell();
 
   const recentsMenu = recentMenu && (
     <>
@@ -226,13 +229,23 @@ export default function Home({ onFileLoad }: HomeProps) {
         <img src={`${import.meta.env.BASE_URL}brand/luxor-shield.png`} alt="Luxor" draggable={false} />
         <span className="lxh-title">Luxor PDF Reader</span>
         <div className="lxh-winbtns">
-          <button className="lxh-winbtn" aria-disabled="true" title="Minimize" aria-label="Minimize">
+          <button
+            className="lxh-winbtn"
+            aria-disabled={inDesktop ? undefined : "true"}
+            title="Minimize" aria-label="Minimize"
+            onClick={() => desktopWindowControl("minimize")}
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" {...sw}><path d="M5 12h14"/></svg>
           </button>
           <button className="lxh-winbtn" title="Maximize" aria-label="Maximize" onClick={toggleMaximize}>
             <svg width="15" height="15" viewBox="0 0 24 24" {...sw}><rect x="5" y="5" width="14" height="14" rx="1.5"/></svg>
           </button>
-          <button className="lxh-winbtn close" aria-disabled="true" title="Close" aria-label="Close">
+          <button
+            className="lxh-winbtn close"
+            aria-disabled={inDesktop ? undefined : "true"}
+            title="Close" aria-label="Close"
+            onClick={() => desktopWindowControl("close")}
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" {...sw}><path d="M6 6l12 12M18 6L6 18"/></svg>
           </button>
         </div>

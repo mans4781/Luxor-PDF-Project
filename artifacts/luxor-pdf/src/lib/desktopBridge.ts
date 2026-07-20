@@ -10,11 +10,14 @@ interface DesktopOpenedFile {
   data: Uint8Array;
 }
 
+type DesktopWindowAction = "minimize" | "maximize-toggle" | "close";
+
 interface LuxorDesktopBridge {
   isDesktop?: boolean;
   getDeviceId?: () => Promise<string>;
   getPendingFile?: () => Promise<DesktopOpenedFile | null>;
   onOpenFile?: (callback: (file: DesktopOpenedFile) => void) => void;
+  windowControl?: (action: DesktopWindowAction) => Promise<boolean>;
 }
 
 declare global {
@@ -25,6 +28,18 @@ declare global {
 
 export function isDesktopShell(): boolean {
   return window.luxor?.isDesktop === true;
+}
+
+/**
+ * Drive the frameless desktop window from the in-app red title bar.
+ * Returns false (and does nothing) outside the desktop shell or on
+ * older shells without the handler.
+ */
+export function desktopWindowControl(action: DesktopWindowAction): boolean {
+  const bridge = window.luxor;
+  if (bridge?.isDesktop !== true || !bridge.windowControl) return false;
+  void bridge.windowControl(action).catch(() => {});
+  return true;
 }
 
 function toFile(opened: DesktopOpenedFile): File {
