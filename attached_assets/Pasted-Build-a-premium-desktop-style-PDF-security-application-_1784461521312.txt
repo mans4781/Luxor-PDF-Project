@@ -1,0 +1,833 @@
+Build a premium desktop-style PDF security application called “LUXOR PDF Secure”, closely inspired by the attached reference image.
+
+The application should look like professional Windows PDF software rather than a normal website. Create a complete working dashboard with all sidebar modules, realistic interactions, file handling, forms, validation, progress indicators, notifications, and reusable components.
+
+TECH STACK
+
+Use:
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- Lucide React icons
+- React Router
+- Zustand or React Context for application state
+- React Dropzone for PDF uploads
+- PDF.js for PDF preview
+- pdf-lib for supported PDF operations
+- Node.js/Express backend for server-side processing
+- Electron-ready architecture so the project can later be packaged as a Windows desktop application
+
+Do not use heavy UI component libraries. Build custom components using Tailwind CSS.
+
+BRAND AND VISUAL STYLE
+
+Application name:
+LUXOR PDF Secure
+
+Brand colours:
+
+- Primary blue: #075BE8
+- Bright blue: #0878FF
+- Dark navy text: #071747
+- Medium blue: #174EA6
+- Light blue background: #F3F7FF
+- Border: #DCE7FA
+- Success green: #07952B
+- Warning orange: #F59E0B
+- Error red: #DC2626
+- White: #FFFFFF
+
+Design requirements:
+
+- Premium Windows 11 desktop application appearance
+- Large rounded application window
+- White main workspace
+- Deep blue gradient sidebar
+- Soft blue shadows
+- Thin light-blue borders
+- Rounded cards with 16–20px radius
+- Modern typography similar to Inter
+- Spacious layout
+- Clear visual hierarchy
+- Smooth hover and transition effects
+- Minimal and professional interface
+- Avoid excessive animations
+- Do not use generic browser-style form controls
+- Use custom dropdowns, toggles, password inputs, file cards and dialogs
+
+APP WINDOW
+
+Create a desktop-style application shell with:
+
+- Minimum width: 1180px
+- Recommended layout width: 1440px
+- Rounded outer corners
+- Soft blue outer shadow
+- Custom title-bar area
+- Minimize button
+- Maximize/restore button
+- Close button
+- Draggable title-bar area when used in Electron
+- Main sidebar fixed on the left
+- Main content scrollable independently
+
+SIDEBAR
+
+Create a 270px wide blue gradient sidebar.
+
+At the top, show:
+
+- Shield logo containing the word “LUXOR”
+- Large text: LUXOR
+- Smaller text: PDF Secure
+
+Sidebar menu items:
+
+1. Dashboard
+2. Encrypt
+3. Password
+4. Redact
+5. Permissions
+6. Merge & Split
+7. Batch Process
+8. Secure Share
+9. Storage
+10. Settings
+
+Use suitable Lucide icons.
+
+Sidebar behaviour:
+
+- Active menu item should have a brighter blue background
+- Active item should have a subtle glow
+- White icons and text
+- Hover animation
+- Tooltips when sidebar is collapsed
+- Add a button to collapse and expand the sidebar
+- Save sidebar state locally
+
+GLOBAL APPLICATION FEATURES
+
+Include:
+
+- Drag-and-drop PDF upload
+- File picker
+- Recently opened PDF files
+- File type validation
+- File size validation
+- Password visibility toggle
+- Toast notifications
+- Confirmation dialogs
+- Loading indicators
+- Processing progress bars
+- Success and error states
+- Keyboard accessibility
+- Responsive behaviour for smaller screens
+- Light and dark application themes
+- Persistent user preferences using localStorage
+- Recent activity history
+- Clear/remove selected file
+- Cancel processing button
+- Download processed PDF
+- Open output folder button
+- “Process another file” button
+
+DASHBOARD PAGE
+
+Create a professional overview dashboard.
+
+Header:
+
+- Title: Dashboard
+- Subtitle: Protect, manage and process your PDF documents securely.
+- “Add PDF” primary button
+
+Top statistic cards:
+
+- PDFs Secured
+- Files Processed
+- Storage Used
+- Secure Shares
+- Batch Jobs
+- Recent Activity
+
+Quick action cards:
+
+- Encrypt PDF
+- Add Password
+- Redact Information
+- Manage Permissions
+- Merge PDFs
+- Split PDF
+- Batch Process
+- Secure Share
+
+Each quick-action card should include:
+
+- Icon
+- Title
+- Short description
+- Arrow or action button
+- Hover effect
+
+Recent files table:
+
+- File name
+- File size
+- Number of pages
+- Last modified
+- Security status
+- Action menu
+
+Recent activity panel:
+
+- PDF encrypted
+- Password changed
+- File redacted
+- Permission updated
+- Secure link created
+
+ENCRYPT PAGE
+
+Match the attached reference image closely.
+
+Page header:
+
+- Lock icon
+- Title: Encrypt PDF
+
+Use a two-column layout.
+
+LEFT COLUMN: SECURITY SETTINGS
+
+Card title:
+Security Settings
+
+Fields:
+
+1. Encryption Level dropdown
+   - AES-256 – Highest Protection
+   - AES-128 – Strong Protection
+   - Standard PDF Encryption
+
+2. User Password
+   - Password input
+   - Visibility icon
+   - Password strength indicator
+
+3. Confirm Password
+   - Password input
+   - Visibility icon
+   - Live password match validation
+
+4. Permissions dropdown
+   - Full Access
+   - View Only
+   - Custom Permissions
+
+5. Permission Options
+   - Allow Printing
+   - Allow Editing
+   - Allow Copying
+   - Allow Annotations
+   - Allow Content Extraction
+   - Allow Form Filling
+   - Allow Document Assembly
+   - Allow Accessibility Extraction
+
+Use modern toggle switches for permission settings.
+
+RIGHT COLUMN
+
+PDF File card:
+
+- Drag-and-drop area when no file is selected
+- PDF file icon
+- File name
+- File size
+- Number of pages
+- Encryption status
+- Replace file button
+- Remove file button
+
+Security Status card:
+
+- Strong Protection Enabled
+- Selected encryption level
+- User password status
+- Permission status
+- Green shield icon when configuration is valid
+- Warning status when password is weak
+- Error status when passwords do not match
+
+Bottom primary button:
+
+- Text: Encrypt & Save
+- Shield-lock icon
+- Full width
+- Blue gradient
+- Disabled until required data is valid
+
+During processing:
+
+- Show progress bar
+- “Encrypting document…” text
+- Cancel button
+
+After processing:
+
+- Success confirmation
+- Download Secured PDF
+- Open File
+- Process Another PDF
+
+Important:
+Do not claim a PDF is AES-256 encrypted unless real server-side encryption has completed successfully. If the required PDF encryption engine is unavailable, clearly label the operation as a demo and create a backend service interface for future integration.
+
+PASSWORD PAGE
+
+Create tools for adding, changing and removing PDF passwords.
+
+Tabs:
+
+- Add Password
+- Change Password
+- Remove Password
+
+Add Password form:
+
+- Upload PDF
+- New password
+- Confirm password
+- Password strength
+- Apply password
+
+Change Password form:
+
+- Current password
+- New password
+- Confirm new password
+
+Remove Password form:
+
+- Current password
+- Remove protection button
+- Warning confirmation dialog
+
+Include validation and error messages for incorrect passwords.
+
+REDACT PAGE
+
+Create a PDF redaction workspace.
+
+Layout:
+
+- Left thumbnail panel
+- Central PDF preview
+- Right redaction settings panel
+- Top redaction toolbar
+
+Tools:
+
+- Draw redaction rectangle
+- Select text to redact
+- Search and redact
+- Redact all matching text
+- Undo
+- Redo
+- Zoom
+- Page navigation
+- Apply redactions
+
+Redaction settings:
+
+- Redaction fill colour
+- Overlay text
+- Case-sensitive search
+- Whole-word matching
+- Selected pages
+- All pages
+- Remove metadata
+- Sanitize hidden information
+
+Search and redact examples:
+
+- Email addresses
+- Phone numbers
+- Credit card numbers
+- Names
+- Custom words
+
+Before applying permanent redactions, show:
+
+“Applied redactions cannot be undone after the file is saved.”
+
+PERMISSIONS PAGE
+
+Allow users to manage PDF permissions.
+
+Options:
+
+- Allow printing
+- Printing quality: low or high
+- Allow copying
+- Allow editing
+- Allow annotations
+- Allow form filling
+- Allow document assembly
+- Allow content extraction
+- Allow screen reader access
+
+Include preset permission profiles:
+
+- Full Access
+- Read Only
+- Print Only
+- Review and Comment
+- Form Filling Only
+- Custom
+
+Display a permission summary card before saving.
+
+MERGE & SPLIT PAGE
+
+Use tabs:
+
+- Merge PDFs
+- Split PDF
+- Extract Pages
+- Delete Pages
+- Reorder Pages
+
+Merge PDFs:
+
+- Multiple file upload
+- Drag files to reorder
+- Show file name, size and page count
+- Rotate individual files
+- Remove file
+- Merge button
+- Output file name
+
+Split PDF:
+
+- Split every page
+- Split every N pages
+- Split by page ranges
+- Split before selected pages
+- Split after selected pages
+- Split by file size
+
+Extract Pages:
+
+- Page range input
+- Visual page selector
+- Extract selected pages
+
+Delete Pages:
+
+- Thumbnail page selection
+- Delete selected pages
+- Confirmation dialog
+
+Reorder Pages:
+
+- Drag-and-drop page thumbnails
+- Rotate pages
+- Duplicate pages
+- Remove pages
+- Save reordered PDF
+
+BATCH PROCESS PAGE
+
+Allow multiple PDFs to be processed together.
+
+Batch actions:
+
+- Encrypt files
+- Add passwords
+- Apply permissions
+- Add watermark
+- Compress PDFs
+- Remove metadata
+- Rename files
+
+Batch table columns:
+
+- Checkbox
+- File name
+- Size
+- Pages
+- Selected action
+- Status
+- Progress
+- Output
+- Action menu
+
+Statuses:
+
+- Waiting
+- Processing
+- Completed
+- Failed
+- Cancelled
+
+Include:
+
+- Add Files
+- Add Folder
+- Select All
+- Remove Selected
+- Start Batch
+- Pause
+- Resume
+- Cancel
+- Retry Failed
+- Download All
+- Export processing report
+
+SECURE SHARE PAGE
+
+Create secure PDF sharing functionality.
+
+Fields:
+
+- Select PDF
+- Recipient email
+- Optional message
+- Link expiry date
+- Link expiry time
+- Maximum downloads
+- Require access password
+- Disable printing
+- Disable downloading
+- Disable copying
+- Add visible watermark
+- Email verification required
+
+After link creation, show:
+
+- Secure share URL
+- Copy link button
+- QR code
+- Expiration date
+- Download limit
+- Revoke link button
+- Activity log
+
+Secure share table:
+
+- Document
+- Recipient
+- Created
+- Expires
+- Views
+- Downloads
+- Status
+- Actions
+
+Use demo data unless a real secure storage backend is configured.
+
+STORAGE PAGE
+
+Create a storage management interface.
+
+Top storage summary:
+
+- Total storage
+- Used storage
+- Available storage
+- Storage progress bar
+
+Folders:
+
+- Secured PDFs
+- Shared PDFs
+- Batch Outputs
+- Redacted PDFs
+- Archived Files
+- Trash
+
+File grid and table view options.
+
+File actions:
+
+- Open
+- Preview
+- Download
+- Rename
+- Move
+- Duplicate
+- Share
+- Delete
+- Restore
+- Permanently delete
+
+Add search, sorting and filters.
+
+SETTINGS PAGE
+
+Create settings sections:
+
+General:
+
+- Default output folder
+- Default file naming format
+- Open output folder after processing
+- Confirm before overwriting files
+- Remember recent documents
+- Language
+- Application theme
+
+Security:
+
+- Default encryption level
+- Clear passwords after processing
+- Lock application after inactivity
+- Require app PIN
+- Remove metadata by default
+- Secure temporary file deletion
+
+Notifications:
+
+- Processing complete
+- Batch complete
+- Errors
+- Secure share viewed
+- Link expired
+
+Updates:
+
+- Current application version
+- Check for updates
+- Automatic updates
+- Release channel
+
+Account:
+
+- User name
+- Email
+- Subscription plan
+- License status
+- Manage license
+- Sign out
+
+About:
+
+- LUXOR PDF Secure
+- Application version
+- Privacy Policy
+- Terms of Use
+- Open-source licences
+
+REUSABLE COMPONENTS
+
+Create reusable components for:
+
+- Application shell
+- Sidebar
+- Title bar
+- Page header
+- File drop zone
+- PDF file card
+- Security status card
+- Password input
+- Password strength meter
+- Select dropdown
+- Toggle switch
+- Progress bar
+- Modal dialog
+- Confirmation dialog
+- Toast notification
+- Empty state
+- Loading state
+- Error state
+- File table
+- Page thumbnails
+- Recent activity item
+- Statistic card
+- Quick-action card
+
+FUNCTIONAL REQUIREMENTS
+
+Implement real functionality where supported:
+
+- Upload and validate PDF files
+- Read PDF page count
+- Display PDF preview
+- Merge PDFs using pdf-lib
+- Extract selected pages
+- Delete selected pages
+- Reorder pages
+- Rotate pages
+- Rename output files
+- Download processed files
+- Maintain recent file history locally
+- Save user settings locally
+
+For operations requiring advanced native PDF security, such as genuine AES-256 PDF encryption, permanent secure redaction or permission enforcement:
+
+- Create clean backend API endpoints
+- Create service interfaces
+- Clearly separate real and demo processing states
+- Do not fake successful security operations
+- Add setup documentation for connecting qpdf, PDFium, MuPDF or another suitable production PDF engine
+
+BACKEND API STRUCTURE
+
+Create API routes such as:
+
+POST /api/pdf/upload
+POST /api/pdf/encrypt
+POST /api/pdf/password/add
+POST /api/pdf/password/change
+POST /api/pdf/password/remove
+POST /api/pdf/merge
+POST /api/pdf/split
+POST /api/pdf/extract
+POST /api/pdf/delete-pages
+POST /api/pdf/reorder
+POST /api/pdf/redact
+POST /api/pdf/permissions
+POST /api/pdf/batch
+POST /api/share/create
+POST /api/share/revoke
+GET /api/jobs/:jobId
+GET /api/files
+DELETE /api/files/:fileId
+
+Use secure temporary file handling and delete temporary files after processing.
+
+SECURITY REQUIREMENTS
+
+- Never store PDF passwords in localStorage
+- Do not log passwords
+- Clear password fields after processing
+- Validate file MIME type and extension
+- Add file size limits
+- Sanitize output filenames
+- Reject unsupported files
+- Add backend rate limiting
+- Use secure HTTP headers
+- Prevent path traversal
+- Delete temporary files after a configurable time
+- Show privacy information explaining whether processing is local or server-side
+
+SAMPLE DATA
+
+Use realistic sample PDF information:
+
+File:
+Annual_Report_2024.pdf
+
+Size:
+2.4 MB
+
+Pages:
+24
+
+Encryption:
+AES-256
+
+Permissions:
+Custom
+
+Create several additional realistic recent documents and batch jobs.
+
+RESPONSIVENESS
+
+The main target is a desktop application, but the interface should adapt to:
+
+- 1920×1080
+- 1600×900
+- 1440×900
+- 1366×768
+- Tablet width
+
+On small screens:
+
+- Collapse the sidebar
+- Stack two-column forms
+- Keep primary actions visible
+- Avoid horizontal page overflow
+
+ACCESSIBILITY
+
+- Proper labels for all inputs
+- Keyboard navigation
+- Visible focus states
+- ARIA labels for icon buttons
+- Sufficient colour contrast
+- Escape key closes dialogs
+- Enter key submits valid forms
+- Do not rely only on colour to communicate status
+
+PROJECT STRUCTURE
+
+Use a clean structure similar to:
+
+src/
+  components/
+  layouts/
+  pages/
+  features/
+    dashboard/
+    encrypt/
+    password/
+    redact/
+    permissions/
+    merge-split/
+    batch/
+    secure-share/
+    storage/
+    settings/
+  hooks/
+  services/
+  store/
+  types/
+  utils/
+  assets/
+
+server/
+  routes/
+  controllers/
+  services/
+  middleware/
+  utils/
+
+QUALITY REQUIREMENTS
+
+- Use TypeScript strictly
+- No broken buttons
+- No unfinished blank pages
+- No lorem ipsum
+- No excessive gradients
+- No inconsistent icon styles
+- No browser alert boxes
+- No horizontal overflow
+- Add meaningful loading, success and error states
+- Use reusable components instead of repeating code
+- Comment complex PDF-processing logic
+- Make the application feel ready for a commercial software product
+
+FINAL DELIVERABLE
+
+Generate the complete application, not just a static screenshot.
+
+The final result must include:
+
+1. Fully designed dashboard
+2. All ten working navigation pages
+3. Functional PDF upload and preview
+4. Functional supported PDF operations
+5. Realistic application states
+6. Responsive desktop interface
+7. Backend service structure
+8. Setup instructions
+9. README explaining how to run the project
+10. Clear instructions for packaging the application with Electron
+11. Clear notes identifying which security features require qpdf, MuPDF, PDFium or another native PDF engine
+
+Start by creating the full application shell and Encrypt PDF page based on the reference image. Then complete every remaining sidebar module using the same design system.

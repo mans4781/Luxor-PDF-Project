@@ -181,6 +181,10 @@ function createWindow(): void {
     title: "Luxor PDF",
     backgroundColor: "#111827",
     autoHideMenuBar: true,
+    // Frameless: the web app draws its own red Luxor title bar with
+    // working window buttons (wired via the luxor:window-control IPC),
+    // so the standard Windows frame would duplicate them.
+    frame: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -364,6 +368,31 @@ function isTrustedIpcSender(event: Electron.IpcMainInvokeEvent): boolean {
     return false;
   }
 }
+
+// Window controls for the frameless window: the renderer's red title-bar
+// buttons drive minimize / maximize-toggle / close.
+ipcMain.handle(
+  "luxor:window-control",
+  (event, action: "minimize" | "maximize-toggle" | "close") => {
+    if (!isTrustedIpcSender(event)) return false;
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win) return false;
+    switch (action) {
+      case "minimize":
+        win.minimize();
+        return true;
+      case "maximize-toggle":
+        if (win.isMaximized()) win.unmaximize();
+        else win.maximize();
+        return true;
+      case "close":
+        win.close();
+        return true;
+      default:
+        return false;
+    }
+  },
+);
 
 ipcMain.handle("luxor:get-device-id", async (event) => {
   if (!isTrustedIpcSender(event)) return null;

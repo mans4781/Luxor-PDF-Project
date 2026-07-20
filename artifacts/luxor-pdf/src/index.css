@@ -391,9 +391,18 @@ button, input, textarea, select {
   overflow-y: auto; overflow-x: auto;
   background: var(--viewer-bg, #F7F7F7);
   display: flex; flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   padding: 20px 20px 80px;
   gap: 16px;
+}
+
+/* Center pages horizontally while they fit; once a page is wider than the
+   viewport, auto margins collapse to 0 so the left edge stays reachable
+   and the horizontal scrollbar can pan across the whole page. */
+.luxor-viewer > * {
+  margin-left: auto;
+  margin-right: auto;
+  flex-shrink: 0;
 }
 
 /* Excel-style zoom slider at the right of the status bar. */
@@ -916,6 +925,11 @@ mark.search-hl {
 }
 .lxh-titlebar img { width: 20px; height: 24px; object-fit: contain; user-select: none; -webkit-user-drag: none; }
 .lxh-title { font-size: 13.5px; font-weight: 600; color: #ffffff; }
+/* Desktop shell: the red title bar is the real window title bar (frameless
+   Electron window) — make it draggable, keep buttons clickable. */
+.lxh-titlebar, .luxor-titlebar { -webkit-app-region: drag; }
+.lxh-titlebar button, .luxor-titlebar button { -webkit-app-region: no-drag; }
+
 .lxh-winbtns { margin-left: auto; display: flex; gap: 4px; }
 .lxh-winbtn {
   width: 40px; height: 32px; border: none; background: transparent;

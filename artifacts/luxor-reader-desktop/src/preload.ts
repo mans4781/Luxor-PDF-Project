@@ -32,6 +32,15 @@ const luxor = {
       callback(file);
     });
   },
+  /**
+   * Frameless-window controls: the web app's red title-bar buttons call
+   * these to minimize / maximize-toggle / close the desktop window.
+   */
+  windowControl(
+    action: "minimize" | "maximize-toggle" | "close",
+  ): Promise<boolean> {
+    return ipcRenderer.invoke("luxor:window-control", action);
+  },
 };
 
 contextBridge.exposeInMainWorld("luxor", luxor);
