@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
-import { Camera, LogOut, Pencil, Trash2, X } from 'lucide-react';
+import { Camera, LogOut, Pencil, Trash2, UserRound, X } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { Button } from './ui/Button';
 
@@ -35,12 +35,15 @@ function Avatar({ name, photo, size }: { name: string; photo: string | null; siz
 }
 
 export function ProfileMenu() {
-  const { profile, signOut, updateProfileName, updateProfilePhoto } = useAppStore();
+  const { profile, signIn, signOut, updateProfileName, updateProfilePhoto } = useAppStore();
   const [, navigate] = useLocation();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [setupName, setSetupName] = useState('');
+  const [setupEmail, setSetupEmail] = useState('');
+  const [setupError, setSetupError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -66,7 +69,62 @@ export function ProfileMenu() {
     };
   }, [open]);
 
-  if (!profile) return null;
+  const submitSetup = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedName = setupName.trim();
+    const trimmedEmail = setupEmail.trim();
+    if (!trimmedName) { setSetupError('Please enter your name.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) { setSetupError('Please enter a valid email address.'); return; }
+    signIn(trimmedName, trimmedEmail);
+    setSetupName('');
+    setSetupEmail('');
+    setSetupError(null);
+    navigate('/');
+  };
+
+  if (!profile) {
+    return (
+      <div className="relative" ref={menuRef} style={{ WebkitAppRegion: 'no-drag' } as any}>
+        <button
+          onClick={() => setOpen(prev => !prev)}
+          className="w-7 h-7 rounded-full bg-[#E0E7FF] hover:bg-[#D1E0FF] text-[#075BE8] flex items-center justify-center transition-colors"
+          aria-label="Set up profile"
+          title="Set up profile"
+        >
+          <UserRound className="w-4 h-4" />
+        </button>
+        {open && (
+          <div className="absolute right-0 top-10 w-72 bg-white rounded-2xl shadow-[0_20px_45px_-15px_rgba(7,23,71,0.35)] border border-[#DCE7FA] z-50 overflow-hidden">
+            <form onSubmit={submitSetup} className="p-5 flex flex-col gap-3">
+              <div className="text-center">
+                <p className="text-sm font-semibold text-[#071747]">Set up your profile</p>
+                <p className="text-[11px] text-[#071747]/50 mt-0.5">Your email is set once and cannot be changed later.</p>
+              </div>
+              <input
+                value={setupName}
+                onChange={e => setSetupName(e.target.value)}
+                maxLength={60}
+                className="w-full h-9 px-3 rounded-lg border border-[#DCE7FA] text-sm text-[#071747] focus:outline-none focus:ring-2 focus:ring-[#075BE8]"
+                placeholder="Your name"
+              />
+              <input
+                type="email"
+                value={setupEmail}
+                onChange={e => setSetupEmail(e.target.value)}
+                maxLength={120}
+                className="w-full h-9 px-3 rounded-lg border border-[#DCE7FA] text-sm text-[#071747] focus:outline-none focus:ring-2 focus:ring-[#075BE8]"
+                placeholder="you@example.com"
+              />
+              {setupError && (
+                <p className="text-[11px] text-red-600 flex items-center gap-1"><X className="w-3 h-3" /> {setupError}</p>
+              )}
+              <Button type="submit" size="sm" fullWidth>Save profile</Button>
+            </form>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -187,60 +245,6 @@ export function ProfileMenu() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-export function WelcomeGate() {
-  const { signIn } = useAppStore();
-  const [, navigate] = useLocation();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState<string | null>(null);
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmedName = name.trim();
-    const trimmedEmail = email.trim();
-    if (!trimmedName) { setError('Please enter your name.'); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) { setError('Please enter a valid email address.'); return; }
-    signIn(trimmedName, trimmedEmail);
-    navigate('/');
-  };
-
-  return (
-    <div className="flex-1 flex items-center justify-center p-8">
-      <form onSubmit={submit} className="w-full max-w-sm bg-white rounded-2xl border border-[#DCE7FA] shadow-[0_20px_45px_-20px_rgba(7,91,232,0.3)] p-8 flex flex-col gap-4">
-        <div className="text-center mb-2">
-          <h1 className="text-lg font-semibold text-[#071747]">Welcome to Luxor PDF Secure</h1>
-          <p className="text-xs text-[#071747]/50 mt-1">Set up your profile to continue. Your email is set once and cannot be changed later.</p>
-        </div>
-        <div>
-          <label className="text-xs font-medium text-[#071747]/70 block mb-1.5">Name</label>
-          <input
-            value={name}
-            onChange={e => setName(e.target.value)}
-            maxLength={60}
-            className="w-full h-10 px-3 rounded-lg border border-[#DCE7FA] text-sm text-[#071747] focus:outline-none focus:ring-2 focus:ring-[#075BE8]"
-            placeholder="Your name"
-          />
-        </div>
-        <div>
-          <label className="text-xs font-medium text-[#071747]/70 block mb-1.5">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            maxLength={120}
-            className="w-full h-10 px-3 rounded-lg border border-[#DCE7FA] text-sm text-[#071747] focus:outline-none focus:ring-2 focus:ring-[#075BE8]"
-            placeholder="you@example.com"
-          />
-        </div>
-        {error && (
-          <p className="text-xs text-red-600 flex items-center gap-1"><X className="w-3 h-3" /> {error}</p>
-        )}
-        <Button type="submit" fullWidth>Continue</Button>
-      </form>
     </div>
   );
 }
