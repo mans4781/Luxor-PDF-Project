@@ -29,7 +29,18 @@ export interface SecureShare {
   status: 'Active' | 'Expired' | 'Revoked';
 }
 
+export interface Profile {
+  name: string;
+  email: string;
+  photo: string | null;
+}
+
 interface AppState {
+  profile: Profile | null;
+  signIn: (name: string, email: string) => void;
+  signOut: () => void;
+  updateProfileName: (name: string) => void;
+  updateProfilePhoto: (photo: string | null) => void;
   sidebarCollapsed: boolean;
   toggleSidebar: () => void;
   recentFiles: PDFFile[];
@@ -86,6 +97,11 @@ function usePersistentState<T>(key: string, fallback: T) {
 }
 
 const defaultState: AppState = {
+  profile: null,
+  signIn: () => {},
+  signOut: () => {},
+  updateProfileName: () => {},
+  updateProfilePhoto: () => {},
   sidebarCollapsed: false,
   toggleSidebar: () => {},
   recentFiles: seedFiles,
@@ -100,11 +116,16 @@ const defaultState: AppState = {
 const AppContext = createContext<AppState>(defaultState);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
+  const [profile, setProfile] = usePersistentState<Profile | null>('profile', null);
   const [sidebarCollapsed, setSidebarCollapsed] = usePersistentState('sidebar-collapsed', false);
   const [recentFiles, setRecentFiles] = usePersistentState<PDFFile[]>('recent-files', seedFiles);
   const [activities, setActivities] = usePersistentState<Activity[]>('activities', seedActivities);
   const [secureShares, setSecureShares] = usePersistentState<SecureShare[]>('secure-shares', seedShares);
 
+  const signIn = (name: string, email: string) => setProfile({ name: name.trim(), email: email.trim(), photo: null });
+  const signOut = () => setProfile(null);
+  const updateProfileName = (name: string) => setProfile(prev => (prev ? { ...prev, name: name.trim() } : prev));
+  const updateProfilePhoto = (photo: string | null) => setProfile(prev => (prev ? { ...prev, photo } : prev));
   const toggleSidebar = () => setSidebarCollapsed(prev => !prev);
   const addShare = (share: SecureShare) => setSecureShares(prev => [share, ...prev]);
   const addFile = (file: PDFFile) => setRecentFiles(prev => [file, ...prev]);
@@ -113,6 +134,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AppContext.Provider value={{
+      profile,
+      signIn,
+      signOut,
+      updateProfileName,
+      updateProfilePhoto,
       sidebarCollapsed,
       toggleSidebar,
       recentFiles,
