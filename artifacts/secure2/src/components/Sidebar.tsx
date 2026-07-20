@@ -18,6 +18,7 @@ import {
 import shieldLogo from '../assets/luxor-secure-shield.png';
 import { useAppStore } from '../store/useAppStore';
 import { cn } from '../utils/cn';
+import { ProfileMenu } from './ProfileMenu';
 
 const navItems = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
@@ -84,6 +85,7 @@ export function Sidebar() {
             </Link>
           );
         })}
+        <ProfileMenu />
       </div>
 
       <div className="p-4 shrink-0 border-t border-white/10">

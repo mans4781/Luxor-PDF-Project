@@ -1,6 +1,5 @@
 import React from 'react';
 import { Minus, Square, X } from 'lucide-react';
-import { ProfileMenu } from './ProfileMenu';
 
 export function TitleBar() {
   return (
@@ -8,8 +7,7 @@ export function TitleBar() {
       <div className="text-xs font-medium text-[#071747]/60 flex items-center gap-2">
         <span>LUXOR PDF Secure</span>
       </div>
-      <div className="flex items-center gap-3" style={{ WebkitAppRegion: 'no-drag' } as any}>
-        <ProfileMenu />
+      <div className="flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' } as any}>
         <button className="w-8 h-8 flex items-center justify-center rounded hover:bg-black/5 text-[#071747]/60 transition-colors">
           <Minus className="w-4 h-4" />
         </button>

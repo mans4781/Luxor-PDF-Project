@@ -35,9 +35,20 @@ function Avatar({ name, photo, size }: { name: string; photo: string | null; siz
 }
 
 export function ProfileMenu() {
-  const { profile, signIn, signOut, updateProfileName, updateProfilePhoto } = useAppStore();
+  const { profile, signIn, signOut, updateProfileName, updateProfilePhoto, sidebarCollapsed } = useAppStore();
   const [, navigate] = useLocation();
   const [open, setOpen] = useState(false);
+  const [popupPos, setPopupPos] = useState<{ left: number; top: number } | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  const togglePopup = () => {
+    if (!open && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const top = Math.max(16, Math.min(rect.top - 200, window.innerHeight - 340));
+      setPopupPos({ left: rect.right + 12, top });
+    }
+    setOpen(prev => !prev);
+  };
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -82,19 +93,27 @@ export function ProfileMenu() {
     navigate('/');
   };
 
+  const rowClass = 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:bg-white/10 text-white/80 hover:text-white';
+
   if (!profile) {
     return (
-      <div className="relative" ref={menuRef} style={{ WebkitAppRegion: 'no-drag' } as any}>
+      <div ref={menuRef}>
         <button
-          onClick={() => setOpen(prev => !prev)}
-          className="w-7 h-7 rounded-full bg-[#E0E7FF] hover:bg-[#D1E0FF] text-[#075BE8] flex items-center justify-center transition-colors"
-          aria-label="Set up profile"
-          title="Set up profile"
+          ref={triggerRef}
+          onClick={togglePopup}
+          className={rowClass}
+          title={sidebarCollapsed ? 'Set up profile' : undefined}
         >
-          <UserRound className="w-4 h-4" />
+          <span className="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center shrink-0">
+            <UserRound className="w-4 h-4" />
+          </span>
+          {!sidebarCollapsed && <span className="text-sm font-medium whitespace-nowrap">Set up profile</span>}
         </button>
-        {open && (
-          <div className="absolute right-0 top-10 w-72 bg-white rounded-2xl shadow-[0_20px_45px_-15px_rgba(7,23,71,0.35)] border border-[#DCE7FA] z-50 overflow-hidden">
+        {open && popupPos && (
+          <div
+            className="fixed w-72 bg-white rounded-2xl shadow-[0_20px_45px_-15px_rgba(7,23,71,0.35)] border border-[#DCE7FA] z-50 overflow-hidden"
+            style={{ left: popupPos.left, top: popupPos.top }}
+          >
             <form onSubmit={submitSetup} className="p-5 flex flex-col gap-3">
               <div className="text-center">
                 <p className="text-sm font-semibold text-[#071747]">Set up your profile</p>
@@ -162,18 +181,23 @@ export function ProfileMenu() {
   };
 
   return (
-    <div className="relative" ref={menuRef} style={{ WebkitAppRegion: 'no-drag' } as any}>
+    <div ref={menuRef}>
       <button
-        onClick={() => setOpen(prev => !prev)}
-        className="flex items-center justify-center rounded-full hover:ring-2 hover:ring-[#075BE8]/40 transition-shadow"
+        ref={triggerRef}
+        onClick={togglePopup}
+        className={rowClass}
         aria-label="Profile menu"
-        title={profile.name}
+        title={sidebarCollapsed ? profile.name : undefined}
       >
-        <Avatar name={profile.name} photo={profile.photo} size={28} />
+        <Avatar name={profile.name} photo={profile.photo} size={24} />
+        {!sidebarCollapsed && <span className="text-sm font-medium whitespace-nowrap truncate">{profile.name}</span>}
       </button>
 
-      {open && (
-        <div className="absolute right-0 top-10 w-72 bg-white rounded-2xl shadow-[0_20px_45px_-15px_rgba(7,23,71,0.35)] border border-[#DCE7FA] z-50 overflow-hidden">
+      {open && popupPos && (
+        <div
+          className="fixed w-72 bg-white rounded-2xl shadow-[0_20px_45px_-15px_rgba(7,23,71,0.35)] border border-[#DCE7FA] z-50 overflow-hidden"
+          style={{ left: popupPos.left, top: popupPos.top }}
+        >
           <div className="p-5 flex flex-col items-center gap-3 border-b border-[#EEF3FC]">
             <div className="relative">
               <Avatar name={profile.name} photo={profile.photo} size={72} />
