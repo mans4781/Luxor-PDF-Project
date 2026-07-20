@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'wouter';
 import { Camera, LogOut, Pencil, Trash2, X } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { Button } from './ui/Button';
@@ -35,6 +36,7 @@ function Avatar({ name, photo, size }: { name: string; photo: string | null; siz
 
 export function ProfileMenu() {
   const { profile, signOut, updateProfileName, updateProfilePhoto } = useAppStore();
+  const [, navigate] = useLocation();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
@@ -177,7 +179,7 @@ export function ProfileMenu() {
               </button>
             )}
             <button
-              onClick={() => { setOpen(false); signOut(); }}
+              onClick={() => { setOpen(false); signOut(); navigate('/'); }}
               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors"
             >
               <LogOut className="w-4 h-4" /> Sign out
@@ -191,6 +193,7 @@ export function ProfileMenu() {
 
 export function WelcomeGate() {
   const { signIn } = useAppStore();
+  const [, navigate] = useLocation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -202,6 +205,7 @@ export function WelcomeGate() {
     if (!trimmedName) { setError('Please enter your name.'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) { setError('Please enter a valid email address.'); return; }
     signIn(trimmedName, trimmedEmail);
+    navigate('/');
   };
 
   return (
