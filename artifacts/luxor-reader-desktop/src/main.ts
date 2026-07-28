@@ -284,9 +284,17 @@ function setupAutoUpdater(): void {
     log.error("[updater] error", err);
   });
 
-  autoUpdater.checkForUpdatesAndNotify().catch((err) => {
-    log.error("[updater] checkForUpdatesAndNotify failed", err);
-  });
+  // Fully background: silently check, download, and stage the update
+  // (installed automatically on app quit). Re-check periodically so
+  // long-running sessions still pick up new versions.
+  const checkNow = () => {
+    autoUpdater.checkForUpdates().catch((err) => {
+      log.error("[updater] checkForUpdates failed", err);
+    });
+  };
+  checkNow();
+  const FOUR_HOURS = 4 * 60 * 60 * 1000;
+  setInterval(checkNow, FOUR_HOURS);
 }
 
 // Single-instance: double-clicking a PDF while the app is running should
