@@ -15,7 +15,6 @@ import PageNumberModal from "@/components/PageNumberModal";
 import CompressModal from "@/components/CompressModal";
 import CropModal from "@/components/CropModal";
 import RestrictModal from "@/components/RestrictModal";
-import PrintModal from "@/components/PrintModal";
 import ScreenshotOverlay from "@/components/ScreenshotOverlay";
 import type { WatermarkConfig, PageNoConfig } from "@/lib/editTypes";
 import { exportPdfWithEdits } from "@/lib/pdfExport";
@@ -218,7 +217,6 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   const [compressOpen, setCompressOpen] = useState(false);
   const [cropOpen, setCropOpen] = useState(false);
   const [restrictOpen, setRestrictOpen] = useState(false);
-  const [printOpen, setPrintOpen] = useState(false);
   const [screenshotActive, setScreenshotActive] = useState(false);
   /* Ribbon "Comment" button: bumping this counter tells the page that owns
    * the current text selection to open the sticky-note comment popup. */
@@ -1221,17 +1219,52 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     handleDownloadRef.current = handleDownload;
   });
 
-  // Print via a hidden iframe holding the original PDF so the browser's
-  // native PDF printing handles every page. (Printing the DOM would only
-  // print the handful of pages the virtualized viewer has rendered.)
+  // Print via a hidden iframe holding the PDF so the browser's native
+  // PDF printing shows the full system print dialog (printer selection,
+  // copies, page range, scaling) and handles every page. (Printing the
+  // DOM would only print the handful of pages the virtualized viewer has
+  // rendered.) If the document has burn-in edits (watermark, redactions,
+  // images, edited text), print the edited version so paper matches screen.
   const printFrameRef = useRef<HTMLIFrameElement | null>(null);
-  const handlePrint = useCallback(() => {
+  const printTokenRef = useRef(0);
+  const handlePrint = useCallback(async () => {
+    // Latest-wins: any newer invocation invalidates this one so an older
+    // async run can never remove/override a newer print frame.
+    const token = ++printTokenRef.current;
+    let printBlob: Blob = file;
+    const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
+    const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
+    const editTexts = annotations.filter((a): a is import("@/lib/annotationTypes").EditTextAnnotation => a.type === "edittext");
+    const texts = annotations.filter((a): a is import("@/lib/annotationTypes").TextAnnotation => a.type === "text" && !!(a as import("@/lib/annotationTypes").TextAnnotation).norm);
+    const hasEdits = !!watermarkCfg || !!pageNoCfg || redactions.length > 0 || images.length > 0 || editTexts.length > 0 || texts.length > 0;
+    if (hasEdits) {
+      // Same premium gate as export: burning Protect edits in is paid.
+      if ((redactions.length > 0 || watermarkCfg !== null) && !requirePremium("Protect features")) return;
+      try {
+        printBlob = await exportPdfWithEdits(file, {
+          watermark: watermarkCfg,
+          pageNo: pageNoCfg,
+          redactions,
+          images,
+          editTexts,
+          texts,
+          currentPage,
+        });
+      } catch (err) {
+        // Fail closed: never print the un-edited original when the user
+        // expects redactions/edits to be applied (matches download/share).
+        console.error("Building edited PDF for print failed:", err);
+        alert("Sorry — couldn't prepare the edited PDF for printing. The original file may be encrypted or corrupted.");
+        return;
+      }
+    }
+    if (token !== printTokenRef.current) return;
     try {
       if (printFrameRef.current) {
         printFrameRef.current.remove();
         printFrameRef.current = null;
       }
-      const url = URL.createObjectURL(file);
+      const url = URL.createObjectURL(printBlob);
       const frame = document.createElement("iframe");
       frame.style.position = "fixed";
       frame.style.right = "0";
@@ -1242,7 +1275,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       frame.src = url;
       let printed = false;
       const doPrint = () => {
-        if (printed) return;
+        if (printed || token !== printTokenRef.current) return;
         printed = true;
         try {
           frame.contentWindow?.focus();
@@ -1261,16 +1294,21 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     } catch {
       window.print();
     }
-  }, [file]);
+  }, [file, annotations, watermarkCfg, pageNoCfg, currentPage, requirePremium]);
   useEffect(() => () => { printFrameRef.current?.remove(); }, []);
+  // Keep a latest-ref so the keyboard shortcut never runs a stale closure
+  // (same pattern as handleDownloadRef).
+  const handlePrintRef = useRef(handlePrint);
+  useLayoutEffect(() => {
+    handlePrintRef.current = handlePrint;
+  });
 
   // Ctrl+P — print via the same hidden-iframe path as the toolbar button.
-  // Registered here (after handlePrint is declared) to avoid TDZ issues.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "p") {
         e.preventDefault();
-        setPrintOpen(true);
+        void handlePrintRef.current();
       }
     };
     if (!active) return;
@@ -1459,7 +1497,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
         onEraseAll={clearHighlights}
         onReadAloud={handleReadAloud}
         onOpenFile={handleOpenFile}
-        onPrint={() => setPrintOpen(true)}
+        onPrint={() => void handlePrint()}
         onOpenWatermark={() => setWatermarkOpen(true)}
         onOpenPageNo={() => setPageNoOpen(true)}
         onAddImage={handleAddImage}
@@ -1648,15 +1686,6 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
           file={file}
           requirePremium={requirePremium}
           onClose={() => setRestrictOpen(false)}
-        />
-      )}
-      {printOpen && pdfDoc && (
-        <PrintModal
-          pdfDoc={pdfDoc}
-          totalPages={totalPages}
-          currentPage={currentPage}
-          onNativePrint={handlePrint}
-          onClose={() => setPrintOpen(false)}
         />
       )}
 
