@@ -14,8 +14,7 @@ import {
   Info,
 } from "lucide-react";
 import { formatBytes } from "@/lib/utils";
-import { saveFile } from "@/lib/save-file";
-import { scheduleAutoRefresh } from "@/lib/auto-refresh";
+import { downloadNowAndReset } from "@/components/download-offer";
 import { AccentProvider, useAccentBtn, useAccentDrop } from "@/lib/accent";
 import { useUploadAuthGate } from "@/license/useUploadAuthGate";
 import { COMPRESS_TARGETS } from "@/lib/compress-targets";
@@ -322,8 +321,7 @@ function CompressPdfContentInner() {
     const baseName = file.name.replace(/\.pdf$/i, "");
     const buffer = new Uint8Array(result.bytes).buffer;
     const blob = new Blob([buffer], { type: "application/pdf" });
-    await saveFile(blob, `${baseName}-compressed.pdf`);
-    scheduleAutoRefresh();
+    downloadNowAndReset(blob, `${baseName}-compressed.pdf`);
   }
 
   const availableTargets = file
@@ -547,8 +545,7 @@ function CompressToSizeInner({ bytes, label }: { bytes: number; label: string })
     const baseName = file.name.replace(/\.pdf$/i, "");
     const buffer = new Uint8Array(result.bytes).buffer;
     const blob = new Blob([buffer], { type: "application/pdf" });
-    await saveFile(blob, `${baseName}-compressed.pdf`);
-    scheduleAutoRefresh();
+    downloadNowAndReset(blob, `${baseName}-compressed.pdf`);
   }
 
   const alreadySmaller = file ? file.size <= bytes : false;

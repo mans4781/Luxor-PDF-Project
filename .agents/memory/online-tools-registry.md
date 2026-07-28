@@ -52,6 +52,15 @@ base. This is a deliberate "same SPA, two bases" setup:
 **Why:** marketing wanted shareable clean tool URLs without moving the whole app off its
 `/pdf-expiry` base (which would break Clerk suite SSO host + the desktop wrapper).
 
+## Result delivery (Download & reset)
+Free tools must NOT open a Save-As dialog or auto-download on finish. They call
+`offerDownload`/`offerDownloadMany` (shared overlay `components/download-offer.tsx`,
+host mounted in App.tsx) — user clicks Download → plain `<a download>` to the
+Downloads folder → `window.location.reload()` 2s later resets the tool. Compress
+keeps its own button and uses `downloadNowAndReset`. A module-level one-shot lock
+prevents duplicate downloads; overlay is dismissible (X/Escape) before download.
+`lib/save-file.ts` (Save-As picker) remains only for non-tool flows.
+
 ## Gotchas
 - **Duplicate-by-design slugs**: PDF→Jpeg vs PDF→Jpg (both `image/jpeg`) and jpeg-to-pdf vs
   jpg-to-pdf are intentionally separate entries for discoverability; same underlying behavior.

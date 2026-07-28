@@ -16,8 +16,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import JSZip from "jszip";
 import * as XLSX from "xlsx";
 import { formatBytes } from "@/lib/utils";
-import { saveFile } from "@/lib/save-file";
-import { scheduleAutoRefresh } from "@/lib/auto-refresh";
+import { offerDownload } from "@/components/download-offer";
 import {
   Upload, X, Download, Loader2, Image as ImageIcon,
   FileText, GripVertical, ArrowLeftRight, FileOutput, ChevronDown,
@@ -57,7 +56,8 @@ function readAsDataURL(file: File): Promise<string> {
   });
 }
 
-// saveFile is imported from @/lib/save-file — opens a native Save As dialog
+// offerDownload shows the shared "file ready" card; clicking Download saves
+// straight to the Downloads folder and the tool resets 2 seconds later.
 
 type ConvertColorScheme = "emerald" | "orange" | "amber" | "green" | "sky" | "lime";
 
@@ -256,8 +256,7 @@ export function ImagesToPdf({
         page.drawImage(embedded, { x: 0, y: 0, width: w, height: h });
       }
       const bytes = await pdf.save();
-      await saveFile(new Blob([bytes as BlobPart], { type: "application/pdf" }), "converted.pdf");
-      scheduleAutoRefresh();
+      offerDownload(new Blob([bytes as BlobPart], { type: "application/pdf" }), "converted.pdf");
     } catch {
       setError("Conversion failed. Make sure all images are valid and not corrupted.");
     } finally {
@@ -409,10 +408,9 @@ export function WordToPdf() {
 
       const blob = doc.output("blob");
       const baseName = file.name.replace(/\.docx$/i, "");
-      await saveFile(blob, `${baseName}.pdf`);
       setDone(true);
       setProgress("");
-      scheduleAutoRefresh();
+      offerDownload(blob, `${baseName}.pdf`);
     } catch (e) {
       console.error(e);
       setError("Conversion failed. The Word document may be corrupted or use unsupported features.");
@@ -586,10 +584,9 @@ export function ExcelToPdf() {
 
       const blob = doc.output("blob");
       const baseName = file.name.replace(/\.(xlsx|xls|csv)$/i, "");
-      await saveFile(blob, `${baseName}.pdf`);
       setDone(true);
       setProgress("");
-      scheduleAutoRefresh();
+      offerDownload(blob, `${baseName}.pdf`);
     } catch (e) {
       console.error(e);
       setError("Conversion failed. The spreadsheet may be password-protected or corrupted.");
@@ -765,9 +762,8 @@ export function PdfToImages({ fixedFormat }: { fixedFormat?: ImageFormatValue } 
 
       setProgress("Packing ZIP…");
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      await saveFile(zipBlob, `${baseName}_images.zip`);
       setProgress("");
-      scheduleAutoRefresh();
+      offerDownload(zipBlob, `${baseName}_images.zip`);
     } catch {
       setError("Conversion failed. Make sure the PDF is valid and non-encrypted.");
       setProgress("");
@@ -964,10 +960,9 @@ export function PdfToWord() {
 
       const blob = await res.blob();
       const baseName = file.name.replace(/\.pdf$/i, "");
-      saveFile(blob, `${baseName}.docx`);
       setDone(true);
       setProgress("");
-      scheduleAutoRefresh();
+      offerDownload(blob, `${baseName}.docx`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Conversion failed.");
       setProgress("");
@@ -1206,10 +1201,9 @@ export function PdfToExcel() {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
       const baseName = file.name.replace(/\.pdf$/i, "");
-      await saveFile(blob, `${baseName}.xlsx`);
       setDone(true);
       setProgress("");
-      scheduleAutoRefresh();
+      offerDownload(blob, `${baseName}.xlsx`);
     } catch (e) {
       console.error(e);
       setError("Conversion failed. The PDF may not contain selectable text.");

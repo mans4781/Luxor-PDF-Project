@@ -5,6 +5,7 @@ import { useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { LuxorClerkProvider } from "@workspace/luxor-auth-ui";
 import { Toaster } from "@/components/ui/toaster";
+import { DownloadOfferHost } from "@/components/download-offer";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
@@ -148,6 +149,7 @@ function ClerkProviderWithRoutes() {
               <Router />
             </Suspense>
             <LockOverlay />
+            <DownloadOfferHost />
             <Toaster />
           </TooltipProvider>
         </LicenseProvider>
