@@ -3,7 +3,7 @@ import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { useAuthGate } from "@/components/AuthGate";
 import { loadRecents, clearRecents, formatFileSize, type RecentFileEntry } from "@/lib/recentFiles";
 import { loadSettings } from "@/lib/settings";
-import { desktopWindowControl, isDesktopShell } from "@/lib/desktopBridge";
+import { isDesktopShell } from "@/lib/desktopBridge";
 
 interface HomeProps {
   onFileLoad: (file: File) => void;
@@ -180,11 +180,6 @@ export default function Home({ onFileLoad }: HomeProps) {
     e.target.value = "";
   };
 
-  const toggleMaximize = () => {
-    if (desktopWindowControl("maximize-toggle")) return;
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-    else document.documentElement.requestFullscreen().catch(() => {});
-  };
   const inDesktop = isDesktopShell();
 
   const recentsMenu = recentMenu && (
@@ -228,30 +223,8 @@ export default function Home({ onFileLoad }: HomeProps) {
       <div className="lxh-titlebar">
         <img src={`${import.meta.env.BASE_URL}brand/luxor-shield.png`} alt="Luxor" draggable={false} />
         {inDesktop && <span className="lxh-title">Luxor PDF Reader</span>}
-        {/* Window controls only make sense in the frameless desktop
-            shell — in the browser they'd duplicate the browser window's
-            own minimize/maximize/close buttons. */}
-        {inDesktop && (
-          <div className="lxh-winbtns">
-            <button
-              className="lxh-winbtn"
-              title="Minimize" aria-label="Minimize"
-              onClick={() => desktopWindowControl("minimize")}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" {...sw}><path d="M5 12h14"/></svg>
-            </button>
-            <button className="lxh-winbtn" title="Maximize" aria-label="Maximize" onClick={toggleMaximize}>
-              <svg width="15" height="15" viewBox="0 0 24 24" {...sw}><rect x="5" y="5" width="14" height="14" rx="1.5"/></svg>
-            </button>
-            <button
-              className="lxh-winbtn close"
-              title="Close" aria-label="Close"
-              onClick={() => desktopWindowControl("close")}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" {...sw}><path d="M6 6l12 12M18 6L6 18"/></svg>
-            </button>
-          </div>
-        )}
+        {/* No window buttons here — the OS/browser window provides its own
+            minimize/maximize/close controls. */}
       </div>
 
       {/* Toolbar */}

@@ -181,10 +181,9 @@ function createWindow(): void {
     title: "Luxor PDF",
     backgroundColor: "#111827",
     autoHideMenuBar: true,
-    // Frameless: the web app draws its own red Luxor title bar with
-    // working window buttons (wired via the luxor:window-control IPC),
-    // so the standard Windows frame would duplicate them.
-    frame: false,
+    // Standard OS frame: the web app no longer draws its own window
+    // buttons, so the native minimize/maximize/close are the only set.
+    frame: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
