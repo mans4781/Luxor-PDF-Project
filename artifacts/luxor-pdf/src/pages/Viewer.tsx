@@ -18,6 +18,7 @@ import RestrictModal from "@/components/RestrictModal";
 import ScreenshotOverlay from "@/components/ScreenshotOverlay";
 import type { WatermarkConfig, PageNoConfig } from "@/lib/editTypes";
 import { exportPdfWithEdits } from "@/lib/pdfExport";
+import { printBlobViaDom } from "@/lib/printDoc";
 import { useAuthGate } from "@/components/AuthGate";
 import PasswordModal from "@/components/PasswordModal";
 import ErrorScreen from "@/components/ErrorScreen";
@@ -1219,18 +1220,21 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     handleDownloadRef.current = handleDownload;
   });
 
-  // Print via a hidden iframe holding the PDF so the browser's native
-  // PDF printing shows the full system print dialog (printer selection,
-  // copies, page range, scaling) and handles every page. (Printing the
-  // DOM would only print the handful of pages the virtualized viewer has
-  // rendered.) If the document has burn-in edits (watermark, redactions,
-  // images, edited text), print the edited version so paper matches screen.
-  const printFrameRef = useRef<HTMLIFrameElement | null>(null);
+  // Print opens the browser's native print dialog (printer selection,
+  // copies, page range, scaling). All pages are rendered into a hidden
+  // print-only layer and printed via window.print() — @media print CSS
+  // hides the reader UI so only the document prints. (The virtualized
+  // viewer DOM can't be printed directly, and iframe.print() on a PDF
+  // blob is blocked in some environments.) If the document has burn-in
+  // edits (watermark, redactions, images, edited text), print the edited
+  // version so paper matches screen.
   const printTokenRef = useRef(0);
+  const [printing, setPrinting] = useState(false);
   const handlePrint = useCallback(async () => {
     // Latest-wins: any newer invocation invalidates this one so an older
     // async run can never remove/override a newer print frame.
     const token = ++printTokenRef.current;
+    if (printing) return;
     let printBlob: Blob = file;
     const redactions = annotations.filter((a): a is import("@/lib/annotationTypes").RedactionAnnotation => a.type === "redact");
     const images = annotations.filter((a): a is import("@/lib/annotationTypes").ImageAnnotation => a.type === "image");
@@ -1259,47 +1263,16 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       }
     }
     if (token !== printTokenRef.current) return;
+    setPrinting(true);
     try {
-      if (printFrameRef.current) {
-        printFrameRef.current.remove();
-        printFrameRef.current = null;
-      }
-      const url = URL.createObjectURL(printBlob);
-      const frame = document.createElement("iframe");
-      frame.style.position = "fixed";
-      frame.style.right = "0";
-      frame.style.bottom = "0";
-      frame.style.width = "0";
-      frame.style.height = "0";
-      frame.style.border = "0";
-      frame.src = url;
-      let printed = false;
-      const doPrint = () => {
-        if (printed || token !== printTokenRef.current) return;
-        printed = true;
-        try {
-          frame.contentWindow?.focus();
-          frame.contentWindow?.print();
-        } catch {
-          // Never fall back to window.print() — that would print the
-          // reader UI (menus, sidebars) instead of the document.
-          alert("Sorry — couldn't open the print dialog. Please try again.");
-        }
-      };
-      frame.onload = () => setTimeout(doPrint, 150);
-      // Some browsers never fire onload for PDF frames — fall back.
-      setTimeout(doPrint, 2000);
-      printFrameRef.current = frame;
-      document.body.appendChild(frame);
-      // Keep the blob URL alive long enough for the print dialog.
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    } catch {
-      // Never fall back to window.print() — that would print the reader
-      // UI (menus, sidebars) instead of the document.
-      alert("Sorry — couldn't open the print dialog. Please try again.");
+      await printBlobViaDom(printBlob);
+    } catch (err) {
+      console.error("Print failed:", err);
+      alert("Sorry — couldn't prepare the document for printing. Please try again.");
+    } finally {
+      setPrinting(false);
     }
-  }, [file, annotations, watermarkCfg, pageNoCfg, currentPage, requirePremium]);
-  useEffect(() => () => { printFrameRef.current?.remove(); }, []);
+  }, [file, annotations, watermarkCfg, pageNoCfg, currentPage, requirePremium, printing]);
   // Keep a latest-ref so the keyboard shortcut never runs a stale closure
   // (same pattern as handleDownloadRef).
   const handlePrintRef = useRef(handlePrint);
@@ -1307,7 +1280,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     handlePrintRef.current = handlePrint;
   });
 
-  // Ctrl+P — print via the same hidden-iframe path as the toolbar button.
+  // Ctrl+P — print via the same path as the toolbar button.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "p") {

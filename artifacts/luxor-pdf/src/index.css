@@ -1229,11 +1229,30 @@ mark.search-hl {
 .loading-scr p { color: #666; font-size: 13px; }
 
 
-/* ---- Print safety net ----------------------------------------------
-   Printing normally goes through the hidden-iframe PDF blob path (native
-   dialog, document only). But if the browser DOM ever gets printed (e.g.
-   browser menu -> Print), show only the page content — never the reader
-   chrome (menus, sidebars, panels, status bar). */
+/* ---- Printing ---------------------------------------------------------
+   Print renders every page into a hidden .print-root layer, then calls
+   window.print(). While printing, body.printing-doc hides the entire
+   reader UI so only the document pages show in the dialog preview. */
+.print-root { display: none; }
+@media print {
+  @page { margin: 0; }
+  body.printing-doc > *:not(.print-root) { display: none !important; }
+  body.printing-doc .print-root { display: block !important; }
+  .print-root img {
+    display: block;
+    width: 100%;
+    page-break-after: always;
+    break-after: page;
+  }
+  .print-root img:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+}
+
+/* Safety net: if the browser DOM is printed outside our flow (e.g.
+   browser menu -> Print without the print layer), still show only the
+   page content — never the reader chrome. */
 @media print {
   .doc-tabbar,
   .luxor-toolbar,
