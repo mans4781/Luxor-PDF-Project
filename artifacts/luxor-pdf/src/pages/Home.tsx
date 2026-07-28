@@ -227,7 +227,7 @@ export default function Home({ onFileLoad }: HomeProps) {
       {/* Title bar */}
       <div className="lxh-titlebar">
         <img src={`${import.meta.env.BASE_URL}brand/luxor-shield.png`} alt="Luxor" draggable={false} />
-        <span className="lxh-title">Luxor PDF Reader</span>
+        {inDesktop && <span className="lxh-title">Luxor PDF Reader</span>}
         {/* Window controls only make sense in the frameless desktop
             shell — in the browser they'd duplicate the browser window's
             own minimize/maximize/close buttons. */}
