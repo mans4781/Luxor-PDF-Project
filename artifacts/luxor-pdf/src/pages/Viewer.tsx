@@ -1281,7 +1281,9 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
           frame.contentWindow?.focus();
           frame.contentWindow?.print();
         } catch {
-          window.print();
+          // Never fall back to window.print() — that would print the
+          // reader UI (menus, sidebars) instead of the document.
+          alert("Sorry — couldn't open the print dialog. Please try again.");
         }
       };
       frame.onload = () => setTimeout(doPrint, 150);
@@ -1292,7 +1294,9 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       // Keep the blob URL alive long enough for the print dialog.
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch {
-      window.print();
+      // Never fall back to window.print() — that would print the reader
+      // UI (menus, sidebars) instead of the document.
+      alert("Sorry — couldn't open the print dialog. Please try again.");
     }
   }, [file, annotations, watermarkCfg, pageNoCfg, currentPage, requirePremium]);
   useEffect(() => () => { printFrameRef.current?.remove(); }, []);
