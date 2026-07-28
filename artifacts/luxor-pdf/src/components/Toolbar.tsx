@@ -1380,42 +1380,45 @@ export default function Toolbar({
           draggable={false}
         />
         <span className="lxh-title">Luxor PDF Reader</span>
-        <div className="lxh-winbtns">
-          <button
-            className="lxh-winbtn"
-            aria-disabled={isDesktopShell() ? undefined : "true"}
-            title="Minimize" aria-label="Minimize"
-            onClick={() => desktopWindowControl("minimize")}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-              <path d="M5 12h14" />
-            </svg>
-          </button>
-          <button
-            className="lxh-winbtn"
-            title={isFullscreen ? "Restore" : "Maximize"}
-            aria-label={isFullscreen ? "Restore" : "Maximize"}
-            onClick={() => {
-              if (!desktopWindowControl("maximize-toggle")) onToggleFullscreen();
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-              <rect x="5" y="5" width="14" height="14" rx="1.5" />
-            </svg>
-          </button>
-          <button
-            className="lxh-winbtn close"
-            title={isDesktopShell() ? "Close" : "Close document"}
-            aria-label={isDesktopShell() ? "Close" : "Close document"}
-            onClick={() => {
-              if (!desktopWindowControl("close")) onFileClose();
-            }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
-          </button>
-        </div>
+        {/* Window controls only make sense in the frameless desktop
+            shell — in the browser they'd duplicate the browser window's
+            own minimize/maximize/close buttons. */}
+        {isDesktopShell() && (
+          <div className="lxh-winbtns">
+            <button
+              className="lxh-winbtn"
+              title="Minimize" aria-label="Minimize"
+              onClick={() => desktopWindowControl("minimize")}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                <path d="M5 12h14" />
+              </svg>
+            </button>
+            <button
+              className="lxh-winbtn"
+              title={isFullscreen ? "Restore" : "Maximize"}
+              aria-label={isFullscreen ? "Restore" : "Maximize"}
+              onClick={() => {
+                if (!desktopWindowControl("maximize-toggle")) onToggleFullscreen();
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                <rect x="5" y="5" width="14" height="14" rx="1.5" />
+              </svg>
+            </button>
+            <button
+              className="lxh-winbtn close"
+              title="Close" aria-label="Close"
+              onClick={() => {
+                if (!desktopWindowControl("close")) onFileClose();
+              }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── Row 1: menu bar ─────────── */}
