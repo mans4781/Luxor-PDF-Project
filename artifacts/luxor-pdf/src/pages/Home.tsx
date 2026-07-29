@@ -3,7 +3,6 @@ import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { useAuthGate } from "@/components/AuthGate";
 import { loadRecents, clearRecents, formatFileSize, type RecentFileEntry } from "@/lib/recentFiles";
 import { loadSettings } from "@/lib/settings";
-import { isDesktopShell } from "@/lib/desktopBridge";
 
 interface HomeProps {
   onFileLoad: (file: File) => void;
@@ -180,7 +179,6 @@ export default function Home({ onFileLoad }: HomeProps) {
     e.target.value = "";
   };
 
-  const inDesktop = isDesktopShell();
 
   const recentsMenu = recentMenu && (
     <>
@@ -219,14 +217,6 @@ export default function Home({ onFileLoad }: HomeProps) {
 
   return (
     <div className="lxh-root">
-      {/* Title bar */}
-      <div className="lxh-titlebar">
-        <img src={`${import.meta.env.BASE_URL}brand/luxor-shield.png`} alt="Luxor" draggable={false} />
-        {inDesktop && <span className="lxh-title">Luxor PDF Reader</span>}
-        {/* No window buttons here — the OS/browser window provides its own
-            minimize/maximize/close controls. */}
-      </div>
-
       {/* Toolbar */}
       <div className="lxh-toolbar">
         <div className="lxh-open">

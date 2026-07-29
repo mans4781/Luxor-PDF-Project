@@ -9,7 +9,6 @@ import {
   allTextFonts,
 } from "@/lib/annotationColors";
 import { loadRecents, formatFileSize, type RecentFileEntry } from "@/lib/recentFiles";
-import { isDesktopShell } from "@/lib/desktopBridge";
 import { STAMP_CATEGORIES, STAMP_INK_COLORS, type StampDef } from "@/lib/stamps";
 import {
   FolderOpen, Clock, FilePlus, Save, SaveAll, Copy, Share2, Printer, X, LogOut,
@@ -1372,18 +1371,6 @@ export default function Toolbar({
 
   return (
     <div className="luxor-toolbar" ref={popoverRef}>
-      {/* ── Row 0: red title bar (matches the Luxor shield icon) ── */}
-      <div className="luxor-titlebar">
-        <img
-          src={`${import.meta.env.BASE_URL}brand/luxor-shield.png`}
-          alt="Luxor"
-          draggable={false}
-        />
-        {isDesktopShell() && <span className="lxh-title">Luxor PDF Reader</span>}
-        {/* No window buttons here — the OS/browser window provides its own
-            minimize/maximize/close controls. */}
-      </div>
-
       {/* ── Row 1: menu bar ─────────── */}
       <div className="luxor-menu-strip">
         {MENUS.map((m) => (
