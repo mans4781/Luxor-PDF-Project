@@ -3,7 +3,6 @@ import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { useAuthGate } from "@/components/AuthGate";
 import { loadRecents, clearRecents, formatFileSize, type RecentFileEntry } from "@/lib/recentFiles";
 import { loadSettings } from "@/lib/settings";
-import { desktopWindowControl, isDesktopShell } from "@/lib/desktopBridge";
 
 interface HomeProps {
   onFileLoad: (file: File) => void;
