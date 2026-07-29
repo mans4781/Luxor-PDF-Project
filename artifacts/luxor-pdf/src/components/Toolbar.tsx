@@ -9,6 +9,7 @@ import {
   allTextFonts,
 } from "@/lib/annotationColors";
 import { loadRecents, formatFileSize, type RecentFileEntry } from "@/lib/recentFiles";
+import { desktopWindowControl, isDesktopShell } from "@/lib/desktopBridge";
 import { STAMP_CATEGORIES, STAMP_INK_COLORS, type StampDef } from "@/lib/stamps";
 import {
   FolderOpen, Clock, FilePlus, Save, SaveAll, Copy, Share2, Printer, X, LogOut,
