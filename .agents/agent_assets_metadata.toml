@@ -407,3 +407,9 @@ id = "vu9dCocdlItuFwdOQIT2G"
 uri = "file://artifacts/luxor-reader-desktop/dist/luxor-pdf-reader-web-setup.zip"
 type = "unspecified"
 title = "Luxor PDF Reader Web Setup — points at mans4781/luxor-reader-desktop"
+
+[[outputs]]
+id = "KjPFmVH9eMTJPouYfB5AP"
+uri = "file://artifacts/luxor-promo/public/audio/bg_music.mp3"
+type = "audio"
+title = "background music"

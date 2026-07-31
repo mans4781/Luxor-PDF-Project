@@ -1,0 +1,27 @@
+kind = "video"
+previewPath = "/luxor-promo/"
+title = "Luxor PDF Promo Video"
+version = "1.0.0"
+id = "artifacts/luxor-promo"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/luxor-promo/" ]
+localPort = 19268
+
+[services.development]
+run = "pnpm --filter @workspace/luxor-promo run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/luxor-promo", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/luxor-promo/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19268"
+BASE_PATH = "/luxor-promo/"
