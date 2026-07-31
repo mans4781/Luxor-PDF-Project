@@ -21,7 +21,51 @@ tags:
     description: Stripe checkout + payment-provider registry
   - name: ai
     description: AI-powered document tools (sign-in required)
+  - name: adstudio
+    description: AdStudio marketing video generator
 paths:
+  /adstudio/script:
+    post:
+      operationId: generateAdScript
+      tags: [adstudio]
+      summary: Generate a marketing video script from product details
+      description: |
+        Takes product info (name, features, offer, website, CTA) plus the
+        target platform, aspect ratio, and duration, and returns a structured
+        scene-by-scene script for the animated marketing video: headlines,
+        supporting text, captions, scene types, timing weights, and a music
+        mood. Rate-limited per client.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdScriptInput"
+      responses:
+        "200":
+          description: The generated video script
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdScript"
+        "400":
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit reached or a generation already in progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: The AI service failed to produce a script
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /ai/summarize:
     post:
       operationId: summarizePdf
@@ -1367,6 +1411,121 @@ components:
           type: string
       required:
         - error
+
+    AdPlatform:
+      type: string
+      enum: [linkedin, instagram, youtube, facebook, x]
+
+    AdAspectRatio:
+      type: string
+      enum: ["16:9", "9:16", "1:1"]
+
+    AdSceneType:
+      type: string
+      description: |
+        Kind of branded scene. `hook` opens the video, `feature` highlights a
+        product capability, `showcase` displays an uploaded screenshot or
+        product image, `offer` presents the promotion, `cta` closes with the
+        call to action and website.
+      enum: [hook, feature, showcase, offer, cta]
+
+    AdMusicMood:
+      type: string
+      enum: [uplifting, energetic, corporate, chill]
+
+    AdScriptInput:
+      type: object
+      properties:
+        productName:
+          type: string
+          minLength: 1
+          maxLength: 120
+        features:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+          minItems: 1
+          maxItems: 8
+          description: Key product features or selling points.
+        offer:
+          type: ["string", "null"]
+          maxLength: 200
+          description: Current promotion, e.g. "20% off yearly plans".
+        website:
+          type: ["string", "null"]
+          maxLength: 200
+        cta:
+          type: string
+          minLength: 1
+          maxLength: 120
+          description: Call to action, e.g. "Start your free trial".
+        platform:
+          $ref: "#/components/schemas/AdPlatform"
+        aspectRatio:
+          $ref: "#/components/schemas/AdAspectRatio"
+        durationSeconds:
+          type: integer
+          enum: [15, 30, 60]
+        imageCount:
+          type: integer
+          minimum: 0
+          maximum: 12
+          description: How many screenshots/product images the user uploaded, so the script can plan showcase scenes.
+        description:
+          type: ["string", "null"]
+          maxLength: 1000
+          description: Optional free-form product description for extra context.
+      required:
+        - productName
+        - features
+        - cta
+        - platform
+        - aspectRatio
+        - durationSeconds
+
+    AdScene:
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/AdSceneType"
+        headline:
+          type: string
+          description: Main animated text for the scene (short, punchy).
+        subtext:
+          type: ["string", "null"]
+          description: Optional supporting line shown under the headline.
+        caption:
+          type: string
+          description: Spoken-style caption shown in the caption bar.
+        durationWeight:
+          type: number
+          description: Relative share of total runtime for this scene (weights are normalized).
+        imageIndex:
+          type: ["integer", "null"]
+          description: For showcase scenes, which uploaded image (0-based) to feature.
+      required:
+        - type
+        - headline
+        - caption
+        - durationWeight
+
+    AdScript:
+      type: object
+      properties:
+        scenes:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdScene"
+        musicMood:
+          $ref: "#/components/schemas/AdMusicMood"
+        tagline:
+          type: ["string", "null"]
+          description: One-line brand tagline usable in the outro.
+      required:
+        - scenes
+        - musicMood
 
     PdfActionType:
       type: string

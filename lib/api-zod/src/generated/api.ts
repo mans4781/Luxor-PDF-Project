@@ -8,6 +8,110 @@
 import * as zod from "zod";
 
 /**
+ * Takes product info (name, features, offer, website, CTA) plus the
+target platform, aspect ratio, and duration, and returns a structured
+scene-by-scene script for the animated marketing video: headlines,
+supporting text, captions, scene types, timing weights, and a music
+mood. Rate-limited per client.
+
+ * @summary Generate a marketing video script from product details
+ */
+export const generateAdScriptBodyProductNameMax = 120;
+
+export const generateAdScriptBodyFeaturesItemMax = 200;
+
+export const generateAdScriptBodyFeaturesMax = 8;
+
+export const generateAdScriptBodyOfferMax = 200;
+
+export const generateAdScriptBodyWebsiteMax = 200;
+
+export const generateAdScriptBodyCtaMax = 120;
+
+export const generateAdScriptBodyImageCountMin = 0;
+export const generateAdScriptBodyImageCountMax = 12;
+
+export const generateAdScriptBodyDescriptionMax = 1000;
+
+export const GenerateAdScriptBody = zod.object({
+  productName: zod.string().min(1).max(generateAdScriptBodyProductNameMax),
+  features: zod
+    .array(zod.string().min(1).max(generateAdScriptBodyFeaturesItemMax))
+    .min(1)
+    .max(generateAdScriptBodyFeaturesMax)
+    .describe("Key product features or selling points."),
+  offer: zod
+    .string()
+    .max(generateAdScriptBodyOfferMax)
+    .nullish()
+    .describe('Current promotion, e.g. \"20% off yearly plans\".'),
+  website: zod.string().max(generateAdScriptBodyWebsiteMax).nullish(),
+  cta: zod
+    .string()
+    .min(1)
+    .max(generateAdScriptBodyCtaMax)
+    .describe('Call to action, e.g. \"Start your free trial\".'),
+  platform: zod.enum(["linkedin", "instagram", "youtube", "facebook", "x"]),
+  aspectRatio: zod.enum(["16:9", "9:16", "1:1"]),
+  durationSeconds: zod.union([
+    zod.literal(15),
+    zod.literal(30),
+    zod.literal(60),
+  ]),
+  imageCount: zod
+    .number()
+    .min(generateAdScriptBodyImageCountMin)
+    .max(generateAdScriptBodyImageCountMax)
+    .optional()
+    .describe(
+      "How many screenshots\/product images the user uploaded, so the script can plan showcase scenes.",
+    ),
+  description: zod
+    .string()
+    .max(generateAdScriptBodyDescriptionMax)
+    .nullish()
+    .describe("Optional free-form product description for extra context."),
+});
+
+export const GenerateAdScriptResponse = zod.object({
+  scenes: zod.array(
+    zod.object({
+      type: zod
+        .enum(["hook", "feature", "showcase", "offer", "cta"])
+        .describe(
+          "Kind of branded scene. `hook` opens the video, `feature` highlights a\nproduct capability, `showcase` displays an uploaded screenshot or\nproduct image, `offer` presents the promotion, `cta` closes with the\ncall to action and website.\n",
+        ),
+      headline: zod
+        .string()
+        .describe("Main animated text for the scene (short, punchy)."),
+      subtext: zod
+        .string()
+        .nullish()
+        .describe("Optional supporting line shown under the headline."),
+      caption: zod
+        .string()
+        .describe("Spoken-style caption shown in the caption bar."),
+      durationWeight: zod
+        .number()
+        .describe(
+          "Relative share of total runtime for this scene (weights are normalized).",
+        ),
+      imageIndex: zod
+        .number()
+        .nullish()
+        .describe(
+          "For showcase scenes, which uploaded image (0-based) to feature.",
+        ),
+    }),
+  ),
+  musicMood: zod.enum(["uplifting", "energetic", "corporate", "chill"]),
+  tagline: zod
+    .string()
+    .nullish()
+    .describe("One-line brand tagline usable in the outro."),
+});
+
+/**
  * Takes the document text extracted client-side (via the reader's
 text layer pipeline) and returns a concise structured summary.
 Requires a signed-in user. Long documents are truncated
