@@ -368,13 +368,16 @@ function setupAutoUpdater(): void {
 
   // Fully background: silently check, download, and stage the update
   // (installed automatically on app quit). Re-check periodically so
-  // long-running sessions still pick up new versions.
+  // long-running sessions still pick up new versions. The first check is
+  // delayed a few seconds so the initial page load isn't competing with
+  // the update manifest fetch — the event handlers above are already
+  // registered, so a manual Help → Check for Updates works immediately.
   const checkNow = () => {
     autoUpdater.checkForUpdates().catch((err) => {
       log.error("[updater] checkForUpdates failed", err);
     });
   };
-  checkNow();
+  setTimeout(checkNow, 3000);
   const FOUR_HOURS = 4 * 60 * 60 * 1000;
   setInterval(checkNow, FOUR_HOURS);
 }
@@ -404,12 +407,12 @@ void app.whenReady().then(async () => {
     });
   }
 
+  // Register updater event handlers BEFORE the menu is usable so a manual
+  // Help → Check for Updates click always gets its result dialogs (the
+  // first background check itself is delayed inside setupAutoUpdater).
+  setupAutoUpdater();
   buildAppMenu();
   createWindow();
-
-  // Kick off update check shortly after the window is up so the initial
-  // load isn't competing with network for the update manifest.
-  setTimeout(() => setupAutoUpdater(), 3000);
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
