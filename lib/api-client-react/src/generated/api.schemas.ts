@@ -111,6 +111,135 @@ export interface ErrorResponse {
   error: string;
 }
 
+export type AdPlatform = (typeof AdPlatform)[keyof typeof AdPlatform];
+
+export const AdPlatform = {
+  linkedin: "linkedin",
+  instagram: "instagram",
+  youtube: "youtube",
+  facebook: "facebook",
+  x: "x",
+} as const;
+
+export type AdAspectRatio = (typeof AdAspectRatio)[keyof typeof AdAspectRatio];
+
+export const AdAspectRatio = {
+  "16:9": "16:9",
+  "9:16": "9:16",
+  "1:1": "1:1",
+} as const;
+
+/**
+ * Kind of branded scene. `hook` opens the video, `feature` highlights a
+product capability, `showcase` displays an uploaded screenshot or
+product image, `offer` presents the promotion, `cta` closes with the
+call to action and website.
+
+ */
+export type AdSceneType = (typeof AdSceneType)[keyof typeof AdSceneType];
+
+export const AdSceneType = {
+  hook: "hook",
+  feature: "feature",
+  showcase: "showcase",
+  offer: "offer",
+  cta: "cta",
+} as const;
+
+export type AdMusicMood = (typeof AdMusicMood)[keyof typeof AdMusicMood];
+
+export const AdMusicMood = {
+  uplifting: "uplifting",
+  energetic: "energetic",
+  corporate: "corporate",
+  chill: "chill",
+} as const;
+
+export type AdScriptInputDurationSeconds =
+  (typeof AdScriptInputDurationSeconds)[keyof typeof AdScriptInputDurationSeconds];
+
+export const AdScriptInputDurationSeconds = {
+  NUMBER_15: 15,
+  NUMBER_30: 30,
+  NUMBER_60: 60,
+} as const;
+
+export interface AdScriptInput {
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  productName: string;
+  /**
+   * Key product features or selling points.
+   * @minItems 1
+   * @maxItems 8
+   */
+  features: string[];
+  /**
+   * Current promotion, e.g. "20% off yearly plans".
+   * @maxLength 200
+   * @nullable
+   */
+  offer?: string | null;
+  /**
+   * @maxLength 200
+   * @nullable
+   */
+  website?: string | null;
+  /**
+   * Call to action, e.g. "Start your free trial".
+   * @minLength 1
+   * @maxLength 120
+   */
+  cta: string;
+  platform: AdPlatform;
+  aspectRatio: AdAspectRatio;
+  durationSeconds: AdScriptInputDurationSeconds;
+  /**
+   * How many screenshots/product images the user uploaded, so the script can plan showcase scenes.
+   * @minimum 0
+   * @maximum 12
+   */
+  imageCount?: number;
+  /**
+   * Optional free-form product description for extra context.
+   * @maxLength 1000
+   * @nullable
+   */
+  description?: string | null;
+}
+
+export interface AdScene {
+  type: AdSceneType;
+  /** Main animated text for the scene (short, punchy). */
+  headline: string;
+  /**
+   * Optional supporting line shown under the headline.
+   * @nullable
+   */
+  subtext?: string | null;
+  /** Spoken-style caption shown in the caption bar. */
+  caption: string;
+  /** Relative share of total runtime for this scene (weights are normalized). */
+  durationWeight: number;
+  /**
+   * For showcase scenes, which uploaded image (0-based) to feature.
+   * @nullable
+   */
+  imageIndex?: number | null;
+}
+
+export interface AdScript {
+  scenes: AdScene[];
+  musicMood: AdMusicMood;
+  /**
+   * One-line brand tagline usable in the outro.
+   * @nullable
+   */
+  tagline?: string | null;
+}
+
 /**
  * Identifier for a billable PDF action. Used by `checkUsage` and
 `recordUsage`. Mapped server-side to one of three categories:

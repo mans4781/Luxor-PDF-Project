@@ -181,10 +181,9 @@ function createWindow(): void {
     title: "Luxor PDF",
     backgroundColor: "#111827",
     autoHideMenuBar: true,
-    // Frameless: the web app draws its own red Luxor title bar with
-    // working window buttons (wired via the luxor:window-control IPC),
-    // so the standard Windows frame would duplicate them.
-    frame: false,
+    // Standard OS frame: the web app no longer draws its own window
+    // buttons, so the native minimize/maximize/close are the only set.
+    frame: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -284,9 +283,17 @@ function setupAutoUpdater(): void {
     log.error("[updater] error", err);
   });
 
-  autoUpdater.checkForUpdatesAndNotify().catch((err) => {
-    log.error("[updater] checkForUpdatesAndNotify failed", err);
-  });
+  // Fully background: silently check, download, and stage the update
+  // (installed automatically on app quit). Re-check periodically so
+  // long-running sessions still pick up new versions.
+  const checkNow = () => {
+    autoUpdater.checkForUpdates().catch((err) => {
+      log.error("[updater] checkForUpdates failed", err);
+    });
+  };
+  checkNow();
+  const FOUR_HOURS = 4 * 60 * 60 * 1000;
+  setInterval(checkNow, FOUR_HOURS);
 }
 
 // Single-instance: double-clicking a PDF while the app is running should

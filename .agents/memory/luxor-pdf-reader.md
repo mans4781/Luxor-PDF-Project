@@ -7,7 +7,7 @@ description: Virtualization/perf model, reader settings, panels, theming, and si
 - Only pages within ~1250px of the viewport render (IntersectionObserver `nearView` in `PDFPage.tsx`); offscreen pages cancel render tasks and free canvas bitmaps while keeping CSS size (placeholder size from `defaultPageSize` = page-1 base viewport × zoom, computed in `Viewer.tsx`).
 - DPR clamped to [1,3], min render scale 2; physical canvas capped at 16M pixels (`MAX_CANVAS_PIXELS`); CSS size always tracks zoom.
 - Thumbnails lazy-render (first 12 eager, 600px margin).
-- Print uses a hidden-iframe blob URL of the original file — DOM print would show blank virtualized pages.
+- Print (toolbar + Ctrl+P) goes STRAIGHT to the browser's native print dialog. No custom print modal: browsers can't enumerate printers, so an in-app dialog just confuses users. Mechanism: lib/printDoc.ts renders EVERY page via pdfjs to jpeg <img>s in a hidden .print-root layer, adds body.printing-doc, then window.print(); @media print CSS hides all UI except .print-root. Do NOT use iframe.contentWindow.print() on a PDF blob — it's blocked in some environments (user hit this) — and never bare window.print() without the layer (prints the virtualized UI). If burn-in edits exist, print builds the edited blob first (same premium gate as export) and fails closed if that build fails. Ctrl+P uses a latest-ref + latest-wins token + printing flag to avoid stale closures/races.
 - `src/polyfills.ts` (imported in `main.tsx` and custom worker entry `src/pdf-worker.ts`, loaded via `GlobalWorkerOptions.workerPort`) polyfills Map/WeakMap `getOrInsertComputed`/`getOrInsert` required by pdfjs-dist ≥5.6 on browsers without TC39 upsert.
 
 ## Theming

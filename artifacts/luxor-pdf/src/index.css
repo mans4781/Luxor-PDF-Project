@@ -1228,3 +1228,60 @@ mark.search-hl {
 
 .loading-scr p { color: #666; font-size: 13px; }
 
+
+/* ---- Printing ---------------------------------------------------------
+   Print renders every page into a hidden .print-root layer, then calls
+   window.print(). While printing, body.printing-doc hides the entire
+   reader UI so only the document pages show in the dialog preview. */
+.print-root { display: none; }
+@media print {
+  @page { margin: 0; }
+  body.printing-doc > *:not(.print-root) { display: none !important; }
+  body.printing-doc .print-root { display: block !important; }
+  .print-root img {
+    display: block;
+    width: 100%;
+    page-break-after: always;
+    break-after: page;
+  }
+  .print-root img:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+}
+
+/* Safety net: if the browser DOM is printed outside our flow (e.g.
+   browser menu -> Print without the print layer), still show only the
+   page content — never the reader chrome. */
+@media print {
+  .doc-tabbar,
+  .luxor-toolbar,
+  .luxor-ribbon,
+  .luxor-statusbar,
+  .thumb-panel,
+  .thumb-expand-tab,
+  .search-bar,
+  .loading-scr {
+    display: none !important;
+  }
+  /* Hide fixed overlays: side panels, modals, toasts. */
+  body > div [style*="position: fixed"],
+  [class*="modal"],
+  [class*="overlay"] {
+    display: none !important;
+  }
+  .luxor-viewer {
+    position: static !important;
+    overflow: visible !important;
+    height: auto !important;
+    width: auto !important;
+    background: #fff !important;
+    padding: 0 !important;
+  }
+  .pdf-page-wrapper {
+    box-shadow: none !important;
+    margin: 0 auto !important;
+    page-break-after: always;
+    break-after: page;
+  }
+}

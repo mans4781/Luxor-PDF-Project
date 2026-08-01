@@ -7,8 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDFDocument } from "pdf-lib";
 import { formatBytes } from "@/lib/utils";
-import { saveFile } from "@/lib/save-file";
-import { scheduleAutoRefresh } from "@/lib/auto-refresh";
+import { offerDownload, offerDownloadMany } from "@/components/download-offer";
 import { Merge, Scissors, FileOutput, Upload, X, GripVertical, Download, Loader2, Trash2, FilePlus, Shield, ShieldCheck, CloudOff, Zap, FileLock2 } from "lucide-react";
 import { AccentProvider, useAccentBtn, useAccentInnerBanner, useAccentDrop } from "@/lib/accent";
 import { useGuardedAction } from "@/license/useGuardedAction";
@@ -143,7 +142,8 @@ function FileTag({ name, size, onRemove }: { name: string; size: number; onRemov
   );
 }
 
-// saveFile is imported from @/lib/save-file — opens a native Save As dialog
+// offerDownload shows the shared "file ready" card; clicking Download saves
+// straight to the Downloads folder and the tool resets 2 seconds later.
 
 async function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
   return new Promise((resolve, reject) => {
@@ -192,8 +192,7 @@ export function MergeTab() {
         pages.forEach((p) => merged.addPage(p));
       }
       const bytes = await merged.save();
-      await saveFile(new Blob([bytes as BlobPart], { type: "application/pdf" }), "merged.pdf");
-      scheduleAutoRefresh();
+      offerDownload(new Blob([bytes as BlobPart], { type: "application/pdf" }), "merged.pdf");
     } catch (e) {
       setError("Failed to merge PDFs. Make sure all files are valid, non-encrypted PDFs.");
     } finally {
@@ -287,18 +286,18 @@ export function SplitTab() {
       const buf = await readFileAsArrayBuffer(file);
       const srcDoc = await PDFDocument.load(buf);
 
+      const files: { blob: Blob; filename: string }[] = [];
       for (let i = 0; i < pageCount; i++) {
-        setProgress(`Saving page ${i + 1} of ${pageCount}…`);
+        setProgress(`Preparing page ${i + 1} of ${pageCount}…`);
         const newDoc = await PDFDocument.create();
         const [page] = await newDoc.copyPages(srcDoc, [i]);
         newDoc.addPage(page);
         const bytes = await newDoc.save();
         const blob = new Blob([bytes as BlobPart], { type: "application/pdf" });
-        const filename = `${baseName}-${i + 1}.pdf`;
-        await saveFile(blob, filename);
+        files.push({ blob, filename: `${baseName}-${i + 1}.pdf` });
       }
       setProgress("");
-      scheduleAutoRefresh();
+      offerDownloadMany(files);
     } catch {
       setError("Failed to split PDF. Make sure it is a valid, non-encrypted file.");
       setProgress("");
@@ -460,11 +459,10 @@ export function ExtractTab() {
       pages.forEach((p) => newDoc.addPage(p));
       const bytes = await newDoc.save();
       const baseName = file.name.replace(/\.pdf$/i, "");
-      await saveFile(
+      offerDownload(
         new Blob([bytes as BlobPart], { type: "application/pdf" }),
         `${baseName}_extracted.pdf`
       );
-      scheduleAutoRefresh();
     } catch {
       setError("Failed to extract pages. Make sure the file is a valid, non-encrypted PDF.");
     } finally {
@@ -679,11 +677,10 @@ export function DeleteTab() {
       pages.forEach((p) => newDoc.addPage(p));
       const bytes = await newDoc.save();
       const baseName = file.name.replace(/\.pdf$/i, "");
-      await saveFile(
+      offerDownload(
         new Blob([bytes as BlobPart], { type: "application/pdf" }),
         `${baseName}_trimmed.pdf`
       );
-      scheduleAutoRefresh();
     } catch {
       setError("Failed to delete pages. Make sure the file is a valid, non-encrypted PDF.");
     } finally {
@@ -923,11 +920,10 @@ export function AddTab() {
 
       const bytes = await hostDoc.save();
       const baseName = hostFile.name.replace(/\.pdf$/i, "");
-      await saveFile(
+      offerDownload(
         new Blob([bytes as BlobPart], { type: "application/pdf" }),
         `${baseName}_with_added_pages.pdf`
       );
-      scheduleAutoRefresh();
     } catch {
       setError("Failed to add pages. Make sure both files are valid, non-encrypted PDFs.");
     } finally {

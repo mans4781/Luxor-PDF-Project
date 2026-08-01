@@ -1,7 +1,6 @@
 import React from 'react';
 import { Sidebar } from '../components/Sidebar';
 import { TitleBar } from '../components/TitleBar';
-
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-transparent p-4 md:p-8 flex items-center justify-center">

@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/video-maker/"
+title = "AdStudio — Marketing Video Generator"
+version = "1.0.0"
+id = "artifacts/video-maker"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/video-maker/" ]
+localPort = 18799
+
+[services.development]
+run = "pnpm --filter @workspace/video-maker run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/video-maker", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/video-maker/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18799"
+BASE_PATH = "/video-maker/"

@@ -11,6 +11,7 @@ import {
 import { useLicense } from "@/license/LicenseProvider";
 import { loadLocalHistory } from "@/pages/history";
 import { basePath } from "@/lib/base-path";
+import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { useToast } from "@/hooks/use-toast";
 import {
   Search,
@@ -421,20 +422,38 @@ export default function AccountDashboardPage() {
               <ChevronDown className="w-4 h-4 text-slate-400" />
             </a>
 
-            <button onClick={openProfile} className="relative cursor-pointer" data-testid="button-avatar">
-              {user?.imageUrl ? (
-                <img
-                  src={user.imageUrl}
-                  alt={fullName}
-                  className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm border-2 border-white shadow-md">
-                  {initials}
-                </div>
-              )}
-              <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#22c55e] rounded-full ring-2 ring-white"></span>
-            </button>
+            <AuthMenu
+              signInUrl={`${basePath}/sign-in`}
+              signUpUrl={`${basePath}/sign-up`}
+              redirectBackOnAuth={false}
+              iconOnly
+              menuLinks={[
+                {
+                  label: "Subscription & billing",
+                  href: `${basePath}/checkout`,
+                  icon: <CreditCard />,
+                  testId: "menu-item-billing",
+                },
+                {
+                  label: "History",
+                  href: `${basePath}/history`,
+                  icon: <Clock />,
+                  testId: "menu-item-history",
+                },
+                {
+                  label: "Activate key",
+                  href: `${basePath}/activate-key`,
+                  icon: <Lock />,
+                  testId: "menu-item-activate",
+                },
+                {
+                  label: "Plans & pricing",
+                  href: "/pricing",
+                  icon: <Crown />,
+                  testId: "menu-item-plans",
+                },
+              ]}
+            />
           </div>
         </header>
 
