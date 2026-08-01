@@ -6,6 +6,8 @@ import {
   protocol,
   net,
   ipcMain,
+  Menu,
+  dialog,
 } from "electron";
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
@@ -180,7 +182,9 @@ function createWindow(): void {
     icon: iconPath,
     title: "Luxor PDF",
     backgroundColor: "#111827",
-    autoHideMenuBar: true,
+    // Keep the menu bar visible so Help → Check for Updates is
+    // discoverable (users asked for it explicitly).
+    autoHideMenuBar: false,
     // Standard OS frame: the web app no longer draws its own window
     // buttons, so the native minimize/maximize/close are the only set.
     frame: true,
@@ -250,6 +254,102 @@ if (process.platform === "win32") {
 // electron-updater against the publish feed in package.json (GitHub
 // Releases). Only runs in packaged builds.
 
+// True while a user-initiated (Help → Check for Updates) check is running.
+// Manual checks show dialogs; background checks stay fully silent.
+let manualCheckInProgress = false;
+
+async function showInfoDialog(title: string, message: string): Promise<void> {
+  const opts = { type: "info" as const, title, message, buttons: ["OK"] };
+  if (mainWindow) await dialog.showMessageBox(mainWindow, opts);
+  else await dialog.showMessageBox(opts);
+}
+
+async function promptRestartToInstall(version?: string): Promise<void> {
+  const opts = {
+    type: "info" as const,
+    title: "Update ready",
+    message: `Luxor PDF ${version ?? ""} has been downloaded.`,
+    detail:
+      "Restart now to install the update. It replaces the current " +
+      "version automatically — your settings and files are kept.",
+    buttons: ["Restart now", "Later"],
+    defaultId: 0,
+    cancelId: 1,
+  };
+  const { response } = mainWindow
+    ? await dialog.showMessageBox(mainWindow, opts)
+    : await dialog.showMessageBox(opts);
+  if (response === 0) {
+    autoUpdater.quitAndInstall();
+  }
+  // "Later": the update is already staged and installs on next app quit.
+}
+
+function checkForUpdatesManually(): void {
+  if (!app.isPackaged) {
+    void showInfoDialog(
+      "Updates unavailable",
+      "Update checks only work in the installed app.",
+    );
+    return;
+  }
+  if (manualCheckInProgress) return;
+  manualCheckInProgress = true;
+  autoUpdater.checkForUpdates().catch((err) => {
+    log.error("[updater] manual checkForUpdates failed", err);
+    manualCheckInProgress = false;
+    void showInfoDialog(
+      "Update check failed",
+      "Couldn't check for updates. Please check your internet " +
+        "connection and try again.",
+    );
+  });
+}
+
+function buildAppMenu(): void {
+  const menu = Menu.buildFromTemplate([
+    {
+      label: "File",
+      submenu: [{ role: "quit", label: "Exit" }],
+    },
+    {
+      label: "View",
+      submenu: [
+        { role: "reload" },
+        { type: "separator" },
+        { role: "resetZoom" },
+        { role: "zoomIn" },
+        { role: "zoomOut" },
+        { type: "separator" },
+        { role: "togglefullscreen" },
+      ],
+    },
+    {
+      label: "Help",
+      submenu: [
+        {
+          label: "Check for Updates…",
+          click: () => checkForUpdatesManually(),
+        },
+        { type: "separator" },
+        {
+          label: "Visit luxorpdf.com",
+          click: () => void shell.openExternal("https://luxorpdf.com"),
+        },
+        {
+          label: `About Luxor PDF (v${app.getVersion()})`,
+          click: () =>
+            void showInfoDialog(
+              "Luxor PDF",
+              `Luxor PDF Reader\nVersion ${app.getVersion()}`,
+            ),
+        },
+      ],
+    },
+  ]);
+  Menu.setApplicationMenu(menu);
+}
+
 function setupAutoUpdater(): void {
   if (!app.isPackaged) {
     log.info("[updater] skipped — running unpackaged");
@@ -266,9 +366,23 @@ function setupAutoUpdater(): void {
   });
   autoUpdater.on("update-available", (info) => {
     log.info("[updater] update available", info?.version);
+    if (manualCheckInProgress) {
+      void showInfoDialog(
+        "Update available",
+        `Version ${info?.version ?? ""} is downloading now.\n\n` +
+          "You'll be asked to restart once it's ready.",
+      );
+    }
   });
   autoUpdater.on("update-not-available", () => {
     log.info("[updater] no update available");
+    if (manualCheckInProgress) {
+      manualCheckInProgress = false;
+      void showInfoDialog(
+        "You're up to date",
+        `Luxor PDF ${app.getVersion()} is the latest version.`,
+      );
+    }
   });
   autoUpdater.on("download-progress", (p) => {
     log.info(
@@ -278,9 +392,21 @@ function setupAutoUpdater(): void {
   });
   autoUpdater.on("update-downloaded", (info) => {
     log.info("[updater] update downloaded", info?.version);
+    if (manualCheckInProgress) {
+      manualCheckInProgress = false;
+      void promptRestartToInstall(info?.version);
+    }
   });
   autoUpdater.on("error", (err) => {
     log.error("[updater] error", err);
+    if (manualCheckInProgress) {
+      manualCheckInProgress = false;
+      void showInfoDialog(
+        "Update check failed",
+        "Couldn't check for updates. Please check your internet " +
+          "connection and try again.",
+      );
+    }
   });
 
   // Fully background: silently check, download, and stage the update
@@ -351,6 +477,7 @@ void app.whenReady().then(async () => {
     });
   });
 
+  buildAppMenu();
   createWindow();
 
   setTimeout(() => setupAutoUpdater(), 3000);

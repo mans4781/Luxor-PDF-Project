@@ -55,11 +55,14 @@ Section "Download and install"
     Abort
   download_ok:
 
-  DetailPrint "Download complete."
-  DetailPrint "Starting the ${PRODUCT_NAME} installer..."
+  DetailPrint "Downloaded. Starting the ${PRODUCT_NAME} installer..."
   ; Move the installer out of $PLUGINSDIR: NSIS deletes that folder as soon
   ; as the stub quits, and the full installer must keep running after we're
   ; gone. $TEMP survives; Windows cleans it up on its own schedule.
+  ; Remove any stale copy first — a leftover locked file would make the
+  ; Rename fail and drop us into the blocking ExecWait fallback, leaving
+  ; the stub window open until the full installer finishes.
+  Delete "$TEMP\LuxorPDFReaderSetup.exe"
   Rename "$PLUGINSDIR\LuxorPDFReaderSetup.exe" "$TEMP\LuxorPDFReaderSetup.exe"
   IfFileExists "$TEMP\LuxorPDFReaderSetup.exe" launch_from_temp
     ; Rename failed (e.g. a stale copy is locked in $TEMP) — fall back to
