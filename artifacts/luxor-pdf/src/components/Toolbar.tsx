@@ -1046,7 +1046,7 @@ export default function Toolbar({
         <RibbonBtn icon={ri(Keyboard)} label="Shortcuts" title="Keyboard shortcuts" onClick={() => onOpenHelp("shortcuts")} />
       </RibbonGroup>
       <RibbonGroup label="Support">
-        <RibbonBtn icon={ri(Download)} label="Updates" title="Check for updates" onClick={() => openSitePage("/download")} />
+        <RibbonBtn icon={ri(Download)} label="Updates" title="Check for updates" onClick={() => openSitePage("/api/downloads/luxor-pdf-reader-latest")} />
         <RibbonBtn icon={ri(LifeBuoy)} label="Support" title="Contact support" onClick={() => openSitePage("/contact")} />
         <RibbonBtn icon={ri(Info)} label="About" title="About Luxor PDF Reader" onClick={() => onOpenHelp("about")} />
       </RibbonGroup>
@@ -1215,7 +1215,7 @@ export default function Toolbar({
     { label: "Keyboard Shortcuts", icon: mi(Keyboard), action: () => onOpenHelp("shortcuts") },
     { label: "Guided Tutorials", icon: mi(Video), action: () => onOpenHelp("tutorials") },
     { kind: "divider" },
-    { label: "Check for Updates", icon: mi(Download), action: () => openSitePage("/download") },
+    { label: "Check for Updates", icon: mi(Download), action: () => openSitePage("/api/downloads/luxor-pdf-reader-latest") },
     { label: "Contact Support", icon: mi(LifeBuoy), action: () => openSitePage("/contact") },
     { label: "Report a Problem", icon: mi(Flag), action: () => openSitePage("/contact") },
     { kind: "divider" },

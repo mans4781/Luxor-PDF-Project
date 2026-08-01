@@ -60,10 +60,21 @@ Section "Download and install"
   ; Move the installer out of $PLUGINSDIR: NSIS deletes that folder as soon
   ; as the stub quits, and the full installer must keep running after we're
   ; gone. $TEMP survives; Windows cleans it up on its own schedule.
+  ; Remove any stale copy first. If the stale file is locked the Delete
+  ; fails and the file remains — in that case IfFileExists on the
+  ; destination would be true even though our Rename failed, and we'd
+  ; launch the OLD installer. So verify the destination is actually gone
+  ; before renaming; otherwise use the blocking ExecWait fallback from
+  ; $PLUGINSDIR so the freshly downloaded installer is always the one
+  ; that runs.
+  Delete "$TEMP\LuxorPDFSecureSetup.exe"
+  IfFileExists "$TEMP\LuxorPDFSecureSetup.exe" fallback_blocking
   Rename "$PLUGINSDIR\LuxorPDFSecureSetup.exe" "$TEMP\LuxorPDFSecureSetup.exe"
   IfFileExists "$TEMP\LuxorPDFSecureSetup.exe" launch_from_temp
-    ; Rename failed (e.g. a stale copy is locked in $TEMP) — fall back to
-    ; the old blocking behavior so the install still succeeds.
+  fallback_blocking:
+    ; Stale copy is locked in $TEMP (or the Rename failed) — fall back to
+    ; the old blocking behavior so the install still succeeds with the
+    ; freshly downloaded installer.
     HideWindow
     ExecWait '"$PLUGINSDIR\LuxorPDFSecureSetup.exe"' $1
     Quit
