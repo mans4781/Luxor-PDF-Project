@@ -182,9 +182,10 @@ function createWindow(): void {
     icon: iconPath,
     title: "Luxor PDF",
     backgroundColor: "#111827",
-    // Keep the menu bar visible so Help → Check for Updates is
-    // discoverable (users asked for it explicitly).
-    autoHideMenuBar: false,
+    // Hide the menu bar to save vertical space (user request). The menu
+    // (incl. Help → Check for Updates) is still built and pops up when
+    // the user presses Alt.
+    autoHideMenuBar: true,
     // Standard OS frame: the web app no longer draws its own window
     // buttons, so the native minimize/maximize/close are the only set.
     frame: true,
