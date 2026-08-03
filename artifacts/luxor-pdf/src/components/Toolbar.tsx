@@ -1070,9 +1070,11 @@ export default function Toolbar({
   const collapsedStripVisible = !toolbarHidden && !!activeRibbon && ribbonCollapsed;
   useEffect(() => {
     const el = document.documentElement;
-    const h = ribbonVisible ? "130px" : collapsedStripVisible ? "86px" : "68px";
+    // Exact sum of the toolbar rows (menu strip 36px + ribbon 62px + 1px
+    // border) — any surplus shows up as a blank band above the PDF.
+    const h = ribbonVisible ? "99px" : collapsedStripVisible ? "55px" : "37px";
     el.style.setProperty("--toolbar-height", h);
-    return () => { el.style.setProperty("--toolbar-height", "130px"); };
+    return () => { el.style.setProperty("--toolbar-height", "99px"); };
   }, [ribbonVisible, collapsedStripVisible]);
 
   /* ── Menu-bar dropdown definitions ────────── */

@@ -11,7 +11,7 @@
   --toolbar-active-bg: rgba(13,98,242,0.18);
   --toolbar-active-fg: #0D62F2;
   --toolbar-sep: rgba(0,0,0,0.18);
-  --toolbar-height: 130px;
+  --toolbar-height: 99px;
   --statusbar-height: 34px;
   /* Height of the document tab strip; set to 36px by App when at least
      one PDF is open, 0 otherwise. All fixed chrome offsets include it. */
