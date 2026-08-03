@@ -21,4 +21,5 @@
 - [Landing brand & layout](landing-brand.md) — palette, section order, and component specifics of lexsecure-landing.
 - [Clerk sign-up constraints](clerk-signup-constraints.md) — managed Clerk can't disable OTP; sign-in may need a second-factor email code (handle in custom UI); +clerk_test/424242 for e2e.
 - [Git push limits](git-push-limits.md) — shell push auth fails; gitPush callback needs `origin` remote, only creates new branches, no tags; release = new branch + user merges/tags on GitHub.
+- [pdf.js WASM decoders](pdfjs-wasm-decoders.md) — JPEG2000/JBIG2 images blank unless every getDocument passes wasmUrl (absolute, trailing slash); re-copy wasm assets on pdfjs upgrade.
 - [Online tools registry](online-tools-registry.md) — pdf-expiry exposes 32 client-side tools via one registry → mega menu + /tools/:slug pages; BMP/GIF encoders, ArrayBuffer/Blob TS gotcha.

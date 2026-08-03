@@ -13,6 +13,7 @@
  * near the viewport have canvases — hence rendering all pages here.
  */
 import * as pdfjsLib from "pdfjs-dist";
+import { PDF_WASM_URL } from "@/lib/pdfWasm";
 
 const PRINT_DPI = 200; // Crisp text without exploding memory on big docs.
 const MAX_EDGE_PX = 4096; // Cap per-page canvas edge for very large pages.
@@ -22,7 +23,7 @@ export async function printBlobViaDom(blob: Blob): Promise<void> {
   document.querySelectorAll(".print-root").forEach((n) => n.remove());
 
   const bytes = await blob.arrayBuffer();
-  const doc = await pdfjsLib.getDocument({ data: bytes }).promise;
+  const doc = await pdfjsLib.getDocument({ data: bytes, wasmUrl: PDF_WASM_URL }).promise;
 
   const root = document.createElement("div");
   root.className = "print-root";
