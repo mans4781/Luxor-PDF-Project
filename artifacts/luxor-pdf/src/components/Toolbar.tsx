@@ -462,7 +462,7 @@ export default function Toolbar({
   /* Which submenu (by label) is expanded inside an open dropdown. */
   const [openSub, setOpenSub] = useState<string | null>(null);
   /** Which menu's icon groups are shown in the ribbon row below. */
-  const [ribbonMenu, setRibbonMenu] = useState<MenuKey>("file");
+  const [ribbonMenu, setRibbonMenu] = useState<MenuKey>("edit");
   const [ribbonCollapsed, setRibbonCollapsed] = useState(false);
   useEffect(() => { setOpenSub(null); }, [popover]);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -1070,9 +1070,9 @@ export default function Toolbar({
   const collapsedStripVisible = !toolbarHidden && !!activeRibbon && ribbonCollapsed;
   useEffect(() => {
     const el = document.documentElement;
-    const h = ribbonVisible ? "142px" : collapsedStripVisible ? "86px" : "68px";
+    const h = ribbonVisible ? "130px" : collapsedStripVisible ? "86px" : "68px";
     el.style.setProperty("--toolbar-height", h);
-    return () => { el.style.setProperty("--toolbar-height", "142px"); };
+    return () => { el.style.setProperty("--toolbar-height", "130px"); };
   }, [ribbonVisible, collapsedStripVisible]);
 
   /* ── Menu-bar dropdown definitions ────────── */
@@ -1280,13 +1280,10 @@ export default function Toolbar({
   }));
 
   const MENUS: { key: MenuKey; label: string; entries: MenuEntry[] }[] = [
-    { key: "file",     label: "File",     entries: fileMenu },
-    { key: "view",     label: "View",     entries: viewMenu },
     { key: "edit",     label: "Edit",     entries: editMenu },
     { key: "annotate", label: "Annotate", entries: annotateMenu },
     { key: "tools",    label: "Tools",    entries: toolsMenu },
     { key: "stamps",   label: "Stamps",   entries: stampsMenu },
-    { key: "help",     label: "Help",     entries: helpMenu },
   ];
 
   /* ── Dropdown entry renderer ─────────── */

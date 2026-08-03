@@ -11,7 +11,7 @@
   --toolbar-active-bg: rgba(13,98,242,0.18);
   --toolbar-active-fg: #0D62F2;
   --toolbar-sep: rgba(0,0,0,0.18);
-  --toolbar-height: 142px;
+  --toolbar-height: 130px;
   --statusbar-height: 34px;
   /* Height of the document tab strip; set to 36px by App when at least
      one PDF is open, 0 otherwise. All fixed chrome offsets include it. */
@@ -207,8 +207,8 @@ button, input, textarea, select {
 .luxor-ribbon {
   display: flex;
   align-items: center;
-  height: 74px;
-  padding: 4px 10px;
+  height: 62px;
+  padding: 2px 10px;
   gap: 4px;
   background: color-mix(in srgb, var(--toolbar-bg) 96%, #000);
 }
@@ -242,7 +242,7 @@ button, input, textarea, select {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 6px 4px 14px;
+  padding: 4px 4px 12px;
   min-width: 48px;
   height: 100%;
   border-radius: 6px;
