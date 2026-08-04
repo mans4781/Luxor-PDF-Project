@@ -18,7 +18,13 @@ if (typeof window !== "undefined") {
 const IconGallery = lazy(() => import("@/pages/IconGallery"));
 import { AuthGateProvider } from "@/components/AuthGate";
 import TabBar from "@/components/TabBar";
-import { initDesktopFileOpen } from "@/lib/desktopBridge";
+import { initDesktopFileOpen, isDesktopShell } from "@/lib/desktopBridge";
+
+// Mark the DOM when running inside the Electron shell so CSS can turn the
+// top toolbars into window-drag regions (the shell window is frameless).
+if (typeof document !== "undefined" && isDesktopShell()) {
+  document.body.classList.add("desktop-shell");
+}
 
 function shouldShowIconGallery(): boolean {
   if (typeof window === "undefined") return false;

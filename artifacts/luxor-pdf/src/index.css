@@ -933,6 +933,15 @@ mark.search-hl {
 .lxh-titlebar, .luxor-titlebar { -webkit-app-region: drag; }
 .lxh-titlebar button, .luxor-titlebar button { -webkit-app-region: no-drag; }
 
+/* Frameless desktop shell: the top toolbars double as window-drag regions. */
+body.desktop-shell .luxor-menu-strip,
+body.desktop-shell .lxh-toolbar,
+body.desktop-shell .doc-tabbar { -webkit-app-region: drag; }
+body.desktop-shell .luxor-menu-strip button,
+body.desktop-shell .lxh-toolbar button,
+body.desktop-shell .doc-tabbar button,
+body.desktop-shell .doc-tabbar [role="tab"] { -webkit-app-region: no-drag; }
+
 .lxh-winbtns { margin-left: auto; display: flex; gap: 4px; }
 .lxh-winbtn {
   width: 40px; height: 32px; border: none; background: transparent;

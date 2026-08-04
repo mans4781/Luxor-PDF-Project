@@ -3,6 +3,7 @@ import { AuthMenu } from "@workspace/luxor-auth-ui";
 import { useAuthGate } from "@/components/AuthGate";
 import { loadRecents, clearRecents, formatFileSize, type RecentFileEntry } from "@/lib/recentFiles";
 import { loadSettings } from "@/lib/settings";
+import { isDesktopShell, desktopWindowControl } from "@/lib/desktopBridge";
 
 interface HomeProps {
   onFileLoad: (file: File) => void;
@@ -244,6 +245,20 @@ export default function Home({ onFileLoad }: HomeProps) {
         <button className="lxh-tbtn" aria-disabled="true" title="Settings">{Ic.gear()}Settings</button>
         <button className="lxh-tbtn" aria-disabled="true" title="Help" style={{ padding: "0 8px" }}>{Ic.help(16)}</button>
         <AuthMenu iconOnly onSignIn={beginSignIn} onSignUp={beginSignUp} />
+        {isDesktopShell() && (
+          <>
+            <div className="lxh-vsep" />
+            <button className="lxh-tbtn" title="Minimize" style={{ padding: "0 8px" }} onClick={() => desktopWindowControl("minimize")}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button className="lxh-tbtn" title="Maximize / Restore" style={{ padding: "0 8px" }} onClick={() => desktopWindowControl("maximize-toggle")}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><rect x="5" y="5" width="14" height="14" rx="1"/></svg>
+            </button>
+            <button className="lxh-tbtn" title="Close" style={{ padding: "0 8px" }} onClick={() => desktopWindowControl("close")}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+            </button>
+          </>
+        )}
       </div>
 
       {/* Body */}

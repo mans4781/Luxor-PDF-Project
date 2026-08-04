@@ -183,12 +183,13 @@ function createWindow(): void {
     title: "Luxor PDF",
     backgroundColor: "#111827",
     // Hide the menu bar to save vertical space (user request). The menu
-    // (incl. Help → Check for Updates) is still built and pops up when
-    // the user presses Alt.
+    // (incl. Help → Check for Updates) is still built so its keyboard
+    // accelerators keep working.
     autoHideMenuBar: true,
-    // Standard OS frame: the web app no longer draws its own window
-    // buttons, so the native minimize/maximize/close are the only set.
-    frame: true,
+    // Frameless: the web app draws its own minimize/maximize/close in the
+    // viewer toolbar and home toolbar (user request — the OS title bar
+    // duplicated those buttons and wasted a row).
+    frame: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
