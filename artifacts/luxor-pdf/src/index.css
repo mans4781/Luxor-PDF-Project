@@ -181,6 +181,43 @@ button, input, textarea, select {
   color: var(--toolbar-fg);
 }
 
+/* Window caption buttons pinned to the right edge of the tab strip. */
+.doc-tabbar-winbtns {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  align-self: center;
+  gap: 2px;
+  flex-shrink: 0;
+  position: sticky;
+  right: 0;
+  background: inherit;
+  padding-left: 6px;
+}
+
+.doc-tab-winbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--toolbar-fg-muted);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.doc-tab-winbtn:hover {
+  background: var(--toolbar-hover);
+  color: var(--toolbar-fg);
+}
+
+/* Close button turns red on hover, like Windows. */
+.doc-tab-winbtn-close:hover { background: #E81123; color: #fff; }
+
 /* ── Toolbar ─────────────────────────────────────────────────────────────── */
 
 .luxor-toolbar {

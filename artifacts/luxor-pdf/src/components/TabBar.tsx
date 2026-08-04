@@ -1,3 +1,5 @@
+import { desktopWindowControl } from "@/lib/desktopBridge";
+
 export interface DocTabInfo {
   id: string;
   name: string;
@@ -87,6 +89,50 @@ export default function TabBar({ tabs, activeId, onSelect, onCloseTab, onNewTab 
           <line x1="5" y1="12" x2="19" y2="12" />
         </svg>
       </button>
+
+      {/* ── Window caption buttons (minimize / maximize / close) ── */}
+      <div className="doc-tabbar-winbtns">
+        <button
+          className="doc-tab-winbtn"
+          title="Minimize"
+          aria-label="Minimize window"
+          onClick={() => desktopWindowControl("minimize")}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </button>
+        <button
+          className="doc-tab-winbtn"
+          title="Maximize / Restore"
+          aria-label="Maximize or restore window"
+          onClick={() => {
+            // Desktop shell: toggle the OS window; browser: full screen.
+            if (!desktopWindowControl("maximize-toggle")) {
+              if (document.fullscreenElement) void document.exitFullscreen();
+              else void document.documentElement.requestFullscreen();
+            }
+          }}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true">
+            <rect x="5" y="5" width="14" height="14" rx="1" />
+          </svg>
+        </button>
+        <button
+          className="doc-tab-winbtn doc-tab-winbtn-close"
+          title="Close"
+          aria-label="Close window"
+          onClick={() => {
+            // Desktop shell: close the window; browser: close the active tab.
+            if (!desktopWindowControl("close") && activeId) onCloseTab(activeId);
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+            <line x1="6" y1="6" x2="18" y2="18" />
+            <line x1="6" y1="18" x2="18" y2="6" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }
