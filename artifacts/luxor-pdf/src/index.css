@@ -321,6 +321,9 @@ button, input, textarea, select {
 .toolbar-icon-btn:hover { background: var(--toolbar-hover); }
 .toolbar-icon-btn.active { background: var(--toolbar-active-bg); color: var(--toolbar-active-fg); }
 
+/* Window caption close button turns red on hover, like Windows. */
+.toolbar-caption-close:hover { background: #E81123; color: #fff; }
+
 .ribbon-small-btn {
   display: flex;
   align-items: center;

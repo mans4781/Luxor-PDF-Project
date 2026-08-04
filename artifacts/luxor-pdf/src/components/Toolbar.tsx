@@ -9,6 +9,7 @@ import {
   allTextFonts,
 } from "@/lib/annotationColors";
 import { loadRecents, formatFileSize, type RecentFileEntry } from "@/lib/recentFiles";
+import { desktopWindowControl } from "@/lib/desktopBridge";
 import { STAMP_CATEGORIES, STAMP_INK_COLORS, type StampDef } from "@/lib/stamps";
 import {
   FolderOpen, Clock, FilePlus, Save, SaveAll, Copy, Share2, Printer, X, LogOut,
@@ -1282,10 +1283,13 @@ export default function Toolbar({
   }));
 
   const MENUS: { key: MenuKey; label: string; entries: MenuEntry[] }[] = [
+    { key: "file",     label: "File",     entries: fileMenu },
+    { key: "view",     label: "View",     entries: viewMenu },
     { key: "edit",     label: "Edit",     entries: editMenu },
     { key: "annotate", label: "Annotate", entries: annotateMenu },
     { key: "tools",    label: "Tools",    entries: toolsMenu },
     { key: "stamps",   label: "Stamps",   entries: stampsMenu },
+    { key: "help",     label: "Help",     entries: helpMenu },
   ];
 
   /* ── Dropdown entry renderer ─────────── */
@@ -1444,6 +1448,42 @@ export default function Toolbar({
             onSignUp={beginSignUp}
           />
         </div>
+
+        {/* ── Window caption buttons (minimize / maximize / close) ── */}
+        <span style={{ width: 1, height: 18, background: "var(--toolbar-sep)", margin: "0 6px", flexShrink: 0 }} />
+        <button
+          className="toolbar-icon-btn"
+          title="Minimize"
+          onClick={() => desktopWindowControl("minimize")}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+        <button
+          className="toolbar-icon-btn"
+          title={isFullscreen ? "Restore" : "Maximize"}
+          onClick={() => {
+            // Desktop shell: toggle the OS window; browser: full screen.
+            if (!desktopWindowControl("maximize-toggle")) onToggleFullscreen();
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+            <rect x="5" y="5" width="14" height="14" rx="1"/>
+          </svg>
+        </button>
+        <button
+          className="toolbar-icon-btn toolbar-caption-close"
+          title="Close"
+          onClick={() => {
+            // Desktop shell: close the window; browser: close the document.
+            if (!desktopWindowControl("close")) onFileClose();
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/>
+          </svg>
+        </button>
       </div>
 
       {/* ── Row 2: quick-access ribbon (View > Hide Toolbar) ── */}
