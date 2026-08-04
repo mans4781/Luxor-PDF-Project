@@ -941,6 +941,15 @@ body.desktop-shell .luxor-menu-strip button,
 body.desktop-shell .lxh-toolbar button,
 body.desktop-shell .doc-tabbar button,
 body.desktop-shell .doc-tabbar [role="tab"] { -webkit-app-region: no-drag; }
+/* Popovers/menus that render INSIDE the drag strips must stay clickable —
+   otherwise their backgrounds (and the recents-menu dismiss backdrop)
+   inherit the drag region and swallow clicks in the frameless window. */
+body.desktop-shell .lxh-toolbar .lxh-menu,
+body.desktop-shell .lxh-toolbar .lxh-menu-backdrop,
+body.desktop-shell .lxh-toolbar [role="menu"],
+body.desktop-shell .luxor-menu-strip .popover-panel,
+body.desktop-shell .luxor-menu-strip [role="menu"],
+body.desktop-shell .doc-tabbar [role="menu"] { -webkit-app-region: no-drag; }
 
 .lxh-winbtns { margin-left: auto; display: flex; gap: 4px; }
 .lxh-winbtn {

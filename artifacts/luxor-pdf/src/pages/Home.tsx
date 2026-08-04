@@ -183,7 +183,7 @@ export default function Home({ onFileLoad }: HomeProps) {
 
   const recentsMenu = recentMenu && (
     <>
-      <div style={{ position: "fixed", inset: 0, zIndex: 55 }} onClick={() => setRecentMenu(false)} />
+      <div className="lxh-menu-backdrop" style={{ position: "fixed", inset: 0, zIndex: 55 }} onClick={() => setRecentMenu(false)} />
       <div className="lxh-menu">
         {recents.length === 0 ? (
           <div className="lxh-menu-empty">No recent files yet.</div>
