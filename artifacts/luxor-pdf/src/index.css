@@ -11,7 +11,7 @@
   --toolbar-active-bg: rgba(13,98,242,0.18);
   --toolbar-active-fg: #0D62F2;
   --toolbar-sep: rgba(0,0,0,0.18);
-  --toolbar-height: 142px;
+  --toolbar-height: 99px;
   --statusbar-height: 34px;
   /* Height of the document tab strip; set to 36px by App when at least
      one PDF is open, 0 otherwise. All fixed chrome offsets include it. */
@@ -207,8 +207,8 @@ button, input, textarea, select {
 .luxor-ribbon {
   display: flex;
   align-items: center;
-  height: 74px;
-  padding: 4px 10px;
+  height: 62px;
+  padding: 2px 10px;
   gap: 4px;
   background: color-mix(in srgb, var(--toolbar-bg) 96%, #000);
 }
@@ -242,7 +242,7 @@ button, input, textarea, select {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 6px 4px 14px;
+  padding: 4px 4px 12px;
   min-width: 48px;
   height: 100%;
   border-radius: 6px;
@@ -320,6 +320,9 @@ button, input, textarea, select {
 }
 .toolbar-icon-btn:hover { background: var(--toolbar-hover); }
 .toolbar-icon-btn.active { background: var(--toolbar-active-bg); color: var(--toolbar-active-fg); }
+
+/* Window caption close button turns red on hover, like Windows. */
+.toolbar-caption-close:hover { background: #E81123; color: #fff; }
 
 .ribbon-small-btn {
   display: flex;
@@ -929,6 +932,24 @@ mark.search-hl {
    Electron window) — make it draggable, keep buttons clickable. */
 .lxh-titlebar, .luxor-titlebar { -webkit-app-region: drag; }
 .lxh-titlebar button, .luxor-titlebar button { -webkit-app-region: no-drag; }
+
+/* Frameless desktop shell: the top toolbars double as window-drag regions. */
+body.desktop-shell .luxor-menu-strip,
+body.desktop-shell .lxh-toolbar,
+body.desktop-shell .doc-tabbar { -webkit-app-region: drag; }
+body.desktop-shell .luxor-menu-strip button,
+body.desktop-shell .lxh-toolbar button,
+body.desktop-shell .doc-tabbar button,
+body.desktop-shell .doc-tabbar [role="tab"] { -webkit-app-region: no-drag; }
+/* Popovers/menus that render INSIDE the drag strips must stay clickable —
+   otherwise their backgrounds (and the recents-menu dismiss backdrop)
+   inherit the drag region and swallow clicks in the frameless window. */
+body.desktop-shell .lxh-toolbar .lxh-menu,
+body.desktop-shell .lxh-toolbar .lxh-menu-backdrop,
+body.desktop-shell .lxh-toolbar [role="menu"],
+body.desktop-shell .luxor-menu-strip .popover-panel,
+body.desktop-shell .luxor-menu-strip [role="menu"],
+body.desktop-shell .doc-tabbar [role="menu"] { -webkit-app-region: no-drag; }
 
 .lxh-winbtns { margin-left: auto; display: flex; gap: 4px; }
 .lxh-winbtn {

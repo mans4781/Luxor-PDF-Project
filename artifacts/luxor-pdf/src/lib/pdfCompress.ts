@@ -16,6 +16,7 @@
 
 import * as pdfjsLib from "pdfjs-dist";
 import { PDFDocument } from "pdf-lib";
+import { PDF_WASM_URL } from "@/lib/pdfWasm";
 
 export interface CompressOptions {
   /** Render DPI. PDF default is 72; 96 ≈ screen, 120 ≈ readable print. */
@@ -46,7 +47,7 @@ export async function compressPdf(file: File | Blob, opts: CompressOptions): Pro
 
   const srcBytes = await file.arrayBuffer();
   // Load via pdf.js for rasterization (typed pages, viewport, render).
-  const srcDoc = await pdfjsLib.getDocument({ data: srcBytes.slice(0) }).promise;
+  const srcDoc = await pdfjsLib.getDocument({ data: srcBytes.slice(0), wasmUrl: PDF_WASM_URL }).promise;
   // Build the output PDF.
   const outDoc = await PDFDocument.create();
 

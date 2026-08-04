@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/web/pdf_viewer.css";
+import { PDF_WASM_URL } from "@/lib/pdfWasm";
 import StatusBar from "@/components/StatusBar";
 import Toolbar, { type ThemeKey } from "@/components/Toolbar";
 import PDFPage from "@/components/PDFPage";
@@ -364,7 +365,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     setActivePanel(null);
     const url = URL.createObjectURL(file);
     const { port, worker } = createDedicatedPdfWorker();
-    const task = pdfjsLib.getDocument({ url, worker });
+    const task = pdfjsLib.getDocument({ url, worker, wasmUrl: PDF_WASM_URL });
     loadingTaskRef.current = task;
 
     // pdf.js invokes this for encrypted PDFs. reason 1 = needs password,

@@ -95,6 +95,16 @@ const GENERIC_PROMPT_LABEL = "\u0000generic";
 
 /** Where the "View plans" button in the upgrade prompt goes. */
 const PRICING_PATH = "/lexsecure-landing/pricing";
+const ACTIVATE_KEY_PATH = "/pdf-expiry/activate-key";
+
+// Open a suite page — desktop shells route window.open to the system browser.
+function openSuitePath(path: string): void {
+  if (isDesktopShell()) {
+    window.open(`${window.location.origin}${path}`, "_blank", "noopener");
+  } else {
+    window.location.assign(path);
+  }
+}
 
 /** Signed-in user's plan state, derived from GET /api/license/status. */
 type LicenseState = "unknown" | "active" | "none";
@@ -413,34 +423,42 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {promptMode === "upgrade" ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (isDesktopShell()) {
-                      // Desktop shell routes window.open to the system browser.
-                      window.open(
-                        `${window.location.origin}${PRICING_PATH}`,
-                        "_blank",
-                        "noopener",
-                      );
-                    } else {
-                      window.location.assign(PRICING_PATH);
-                    }
-                  }}
-                  disabled={offline}
-                  style={{
-                    padding: "10px 14px",
-                    borderRadius: 9,
-                    border: "none",
-                    background: offline ? "#94a3b8" : "#2563eb",
-                    color: "#fff",
-                    fontSize: 14,
-                    fontWeight: 600,
-                    cursor: offline ? "not-allowed" : "pointer",
-                  }}
-                >
-                  View plans
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => openSuitePath(PRICING_PATH)}
+                    disabled={offline}
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: 9,
+                      border: "none",
+                      background: offline ? "#94a3b8" : "#2563eb",
+                      color: "#fff",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: offline ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    Upgrade — go to checkout
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openSuitePath(ACTIVATE_KEY_PATH)}
+                    disabled={offline}
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: 9,
+                      border: "1px solid #cbd5e1",
+                      background: "#fff",
+                      color: offline ? "#94a3b8" : "#0f172a",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: offline ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    Enter license key
+                  </button>
+                </>
               ) : (
                 <>
                   <button
