@@ -16,7 +16,7 @@ export default function StatusBar({ viewControls, zoomSlider }: StatusBarProps) 
           style={{ width: 14, height: 17, objectFit: "contain", userSelect: "none" }}
         />
         <span style={{ fontSize: 11.5, fontWeight: 600, whiteSpace: "nowrap" }}>
-          Luxor <span style={{ color: "#d21f2f" }}>PDF</span>
+          Luxor <span style={{ color: "#d21f2f" }}>PDF</span> Reader
         </span>
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
