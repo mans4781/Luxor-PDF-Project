@@ -988,6 +988,9 @@ importers:
       electron-builder:
         specifier: ^25.1.8
         version: 25.1.8
+      playwright-core:
+        specifier: ^1.49.0
+        version: 1.60.0
       typescript:
         specifier: ^5.9.0
         version: 5.9.3

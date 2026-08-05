@@ -66,6 +66,17 @@ jobs:
             echo "flag=never" >> "$GITHUB_OUTPUT"
           fi
 
+      # MANDATORY release gate — see artifacts/luxor-reader-desktop/RELEASE-CHECKLIST.md.
+      # Drives the compiled app (out/ + web-bundle — the exact code that gets
+      # packaged below) via Playwright's Electron launcher and verifies the
+      # frameless window: drag regions and the Minimize / Maximize / Close
+      # caption buttons. If this fails, the installer is never built or
+      # published. Do not remove or bypass this step.
+      # (Playwright can only drive the dev Electron binary, not a packaged
+      # .exe — installer-level checks stay on the manual checklist.)
+      - name: Frameless-window smoke test (release gate)
+        run: pnpm --filter @workspace/luxor-reader-desktop run test:frameless
+
       - name: Build NSIS installer
         run: pnpm --filter @workspace/luxor-reader-desktop exec electron-builder --win --x64 --publish ${{ steps.mode.outputs.flag }}
 
