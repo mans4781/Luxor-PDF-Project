@@ -122,6 +122,76 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
   const licenseRef = useRef<LicenseState>("unknown");
   licenseRef.current = licenseState;
 
+  // In-app license-key activation (upgrade prompt): no website redirect.
+  const [keyMode, setKeyMode] = useState(false);
+  const [keyInput, setKeyInput] = useState("");
+  const [activating, setActivating] = useState(false);
+  const [activateError, setActivateError] = useState<string | null>(null);
+  const [activated, setActivated] = useState(false);
+
+  // Reset the key-entry form whenever the prompt dialog goes away.
+  useEffect(() => {
+    if (promptLabel === null) {
+      setKeyMode(false);
+      setKeyInput("");
+      setActivating(false);
+      setActivateError(null);
+      setActivated(false);
+    }
+  }, [promptLabel]);
+
+  const activateKey = async () => {
+    const productKey = keyInput.trim().toUpperCase();
+    if (!/^LUXOR(-[A-Z0-9]{4}){4}$/.test(productKey)) {
+      setActivateError("Enter the full key, like LUXOR-XXXX-XXXX-XXXX-XXXX.");
+      return;
+    }
+    setActivating(true);
+    setActivateError(null);
+    try {
+      const { getDeviceId, getDeviceName, detectOs } = await import("@/lib/deviceId");
+      const res = await fetch("/api/license/activate", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productKey,
+          deviceId: await getDeviceId(),
+          deviceName: getDeviceName(),
+          os: detectOs(),
+        }),
+      });
+      if (res.ok) {
+        // Unlock premium immediately, confirm, then dismiss the dialog.
+        setActivated(true);
+        setLicenseState("active");
+        window.setTimeout(() => {
+          setPromptLabel(null);
+          setPromptMode("signin");
+        }, 1400);
+      } else {
+        const body: { error?: string } = await res.json().catch(() => ({}));
+        const reasons: Record<string, string> = {
+          not_found: "That key wasn't recognized. Check it and try again.",
+          already_activated: "This key is already active on this account.",
+          max_activations: "This key has no device slots left. Deactivate a device first.",
+          revoked: "This key has been revoked.",
+          expired: "This key's subscription has expired.",
+        };
+        setActivateError(
+          reasons[body.error ?? ""] ??
+            (res.status === 401
+              ? "Please sign in first, then enter your key."
+              : "Couldn't activate that key. Check it and try again."),
+        );
+      }
+    } catch {
+      setActivateError("Couldn't reach the license server. Check your connection and try again.");
+    } finally {
+      setActivating(false);
+    }
+  };
+
   // Keep the plan state fresh while signed in: check on load, on sign-in,
   // and whenever the window regains focus (e.g. after buying a plan in
   // another tab). Fail closed — errors leave the previous state in place.
@@ -422,7 +492,99 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
               </div>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {promptMode === "upgrade" ? (
+              {promptMode === "upgrade" && keyMode ? (
+                <>
+                  {activated ? (
+                    <div
+                      aria-live="polite"
+                      style={{
+                        padding: "14px 12px",
+                        borderRadius: 9,
+                        background: "#ecfdf5",
+                        border: "1px solid #6ee7b7",
+                        color: "#047857",
+                        fontSize: 14.5,
+                        fontWeight: 700,
+                      }}
+                    >
+                      ✓ Activated Successfully
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        type="text"
+                        autoFocus
+                        value={keyInput}
+                        onChange={(e) => {
+                          // Auto-format: LUXOR-XXXX-XXXX-XXXX-XXXX
+                          let raw = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+                          if (raw.startsWith("LUXOR")) raw = raw.slice(5);
+                          const groups = raw.slice(0, 16).match(/.{1,4}/g) ?? [];
+                          setKeyInput(["LUXOR", ...groups].join("-"));
+                          setActivateError(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !activating) void activateKey();
+                          e.stopPropagation();
+                        }}
+                        placeholder="LUXOR-XXXX-XXXX-XXXX-XXXX"
+                        spellCheck={false}
+                        style={{
+                          padding: "10px 12px",
+                          borderRadius: 9,
+                          border: activateError ? "1px solid #f87171" : "1px solid #cbd5e1",
+                          fontSize: 14,
+                          fontFamily: "ui-monospace, monospace",
+                          letterSpacing: 1,
+                          textAlign: "center",
+                          outline: "none",
+                        }}
+                      />
+                      {activateError && (
+                        <div style={{ fontSize: 12.5, color: "#dc2626", lineHeight: 1.45 }}>
+                          {activateError}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => void activateKey()}
+                        disabled={activating || offline}
+                        style={{
+                          padding: "10px 14px",
+                          borderRadius: 9,
+                          border: "none",
+                          background: activating || offline ? "#94a3b8" : "#2563eb",
+                          color: "#fff",
+                          fontSize: 14,
+                          fontWeight: 600,
+                          cursor: activating || offline ? "not-allowed" : "pointer",
+                        }}
+                      >
+                        {activating ? "Activating…" : "Activate"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setKeyMode(false);
+                          setKeyInput("");
+                          setActivateError(null);
+                        }}
+                        style={{
+                          padding: "8px 14px",
+                          borderRadius: 9,
+                          border: "none",
+                          background: "transparent",
+                          color: "#64748b",
+                          fontSize: 13,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Back
+                      </button>
+                    </>
+                  )}
+                </>
+              ) : promptMode === "upgrade" ? (
                 <>
                   <button
                     type="button"
@@ -443,7 +605,7 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => openSuitePath(ACTIVATE_KEY_PATH)}
+                    onClick={() => setKeyMode(true)}
                     disabled={offline}
                     style={{
                       padding: "10px 14px",
