@@ -360,8 +360,10 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
         }
       }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    // Capture phase: overlays (e.g. the Add-Text click-catcher) may stop
+    // mousedown propagation, which would leave the box selected forever.
+    document.addEventListener("mousedown", handler, true);
+    return () => document.removeEventListener("mousedown", handler, true);
   }, [selected, editing, onUpdate, onDelete]);
 
   const startDrag = useCallback((e: React.MouseEvent) => {
@@ -435,6 +437,8 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
     else { onDelete(); }
     setEditing(false);
     setInputWidth(null);
+    setSelected(false);
+    setShowColorPicker(false);
   }, [onUpdate, onDelete]);
 
   const tbtnStyle: React.CSSProperties = {
@@ -686,7 +690,12 @@ function DraggableTextBox({ ann, pageWidth, pageHeight, onMove, onUpdate, onDele
             e.target.style.height = e.target.scrollHeight + "px";
           }}
           onKeyDown={e => {
-            if (e.key === "Escape") { e.stopPropagation(); commitEdit(e.currentTarget.value); }
+            if (e.key === "Escape") {
+              // Cancel the edit: revert to the saved content (Edge-like).
+              e.stopPropagation();
+              setEditing(false);
+              setInputWidth(null);
+            }
           }}
           onBlur={e => {
             if (wrapperBoxRef.current?.contains(e.relatedTarget as Node)) return;
@@ -738,12 +747,42 @@ function ActiveTextInput({ editingText, textSize, textColor, textFont, textUnder
   onCancel: () => void;
 }) {
   const lineH = Math.round(textSize * 1.485);
-  const maxW = Math.max(60, pageWidth - editingText.x - 4);
+  // The box is draggable while composing (like Edge's PDF text tool), so
+  // position lives in local state; commit uses the final position.
+  const [pos, setPos] = useState({ x: editingText.x, y: editingText.y });
+  const posRef = useRef(pos);
+  posRef.current = pos;
+  const draggingRef = useRef(false);
+  // Commit/cancel exactly once: the browser can fire a second blur while the
+  // textarea unmounts, which used to add duplicate annotations.
+  const doneRef = useRef(false);
+  const taRef = useRef<HTMLTextAreaElement>(null);
+  const maxW = Math.max(60, pageWidth - pos.x - 4);
   const initialW = Math.min(maxW, Math.max(110, textSize * 7));
   const textDeco = [textUnderline && "underline", textStrike && "line-through"]
     .filter(Boolean).join(" ") || undefined;
   const [width, setWidth] = useState(initialW);
   const measureRef = useRef<HTMLSpanElement>(null);
+
+  const startDrag = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    draggingRef.current = true;
+    const start = { mx: e.clientX, my: e.clientY, x: posRef.current.x, y: posRef.current.y };
+    const move = (me: MouseEvent) => {
+      setPos({ x: Math.max(0, start.x + me.clientX - start.mx), y: Math.max(0, start.y + me.clientY - start.my) });
+    };
+    const up = () => {
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+      // Give focus back to the textarea; delay clearing the flag so the
+      // focus shuffle doesn't trigger the blur-commit.
+      taRef.current?.focus();
+      window.setTimeout(() => { draggingRef.current = false; }, 0);
+    };
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+  }, []);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (measureRef.current) {
@@ -766,12 +805,30 @@ function ActiveTextInput({ editingText, textSize, textColor, textFont, textUnder
         }}
         aria-hidden="true"
       />
+      <div
+        title="Drag to move"
+        onMouseDown={startDrag}
+        style={{
+          position: "absolute",
+          left: pos.x, top: pos.y - 16,
+          width, height: 16,
+          zIndex: 50,
+          cursor: "move",
+          background: "#4169E1",
+          borderRadius: "3px 3px 0 0",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxSizing: "border-box",
+        }}
+      >
+        <div style={{ width: 26, height: 3, borderRadius: 2, background: "rgba(255,255,255,0.85)" }} />
+      </div>
       <textarea
+        ref={taRef}
         autoFocus
         rows={1}
         style={{
           position: "absolute",
-          left: editingText.x, top: editingText.y,
+          left: pos.x, top: pos.y,
           fontSize: textSize, color: textColor,
           fontFamily: fontFamilyCss(textFont),
           textDecoration: textDeco,
@@ -795,9 +852,18 @@ function ActiveTextInput({ editingText, textSize, textColor, textFont, textUnder
         placeholder="Type here…"
         onChange={handleChange}
         onKeyDown={e => {
-          if (e.key === "Escape") { e.stopPropagation(); onCommit(editingText.id, e.currentTarget.value, editingText.x, editingText.y); }
+          if (e.key === "Escape") {
+            e.stopPropagation();
+            doneRef.current = true;
+            onCancel();
+          }
         }}
-        onBlur={e => onCommit(editingText.id, e.target.value, editingText.x, editingText.y)}
+        onBlur={e => {
+          if (draggingRef.current) return; // focus lost to the drag handle, not a real dismiss
+          if (doneRef.current) return;
+          doneRef.current = true;
+          onCommit(editingText.id, e.target.value, posRef.current.x, posRef.current.y);
+        }}
       />
     </>
   );
@@ -2155,10 +2221,27 @@ export default function PDFPage({
     }
   }, [tool, pageNum, drawColor, onAnnotationAdd, pageSize, shapeFill, shapeFillOpacity]);
 
+  // Edge-like behavior: while a text box is being composed/edited, a click
+  // elsewhere just commits/closes it — it must NOT immediately spawn a new
+  // box at the click point. The mousedown fires while the textarea still
+  // has focus, so we flag it and swallow the following click.
+  const suppressTextClickRef = useRef(false);
+  const handleTextMouseDown = useCallback(() => {
+    const ae = document.activeElement;
+    if (ae && ae.tagName === "TEXTAREA") suppressTextClickRef.current = true;
+  }, []);
+
   const handleTextClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (tool !== "text") return;
+    // Consume the suppression flag exactly once, regardless of other state,
+    // so a stale flag can never swallow a later, legitimate click.
+    if (suppressTextClickRef.current) {
+      suppressTextClickRef.current = false;
+      return;
+    }
+    if (editingText) return;
     setEditingText({ id: genId(), x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
-  }, [tool]);
+  }, [tool, editingText]);
 
   const handleTextCommit = (id: string, content: string, x: number, y: number) => {
     if (content.trim()) {
@@ -2869,6 +2952,7 @@ export default function PDFPage({
             width: "100%", height: "100%",
             cursor: "text", zIndex: 5,
           }}
+          onMouseDown={handleTextMouseDown}
           onClick={handleTextClick}
         />
       )}

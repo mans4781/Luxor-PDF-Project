@@ -129,9 +129,19 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
   const [activateError, setActivateError] = useState<string | null>(null);
   const [activated, setActivated] = useState(false);
 
+  // Invalidate in-flight activations and pending auto-close timers when the
+  // dialog closes, so a late response can't mutate a newer prompt's state.
+  const activationGenRef = useRef(0);
+  const closeTimerRef = useRef<number | null>(null);
+
   // Reset the key-entry form whenever the prompt dialog goes away.
   useEffect(() => {
     if (promptLabel === null) {
+      activationGenRef.current++;
+      if (closeTimerRef.current !== null) {
+        window.clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
       setKeyMode(false);
       setKeyInput("");
       setActivating(false);
@@ -148,6 +158,7 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
     }
     setActivating(true);
     setActivateError(null);
+    const gen = ++activationGenRef.current;
     try {
       const { getDeviceId, getDeviceName, detectOs } = await import("@/lib/deviceId");
       const res = await fetch("/api/license/activate", {
@@ -162,15 +173,19 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
         }),
       });
       if (res.ok) {
-        // Unlock premium immediately, confirm, then dismiss the dialog.
-        setActivated(true);
+        // The server accepted the key, so premium is real regardless of
+        // which dialog is open — always reflect it in license state.
         setLicenseState("active");
-        window.setTimeout(() => {
+        if (gen !== activationGenRef.current) return; // dialog closed meanwhile
+        setActivated(true);
+        closeTimerRef.current = window.setTimeout(() => {
+          closeTimerRef.current = null;
           setPromptLabel(null);
           setPromptMode("signin");
         }, 1400);
       } else {
         const body: { error?: string } = await res.json().catch(() => ({}));
+        if (gen !== activationGenRef.current) return;
         const reasons: Record<string, string> = {
           not_found: "That key wasn't recognized. Check it and try again.",
           already_activated: "This key is already active on this account.",
@@ -186,9 +201,11 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
         );
       }
     } catch {
-      setActivateError("Couldn't reach the license server. Check your connection and try again.");
+      if (gen === activationGenRef.current) {
+        setActivateError("Couldn't reach the license server. Check your connection and try again.");
+      }
     } finally {
-      setActivating(false);
+      if (gen === activationGenRef.current) setActivating(false);
     }
   };
 
