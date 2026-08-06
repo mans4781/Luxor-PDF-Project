@@ -1,0 +1,68 @@
+name: Luxor PDF Reader — macOS frameless smoke
+
+# Runs the frameless-window release gate on REAL macOS hardware.
+# macOS has different window-management conventions than Windows
+# (no native frame means no traffic lights; Cmd shortcuts only work
+# through menu roles), so the smoke test carries darwin-only checks
+# (app menu / Edit roles / Window menu) in addition to the shared
+# drag-region and caption-button checks.
+#
+# This is validation-only: no installer is built or published here.
+# Packaging/distribution for macOS is tracked separately.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "reader-v*"
+    branches:
+      - "**reader-macos**"
+  pull_request:
+    paths:
+      - "artifacts/luxor-reader-desktop/**"
+      - "artifacts/luxor-pdf/**"
+      - ".github/workflows/reader-desktop-macos.yml"
+
+jobs:
+  smoke-macos:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # The Replit workspace template blocks all non-Linux platform binaries
+      # via `"pkg>dep": "-"` overrides in pnpm-workspace.yaml. The macOS
+      # runner needs its own platform binaries (esbuild, rollup, Electron),
+      # so strip the blocks before installing — same CI-only tweak as the
+      # Windows workflow.
+      - name: Allow macOS platform binaries
+        run: |
+          sed -i '' '/: "-"$/d' pnpm-workspace.yaml
+          sed -i '' '/"brace-expansion"/d' pnpm-workspace.yaml
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Compile Electron main & preload
+        run: pnpm --filter @workspace/luxor-reader-desktop run build
+
+      - name: Build offline web bundle (luxor-pdf)
+        run: pnpm --filter @workspace/luxor-reader-desktop run build:web-bundle
+
+      # Drives the compiled app via Playwright's Electron launcher on the
+      # macOS runner and verifies: frameless window, drag regions,
+      # caption-button minimize/maximize/close, and (darwin-only) the
+      # app menu / Edit-menu roles / Window menu.
+      - name: Frameless-window smoke test (macOS)
+        run: pnpm --filter @workspace/luxor-reader-desktop run test:frameless

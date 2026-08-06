@@ -309,11 +309,24 @@ function checkForUpdatesManually(): void {
 }
 
 function buildAppMenu(): void {
+  const isMac = process.platform === "darwin";
   const menu = Menu.buildFromTemplate([
+    // macOS: the first menu is always the app menu (About / Hide / Quit —
+    // gives Cmd+H, Cmd+Q). Without it the "File" menu gets mangled into
+    // the app-menu slot.
+    ...(isMac ? [{ role: "appMenu" as const }] : []),
     {
       label: "File",
-      submenu: [{ role: "quit", label: "Exit" }],
+      submenu: [
+        isMac
+          ? { role: "close" as const }
+          : { role: "quit" as const, label: "Exit" },
+      ],
     },
+    // Standard Edit menu (roles). Required on macOS: without it the
+    // system never binds Cmd+C/V/X/A, so copy/paste is dead in every
+    // input (search box, sign-in form). Harmless on Windows/Linux.
+    { role: "editMenu" },
     {
       label: "View",
       submenu: [
@@ -326,6 +339,9 @@ function buildAppMenu(): void {
         { role: "togglefullscreen" },
       ],
     },
+    // macOS: standard Window menu (Cmd+M minimize, Zoom) — the frameless
+    // window has no traffic lights, so these keep OS conventions working.
+    ...(isMac ? [{ role: "windowMenu" as const }] : []),
     {
       label: "Help",
       submenu: [

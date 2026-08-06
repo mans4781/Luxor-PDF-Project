@@ -47,6 +47,20 @@ These run on the installed app, which the automated gate can't reach:
 - [ ] Window snapping (Win + arrow keys) works
 - [ ] Close button turns red on hover in the viewer caption strip
 
+### macOS
+
+Automated coverage runs on real macOS via
+`.github/workflows/reader-desktop-macos.yml` (macos-latest runner): all the
+shared frameless checks above plus darwin-only menu assertions (app menu
+first, Edit menu roles so Cmd+C/V/X work, Window menu for Cmd+M). With
+`frame: false` macOS shows **no traffic lights** — the in-app caption
+buttons are the window controls there too. Remaining manual items on a
+physical Mac (no mac installer exists yet — packaging is a separate task):
+
+- [ ] Drag by toolbar/tab bar, double-click drag region zooms per system pref
+- [ ] Cmd+C/V/X/A work in the search box and sign-in form
+- [ ] Cmd+M minimizes; green full-screen via View → Toggle Full Screen
+
 ## Notes
 
 - The smoke test runs with `LUXOR_LOAD_MODE=bundled` (and `LUXOR_BUNDLED_ROOT`

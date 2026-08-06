@@ -155,6 +155,45 @@ try {
     await waitFor(async () => (await winState()).maximized === wasMaximized),
   );
 
+  // 2b. macOS-only: the application menu must follow darwin conventions.
+  //     - First menu is the app menu (Cmd+Q / Cmd+H live there).
+  //     - An Edit menu with the standard roles exists — without it macOS
+  //       never binds Cmd+C/V/X/A, so copy/paste is dead in every input.
+  //     - A Window menu exists (Cmd+M minimize; the frameless window has
+  //       no traffic lights, so these accelerators matter).
+  if (process.platform === "darwin") {
+    const menus = await app.evaluate(({ Menu, app: electronApp }) => {
+      const m = Menu.getApplicationMenu();
+      if (!m) return null;
+      return {
+        labels: m.items.map((i) => i.label),
+        first: m.items[0]?.label,
+        appName: electronApp.name,
+        hasEditRoles: m.items.some(
+          (i) =>
+            i.submenu &&
+            i.submenu.items.some((s) => (s.role ?? "").toLowerCase() === "paste"),
+        ),
+      };
+    });
+    check("macOS: application menu exists", Boolean(menus));
+    check(
+      "macOS: first menu is the app menu",
+      menus?.first === menus?.appName,
+      `first="${menus?.first}" app="${menus?.appName}"`,
+    );
+    check(
+      "macOS: Edit menu provides Cmd+C/V/X (paste role present)",
+      Boolean(menus?.hasEditRoles),
+      `menus=${JSON.stringify(menus?.labels)}`,
+    );
+    check(
+      "macOS: Window menu present (Cmd+M)",
+      Boolean(menus?.labels?.includes("Window")),
+      `menus=${JSON.stringify(menus?.labels)}`,
+    );
+  }
+
   // 3c. Close via the caption button — the app should exit.
   const closed = new Promise((resolveClosed) => {
     app.on("close", () => resolveClosed(true));
