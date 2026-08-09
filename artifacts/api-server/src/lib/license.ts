@@ -1654,6 +1654,87 @@ export async function deactivateDeviceLicense(
   };
 }
 
+// ─── Key device listing ───────────────────────────────────────────────────────
+
+export interface KeyDeviceEntry {
+  licenseId: number;
+  deviceId: string;
+  deviceName: string | null;
+  os: string | null;
+  activatedAt: Date;
+}
+
+export interface ListKeyDevicesSuccess {
+  devices: KeyDeviceEntry[];
+  slotsUsed: number;
+  maxActivations: number;
+  /** Slots on this key held by accounts other than the caller. */
+  otherAccountSlots: number;
+}
+
+export type ListKeyDevicesOutcome =
+  | { ok: true; result: ListKeyDevicesSuccess }
+  | { ok: false; error: { kind: "malformed" | "not_found" } };
+
+/**
+ * List the caller's non-deactivated licenses on a product key so they can
+ * free a slot when activation fails with `max_activations_reached`.
+ *
+ * Only the caller's own licenses are returned; slots consumed by other
+ * accounts are reported as a count so the UI can explain the gap.
+ */
+export async function listKeyDevices(
+  userId: string,
+  rawKey: string,
+): Promise<ListKeyDevicesOutcome> {
+  if (!isWellFormedProductKey(rawKey)) {
+    return { ok: false, error: { kind: "malformed" } };
+  }
+  const { hash } = hashProductKey(rawKey);
+  const [key] = await db
+    .select()
+    .from(productKeysTable)
+    .where(eq(productKeysTable.keyHash, hash))
+    .limit(1);
+  if (!key) return { ok: false, error: { kind: "not_found" } };
+
+  const rows = await db
+    .select({
+      licenseId: licensesTable.id,
+      licenseUserId: licensesTable.userId,
+      deviceId: licensesTable.deviceId,
+      activatedAt: licensesTable.subscriptionStartDate,
+      deviceName: devicesTable.deviceName,
+      os: devicesTable.os,
+    })
+    .from(licensesTable)
+    .leftJoin(devicesTable, eq(devicesTable.deviceId, licensesTable.deviceId))
+    .where(
+      and(
+        eq(licensesTable.productKeyId, key.id),
+        ne(licensesTable.status, "deactivated"),
+      ),
+    )
+    .orderBy(desc(licensesTable.subscriptionStartDate));
+
+  const mine = rows.filter((r) => r.licenseUserId === userId);
+  return {
+    ok: true,
+    result: {
+      devices: mine.map((r) => ({
+        licenseId: r.licenseId,
+        deviceId: r.deviceId,
+        deviceName: r.deviceName ?? null,
+        os: r.os ?? null,
+        activatedAt: r.activatedAt,
+      })),
+      slotsUsed: key.currentActivations,
+      maxActivations: key.maxActivations,
+      otherAccountSlots: rows.length - mine.length,
+    },
+  };
+}
+
 // ─── Admin helpers ────────────────────────────────────────────────────────────
 
 export async function adminListProductKeys(): Promise<

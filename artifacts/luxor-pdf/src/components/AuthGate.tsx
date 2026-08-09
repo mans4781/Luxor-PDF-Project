@@ -109,6 +109,15 @@ function openSuitePath(path: string): void {
 /** Signed-in user's plan state, derived from GET /api/license/status. */
 type LicenseState = "unknown" | "active" | "none";
 
+/** One of the caller's activated devices on a product key. */
+interface KeyDevice {
+  licenseId: number;
+  deviceId: string;
+  deviceName: string | null;
+  os: string | null;
+  activatedAt: string;
+}
+
 const DESKTOP_POLL_INTERVAL_MS = 2500;
 const DESKTOP_POLL_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -129,6 +138,24 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
   const [activateError, setActivateError] = useState<string | null>(null);
   const [activated, setActivated] = useState(false);
 
+  // Device-slot manager: shown when activation fails because the key has no
+  // slots left. Lists the user's activated devices so they can free one up.
+  const [slotsFull, setSlotsFull] = useState(false);
+  const [devices, setDevices] = useState<KeyDevice[] | null>(null);
+  const [devicesLoading, setDevicesLoading] = useState(false);
+  const [devicesError, setDevicesError] = useState<string | null>(null);
+  const [deactivatingId, setDeactivatingId] = useState<number | null>(null);
+  const [otherAccountSlots, setOtherAccountSlots] = useState(0);
+
+  const resetDevicePanel = () => {
+    setSlotsFull(false);
+    setDevices(null);
+    setDevicesLoading(false);
+    setDevicesError(null);
+    setDeactivatingId(null);
+    setOtherAccountSlots(0);
+  };
+
   // Invalidate in-flight activations and pending auto-close timers when the
   // dialog closes, so a late response can't mutate a newer prompt's state.
   const activationGenRef = useRef(0);
@@ -147,8 +174,75 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
       setActivating(false);
       setActivateError(null);
       setActivated(false);
+      setSlotsFull(false);
+      setDevices(null);
+      setDevicesLoading(false);
+      setDevicesError(null);
+      setDeactivatingId(null);
+      setOtherAccountSlots(0);
     }
   }, [promptLabel]);
+
+  /** Fetch the caller's activated devices for the key that just failed. */
+  const loadDevices = async (productKey: string, gen: number) => {
+    setDevicesLoading(true);
+    setDevicesError(null);
+    try {
+      const res = await fetch("/api/license/key-devices", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productKey }),
+      });
+      if (gen !== activationGenRef.current) return;
+      if (!res.ok) {
+        setDevicesError("Couldn't load your devices. Try again.");
+        return;
+      }
+      const data: {
+        devices?: KeyDevice[];
+        otherAccountSlots?: number;
+      } = await res.json();
+      setDevices(data.devices ?? []);
+      setOtherAccountSlots(data.otherAccountSlots ?? 0);
+    } catch {
+      if (gen === activationGenRef.current) {
+        setDevicesError("Couldn't load your devices. Check your connection.");
+      }
+    } finally {
+      if (gen === activationGenRef.current) setDevicesLoading(false);
+    }
+  };
+
+  /** Deactivate one device, then automatically retry the key activation. */
+  const deactivateDevice = async (licenseId: number) => {
+    setDeactivatingId(licenseId);
+    setDevicesError(null);
+    const gen = activationGenRef.current;
+    try {
+      const res = await fetch("/api/license/deactivate-device", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ licenseId }),
+      });
+      if (gen !== activationGenRef.current) return;
+      if (!res.ok) {
+        setDevicesError("Couldn't deactivate that device. Try again.");
+        return;
+      }
+      // Slot freed — retry activation on this device right away.
+      resetDevicePanel();
+      setActivateError(null);
+      await activateKey();
+    } catch {
+      if (gen === activationGenRef.current) {
+        setDevicesError("Couldn't reach the license server. Check your connection.");
+      }
+    } finally {
+      if (gen === activationGenRef.current) setDeactivatingId(null);
+    }
+  };
 
   const activateKey = async () => {
     const productKey = keyInput.trim().toUpperCase();
@@ -158,6 +252,7 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
     }
     setActivating(true);
     setActivateError(null);
+    setSlotsFull(false);
     const gen = ++activationGenRef.current;
     try {
       const { getDeviceId, getDeviceName, detectOs } = await import("@/lib/deviceId");
@@ -189,7 +284,8 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
         const reasons: Record<string, string> = {
           not_found: "That key wasn't recognized. Check it and try again.",
           already_activated: "This key is already active on this account.",
-          max_activations: "This key has no device slots left. Deactivate a device first.",
+          max_activations_reached:
+            "This key has no device slots left. Deactivate a device below to free one up.",
           revoked: "This key has been revoked.",
           expired: "This key's subscription has expired.",
         };
@@ -199,6 +295,10 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
               ? "Please sign in first, then enter your key."
               : "Couldn't activate that key. Check it and try again."),
         );
+        if (body.error === "max_activations_reached") {
+          setSlotsFull(true);
+          void loadDevices(productKey, gen);
+        }
       }
     } catch {
       if (gen === activationGenRef.current) {
@@ -539,6 +639,7 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
                           const groups = raw.slice(0, 16).match(/.{1,4}/g) ?? [];
                           setKeyInput(["LUXOR", ...groups].join("-"));
                           setActivateError(null);
+                          resetDevicePanel();
                         }}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !activating) void activateKey();
@@ -560,6 +661,102 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
                       {activateError && (
                         <div style={{ fontSize: 12.5, color: "#dc2626", lineHeight: 1.45 }}>
                           {activateError}
+                        </div>
+                      )}
+                      {slotsFull && (
+                        <div
+                          style={{
+                            border: "1px solid #e2e8f0",
+                            borderRadius: 9,
+                            padding: "10px 12px",
+                            textAlign: "left",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 8,
+                          }}
+                        >
+                          <div style={{ fontSize: 12.5, fontWeight: 700, color: "#0f172a" }}>
+                            Your activated devices
+                          </div>
+                          {devicesLoading ? (
+                            <div style={{ fontSize: 12.5, color: "#64748b" }}>
+                              Loading devices…
+                            </div>
+                          ) : devices !== null && devices.length > 0 ? (
+                            devices.map((d) => (
+                              <div
+                                key={d.licenseId}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  gap: 8,
+                                }}
+                              >
+                                <div style={{ minWidth: 0 }}>
+                                  <div
+                                    style={{
+                                      fontSize: 13,
+                                      fontWeight: 600,
+                                      color: "#0f172a",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {d.deviceName || "Unknown device"}
+                                  </div>
+                                  <div style={{ fontSize: 11.5, color: "#64748b" }}>
+                                    {[d.os, `activated ${new Date(d.activatedAt).toLocaleDateString()}`]
+                                      .filter(Boolean)
+                                      .join(" · ")}
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => void deactivateDevice(d.licenseId)}
+                                  disabled={deactivatingId !== null || activating}
+                                  style={{
+                                    padding: "6px 10px",
+                                    borderRadius: 8,
+                                    border: "1px solid #fca5a5",
+                                    background: "#fff",
+                                    color: deactivatingId !== null ? "#94a3b8" : "#dc2626",
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    cursor: deactivatingId !== null ? "not-allowed" : "pointer",
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  {deactivatingId === d.licenseId
+                                    ? "Deactivating…"
+                                    : "Deactivate"}
+                                </button>
+                              </div>
+                            ))
+                          ) : devices !== null ? (
+                            <div style={{ fontSize: 12.5, color: "#64748b", lineHeight: 1.5 }}>
+                              {otherAccountSlots > 0
+                                ? "All slots on this key are used by other accounts, so there's nothing you can free up from here."
+                                : "No devices found for this key on your account."}
+                            </div>
+                          ) : null}
+                          {devices !== null &&
+                            devices.length > 0 &&
+                            otherAccountSlots > 0 && (
+                              <div style={{ fontSize: 11.5, color: "#64748b", lineHeight: 1.5 }}>
+                                {otherAccountSlots === 1
+                                  ? "1 more slot is used by another account."
+                                  : `${otherAccountSlots} more slots are used by other accounts.`}
+                              </div>
+                            )}
+                          {devicesError && (
+                            <div style={{ fontSize: 12, color: "#dc2626" }}>{devicesError}</div>
+                          )}
+                          <div style={{ fontSize: 11.5, color: "#64748b", lineHeight: 1.5 }}>
+                            Deactivating a device frees its slot and retries your key on this
+                            device automatically.
+                          </div>
                         </div>
                       )}
                       <button

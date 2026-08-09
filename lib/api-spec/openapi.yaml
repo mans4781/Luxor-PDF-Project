@@ -766,6 +766,44 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /license/key-devices:
+    post:
+      operationId: listKeyDevices
+      tags: [license]
+      summary: List the caller's activated devices on a product key
+      description: |
+        Given a product key, returns the caller's non-deactivated licenses on
+        that key (one per device) so the user can pick one to deactivate when
+        the key has no activation slots left. Only licenses owned by the
+        caller are returned — slots consumed by other accounts are reported
+        via `otherAccountSlots` so the UI can explain why the list may not
+        cover every used slot.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListKeyDevicesBody"
+      responses:
+        "200":
+          description: Devices holding slots on this key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListKeyDevicesResult"
+        "401":
+          description: Caller is not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Product key not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /admin/product-keys/generate:
     post:
       operationId: adminGenerateProductKeys
@@ -1984,6 +2022,56 @@ components:
         - licenseId
         - status
         - slotsRemaining
+
+    ListKeyDevicesBody:
+      type: object
+      properties:
+        productKey:
+          type: string
+      required:
+        - productKey
+
+    KeyDeviceEntry:
+      type: object
+      properties:
+        licenseId:
+          type: integer
+        deviceId:
+          type: string
+        deviceName:
+          type: ["string", "null"]
+        os:
+          type: ["string", "null"]
+        activatedAt:
+          type: string
+          format: date-time
+      required:
+        - licenseId
+        - deviceId
+        - deviceName
+        - os
+        - activatedAt
+
+    ListKeyDevicesResult:
+      type: object
+      properties:
+        devices:
+          type: array
+          items:
+            $ref: "#/components/schemas/KeyDeviceEntry"
+        slotsUsed:
+          type: integer
+        maxActivations:
+          type: integer
+        otherAccountSlots:
+          type: integer
+          description: Slots on this key held by accounts other than the caller.
+      required:
+        - devices
+        - slotsUsed
+        - maxActivations
+        - otherAccountSlots
+      additionalProperties: false
 
     AdminGenerateKeysBody:
       type: object

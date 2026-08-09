@@ -5,6 +5,7 @@ import {
   VerifyProductKeyBody,
   RenewLicenseBody,
   DeactivateDeviceBody,
+  ListKeyDevicesBody,
 } from "@workspace/api-zod";
 import {
   buildAnonymousStatus,
@@ -13,6 +14,7 @@ import {
   verifyProductKey,
   renewLicense,
   deactivateDeviceLicense,
+  listKeyDevices,
 } from "../lib/license";
 
 const router: IRouter = Router();
@@ -207,6 +209,47 @@ router.post(
     } catch (err) {
       req.log.error({ err, userId }, "license/deactivate-device failed");
       res.status(500).json({ error: "Failed to deactivate device" });
+    }
+  },
+);
+
+// ─── Key device listing ───────────────────────────────────────────────────────
+
+router.post(
+  "/license/key-devices",
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = requireUserId(req, res);
+    if (!userId) return;
+
+    const parsed = ListKeyDevicesBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid request body" });
+      return;
+    }
+
+    try {
+      const outcome = await listKeyDevices(userId, parsed.data.productKey);
+      if (!outcome.ok) {
+        const { kind } = outcome.error;
+        res.status(kind === "malformed" ? 400 : 404).json({ error: kind });
+        return;
+      }
+      const r = outcome.result;
+      res.json({
+        devices: r.devices.map((d) => ({
+          licenseId: d.licenseId,
+          deviceId: d.deviceId,
+          deviceName: d.deviceName,
+          os: d.os,
+          activatedAt: d.activatedAt.toISOString(),
+        })),
+        slotsUsed: r.slotsUsed,
+        maxActivations: r.maxActivations,
+        otherAccountSlots: r.otherAccountSlots,
+      });
+    } catch (err) {
+      req.log.error({ err, userId }, "license/key-devices failed");
+      res.status(500).json({ error: "Failed to list devices" });
     }
   },
 );

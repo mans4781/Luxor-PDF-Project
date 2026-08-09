@@ -560,6 +560,28 @@ export interface DeactivateDeviceResult {
   slotsRemaining: number;
 }
 
+export interface ListKeyDevicesBody {
+  productKey: string;
+}
+
+export interface KeyDeviceEntry {
+  licenseId: number;
+  deviceId: string;
+  /** @nullable */
+  deviceName: string | null;
+  /** @nullable */
+  os: string | null;
+  activatedAt: string;
+}
+
+export interface ListKeyDevicesResult {
+  devices: KeyDeviceEntry[];
+  slotsUsed: number;
+  maxActivations: number;
+  /** Slots on this key held by accounts other than the caller. */
+  otherAccountSlots: number;
+}
+
 export interface AdminGenerateKeysBody {
   planName: ProductKeyPlan;
   /**

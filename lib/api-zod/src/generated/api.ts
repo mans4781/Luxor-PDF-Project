@@ -750,6 +750,37 @@ export const DeactivateDeviceResponse = zod.object({
 });
 
 /**
+ * Given a product key, returns the caller's non-deactivated licenses on
+that key (one per device) so the user can pick one to deactivate when
+the key has no activation slots left. Only licenses owned by the
+caller are returned — slots consumed by other accounts are reported
+via `otherAccountSlots` so the UI can explain why the list may not
+cover every used slot.
+
+ * @summary List the caller's activated devices on a product key
+ */
+export const ListKeyDevicesBody = zod.object({
+  productKey: zod.string(),
+});
+
+export const ListKeyDevicesResponse = zod.object({
+  devices: zod.array(
+    zod.object({
+      licenseId: zod.number(),
+      deviceId: zod.string(),
+      deviceName: zod.string().nullable(),
+      os: zod.string().nullable(),
+      activatedAt: zod.coerce.date(),
+    }),
+  ),
+  slotsUsed: zod.number(),
+  maxActivations: zod.number(),
+  otherAccountSlots: zod
+    .number()
+    .describe("Slots on this key held by accounts other than the caller."),
+});
+
+/**
  * @summary Mint a batch of product keys (admin only)
  */
 export const AdminGenerateProductKeysHeader = zod.object({

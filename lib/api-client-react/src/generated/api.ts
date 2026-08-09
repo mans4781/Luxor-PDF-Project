@@ -52,6 +52,8 @@ import type {
   InviteMemberBody,
   InviteMemberResult,
   LicenseStatus,
+  ListKeyDevicesBody,
+  ListKeyDevicesResult,
   OkResult,
   OrgSummary,
   PdfRecord,
@@ -2021,6 +2023,99 @@ export const useDeactivateDevice = <
   TContext
 > => {
   return useMutation(getDeactivateDeviceMutationOptions(options));
+};
+
+/**
+ * Given a product key, returns the caller's non-deactivated licenses on
+that key (one per device) so the user can pick one to deactivate when
+the key has no activation slots left. Only licenses owned by the
+caller are returned — slots consumed by other accounts are reported
+via `otherAccountSlots` so the UI can explain why the list may not
+cover every used slot.
+
+ * @summary List the caller's activated devices on a product key
+ */
+export const getListKeyDevicesUrl = () => {
+  return `/api/license/key-devices`;
+};
+
+export const listKeyDevices = async (
+  listKeyDevicesBody: ListKeyDevicesBody,
+  options?: RequestInit,
+): Promise<ListKeyDevicesResult> => {
+  return customFetch<ListKeyDevicesResult>(getListKeyDevicesUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(listKeyDevicesBody),
+  });
+};
+
+export const getListKeyDevicesMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof listKeyDevices>>,
+    TError,
+    { data: BodyType<ListKeyDevicesBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof listKeyDevices>>,
+  TError,
+  { data: BodyType<ListKeyDevicesBody> },
+  TContext
+> => {
+  const mutationKey = ["listKeyDevices"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof listKeyDevices>>,
+    { data: BodyType<ListKeyDevicesBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return listKeyDevices(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ListKeyDevicesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof listKeyDevices>>
+>;
+export type ListKeyDevicesMutationBody = BodyType<ListKeyDevicesBody>;
+export type ListKeyDevicesMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary List the caller's activated devices on a product key
+ */
+export const useListKeyDevices = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof listKeyDevices>>,
+    TError,
+    { data: BodyType<ListKeyDevicesBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof listKeyDevices>>,
+  TError,
+  { data: BodyType<ListKeyDevicesBody> },
+  TContext
+> => {
+  return useMutation(getListKeyDevicesMutationOptions(options));
 };
 
 /**
