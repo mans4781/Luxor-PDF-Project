@@ -26,6 +26,14 @@ export interface VisitorAnalytics {
   dayLocations: Record<string, { country: string; city: string; visitors: number }[]>;
 }
 
+export interface FreeToolsAnalytics {
+  days: { day: string; views: number; visitors: number }[];
+  tools: { tool: string; views: number; visitors: number }[];
+  locations: { country: string; city: string; views: number; visitors: number }[];
+  dayLocations: Record<string, { country: string; city: string; views: number }[]>;
+  dayTools: Record<string, { tool: string; views: number }[]>;
+}
+
 export interface SupportTicket {
   id: number;
   name: string;

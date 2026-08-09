@@ -22,6 +22,7 @@ import {
   Users,
   Wallet,
   Webhook,
+  Wrench,
   Activity as ActivityIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,7 @@ export type ConsoleSection =
   | "referrals"
   | "products"
   | "analytics"
+  | "free-tools-analytics"
   | "tickets"
   | "reports"
   | "integrations"
@@ -73,6 +75,7 @@ export const NAV_ITEMS: { id: ConsoleSection; label: string; icon: React.Element
   { id: "referrals", label: "Referrals", icon: Share2 },
   { id: "products", label: "Products", icon: Package },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "free-tools-analytics", label: "Free Tools Analytics", icon: Wrench },
   { id: "tickets", label: "Tickets", icon: LifeBuoy },
   { id: "reports", label: "Reports", icon: FileBarChart },
   { id: "integrations", label: "Integrations", icon: PlugZap },

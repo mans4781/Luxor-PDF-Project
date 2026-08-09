@@ -354,7 +354,7 @@ export const OPS_METRICS = [
 ];
 
 // ── Dev-preview sample data (design review without login; dev builds only) ──
-import type { AdminStats, AdminCustomer, ProductKey, VisitorAnalytics, SupportTicket } from "./types";
+import type { AdminStats, AdminCustomer, ProductKey, VisitorAnalytics, FreeToolsAnalytics, SupportTicket } from "./types";
 
 export const SAMPLE_STATS: AdminStats = {
   overview: {
@@ -501,6 +501,64 @@ export const SAMPLE_VISITOR_ANALYTICS: VisitorAnalytics = {
         .filter((_, j) => (i + j) % 3 !== 0)
         .map((p, j) => ({ ...p, visitors: Math.max(1, 22 - j * 3 - ((i + j) % 5)) }))
         .sort((a, b) => b.visitors - a.visitors);
+      return [d, picks];
+    }),
+  ),
+};
+
+export const SAMPLE_FREE_TOOLS_ANALYTICS: FreeToolsAnalytics = {
+  days: Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000);
+    const base = 60 + Math.round(35 * Math.sin(i / 5)) + (d.getDay() === 0 || d.getDay() === 6 ? -15 : 10);
+    const views = Math.max(8, base + ((i * 5) % 13));
+    return { day: d.toISOString().slice(0, 10), views, visitors: Math.max(4, Math.round(views * 0.7)) };
+  }),
+  tools: [
+    { tool: "merge-pdf", views: 412, visitors: 300 },
+    { tool: "compress-pdf", views: 351, visitors: 262 },
+    { tool: "pdf-to-word", views: 298, visitors: 214 },
+    { tool: "split-pdf", views: 187, visitors: 140 },
+    { tool: "jpg-to-pdf", views: 149, visitors: 112 },
+    { tool: "rotate-pdf", views: 96, visitors: 71 },
+    { tool: "watermark-pdf", views: 71, visitors: 52 },
+    { tool: "unlock-pdf", views: 58, visitors: 41 },
+  ],
+  locations: [
+    { country: "IN", city: "Mumbai", views: 260, visitors: 178 },
+    { country: "IN", city: "Bengaluru", views: 214, visitors: 149 },
+    { country: "US", city: "New York", views: 158, visitors: 117 },
+    { country: "IN", city: "Delhi", views: 133, visitors: 95 },
+    { country: "US", city: "San Francisco", views: 92, visitors: 66 },
+    { country: "GB", city: "London", views: 81, visitors: 60 },
+    { country: "DE", city: "Berlin", views: 47, visitors: 33 },
+    { country: "SG", city: "Singapore", views: 39, visitors: 28 },
+  ],
+  dayLocations: Object.fromEntries(
+    Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const pool = [
+        { country: "IN", city: "Mumbai" },
+        { country: "IN", city: "Delhi" },
+        { country: "US", city: "New York" },
+        { country: "GB", city: "London" },
+        { country: "SG", city: "Singapore" },
+        { country: "AE", city: "Dubai" },
+      ];
+      const picks = pool
+        .filter((_, j) => (i + j) % 3 !== 0)
+        .map((p, j) => ({ ...p, views: Math.max(1, 26 - j * 4 - ((i + j) % 5)) }))
+        .sort((a, b) => b.views - a.views);
+      return [d, picks];
+    }),
+  ),
+  dayTools: Object.fromEntries(
+    Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const pool = ["merge-pdf", "compress-pdf", "pdf-to-word", "split-pdf", "jpg-to-pdf"];
+      const picks = pool
+        .filter((_, j) => (i + j) % 4 !== 0)
+        .map((tool, j) => ({ tool, views: Math.max(1, 20 - j * 3 - ((i + j) % 4)) }))
+        .sort((a, b) => b.views - a.views);
       return [d, picks];
     }),
   ),

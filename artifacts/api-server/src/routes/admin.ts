@@ -12,6 +12,7 @@ import {
   siteStats,
   pageViewsTable,
   dailyVisitorsTable,
+  freeToolVisitsTable,
   downloadEventsTable,
   paymentsTable,
   userLicensesTable,
@@ -719,6 +720,121 @@ router.get("/admin/analytics/visitors", async (req, res): Promise<void> => {
   } catch (err) {
     req.log.error({ err }, "admin/analytics/visitors failed");
     res.status(500).json({ error: "Failed to load visitor analytics" });
+  }
+});
+
+// ── Free-tools analytics: daily tool-page traffic + locations (last N days) ──
+router.get("/admin/analytics/free-tools", async (req, res): Promise<void> => {
+  if (!(await checkAuth(req, res))) return;
+  const raw = Number(req.query["days"]);
+  const days = Number.isFinite(raw) ? Math.min(Math.max(Math.trunc(raw), 1), 90) : 30;
+  try {
+    const since = new Date(Date.now() - (days - 1) * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+
+    const perDay = await db
+      .select({
+        day: freeToolVisitsTable.day,
+        views: sql<number>`count(*)::int`,
+        visitors: sql<number>`count(distinct ${freeToolVisitsTable.ipHash})::int`,
+      })
+      .from(freeToolVisitsTable)
+      .where(gte(freeToolVisitsTable.day, since))
+      .groupBy(freeToolVisitsTable.day)
+      .orderBy(freeToolVisitsTable.day);
+
+    const byTool = await db
+      .select({
+        tool: freeToolVisitsTable.tool,
+        views: sql<number>`count(*)::int`,
+        visitors: sql<number>`count(distinct ${freeToolVisitsTable.ipHash})::int`,
+      })
+      .from(freeToolVisitsTable)
+      .where(gte(freeToolVisitsTable.day, since))
+      .groupBy(freeToolVisitsTable.tool)
+      .orderBy(sql`count(*) desc`)
+      .limit(100);
+
+    const byLocation = await db
+      .select({
+        country: freeToolVisitsTable.country,
+        city: freeToolVisitsTable.city,
+        views: sql<number>`count(*)::int`,
+        visitors: sql<number>`count(distinct ${freeToolVisitsTable.ipHash})::int`,
+      })
+      .from(freeToolVisitsTable)
+      .where(gte(freeToolVisitsTable.day, since))
+      .groupBy(freeToolVisitsTable.country, freeToolVisitsTable.city)
+      .orderBy(sql`count(*) desc`)
+      .limit(100);
+
+    const byDayLocation = await db
+      .select({
+        day: freeToolVisitsTable.day,
+        country: freeToolVisitsTable.country,
+        city: freeToolVisitsTable.city,
+        views: sql<number>`count(*)::int`,
+      })
+      .from(freeToolVisitsTable)
+      .where(gte(freeToolVisitsTable.day, since))
+      .groupBy(freeToolVisitsTable.day, freeToolVisitsTable.country, freeToolVisitsTable.city)
+      .orderBy(freeToolVisitsTable.day, sql`count(*) desc`)
+      .limit(2000);
+
+    const byDayTool = await db
+      .select({
+        day: freeToolVisitsTable.day,
+        tool: freeToolVisitsTable.tool,
+        views: sql<number>`count(*)::int`,
+      })
+      .from(freeToolVisitsTable)
+      .where(gte(freeToolVisitsTable.day, since))
+      .groupBy(freeToolVisitsTable.day, freeToolVisitsTable.tool)
+      .orderBy(freeToolVisitsTable.day, sql`count(*) desc`)
+      .limit(2000);
+
+    // Fill in zero-traffic days so charts show a continuous range.
+    const dayMap = new Map(perDay.map((d) => [d.day, d]));
+    const filled: { day: string; views: number; visitors: number }[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const day = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const row = dayMap.get(day);
+      filled.push({ day, views: row?.views ?? 0, visitors: row?.visitors ?? 0 });
+    }
+
+    const dayLocations: Record<
+      string,
+      { country: string; city: string; views: number }[]
+    > = {};
+    for (const row of byDayLocation) {
+      (dayLocations[row.day] ??= []).push({
+        country: row.country ?? "Unknown",
+        city: row.city ?? "Unknown",
+        views: row.views,
+      });
+    }
+
+    const dayTools: Record<string, { tool: string; views: number }[]> = {};
+    for (const row of byDayTool) {
+      (dayTools[row.day] ??= []).push({ tool: row.tool, views: row.views });
+    }
+
+    res.json({
+      days: filled,
+      tools: byTool,
+      locations: byLocation.map((l) => ({
+        country: l.country ?? "Unknown",
+        city: l.city ?? "Unknown",
+        views: l.views,
+        visitors: l.visitors,
+      })),
+      dayLocations,
+      dayTools,
+    });
+  } catch (err) {
+    req.log.error({ err }, "admin/analytics/free-tools failed");
+    res.status(500).json({ error: "Failed to load free-tools analytics" });
   }
 });
 

@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { createHash } from "node:crypto";
 import geoip from "geoip-lite";
-import { db, siteStats, pageViewsTable, dailyVisitorsTable } from "@workspace/db";
+import { db, siteStats, pageViewsTable, dailyVisitorsTable, freeToolVisitsTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 
 const IP_HASH_SALT = process.env["SESSION_SECRET"];
@@ -25,6 +25,78 @@ function lookupGeo(ip: string): { country: string | null; city: string | null } 
 }
 
 const router = Router();
+
+/**
+ * Idempotent startup migration: makes sure the free_tool_visits table exists
+ * on fresh/production databases (same pattern as runDownloadMigrations()).
+ */
+export async function runFreeToolMigrations(): Promise<void> {
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS free_tool_visits (
+      id serial PRIMARY KEY,
+      day date NOT NULL,
+      tool text NOT NULL,
+      ip_hash text NOT NULL,
+      country text,
+      city text,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+  await db.execute(
+    sql`CREATE INDEX IF NOT EXISTS free_tool_visits_day_idx ON free_tool_visits (day)`,
+  );
+  await db.execute(
+    sql`CREATE INDEX IF NOT EXISTS free_tool_visits_tool_day_idx ON free_tool_visits (tool, day)`,
+  );
+  // Prune old rows now and once a day thereafter.
+  await pruneOldFreeToolVisits();
+  const timer = setInterval(() => {
+    pruneOldFreeToolVisits().catch(() => {});
+  }, 24 * 60 * 60 * 1000);
+  timer.unref();
+}
+
+/**
+ * Server-owned allowlist of free-tool slugs (mirrors the frontend
+ * tools-registry in artifacts/pdf-expiry). Unknown slugs are ignored so a
+ * crafted /tools/<anything> beacon can't grow the analytics table's
+ * cardinality. Keep in sync when adding tools to the registry.
+ */
+const FREE_TOOL_SLUGS = new Set([
+  "merge-pdf", "split-pdf", "extract-pages", "remove-pages", "insert-pages",
+  "pdf-to-word", "pdf-to-excel", "pdf-to-jpg", "pdf-to-jpeg", "pdf-to-png",
+  "pdf-to-webp", "pdf-to-bmp", "pdf-to-gif",
+  "word-to-pdf", "excel-to-pdf", "jpg-to-pdf", "jpeg-to-pdf", "png-to-pdf",
+  "webp-to-pdf", "bmp-to-pdf", "gif-to-pdf",
+  // Compress variants generated from COMPRESS_TARGETS labels.
+  "compress-pdf-to-25mb", "compress-pdf-to-20mb", "compress-pdf-to-15mb",
+  "compress-pdf-to-10mb", "compress-pdf-to-5mb", "compress-pdf-to-1000kb",
+  "compress-pdf-to-500kb", "compress-pdf-to-200kb", "compress-pdf-to-100kb",
+  "compress-pdf-to-50kb", "compress-pdf-to-20kb",
+]);
+
+/**
+ * Extracts the tool slug when the tracked path is a known free-tool page
+ * (".../tools/:slug" at any base path), else null.
+ */
+function toolSlugFromPath(path: string): string | null {
+  const segments = path.split("/").filter(Boolean);
+  const i = segments.indexOf("tools");
+  if (i === -1) return null;
+  const slug = (segments[i + 1] ?? "").toLowerCase();
+  return FREE_TOOL_SLUGS.has(slug) ? slug : null;
+}
+
+// Retention: raw per-view events older than this are deleted. Aggregated
+// admin views only ever query the last 90 days, so 180 days is generous.
+const FREE_TOOL_RETENTION_DAYS = 180;
+
+async function pruneOldFreeToolVisits(): Promise<void> {
+  const cutoff = new Date(Date.now() - FREE_TOOL_RETENTION_DAYS * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+  await db.execute(sql`DELETE FROM free_tool_visits WHERE day < ${cutoff}`);
+}
 
 // ── Per-IP throttle for tracking beacons ─────────────────────────────────────
 const TRACK_WINDOW_MS = 60 * 1000;
@@ -95,6 +167,15 @@ router.post("/visitors/track", async (req: Request, res: Response) => {
         .insert(dailyVisitorsTable)
         .values({ day: today, ipHash: hashIp(ip), country, city })
         .onConflictDoNothing();
+
+      // Free-tool pages additionally get a per-view event with location,
+      // feeding the admin "Free Tools Analytics" page.
+      const tool = toolSlugFromPath(path);
+      if (tool) {
+        await db
+          .insert(freeToolVisitsTable)
+          .values({ day: today, tool, ipHash: hashIp(ip), country, city });
+      }
     }
     res.json({ ok: true });
   } catch (err) {
