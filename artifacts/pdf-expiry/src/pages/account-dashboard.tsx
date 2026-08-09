@@ -12,6 +12,7 @@ import { useLicense } from "@/license/LicenseProvider";
 import { loadLocalHistory } from "@/pages/history";
 import { basePath } from "@/lib/base-path";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
+import { UpgradeChoiceModal } from "@/components/upgrade-choice-modal";
 import { useToast } from "@/hooks/use-toast";
 import {
   Search,
@@ -154,6 +155,9 @@ export default function AccountDashboardPage() {
           .map((p) => p[0]?.toUpperCase() ?? "")
           .join("");
   const memberSince = user?.createdAt ? formatDate(new Date(user.createdAt)) : null;
+
+  // Upgrade chooser: "enter a license key" vs "go to checkout".
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   // ── Subscription data ──────────────────────────────────────────────────────
   const inGrace = !!status?.graceActive;
@@ -307,10 +311,10 @@ export default function AccountDashboardPage() {
             <Layers className="w-5 h-5" />
             My Products
           </a>
-          <Link href="/checkout" className={navItem}>
+          <button onClick={() => setUpgradeOpen(true)} className={navItem} data-testid="button-nav-billing">
             <CreditCard className="w-5 h-5" />
             Subscription & Billing
-          </Link>
+          </button>
           <button onClick={openProfile} className={navItem} data-testid="button-nav-profile">
             <UserRound className="w-5 h-5" />
             Profile
@@ -349,13 +353,13 @@ export default function AccountDashboardPage() {
               <p className="text-xs text-slate-600 mb-4 relative z-10">
                 Advanced tools. Maximum productivity.
               </p>
-              <Link
-                href="/checkout"
+              <button
+                onClick={() => setUpgradeOpen(true)}
                 className="block text-center w-full bg-[#ef233c] hover:bg-[#dc1f36] text-white text-sm font-medium py-2 rounded-lg transition-colors relative z-10 shadow-sm"
                 data-testid="link-sidebar-upgrade"
               >
                 Upgrade Plan
-              </Link>
+              </button>
             </div>
           </div>
         )}
@@ -529,13 +533,13 @@ export default function AccountDashboardPage() {
             </div>
 
             <div className="flex flex-col gap-3 relative z-10 shrink-0 w-full md:w-48">
-              <Link
-                href="/checkout"
+              <button
+                onClick={() => setUpgradeOpen(true)}
                 className="w-full px-4 py-2.5 bg-[#ef233c] hover:bg-[#dc1f36] text-white text-sm font-medium rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
                 data-testid="link-upgrade-plan"
               >
                 <ArrowUpCircle className="w-4 h-4" /> Upgrade Plan
-              </Link>
+              </button>
               {isRecurringPlan ? (
                 <button
                   onClick={openBillingPortal}
@@ -555,13 +559,13 @@ export default function AccountDashboardPage() {
                   <CreditCard className="w-4 h-4 text-slate-500" /> Renew with License Key
                 </Link>
               ) : (
-                <Link
-                  href="/checkout"
+                <button
+                  onClick={() => setUpgradeOpen(true)}
                   className="w-full px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
                   data-testid="link-manage-billing"
                 >
                   <CreditCard className="w-4 h-4 text-slate-500" /> Manage Billing
-                </Link>
+                </button>
               )}
             </div>
           </div>
@@ -803,8 +807,8 @@ export default function AccountDashboardPage() {
                 </Link>
               </div>
 
-              <Link
-                href="/checkout"
+              <button
+                onClick={() => setUpgradeOpen(true)}
                 className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-[#ef233c]/30 hover:bg-[#fff1f2]/50 transition-colors group"
                 data-testid="link-action-manage-subscription"
               >
@@ -817,7 +821,7 @@ export default function AccountDashboardPage() {
                   </span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#ef233c] transition-colors" />
-              </Link>
+              </button>
             </div>
 
             {/* Active Sessions */}
@@ -892,6 +896,8 @@ export default function AccountDashboardPage() {
           </div>
         </div>
       </main>
+
+      <UpgradeChoiceModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
     </div>
   );
 }
