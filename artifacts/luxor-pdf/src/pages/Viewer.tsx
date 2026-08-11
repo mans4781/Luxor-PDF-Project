@@ -159,9 +159,13 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     timer: ReturnType<typeof setTimeout> | null;
     baseScrollTop: number;
     baseScrollLeft: number;
+    /** Optional anchor point in viewer-viewport coords (double-tap zoom).
+     *  Null = keep the viewport centre fixed (wheel / pinch / slider). */
+    anchorX: number | null;
+    anchorY: number | null;
     /** True only while the gesture's own commit is applying setZoom. */
     committing: boolean;
-  }>({ target: null, timer: null, baseScrollTop: 0, baseScrollLeft: 0, committing: false });
+  }>({ target: null, timer: null, baseScrollTop: 0, baseScrollLeft: 0, anchorX: null, anchorY: null, committing: false });
   const pendingScrollRef = useRef<{ top: number; left: number | null } | null>(null);
   /** Live "NN%" readout in the status bar, updated imperatively mid-gesture. */
   const zoomPctRef = useRef<HTMLSpanElement | null>(null);
@@ -170,6 +174,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     const s = smoothZoomRef.current;
     if (s.timer) { clearTimeout(s.timer); s.timer = null; }
     s.target = null;
+    s.anchorX = null;
+    s.anchorY = null;
     pendingScrollRef.current = null;
     const lay = zoomLayerRef.current;
     if (lay) { lay.style.transform = ""; lay.style.transformOrigin = ""; lay.style.willChange = ""; }
@@ -187,11 +193,14 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     if (!v || !lay) return null;
     const top = lay.offsetTop;
     const cx = lay.offsetLeft + lay.offsetWidth / 2;
-    const vh = v.clientHeight;
-    const vw = v.clientWidth;
+    // Anchor point in viewport coords — the document point under it stays
+    // fixed while scaling. Defaults to the viewport centre; double-tap zoom
+    // sets an explicit tap-point anchor instead.
+    const ay = s.anchorY ?? v.clientHeight / 2;
+    const ax = s.anchorX ?? v.clientWidth / 2;
     return {
-      top: Math.max(0, top + (s.baseScrollTop + vh / 2 - top) * fac - vh / 2),
-      left: Math.max(0, cx + (s.baseScrollLeft + vw / 2 - cx) * fac - vw / 2),
+      top: Math.max(0, top + (s.baseScrollTop + ay - top) * fac - ay),
+      left: Math.max(0, cx + (s.baseScrollLeft + ax - cx) * fac - ax),
     };
   }, []);
   /** Commit the in-flight gesture now: drop the CSS preview and apply the
@@ -215,6 +224,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       s.committing = true;
       setZoom(target);
     }
+    s.anchorX = null;
+    s.anchorY = null;
   }, [smoothZoomAnchor]);
   /** Preview `next` zoom instantly via a CSS scale on the zoom layer and
    *  schedule a single real re-render once the gesture pauses (~160ms).
@@ -263,6 +274,11 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   const [matchIndex, setMatchIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [tool, setTool] = useState<ToolType>("hand");
+  // Live tool for non-react event handlers (touch double-tap gating).
+  const toolRef = useRef<ToolType>("hand");
+  useEffect(() => { toolRef.current = tool; }, [tool]);
+  // Zoom to restore when double-tap toggles back out of reading zoom.
+  const doubleTapReturnRef = useRef<number | null>(null);
   const [highlightColor, setHighlightColor] = useState(() => {
     // Any highlight color stored under a previous palette that is no longer
     // present in HIGHLIGHT_COLORS falls back to the current default, so
@@ -666,17 +682,66 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     );
     // null = no pinch in flight
     let pinch: { startDist: number; startZoom: number } | null = null;
+    // ── Double-tap → toggle a comfortable reading zoom ──────────────
+    // Only active with the hand tool, so it can't steal taps from text
+    // selection or the annotation tools. The zoom itself runs through the
+    // same smooth-zoom gesture (animated over ~200ms, then committed).
+    const READ_ZOOM = ZOOM_BASE * 2; // "200%" reading zoom
+    let lastTap: { time: number; x: number; y: number } | null = null;
+    let tapStart: { x: number; y: number; time: number; moved: boolean } | null = null;
+    let raf = 0;
+    const stopAnim = () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } };
+    const animateZoomTo = (target: number) => {
+      stopAnim();
+      const from = smoothZoomRef.current.target ?? zoomRef.current;
+      if (Math.abs(target - from) < 0.001) return;
+      const t0 = performance.now();
+      const DUR = 200;
+      const step = (now: number) => {
+        const t = Math.min(1, (now - t0) / DUR);
+        const ease = 1 - Math.pow(1 - t, 3); // ease-out cubic
+        smoothZoomTo(from + (target - from) * ease);
+        if (t < 1) raf = requestAnimationFrame(step);
+        else { raf = 0; commitSmoothZoom(); }
+      };
+      raf = requestAnimationFrame(step);
+    };
+    const onDoubleTap = (x: number, y: number) => {
+      const s = smoothZoomRef.current;
+      const cur = s.target ?? zoomRef.current;
+      // Toggle: below the reading zoom → zoom in to it; at/above → back
+      // to the zoom we came from (baseline 100% if unknown).
+      const zoomingIn = cur < READ_ZOOM * 0.95;
+      const target = zoomingIn ? READ_ZOOM : (doubleTapReturnRef.current ?? ZOOM_BASE);
+      if (zoomingIn) doubleTapReturnRef.current = cur;
+      // Anchor the gesture at the tap point (viewer-viewport coords) so
+      // the tapped column stays under the finger.
+      const rect = viewer.getBoundingClientRect();
+      s.anchorX = x - rect.left;
+      s.anchorY = y - rect.top;
+      animateZoomTo(target);
+    };
     const onTouchStart = (e: TouchEvent) => {
+      stopAnim();
       if (e.touches.length === 2) {
         pinch = {
           startDist: Math.max(1, dist(e.touches)),
           startZoom: smoothZoomRef.current.target ?? zoomRef.current,
         };
+        tapStart = null;
       } else {
         pinch = null;
+        const t = e.touches[0];
+        tapStart = e.touches.length === 1 && toolRef.current === "hand"
+          ? { x: t.clientX, y: t.clientY, time: performance.now(), moved: false }
+          : null;
       }
     };
     const onTouchMove = (e: TouchEvent) => {
+      if (tapStart && e.touches.length === 1) {
+        const t = e.touches[0];
+        if (Math.hypot(t.clientX - tapStart.x, t.clientY - tapStart.y) > 12) tapStart.moved = true;
+      }
       if (!pinch || e.touches.length !== 2) return;
       // Stop the browser's own page pinch-zoom / scroll while pinching.
       e.preventDefault();
@@ -684,17 +749,40 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       smoothZoomTo(pinch.startZoom * factor);
     };
     const onTouchEnd = (e: TouchEvent) => {
-      if (!pinch) return;
-      if (e.touches.length < 2) {
-        pinch = null;
-        commitSmoothZoom();
+      if (pinch) {
+        if (e.touches.length < 2) {
+          pinch = null;
+          commitSmoothZoom();
+        }
+        return;
       }
+      // Tap recognition: short, stationary, and now finger-free.
+      const now = performance.now();
+      if (
+        e.type === "touchend" && tapStart && !tapStart.moved &&
+        now - tapStart.time < 350 && e.touches.length === 0
+      ) {
+        const { x, y } = tapStart;
+        if (lastTap && now - lastTap.time < 300 && Math.hypot(x - lastTap.x, y - lastTap.y) < 40) {
+          // Second tap → zoom. preventDefault suppresses the browser's own
+          // double-tap zoom and the synthesized dblclick/word-select.
+          if (e.cancelable) e.preventDefault();
+          lastTap = null;
+          onDoubleTap(x, y);
+        } else {
+          lastTap = { time: now, x, y };
+        }
+      } else {
+        lastTap = null;
+      }
+      tapStart = null;
     };
     viewer.addEventListener("touchstart", onTouchStart, { passive: true });
     viewer.addEventListener("touchmove", onTouchMove, { passive: false });
     viewer.addEventListener("touchend", onTouchEnd);
     viewer.addEventListener("touchcancel", onTouchEnd);
     return () => {
+      stopAnim();
       viewer.removeEventListener("touchstart", onTouchStart);
       viewer.removeEventListener("touchmove", onTouchMove);
       viewer.removeEventListener("touchend", onTouchEnd);
