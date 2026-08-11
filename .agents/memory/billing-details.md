@@ -30,3 +30,8 @@ description: Provider registry, Razorpay payment-link flow, webhook idempotency,
 - `pdf-expiry/src/pages/checkout.tsx` is provider-aware: reads `/billing/providers`, uses `?provider=` when available, else first available, else `"razorpay"`.
 - lexsecure-landing pricing Pro CTA deep-links `/pdf-expiry/checkout?plan=monthly|yearly`; checkout POSTs then `window.location.replace()` to hosted URL. LockOverlay "Renew subscription" uses same route, defaulting to previous plan.
 - Razorpay webhook URL to register: `<domain>/api/billing/razorpay/webhook`, event `payment_link.paid`.
+
+## Admin key reissue (Aug 2026)
+- Keys are hashed; "user forgot key" is handled by `adminReissueLicenseKey` (billing.ts): mints a fresh key, moves ALL active license rows to it (devices/dates untouched, rows locked FOR UPDATE), revokes old keys, shows the raw key once in the admin Users page.
+- Team plan is org-based (no individual key) — reissue is rejected server-side and hidden in the UI; unredeemed reissue requires the plan to exist in PLAN_DURATION_DAYS.
+- Never put raw keys in client audit logs — log keyPrefix only.

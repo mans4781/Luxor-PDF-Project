@@ -8,6 +8,7 @@ import {
   KeyRound,
   MailQuestion,
   MoreHorizontal,
+  RotateCcwKey,
   Trash2,
   RefreshCw,
   Search,
@@ -88,6 +89,13 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
   const [deleteTarget, setDeleteTarget] = useState<AdminCustomer | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [reissueTarget, setReissueTarget] = useState<AdminCustomer | null>(null);
+  const [reissuing, setReissuing] = useState(false);
+  const [reissuedKey, setReissuedKey] = useState<{
+    rawKey: string;
+    planName: string;
+    email: string | null;
+  } | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
@@ -170,6 +178,34 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
     } catch (err) {
       if (isUnauthorized(err)) onLogout();
       else toast.error("Could not update quota.");
+    }
+  };
+
+  const confirmReissue = async () => {
+    if (!reissueTarget || reissuing) return;
+    setReissuing(true);
+    try {
+      const result = await adminApi.reissueLicenseKey(token, reissueTarget.userId);
+      logAudit(
+        "License key reissued",
+        reissueTarget.userId,
+        "old key revoked",
+        result.keyPrefix + "-••••",
+      );
+      setReissuedKey({
+        rawKey: result.rawKey,
+        planName: result.planName,
+        email: reissueTarget.email ?? null,
+      });
+      setReissueTarget(null);
+    } catch (err) {
+      // The "no paid license" case comes back as HTTP 400 with a clear message.
+      if (err instanceof Error && err.message.includes("no paid license"))
+        toast.error("This user has no paid license to reissue.");
+      else if (isUnauthorized(err)) onLogout();
+      else toast.error("Could not reissue the key. Please try again.");
+    } finally {
+      setReissuing(false);
     }
   };
 
@@ -367,6 +403,11 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                               <DropdownMenuItem onClick={() => setExtendTarget(c)}>
                                 <CalendarPlus className="mr-2 h-3.5 w-3.5" /> Extend validity
                               </DropdownMenuItem>
+                              {c.isPaid && c.planName !== "team" && (
+                                <DropdownMenuItem onClick={() => setReissueTarget(c)}>
+                                  <RotateCcwKey className="mr-2 h-3.5 w-3.5" /> Reissue license key
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem
                                 onClick={() =>
                                   toast.info("Password resets are managed by the sign-in provider", {
@@ -605,6 +646,79 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
               }}
             >
               Note in audit log
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reissue license key — confirm modal */}
+      <Dialog
+        open={reissueTarget !== null}
+        onOpenChange={(v) => {
+          if (!v && !reissuing) setReissueTarget(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <RotateCcwKey className="h-4 w-4 text-[#2563EB]" /> Reissue license key
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-slate-600 dark:text-slate-300">
+              License keys are stored encrypted and can't be looked up, so this mints a{" "}
+              <span className="font-medium">fresh key</span> for{" "}
+              <span className="font-medium">{reissueTarget?.email ?? reissueTarget?.userId}</span>{" "}
+              ({reissueTarget?.planName ?? "paid"} plan) that you can copy and share with them.
+            </p>
+            <ul className="rounded-md bg-slate-50 dark:bg-slate-800/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+              <li>• Their subscription dates and activated devices are unaffected.</li>
+              <li>• The old key is revoked and stops working immediately.</li>
+              <li>• The new key is shown once — copy it before closing.</li>
+            </ul>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={reissuing}
+              onClick={() => setReissueTarget(null)}
+            >
+              Cancel
+            </Button>
+            <Button size="sm" disabled={reissuing} onClick={() => void confirmReissue()}>
+              {reissuing ? "Generating…" : "Reissue key"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reissued key — shown once, copyable */}
+      <Dialog open={reissuedKey !== null} onOpenChange={(v) => !v && setReissuedKey(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base">New license key ready</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-slate-600 dark:text-slate-300">
+              Share this key with{" "}
+              <span className="font-medium">{reissuedKey?.email ?? "the user"}</span>. It is shown{" "}
+              <span className="font-medium">only once</span> and cannot be recovered later.
+            </p>
+            <div className="flex items-center justify-between gap-2 rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3 py-2.5">
+              <span className="break-all font-mono text-[13px] font-semibold text-slate-900 dark:text-slate-100">
+                {reissuedKey?.rawKey}
+              </span>
+              <CopyButton text={reissuedKey?.rawKey ?? ""} label="License key copied" />
+            </div>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500">
+              Plan: <span className="capitalize">{reissuedKey?.planName}</span> · the previous key
+              has been revoked.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button size="sm" onClick={() => setReissuedKey(null)}>
+              Done
             </Button>
           </DialogFooter>
         </DialogContent>

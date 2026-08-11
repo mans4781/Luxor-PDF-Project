@@ -78,6 +78,25 @@ export const adminApi = {
           body: JSON.stringify({ userId, override }),
         }),
 
+  reissueLicenseKey: (token: string, userId: string) =>
+    isDevPreview(token)
+      ? Promise.resolve({
+          rawKey: "LUXOR-SAMP-LEKE-YFOR-DEMO",
+          keyPrefix: "LUXOR-SAMP",
+          planName: "yearly",
+          isUnredeemed: false,
+          subscriptionEndDate: null as string | null,
+        })
+      : request<{
+          rawKey: string;
+          keyPrefix: string;
+          planName: string;
+          isUnredeemed: boolean;
+          subscriptionEndDate: string | null;
+        }>(token, `/customers/${encodeURIComponent(userId)}/reissue-key`, {
+          method: "POST",
+        }),
+
   deleteCustomer: (token: string, userId: string) =>
     isDevPreview(token)
       ? Promise.resolve({})

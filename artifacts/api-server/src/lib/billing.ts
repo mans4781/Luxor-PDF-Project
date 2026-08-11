@@ -18,6 +18,160 @@ import { createOrganizationWithOwner, type CreateOrgParams } from "./org";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+/** Thrown when a license key cannot be reissued for a user. */
+export class ReissueError extends Error {}
+
+export interface ReissuedKey {
+  rawKey: string;
+  keyPrefix: string;
+  planName: string;
+  /** true when the key is unredeemed (user hasn't activated a device yet). */
+  isUnredeemed: boolean;
+  subscriptionEndDate: Date | null;
+}
+
+/**
+ * Admin support action: mints a fresh product key for a paid user who lost
+ * their original one (keys are stored hashed and cannot be recovered).
+ *
+ * - If the user has a license row, the new key replaces the old one on that
+ *   license (activated devices keep working, dates unchanged) and the old
+ *   key is revoked.
+ * - If the user paid but never activated, a fresh unredeemed key is minted
+ *   and the previous unredeemed key (if traceable) is revoked.
+ */
+export async function adminReissueLicenseKey(
+  userId: string,
+  now: Date = new Date(),
+): Promise<ReissuedKey> {
+  const [userLicense] = await db
+    .select()
+    .from(userLicensesTable)
+    .where(eq(userLicensesTable.userId, userId))
+    .limit(1);
+  if (!userLicense?.isPaid || !userLicense.planName) {
+    throw new ReissueError("This user has no paid license to reissue.");
+  }
+  const plan = userLicense.planName;
+  if (plan === "team") {
+    throw new ReissueError(
+      "Team access is managed through the organization, not an individual key.",
+    );
+  }
+  const planDuration = (PLAN_DURATION_DAYS as Record<string, number>)[plan];
+
+  const rawKey = generateProductKey();
+  const { hash, prefix } = hashProductKey(rawKey);
+
+  return db.transaction(async (tx) => {
+    // Move ALL active license rows to the new key so no device is left bound
+    // to a key we're about to revoke. Lock the rows for the swap.
+    const activeRows = await tx
+      .select()
+      .from(licensesTable)
+      .where(
+        and(eq(licensesTable.userId, userId), eq(licensesTable.status, "active")),
+      )
+      .for("update");
+
+    // Unredeemed reissue (paid, never activated) needs a real duration for
+    // the eventual activation; org/period-derived plans can't provide one.
+    if (activeRows.length === 0 && planDuration === undefined) {
+      throw new ReissueError(
+        "This plan's key can only be reissued after the user has activated a device.",
+      );
+    }
+    const durationDays = planDuration ?? 365;
+
+    const [keyRow] = await tx
+      .insert(productKeysTable)
+      .values({
+        keyHash: hash,
+        keyPrefix: prefix,
+        planName: plan,
+        durationDays,
+        maxActivations: Math.max(1, activeRows.length),
+        currentActivations: activeRows.length,
+        status: "active",
+        notes: `reissued by admin for ${userId}`,
+        createdBy: "admin:reissue",
+      })
+      .returning();
+    if (!keyRow) throw new Error("Failed to mint product key");
+
+    const oldKeyIds = new Set<number>();
+    if (activeRows.length > 0) {
+      // Swap the key on every active license; dates and devices untouched.
+      for (const row of activeRows) oldKeyIds.add(row.productKeyId);
+      await tx
+        .update(licensesTable)
+        .set({ productKeyId: keyRow.id, updatedAt: now })
+        .where(
+          and(
+            eq(licensesTable.userId, userId),
+            eq(licensesTable.status, "active"),
+          ),
+        );
+    } else {
+      // Never activated — trace and revoke the previous unredeemed key via
+      // the latest issuance event (best effort).
+      const [lastEvent] = await tx
+        .select()
+        .from(licenseEventsTable)
+        .where(
+          and(
+            eq(licenseEventsTable.userId, userId),
+            sql`${licenseEventsTable.metadata} ? 'productKeyId'`,
+          ),
+        )
+        .orderBy(sql`${licenseEventsTable.createdAt} DESC`)
+        .limit(1);
+      const meta = lastEvent?.metadata as { productKeyId?: number } | null;
+      if (typeof meta?.productKeyId === "number") oldKeyIds.add(meta.productKeyId);
+    }
+
+    oldKeyIds.delete(keyRow.id);
+    for (const oldKeyId of oldKeyIds) {
+      await tx
+        .update(productKeysTable)
+        .set({ status: "revoked", revokedAt: now, updatedAt: now })
+        .where(
+          and(
+            eq(productKeysTable.id, oldKeyId),
+            eq(productKeysTable.status, "active"),
+          ),
+        );
+    }
+
+    const latestEnd = activeRows.reduce<Date | null>(
+      (acc, r) =>
+        acc === null || r.subscriptionEndDate > acc ? r.subscriptionEndDate : acc,
+      null,
+    );
+
+    await tx.insert(licenseEventsTable).values({
+      userId,
+      eventType: "license_key_reissued",
+      eventMessage: "License key reissued by admin",
+      metadata: {
+        plan,
+        productKeyId: keyRow.id,
+        productKeyPrefix: keyRow.keyPrefix,
+        revokedKeyIds: [...oldKeyIds],
+        licenseIds: activeRows.map((r) => r.id),
+      },
+    });
+
+    return {
+      rawKey,
+      keyPrefix: keyRow.keyPrefix,
+      planName: plan,
+      isUnredeemed: activeRows.length === 0,
+      subscriptionEndDate: latestEnd,
+    };
+  });
+}
+
 export type BillingProviderId = "stripe" | "razorpay" | "paypal";
 
 export interface BillingProviderInfo {

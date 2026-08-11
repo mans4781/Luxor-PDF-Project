@@ -38,6 +38,7 @@ import {
   adminSetQuotaOverride,
 } from "../lib/license";
 import { adminDeleteUser, ProtectedUserError } from "../lib/adminDeleteUser";
+import { adminReissueLicenseKey, ReissueError } from "../lib/billing";
 
 const router = Router();
 
@@ -641,6 +642,44 @@ router.post(
     } catch (err) {
       req.log.error({ err, userId }, "admin/customers/quota-override failed");
       res.status(500).json({ error: "Failed to set quota override" });
+    }
+  },
+);
+
+// Reissue a paid user's license key (keys are hashed and unrecoverable, so
+// support "resends" work by minting a replacement; old key is revoked,
+// activated devices keep working).
+router.post(
+  "/admin/customers/:userId/reissue-key",
+  async (req: Request, res: Response): Promise<void> => {
+    if (!(await checkAuth(req, res))) return;
+
+    const rawUserId = req.params["userId"];
+    const userId = typeof rawUserId === "string" ? rawUserId.trim() : "";
+    if (!userId) {
+      res.status(400).json({ error: "userId is required" });
+      return;
+    }
+    try {
+      const result = await adminReissueLicenseKey(userId);
+      req.log.info(
+        { userId, keyPrefix: result.keyPrefix, plan: result.planName },
+        "Admin reissued license key",
+      );
+      res.json({
+        rawKey: result.rawKey,
+        keyPrefix: result.keyPrefix,
+        planName: result.planName,
+        isUnredeemed: result.isUnredeemed,
+        subscriptionEndDate: result.subscriptionEndDate?.toISOString() ?? null,
+      });
+    } catch (err) {
+      if (err instanceof ReissueError) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      req.log.error({ err, userId }, "admin/customers reissue-key failed");
+      res.status(500).json({ error: "Failed to reissue license key" });
     }
   },
 );
