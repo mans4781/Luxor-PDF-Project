@@ -98,7 +98,10 @@
       "deleteAppDataOnUninstall": false,
       "runAfterFinish": true
     },
-    "publish": [
+    "releaseInfo": {
+   "releaseNotesFile": "build/release-notes.md"
+  },
+  "publish": [
       {
         "provider": "github",
         "owner": "mans4781",

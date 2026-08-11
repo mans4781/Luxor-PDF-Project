@@ -76,6 +76,12 @@ usually refreshes on its own after a reboot; to force it, sign out/in or run
 `%LocalAppData%\Microsoft\Windows\Explorer\iconcache_*.db` and restart
 Explorer. Include this note in the release notes for icon-changing releases.
 
+Release notes are supplied automatically: electron-builder reads
+`build/release-notes.md` (wired via `build.releaseInfo.releaseNotesFile` in
+`package.json`) and uses it as the GitHub release body when publishing.
+Update that file per release; the "Icon not updating?" section is already in
+it for v0.1.13.
+
 ## Notes
 
 - The smoke test runs with `LUXOR_LOAD_MODE=bundled` (and `LUXOR_BUNDLED_ROOT`
