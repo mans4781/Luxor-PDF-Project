@@ -11,7 +11,6 @@ import {
   LogIn,
   LogOut,
   UserRound,
-  UserRoundCog,
   UserRoundPlus,
 } from "lucide-react";
 import { SUITE_AUTH_HOST_BASE } from "./LuxorClerkProvider";
@@ -277,8 +276,13 @@ export function AuthMenu({
 
               {/* Account actions */}
               <div className="py-1.5">
+                {/* Opens in a new tab (and in the desktop shell, the system
+                    browser) so the frameless desktop window never navigates
+                    away to a page without its own window controls. */}
                 <a
                   href={`${SUITE_AUTH_HOST_BASE}/dashboard`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   role="menuitem"
                   data-testid="menu-item-dashboard"
                   onClick={() => setMenuOpen(false)}
@@ -287,19 +291,6 @@ export function AuthMenu({
                   <LayoutDashboard className="h-4 w-4" />
                   Account dashboard
                 </a>
-                <button
-                  type="button"
-                  role="menuitem"
-                  data-testid="menu-item-manage-account"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    clerk.openUserProfile();
-                  }}
-                  className={signedInRowClass(isDark)}
-                >
-                  <UserRoundCog className="h-4 w-4" />
-                  Manage account & security
-                </button>
               </div>
 
               {/* App-specific shortcuts */}
