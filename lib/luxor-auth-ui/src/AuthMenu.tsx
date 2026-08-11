@@ -52,6 +52,14 @@ export interface AuthMenuProps {
    * custom menu items inside the signed-in avatar menu.
    */
   menuLinks?: AuthMenuLink[];
+  /**
+   * Optional subscription-status label (e.g. "Premium plan", "Free plan")
+   * shown as a badge at the top of the signed-in account menu. Apps that
+   * know the user's plan pass it; when omitted, no badge is rendered.
+   */
+  planLabel?: string;
+  /** Whether `planLabel` represents a paid plan (styles the badge). */
+  planIsPaid?: boolean;
 }
 
 export interface AuthMenuLink {
@@ -86,6 +94,8 @@ export function AuthMenu({
   onSignIn,
   onSignUp,
   menuLinks,
+  planLabel,
+  planIsPaid = false,
 }: AuthMenuProps) {
   const isDark = variant === "dark";
   const [menuOpen, setMenuOpen] = useState(false);
@@ -102,6 +112,18 @@ export function AuthMenu({
     user?.primaryEmailAddress?.emailAddress?.split("@")[0] ||
     "";
   const email = user?.primaryEmailAddress?.emailAddress ?? "";
+  // Some accounts have their "name" set to the email, and accounts without
+  // a real name fall back to the email's local part — both made the menu
+  // show the email (or part of it) twice. Hide the name line when it merely
+  // duplicates the email; a real profile name that happens to match the
+  // local part (e.g. "john" + john@…) is kept.
+  const nameIsEmail =
+    !!displayName &&
+    !!email &&
+    (displayName.toLowerCase() === email.toLowerCase() ||
+      (!user?.fullName &&
+        !user?.username &&
+        displayName.toLowerCase() === email.split("@")[0].toLowerCase()));
   const avatarUrl = user?.hasImage ? user.imageUrl : "";
   const initials =
     (
@@ -251,15 +273,32 @@ export function AuthMenu({
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p
-                    className={
-                      "truncate text-sm font-semibold " +
-                      (isDark ? "text-white" : "text-slate-900")
-                    }
-                    data-testid="text-account-name"
-                  >
-                    {displayName || "Your account"}
-                  </p>
+                  {planLabel && (
+                    <span
+                      data-testid="badge-plan-status"
+                      className={
+                        "mb-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide " +
+                        (planIsPaid
+                          ? "bg-gradient-to-r from-[#1e3a8a] to-[#2563EB] text-white"
+                          : isDark
+                            ? "bg-white/10 text-slate-300"
+                            : "bg-slate-200 text-slate-600")
+                      }
+                    >
+                      {planLabel}
+                    </span>
+                  )}
+                  {!nameIsEmail && (
+                    <p
+                      className={
+                        "truncate text-sm font-semibold " +
+                        (isDark ? "text-white" : "text-slate-900")
+                      }
+                      data-testid="text-account-name"
+                    >
+                      {displayName || "Your account"}
+                    </p>
+                  )}
                   {email && (
                     <p
                       className={

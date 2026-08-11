@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback, useEffect, type ReactNode } from "react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
-import { useAuthGate } from "@/components/AuthGate";
+import { planStatusLabel, useAuthGate } from "@/components/AuthGate";
 import { ToolType } from "@/lib/annotationTypes";
 import type { PanelKey } from "@/pages/Viewer";
 import {
@@ -451,7 +451,7 @@ export default function Toolbar({
   onMarkup, onCreateNew, onPageOp, onOpenCrop, onOpenRestrict,
   toolbarHidden, onToggleToolbar, onPresentation, onOpenHelp, onSetSplitView,
 }: ToolbarProps) {
-  const { beginSignIn, beginSignUp, requirePremium, hasPremium } = useAuthGate();
+  const { beginSignIn, beginSignUp, requirePremium, hasPremium, planName, planResolved } = useAuthGate();
   /* Wrap an action behind the premium gate: without an active plan the
    * click shows the upgrade prompt instead of running the action. */
   const premGate = (label: string, fn: () => void) => () => {
@@ -1445,6 +1445,8 @@ export default function Toolbar({
             variant={theme === "dark" ? "dark" : "light"}
             onSignIn={beginSignIn}
             onSignUp={beginSignUp}
+            planLabel={planStatusLabel(hasPremium, planName, planResolved)}
+            planIsPaid={hasPremium}
           />
         </div>
       </div>

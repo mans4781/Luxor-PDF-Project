@@ -52,6 +52,12 @@ interface AuthGateContextValue {
    *  dev preview builds). Use for advisory UI only (greying out premium
    *  menu items) — the real gate is `requirePremium` at execution. */
   hasPremium: boolean;
+  /** Plan name from the license server (e.g. "monthly" / "yearly"), or
+   *  null when the user has no paid plan / it hasn't loaded yet. */
+  planName: string | null;
+  /** True once /api/license/status has resolved (or in dev bypass). While
+   *  false, plan state is unknown — don't show "Free plan" badges yet. */
+  planResolved: boolean;
 }
 
 const AuthGateContext = createContext<AuthGateContextValue | null>(null);
@@ -64,6 +70,22 @@ const LOCKED_PREVIEW =
   typeof window !== "undefined" &&
   new URLSearchParams(window.location.search).get("locked") === "1";
 const DEV_BYPASS = import.meta.env.DEV && !LOCKED_PREVIEW;
+
+/** Human label for the account menu's subscription badge. Returns
+ *  undefined (no badge) while the plan status is still loading. */
+export function planStatusLabel(
+  hasPremium: boolean,
+  planName: string | null,
+  planResolved: boolean,
+): string | undefined {
+  if (!planResolved) return undefined;
+  if (!hasPremium) return "Free plan";
+  if (planName) {
+    const pretty = planName.charAt(0).toUpperCase() + planName.slice(1);
+    return `${pretty} plan`;
+  }
+  return "Premium plan";
+}
 
 export function useAuthGate(): AuthGateContextValue {
   const ctx = useContext(AuthGateContext);
@@ -128,6 +150,7 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
   // Which prompt the dialog shows: sign-in (no account) or upgrade (no plan).
   const [promptMode, setPromptMode] = useState<"signin" | "upgrade">("signin");
   const [licenseState, setLicenseState] = useState<LicenseState>("unknown");
+  const [planName, setPlanName] = useState<string | null>(null);
   const licenseRef = useRef<LicenseState>("unknown");
   licenseRef.current = licenseState;
 
@@ -325,9 +348,11 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
           credentials: "include",
         });
         if (!res.ok) return;
-        const data: { canUsePdfTools?: boolean } = await res.json();
+        const data: { canUsePdfTools?: boolean; planName?: string | null } =
+          await res.json();
         if (!cancelled) {
           setLicenseState(data.canUsePdfTools === true ? "active" : "none");
+          setPlanName(typeof data.planName === "string" ? data.planName : null);
         }
       } catch {
         // Offline / transient error — keep the previous state.
@@ -509,8 +534,10 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
       isLoaded: DEV_BYPASS || isLoaded,
       isSignedIn: DEV_BYPASS || isSignedIn === true,
       hasPremium: DEV_BYPASS || licenseState === "active",
+      planName,
+      planResolved: DEV_BYPASS || licenseState !== "unknown",
     }),
-    [requireAuth, requirePremium, beginSignIn, beginSignUp, isLoaded, isSignedIn, licenseState],
+    [requireAuth, requirePremium, beginSignIn, beginSignUp, isLoaded, isSignedIn, licenseState, planName],
   );
 
   const offline = typeof navigator !== "undefined" && !navigator.onLine;

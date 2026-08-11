@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { AuthMenu } from "@workspace/luxor-auth-ui";
-import { useAuthGate } from "@/components/AuthGate";
+import { planStatusLabel, useAuthGate } from "@/components/AuthGate";
 import { loadRecents, clearRecents, formatFileSize, type RecentFileEntry } from "@/lib/recentFiles";
 import { loadSettings } from "@/lib/settings";
 import { isDesktopShell, desktopWindowControl } from "@/lib/desktopBridge";
@@ -151,7 +151,7 @@ function EmptyDocsIllustration() {
 }
 
 export default function Home({ onFileLoad }: HomeProps) {
-  const { beginSignIn, beginSignUp } = useAuthGate();
+  const { beginSignIn, beginSignUp, hasPremium, planName, planResolved } = useAuthGate();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [recentMenu, setRecentMenu] = useState(false);
@@ -252,7 +252,13 @@ export default function Home({ onFileLoad }: HomeProps) {
         <button className="lxh-tbtn" aria-disabled="true" title="Open a PDF to print it">{Ic.print()}Print</button>
         <button className="lxh-tbtn" aria-disabled="true" title="Settings">{Ic.gear()}Settings</button>
         <button className="lxh-tbtn" aria-disabled="true" title="Help" style={{ padding: "0 8px" }}>{Ic.help(16)}</button>
-        <AuthMenu iconOnly onSignIn={beginSignIn} onSignUp={beginSignUp} />
+        <AuthMenu
+          iconOnly
+          onSignIn={beginSignIn}
+          onSignUp={beginSignUp}
+          planLabel={planStatusLabel(hasPremium, planName, planResolved)}
+          planIsPaid={hasPremium}
+        />
         {isDesktopShell() && (
           <>
             <div className="lxh-vsep" />
