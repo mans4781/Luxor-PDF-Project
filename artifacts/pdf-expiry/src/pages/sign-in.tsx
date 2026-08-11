@@ -126,6 +126,9 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [code, setCode] = useState("");
+  // Which email-code factor the "mfa-code" view is verifying: Clerk can ask
+  // for a first-factor code (new device verification) or a second factor.
+  const [codeFactor, setCodeFactor] = useState<"first" | "second">("second");
   const [newPassword, setNewPassword] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -237,10 +240,19 @@ export default function SignInPage() {
     if (error) return;
     if (signIn.status === "complete") {
       await finishSignIn();
-    } else if (signIn.status === "needs_second_factor") {
+    } else if (
+      signIn.status === "needs_second_factor" ||
+      signIn.status === "needs_first_factor"
+    ) {
       // Clerk asks for an emailed verification code (e.g. signing in from a
-      // new device/browser). Send the code and show the code-entry step.
-      const { error: sendError } = await signIn.mfa.sendEmailCode();
+      // new device/browser). Depending on the account this arrives as a
+      // first-factor or second-factor email code — send the right one and
+      // show the code-entry step.
+      const isSecondFactor = signIn.status === "needs_second_factor";
+      setCodeFactor(isSecondFactor ? "second" : "first");
+      const { error: sendError } = isSecondFactor
+        ? await signIn.mfa.sendEmailCode()
+        : await signIn.emailCode.sendCode();
       if (sendError) {
         setLocalError("We couldn't send a verification code. Please try again.");
         return;
@@ -255,10 +267,23 @@ export default function SignInPage() {
   const handleVerifyMfaCode = async (e: FormEvent) => {
     e.preventDefault();
     setLocalError(null);
-    const { error } = await signIn.mfa.verifyEmailCode({ code });
+    const { error } =
+      codeFactor === "second"
+        ? await signIn.mfa.verifyEmailCode({ code })
+        : await signIn.emailCode.verifyCode({ code });
     if (error) return;
     if (signIn.status === "complete") {
       await finishSignIn();
+    } else if (signIn.status === "needs_second_factor" && codeFactor === "first") {
+      // Rare: the account also has MFA enabled — chain into the second code.
+      const { error: sendError } = await signIn.mfa.sendEmailCode();
+      if (sendError) {
+        setLocalError("We couldn't send a verification code. Please try again.");
+        return;
+      }
+      setCodeFactor("second");
+      setCode("");
+      setLocalError("One more step: we emailed you a second verification code.");
     } else {
       setLocalError("Verification didn't complete. Please try again.");
     }
@@ -266,7 +291,10 @@ export default function SignInPage() {
 
   const resendMfaCode = async () => {
     setLocalError(null);
-    const { error } = await signIn.mfa.sendEmailCode();
+    const { error } =
+      codeFactor === "second"
+        ? await signIn.mfa.sendEmailCode()
+        : await signIn.emailCode.sendCode();
     if (error) {
       setLocalError("We couldn't resend the code. Please try again in a moment.");
     }
