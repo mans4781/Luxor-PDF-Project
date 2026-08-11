@@ -750,6 +750,40 @@ router.post(
         return;
       }
 
+      // The key must also belong to this user: either an active license row
+      // references it, or it is the key minted by their latest reissue.
+      const [ownedLicense] = await db
+        .select({ id: licensesTable.id })
+        .from(licensesTable)
+        .where(
+          and(
+            eq(licensesTable.userId, userId),
+            eq(licensesTable.productKeyId, keyRow.id),
+            eq(licensesTable.status, "active"),
+          ),
+        )
+        .limit(1);
+      let ownsKey = !!ownedLicense;
+      if (!ownsKey) {
+        const [reissueEvent] = await db
+          .select({ metadata: licenseEventsTable.metadata })
+          .from(licenseEventsTable)
+          .where(
+            and(
+              eq(licenseEventsTable.userId, userId),
+              eq(licenseEventsTable.eventType, "license_key_reissued"),
+            ),
+          )
+          .orderBy(desc(licenseEventsTable.createdAt))
+          .limit(1);
+        const meta = reissueEvent?.metadata as { productKeyId?: number } | null;
+        ownsKey = meta?.productKeyId === keyRow.id;
+      }
+      if (!ownsKey) {
+        res.status(400).json({ error: "This key does not belong to the user" });
+        return;
+      }
+
       // Recipient: the Clerk user's primary email.
       const user = await clerkClient.users.getUser(userId);
       const primary =
