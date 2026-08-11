@@ -112,8 +112,9 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
     return rows.filter((c) => (c.planName ?? "free") === planFilter);
   }, [customers, planFilter]);
 
+  const [pageSize, setPageSize] = useState(20);
   const table = useTableState(filtered, {
-    pageSize: 10,
+    pageSize,
     searchable: (c) => `${c.userId} ${c.planName ?? ""} ${c.tier ?? ""} ${c.accountStatus}`,
   });
 
@@ -208,6 +209,27 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                 ))}
               </SelectContent>
             </Select>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-slate-400 dark:text-slate-500">Show</span>
+              <Select
+                value={String(pageSize)}
+                onValueChange={(v) => {
+                  setPageSize(Number(v));
+                  table.setPage(0);
+                }}
+              >
+                <SelectTrigger className="h-9 w-20 text-[13px]" data-testid="select-page-size">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="30">30</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="75">75</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-xs text-slate-400 dark:text-slate-500">per page</span>
+            </div>
             <span className="ml-auto text-xs text-slate-400 dark:text-slate-500">
               {table.filtered.length} of {customers?.length ?? 0} users
             </span>
@@ -229,6 +251,7 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-12">#</TableHead>
                     <TableHead className="cursor-pointer" onClick={() => table.toggleSort("userId")}>
                       User
                     </TableHead>
@@ -245,7 +268,7 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {table.pageRows.map((c) => {
+                  {table.pageRows.map((c, i) => {
                     const rem = remainingDays(c.subscriptionEndDate);
                     return (
                       <TableRow
@@ -253,11 +276,11 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                         className="cursor-pointer"
                         onClick={() => setSelected(c)}
                       >
+                        <TableCell className="text-xs tabular-nums text-slate-400 dark:text-slate-500">
+                          {table.page * pageSize + i + 1}
+                        </TableCell>
                         <TableCell className="max-w-52">
                           <div className="flex items-center gap-2">
-                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/50 text-[11px] font-bold text-[#2563EB] dark:text-[#60A5FA]">
-                              {c.userId.charAt(c.userId.length - 1).toUpperCase()}
-                            </div>
                             <span className="truncate font-mono text-xs" title={c.userId}>
                               {c.userId}
                             </span>
