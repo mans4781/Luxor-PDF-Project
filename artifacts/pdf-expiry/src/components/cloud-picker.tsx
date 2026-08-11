@@ -347,7 +347,7 @@ export function CloudPicker({ onFiles, accept, multiple = false, buttonClass }: 
   return (
     <div
       ref={rootRef}
-      className="absolute right-3 top-3 z-10"
+      className="absolute left-full top-3 z-10 ml-3"
       onClick={(e) => e.stopPropagation()}
       onDragOver={(e) => e.stopPropagation()}
       onDrop={(e) => e.stopPropagation()}
@@ -375,7 +375,7 @@ export function CloudPicker({ onFiles, accept, multiple = false, buttonClass }: 
         <div
           role="menu"
           aria-label="Cloud drives"
-          className="absolute right-0 top-11 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1.5 text-left shadow-xl shadow-slate-900/10"
+          className="absolute right-0 top-11 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1.5 text-left shadow-xl shadow-slate-900/10 sm:left-0 sm:right-auto"
         >
           <p className="px-3 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
             Add from cloud
