@@ -302,14 +302,12 @@ export default function AdminPage() {
   const handleLogout = useCallback(() => {
     sessionStorage.removeItem("luxor_admin_token");
     sessionStorage.removeItem("luxor_admin_dev_preview");
-    if (token === DEV_SESSION_TOKEN) {
-      // Session-based unlock can't be "logged out" here (the sign-in session
-      // lives in the PDF app) — send the developer back to their dashboard.
-      window.location.href = "/app/dashboard";
-      return;
-    }
+    // Never leave /admin: clear the unlock and re-probe. If the developer
+    // session is still valid (e.g. the 401 was transient), the probe silently
+    // re-unlocks the console; otherwise the admin login screen is shown.
     setToken("");
-  }, [token]);
+    setProbing(true);
+  }, []);
 
   if (!token && probing) {
     return (
