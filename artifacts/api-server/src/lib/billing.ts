@@ -30,6 +30,76 @@ export interface ReissuedKey {
   subscriptionEndDate: Date | null;
 }
 
+export interface DetachedLicense {
+  freedKeyPrefixes: string[];
+  removedLicenses: number;
+  removedDevices: number;
+}
+
+/**
+ * Admin support action: detaches all licenses from a user's account and
+ * frees the underlying product keys for reuse on another account.
+ *
+ * - License rows and device bindings for the user are deleted.
+ * - Each affected key's activation count is reset to 0 (status untouched),
+ *   so the same key can be activated again by someone else.
+ * - user_licenses drops back to free (is_paid=false, plan cleared).
+ */
+export async function adminDetachLicense(
+  userId: string,
+  now: Date = new Date(),
+): Promise<DetachedLicense> {
+  return db.transaction(async (tx) => {
+    const rows = await tx
+      .select()
+      .from(licensesTable)
+      .where(eq(licensesTable.userId, userId))
+      .for("update");
+    if (rows.length === 0) {
+      throw new ReissueError("This user has no license to detach.");
+    }
+
+    const keyIds = [...new Set(rows.map((r) => r.productKeyId))];
+
+    await tx.delete(licensesTable).where(eq(licensesTable.userId, userId));
+    const removedDevices = (
+      await tx
+        .delete(devicesTable)
+        .where(eq(devicesTable.userId, userId))
+        .returning({ id: devicesTable.deviceId })
+    ).length;
+
+    const freedKeyPrefixes: string[] = [];
+    for (const keyId of keyIds) {
+      const [updated] = await tx
+        .update(productKeysTable)
+        .set({ currentActivations: 0, updatedAt: now })
+        .where(eq(productKeysTable.id, keyId))
+        .returning({ keyPrefix: productKeysTable.keyPrefix });
+      if (updated) freedKeyPrefixes.push(updated.keyPrefix);
+    }
+
+    await tx
+      .update(userLicensesTable)
+      .set({ isPaid: false, planName: null, updatedAt: now })
+      .where(eq(userLicensesTable.userId, userId));
+
+    await tx.insert(licenseEventsTable).values({
+      userId,
+      eventType: "license_detached",
+      eventMessage: "License detached by admin; key freed for reuse",
+      metadata: {
+        productKeyIds: keyIds,
+        freedKeyPrefixes,
+        removedLicenses: rows.length,
+        removedDevices,
+      },
+    });
+
+    return { freedKeyPrefixes, removedLicenses: rows.length, removedDevices };
+  });
+}
+
 /**
  * Admin support action: mints a fresh product key for a paid user who lost
  * their original one (keys are stored hashed and cannot be recovered).

@@ -38,7 +38,7 @@ import {
   adminSetQuotaOverride,
 } from "../lib/license";
 import { adminDeleteUser, ProtectedUserError } from "../lib/adminDeleteUser";
-import { adminReissueLicenseKey, ReissueError } from "../lib/billing";
+import { adminDetachLicense, adminReissueLicenseKey, ReissueError } from "../lib/billing";
 
 const router = Router();
 
@@ -680,6 +680,34 @@ router.post(
       }
       req.log.error({ err, userId }, "admin/customers reissue-key failed");
       res.status(500).json({ error: "Failed to reissue license key" });
+    }
+  },
+);
+
+// Detach a user's license(s) and free the key(s) for reuse on another
+// account. Used e.g. to keep the admin account login-only.
+router.delete(
+  "/admin/customers/:userId/license",
+  async (req: Request, res: Response): Promise<void> => {
+    if (!(await checkAuth(req, res))) return;
+
+    const rawUserId = req.params["userId"];
+    const userId = typeof rawUserId === "string" ? rawUserId.trim() : "";
+    if (!userId) {
+      res.status(400).json({ error: "userId is required" });
+      return;
+    }
+    try {
+      const result = await adminDetachLicense(userId);
+      req.log.info({ userId, ...result }, "Admin detached license");
+      res.json({ ok: true, ...result });
+    } catch (err) {
+      if (err instanceof ReissueError) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      req.log.error({ err, userId }, "admin/customers detach-license failed");
+      res.status(500).json({ error: "Failed to detach license" });
     }
   },
 );
