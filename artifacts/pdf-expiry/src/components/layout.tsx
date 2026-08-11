@@ -12,6 +12,7 @@ export function Layout({
   showSearch = false,
   searchQuery,
   onSearchChange,
+  hideAuth = false,
 }: {
   children: ReactNode;
   showSearch?: boolean;
@@ -20,6 +21,9 @@ export function Layout({
    *  filter its own content. Falls back to internal state otherwise. */
   searchQuery?: string;
   onSearchChange?: (q: string) => void;
+  /** Hides the account/sign-in menu — used on free-tool pages that
+   *  require no account at all. */
+  hideAuth?: boolean;
 }) {
   const baseUrl = import.meta.env.BASE_URL;
   const [internalQuery, setInternalQuery] = useState("");
@@ -83,6 +87,7 @@ export function Layout({
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <PlanBadge />
 
+              {!hideAuth && (
               <AuthMenu
                 signInUrl={`${basePath}/sign-in`}
                 signUpUrl={`${basePath}/sign-up`}
@@ -121,6 +126,7 @@ export function Layout({
                   },
                 ]}
               />
+              )}
             </div>
           </div>
         </header>
