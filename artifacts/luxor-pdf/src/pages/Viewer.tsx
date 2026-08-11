@@ -669,9 +669,10 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
 
   // Touchscreen two-finger pinch → same smooth-zoom gesture as ctrl+wheel.
   // Distance ratio between the fingers scales the zoom that was committed
-  // when the pinch began; the anchor stays the viewport centre (same math
-  // as the wheel path). Commit happens once when a finger lifts. One-finger
-  // scrolling is untouched — we only intercept 2-touch moves.
+  // when the pinch began; the gesture is anchored at the fingers' midpoint
+  // (tracked as it moves) so the content stays under the fingers. Commit
+  // happens once when a finger lifts. One-finger scrolling is untouched —
+  // we only intercept 2-touch moves.
   useEffect(() => {
     if (!active) return;
     const viewer = viewerRef.current;
@@ -680,6 +681,14 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       t[0].clientX - t[1].clientX,
       t[0].clientY - t[1].clientY,
     );
+    // Anchor the gesture at the fingers' midpoint (viewer-viewport coords)
+    // so the pinched content stays under the fingers, like double-tap zoom.
+    const setPinchAnchor = (t: TouchList) => {
+      const rect = viewer.getBoundingClientRect();
+      const s = smoothZoomRef.current;
+      s.anchorX = (t[0].clientX + t[1].clientX) / 2 - rect.left;
+      s.anchorY = (t[0].clientY + t[1].clientY) / 2 - rect.top;
+    };
     // null = no pinch in flight
     let pinch: { startDist: number; startZoom: number } | null = null;
     // ── Double-tap → toggle a comfortable reading zoom ──────────────
@@ -728,6 +737,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
           startDist: Math.max(1, dist(e.touches)),
           startZoom: smoothZoomRef.current.target ?? zoomRef.current,
         };
+        setPinchAnchor(e.touches);
         tapStart = null;
       } else {
         pinch = null;
@@ -745,6 +755,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       if (!pinch || e.touches.length !== 2) return;
       // Stop the browser's own page pinch-zoom / scroll while pinching.
       e.preventDefault();
+      // Track the midpoint as it moves so the anchor follows the fingers.
+      setPinchAnchor(e.touches);
       const factor = dist(e.touches) / pinch.startDist;
       smoothZoomTo(pinch.startZoom * factor);
     };
