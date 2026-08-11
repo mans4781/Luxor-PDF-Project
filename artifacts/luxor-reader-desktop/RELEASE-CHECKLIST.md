@@ -61,6 +61,21 @@ physical Mac (no mac installer exists yet — packaging is a separate task):
 - [ ] Cmd+C/V/X/A work in the search box and sign-in form
 - [ ] Cmd+M minimizes; green full-screen via View → Toggle Full Screen
 
+## File-association icon (Explorer)
+
+`build/fileicon.ico` is the icon Windows Explorer shows on `.pdf` files. It is
+generated from `build/fileicon.svg` (matches the in-app Recent Documents icon
+— light-blue bordered sheet with a clipped top-right dog-ear) via
+`pnpm run fileicon:regen`; sizes 16/24/32/48/64/128/256 are rasterized
+per-size for crispness.
+
+**Icon-cache caveat for users:** after installing an update, Windows may keep
+showing the *old* `.pdf` icon because Explorer caches file-type icons. It
+usually refreshes on its own after a reboot; to force it, sign out/in or run
+`ie4uinit.exe -show` (Win10/11), or delete `%LocalAppData%\IconCache.db` /
+`%LocalAppData%\Microsoft\Windows\Explorer\iconcache_*.db` and restart
+Explorer. Include this note in the release notes for icon-changing releases.
+
 ## Notes
 
 - The smoke test runs with `LUXOR_LOAD_MODE=bundled` (and `LUXOR_BUNDLED_ROOT`

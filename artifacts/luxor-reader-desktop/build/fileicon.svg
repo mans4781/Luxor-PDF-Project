@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Windows Explorer .pdf file icon — matches the in-app Recent Documents icon
+  (Ic.file in luxor-pdf/src/pages/Home.tsx): a document sheet with a thin
+  light-blue border and the top-right corner clipped into a folded dog-ear.
+  The sheet is filled white so it stays legible on any Explorer background,
+  and the fold is tinted light blue.
+  Regenerate build/fileicon.ico with: pnpm run fileicon:regen
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+  <g fill="none" stroke="#8ab8e8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+    <!-- sheet -->
+    <path d="M6 3h8l4 4v13a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 20V3z" fill="#ffffff"/>
+    <!-- dog-ear fold -->
+    <path d="M14 3v4h4z" fill="#dcebfa"/>
+    <!-- PDF content lines -->
+    <path d="M8.5 11h7" stroke-width="1.1"/>
+    <path d="M8.5 14h7" stroke-width="1.1"/>
+    <path d="M8.5 17h4.5" stroke-width="1.1"/>
+  </g>
+</svg>
