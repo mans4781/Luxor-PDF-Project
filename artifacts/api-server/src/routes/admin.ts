@@ -37,6 +37,7 @@ import {
   adminListCustomers,
   adminSetQuotaOverride,
 } from "../lib/license";
+import { adminDeleteUser, ProtectedUserError } from "../lib/adminDeleteUser";
 
 const router = Router();
 
@@ -640,6 +641,32 @@ router.post(
     } catch (err) {
       req.log.error({ err, userId }, "admin/customers/quota-override failed");
       res.status(500).json({ error: "Failed to set quota override" });
+    }
+  },
+);
+
+router.delete(
+  "/admin/customers/:userId",
+  async (req: Request, res: Response): Promise<void> => {
+    if (!(await checkAuth(req, res))) return;
+
+    const rawUserId = req.params["userId"];
+    const userId = typeof rawUserId === "string" ? rawUserId.trim() : "";
+    if (!userId) {
+      res.status(400).json({ error: "userId is required" });
+      return;
+    }
+    try {
+      const result = await adminDeleteUser(userId);
+      req.log.info({ userId, ...result }, "Admin deleted user and all data");
+      res.json({ ok: true, ...result });
+    } catch (err) {
+      if (err instanceof ProtectedUserError) {
+        res.status(403).json({ error: err.message, protected: true });
+        return;
+      }
+      req.log.error({ err, userId }, "admin/customers delete failed");
+      res.status(500).json({ error: "Failed to delete user" });
     }
   },
 );

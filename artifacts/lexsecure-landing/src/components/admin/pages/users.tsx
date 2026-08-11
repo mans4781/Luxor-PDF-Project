@@ -8,6 +8,7 @@ import {
   KeyRound,
   MailQuestion,
   MoreHorizontal,
+  Trash2,
   RefreshCw,
   Search,
   ShieldAlert,
@@ -84,6 +85,9 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
   const [extendTarget, setExtendTarget] = useState<AdminCustomer | null>(null);
   const [quotaTarget, setQuotaTarget] = useState<AdminCustomer | null>(null);
   const [quotaValue, setQuotaValue] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<AdminCustomer | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
@@ -166,6 +170,31 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
     } catch (err) {
       if (isUnauthorized(err)) onLogout();
       else toast.error("Could not update quota.");
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget || deleting) return;
+    setDeleting(true);
+    try {
+      await adminApi.deleteCustomer(token, deleteTarget.userId);
+      logAudit("User deleted", deleteTarget.userId, deleteTarget.email ?? "", "deleted");
+      toast.success("User permanently deleted.", {
+        description: "Account and all data removed. They can sign up fresh anytime.",
+      });
+      setDeleteTarget(null);
+      setDeleteConfirm("");
+      setSelected(null);
+      setReloadKey((k) => k + 1);
+    } catch (err) {
+      // Check the specific protected-account error before the generic
+      // unauthorized handler (both come back as HTTP 403).
+      if (err instanceof Error && err.message.includes("Developer accounts"))
+        toast.error("Developer accounts can't be deleted from the console.");
+      else if (isUnauthorized(err)) onLogout();
+      else toast.error("Could not delete the user. Please try again.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -354,6 +383,15 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                                 onClick={() => setBlockTarget(c)}
                               >
                                 <Ban className="mr-2 h-3.5 w-3.5" /> Block user
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-red-600 dark:text-red-400 focus:text-red-600"
+                                onClick={() => {
+                                  setDeleteConfirm("");
+                                  setDeleteTarget(c);
+                                }}
+                              >
+                                <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete user
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -567,6 +605,66 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
               }}
             >
               Note in audit log
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete user modal (real, permanent) */}
+      <Dialog
+        open={deleteTarget !== null}
+        onOpenChange={(v) => {
+          if (!v && !deleting) {
+            setDeleteTarget(null);
+            setDeleteConfirm("");
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Trash2 className="h-4 w-4 text-red-500 dark:text-red-400" /> Delete user permanently
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="rounded-md bg-red-50 dark:bg-red-950/50 px-3 py-2 text-xs text-red-700 dark:text-red-400">
+              This permanently deletes{" "}
+              <span className="font-medium">{deleteTarget?.email ?? deleteTarget?.userId}</span> —
+              their account, license, devices, usage history, payments, tickets, and team
+              memberships. This cannot be undone. They can sign up again as a brand-new account.
+            </p>
+            <div>
+              <Label className="text-xs">
+                Type <span className="font-mono font-semibold">DELETE</span> to confirm
+              </Label>
+              <Input
+                value={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.value)}
+                placeholder="DELETE"
+                className="mt-1 h-9 text-[13px]"
+                autoComplete="off"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={deleting}
+              onClick={() => {
+                setDeleteTarget(null);
+                setDeleteConfirm("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleteConfirm !== "DELETE" || deleting}
+              onClick={() => void confirmDelete()}
+            >
+              {deleting ? "Deleting…" : "Delete permanently"}
             </Button>
           </DialogFooter>
         </DialogContent>

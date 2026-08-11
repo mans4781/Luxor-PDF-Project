@@ -78,6 +78,13 @@ export const adminApi = {
           body: JSON.stringify({ userId, override }),
         }),
 
+  deleteCustomer: (token: string, userId: string) =>
+    isDevPreview(token)
+      ? Promise.resolve({})
+      : request<unknown>(token, `/customers/${encodeURIComponent(userId)}`, {
+          method: "DELETE",
+        }),
+
   productKeys: (token: string) =>
     isDevPreview(token)
       ? Promise.resolve([...previewKeys])
