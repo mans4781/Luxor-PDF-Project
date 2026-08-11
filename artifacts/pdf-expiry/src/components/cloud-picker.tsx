@@ -347,7 +347,7 @@ export function CloudPicker({ onFiles, accept, multiple = false, buttonClass }: 
   return (
     <div
       ref={rootRef}
-      className="absolute left-full top-3 z-10 ml-3"
+      className="absolute left-full top-1/2 z-10 ml-10 -translate-y-1/2"
       onClick={(e) => e.stopPropagation()}
       onDragOver={(e) => e.stopPropagation()}
       onDrop={(e) => e.stopPropagation()}
