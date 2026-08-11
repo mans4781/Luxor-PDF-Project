@@ -15,6 +15,7 @@ Physical canvas is capped (`MAX_CANVAS_PIXELS` = 16M px, DPR clamped to [1,3], s
 ## Smooth ctrl+wheel zoom (Aug 2026)
 Wheel zoom no longer re-renders per tick: during the gesture a CSS `scale()` on `.zoom-layer` (wrapper inside `.luxor-viewer`) previews the zoom and scroll is adjusted to keep the viewport-center anchored; the real `zoom` state commits ~160ms after the last tick (one pdf.js re-render).
 **How to apply:** any new zoom path (slider, buttons, fit, pinch) must either go through this gesture or just set `zoom` — an external `zoom` change auto-cancels an in-flight gesture (`committing` flag in `smoothZoomRef`). Rotation/split-view changes also cancel it. Don't remove the `.zoom-layer` wrapper; its CSS replicates the old page-column layout.
+The gesture is factored into `smoothZoomTo(next)` (preview + debounced commit) and `commitSmoothZoom()` (flush now); wheel/pinch (proportional to normalized deltaY, per-event factor clamped), the status-bar slider (commits on pointer-up/key-up), and keyboard +/- all share it. The status-bar % readout updates imperatively via a ref mid-gesture — keep that in sync if the readout moves.
 
 ## pdfjs-dist ≥5.6 needs TC39 upsert polyfill
 pdfjs-dist 5.6 calls `Map.prototype.getOrInsertComputed` on BOTH the main thread and inside the worker. Browsers without it render nothing (TypeError, blank pages).

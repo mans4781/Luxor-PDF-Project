@@ -163,6 +163,8 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     committing: boolean;
   }>({ target: null, timer: null, baseScrollTop: 0, baseScrollLeft: 0, committing: false });
   const pendingScrollRef = useRef<{ top: number; left: number | null } | null>(null);
+  /** Live "NN%" readout in the status bar, updated imperatively mid-gesture. */
+  const zoomPctRef = useRef<HTMLSpanElement | null>(null);
   /** Abort an in-flight smooth-zoom gesture (clears transform + timer). */
   const cancelSmoothZoom = useCallback(() => {
     const s = smoothZoomRef.current;
@@ -171,7 +173,79 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     pendingScrollRef.current = null;
     const lay = zoomLayerRef.current;
     if (lay) { lay.style.transform = ""; lay.style.transformOrigin = ""; lay.style.willChange = ""; }
+    if (zoomPctRef.current) zoomPctRef.current.textContent = zoomLabel(zoomRef.current);
   }, []);
+  // Anchor math. Vertical: transform origin is the layer's top edge, so a
+  // content point y (in scroll coords) maps to top + (y - top) * f where
+  // top = layer.offsetTop (the viewer's padding). Horizontal: origin is
+  // the layer's centre, so x maps to cx + (x - cx) * f. We keep the
+  // document point at the viewport centre fixed on both axes.
+  const smoothZoomAnchor = useCallback((fac: number) => {
+    const s = smoothZoomRef.current;
+    const v = viewerRef.current;
+    const lay = zoomLayerRef.current;
+    if (!v || !lay) return null;
+    const top = lay.offsetTop;
+    const cx = lay.offsetLeft + lay.offsetWidth / 2;
+    const vh = v.clientHeight;
+    const vw = v.clientWidth;
+    return {
+      top: Math.max(0, top + (s.baseScrollTop + vh / 2 - top) * fac - vh / 2),
+      left: Math.max(0, cx + (s.baseScrollLeft + vw / 2 - cx) * fac - vw / 2),
+    };
+  }, []);
+  /** Commit the in-flight gesture now: drop the CSS preview and apply the
+   *  real zoom (one pdf.js re-render). Safe to call with no gesture active. */
+  const commitSmoothZoom = useCallback(() => {
+    const s = smoothZoomRef.current;
+    if (s.timer) { clearTimeout(s.timer); s.timer = null; }
+    const target = s.target;
+    s.target = null;
+    const lay = zoomLayerRef.current;
+    if (lay) {
+      lay.style.transform = "";
+      lay.style.transformOrigin = "";
+      lay.style.willChange = "";
+    }
+    if (target != null && target !== zoomRef.current) {
+      // Re-apply the anchor after the real re-layout: the CSS transform
+      // never grew the scrollable area, so the live scroll position may
+      // have been clamped during the gesture.
+      pendingScrollRef.current = smoothZoomAnchor(target / zoomRef.current);
+      s.committing = true;
+      setZoom(target);
+    }
+  }, [smoothZoomAnchor]);
+  /** Preview `next` zoom instantly via a CSS scale on the zoom layer and
+   *  schedule a single real re-render once the gesture pauses (~160ms).
+   *  Shared by ctrl+wheel / pinch, the status-bar slider, and keyboard +/-. */
+  const smoothZoomTo = useCallback((nextRaw: number) => {
+    const s = smoothZoomRef.current;
+    const viewer = viewerRef.current;
+    const layer = zoomLayerRef.current;
+    const committed = zoomRef.current;
+    const cur = s.target ?? committed;
+    const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, parseFloat(nextRaw.toFixed(4))));
+    if (next === cur) return;
+    if (s.target === null) {
+      // Gesture start: remember the scroll anchor so the point at the
+      // viewport centre stays put while we scale.
+      s.baseScrollTop = viewer?.scrollTop ?? 0;
+      s.baseScrollLeft = viewer?.scrollLeft ?? 0;
+    }
+    s.target = next;
+    const f = next / committed;
+    if (layer && viewer) {
+      layer.style.transformOrigin = "50% 0";
+      layer.style.transform = `scale(${f})`;
+      layer.style.willChange = "transform";
+      const a = smoothZoomAnchor(f);
+      if (a) { viewer.scrollTop = a.top; viewer.scrollLeft = a.left; }
+    }
+    if (zoomPctRef.current) zoomPctRef.current.textContent = zoomLabel(next);
+    if (s.timer) clearTimeout(s.timer);
+    s.timer = setTimeout(commitSmoothZoom, 160);
+  }, [smoothZoomAnchor, commitSmoothZoom]);
   // Any zoom change that did NOT come from the gesture's own commit (slider,
   // toolbar buttons, keyboard, fit commands…) invalidates the gesture — its
   // transform and anchor math are based on the previous layout.
@@ -535,8 +609,10 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       if ((e.target as HTMLElement).tagName === "TEXTAREA" || (e.target as HTMLElement).tagName === "INPUT") return;
       if (e.key === "ArrowRight" || e.key === "ArrowDown") setCurrentPage(p => Math.min(totalPages, p + 1));
       if (e.key === "ArrowLeft" || e.key === "ArrowUp") setCurrentPage(p => Math.max(1, p - 1));
-      if (e.key === "+" || e.key === "=") setZoom(z => Math.min(ZOOM_MAX, z + 0.15));
-      if (e.key === "-") setZoom(z => Math.max(ZOOM_MIN, z - 0.15));
+      // +/- go through the smooth-zoom gesture so a held key previews via
+      // the CSS scale and coalesces into a single re-render on release.
+      if (e.key === "+" || e.key === "=") smoothZoomTo((smoothZoomRef.current.target ?? zoomRef.current) + 0.15);
+      if (e.key === "-") smoothZoomTo((smoothZoomRef.current.target ?? zoomRef.current) - 0.15);
       if (e.key === "Escape") {
         if (searchOpen) { setSearchOpen(false); setSearchQuery(""); return; }
         setTool("hand"); speechSynthesis.cancel(); setIsSpeaking(false);
@@ -545,7 +621,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     if (!active) return;
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [totalPages, searchOpen, undo, active]);
+  }, [totalPages, searchOpen, undo, active, smoothZoomTo]);
 
   // Ctrl+Scroll → zoom PDF, not the browser.
   // Edge-style smooth zoom: during the wheel gesture we only CSS-scale the
@@ -557,66 +633,15 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       if (!e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
       const s = smoothZoomRef.current;
-      const viewer = viewerRef.current;
-      const layer = zoomLayerRef.current;
-      const committed = zoomRef.current;
-      const cur = s.target ?? committed;
-      const delta = e.deltaY < 0 ? 0.1 : -0.1;
-      const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, parseFloat((cur + delta).toFixed(2))));
-      if (next === cur) return;
-      if (s.target === null) {
-        // Gesture start: remember the scroll anchor so the point at the
-        // viewport centre stays put while we scale.
-        s.baseScrollTop = viewer?.scrollTop ?? 0;
-        s.baseScrollLeft = viewer?.scrollLeft ?? 0;
-      }
-      s.target = next;
-      const f = next / committed;
-      // Anchor math. Vertical: transform origin is the layer's top edge, so a
-      // content point y (in scroll coords) maps to top + (y - top) * f where
-      // top = layer.offsetTop (the viewer's padding). Horizontal: origin is
-      // the layer's centre, so x maps to cx + (x - cx) * f. We keep the
-      // document point at the viewport centre fixed on both axes.
-      const anchor = (fac: number) => {
-        const v = viewerRef.current;
-        const lay = zoomLayerRef.current;
-        if (!v || !lay) return null;
-        const top = lay.offsetTop;
-        const cx = lay.offsetLeft + lay.offsetWidth / 2;
-        const vh = v.clientHeight;
-        const vw = v.clientWidth;
-        return {
-          top: Math.max(0, top + (s.baseScrollTop + vh / 2 - top) * fac - vh / 2),
-          left: Math.max(0, cx + (s.baseScrollLeft + vw / 2 - cx) * fac - vw / 2),
-        };
-      };
-      if (layer && viewer) {
-        layer.style.transformOrigin = "50% 0";
-        layer.style.transform = `scale(${f})`;
-        layer.style.willChange = "transform";
-        const a = anchor(f);
-        if (a) { viewer.scrollTop = a.top; viewer.scrollLeft = a.left; }
-      }
-      if (s.timer) clearTimeout(s.timer);
-      s.timer = setTimeout(() => {
-        const target = s.target;
-        s.timer = null;
-        s.target = null;
-        const lay = zoomLayerRef.current;
-        if (lay) {
-          lay.style.transform = "";
-          lay.style.transformOrigin = "";
-          lay.style.willChange = "";
-        }
-        if (target != null && target !== zoomRef.current) {
-          // Re-apply the anchor after the real re-layout: the CSS transform
-          // never grew the scrollable area, so the live scroll position may
-          // have been clamped during the gesture.
-          pendingScrollRef.current = anchor(target / zoomRef.current);
-          s.committing = true;
-          setZoom(target);
-        }
-      }, 160);
+      const cur = s.target ?? zoomRef.current;
+      // Normalize line-mode deltas (some mice/browsers report lines, ~16px).
+      const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+      // Proportional step: trackpad pinch arrives as ctrl+wheel with small
+      // fractional deltas (smooth, fine-grained), a mouse wheel notch is
+      // ~±100 (≈10% per tick). Clamp the per-event factor so one wild
+      // delta can't jump the zoom.
+      const factor = Math.min(1.25, Math.max(0.8, Math.exp(-dy * 0.0011)));
+      smoothZoomTo(cur * factor);
     };
     if (!active) return;
     window.addEventListener("wheel", handler, { passive: false });
@@ -624,7 +649,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       window.removeEventListener("wheel", handler);
       cancelSmoothZoom();
     };
-  }, [active, cancelSmoothZoom]);
+  }, [active, cancelSmoothZoom, smoothZoomTo]);
 
   // Rotation or split-view toggles re-layout every page — an in-flight
   // gesture's transform and anchor are meaningless afterwards.
@@ -1674,8 +1699,12 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
                   const v = parseFloat(e.target.value);
                   if (isNaN(v)) return;
                   const pct = sliderToPct(v);
-                  setZoom(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, ZOOM_BASE * (pct / 100))));
+                  // Preview via the CSS-scale gesture; the real re-render
+                  // commits on release (pointer-up / key-up) or debounce.
+                  smoothZoomTo(ZOOM_BASE * (pct / 100));
                 }}
+                onPointerUp={commitSmoothZoom}
+                onKeyUp={commitSmoothZoom}
                 aria-label="Zoom level"
               />
             </div>
@@ -1686,7 +1715,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
             >
               +
             </button>
-            <span className="zoom-slider-pct">{zoomLabel(zoom)}</span>
+            <span className="zoom-slider-pct" ref={zoomPctRef}>{zoomLabel(zoom)}</span>
             <button
               className="zoom-slider-btn"
               title="Reset zoom to 100%"
