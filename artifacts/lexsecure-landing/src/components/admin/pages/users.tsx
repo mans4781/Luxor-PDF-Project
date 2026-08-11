@@ -10,6 +10,7 @@ import {
   MoreHorizontal,
   RotateCcwKey,
   Trash2,
+  Unlink,
   RefreshCw,
   Search,
   ShieldAlert,
@@ -99,6 +100,8 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
     emailSentTo: string | null;
   } | null>(null);
   const [emailingKey, setEmailingKey] = useState(false);
+  const [detachTarget, setDetachTarget] = useState<AdminCustomer | null>(null);
+  const [detaching, setDetaching] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
@@ -238,6 +241,38 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
       else toast.error("Could not send the email. Copy the key and share it manually.");
     } finally {
       setEmailingKey(false);
+    }
+  };
+
+  const confirmDetach = async () => {
+    if (!detachTarget || detaching) return;
+    setDetaching(true);
+    try {
+      const result = await adminApi.detachLicense(token, detachTarget.userId);
+      const freed = result.freedKeyPrefixes.map((p) => `${p}-••••`).join(", ");
+      logAudit(
+        "License detached",
+        detachTarget.userId,
+        detachTarget.planName ?? "paid",
+        `freed ${freed || "key"}`,
+      );
+      toast.success(
+        freed
+          ? `License detached — key ${freed} is free for reuse.`
+          : "License detached.",
+        {
+          description: "Devices unbound; the account is back on the free plan.",
+        },
+      );
+      setDetachTarget(null);
+      setReloadKey((k) => k + 1);
+    } catch (err) {
+      if (err instanceof Error && err.message.includes("no license"))
+        toast.error("This user has no license to detach.");
+      else if (isUnauthorized(err)) onLogout();
+      else toast.error("Could not detach the license. Please try again.");
+    } finally {
+      setDetaching(false);
     }
   };
 
@@ -438,6 +473,11 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                               {c.isPaid && c.planName !== "team" && (
                                 <DropdownMenuItem onClick={() => setReissueTarget(c)}>
                                   <RotateCcwKey className="mr-2 h-3.5 w-3.5" /> Reissue license key
+                                </DropdownMenuItem>
+                              )}
+                              {c.isPaid && c.planName !== "team" && (
+                                <DropdownMenuItem onClick={() => setDetachTarget(c)}>
+                                  <Unlink className="mr-2 h-3.5 w-3.5" /> Detach license (free the key)
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem
@@ -769,6 +809,48 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
             </Button>
             <Button size="sm" onClick={() => setReissuedKey(null)}>
               Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Detach license — confirm modal */}
+      <Dialog
+        open={detachTarget !== null}
+        onOpenChange={(v) => {
+          if (!v && !detaching) setDetachTarget(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Unlink className="h-4 w-4 text-[#2563EB]" /> Detach license
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-slate-600 dark:text-slate-300">
+              This releases the license from{" "}
+              <span className="font-medium">{detachTarget?.email ?? detachTarget?.userId}</span>{" "}
+              ({detachTarget?.planName ?? "paid"} plan) so the key can be activated on another
+              account.
+            </p>
+            <ul className="rounded-md bg-slate-50 dark:bg-slate-800/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+              <li>• All of their activated devices are unbound immediately.</li>
+              <li>• Their account drops back to the free plan.</li>
+              <li>• The license key becomes reusable — anyone with it can activate again.</li>
+            </ul>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={detaching}
+              onClick={() => setDetachTarget(null)}
+            >
+              Cancel
+            </Button>
+            <Button size="sm" disabled={detaching} onClick={() => void confirmDetach()}>
+              {detaching ? "Detaching…" : "Detach license"}
             </Button>
           </DialogFooter>
         </DialogContent>

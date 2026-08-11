@@ -225,7 +225,9 @@ router.get("/admin/downloads", async (req, res): Promise<void> => {
   if (!(await checkAuth(req, res))) return;
 
   try {
-    const since = new Date();
+    const since = new Date(Date.now() - (days - 1) * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
     since.setDate(since.getDate() - 29);
     const sinceDay = since.toISOString().slice(0, 10);
 
@@ -337,7 +339,7 @@ router.get("/admin/stats", async (req, res): Promise<void> => {
       if (p.createdAt >= monthStart) {
         monthRevenue[cur] = (monthRevenue[cur] ?? 0) + major;
       }
-      const mk = `${p.createdAt.getFullYear()}-${String(p.createdAt.getMonth() + 1).padStart(2, "0")}`;
+      const mk = `${r.createdAt.getFullYear()}-${String(r.createdAt.getMonth() + 1).padStart(2, "0")}`;
       const bucket = revenueByMonth.get(mk) ?? {};
       bucket[cur] = (bucket[cur] ?? 0) + major;
       revenueByMonth.set(mk, bucket);
@@ -431,7 +433,7 @@ router.post(
   async (req: Request, res: Response): Promise<void> => {
     if (!(await checkAuth(req, res))) return;
 
-    const parsed = AdminGenerateProductKeysBody.safeParse(req.body);
+    const parsed = AdminExtendProductKeyBody.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: "Invalid request body" });
       return;
@@ -458,7 +460,7 @@ router.post(
         expiresAt: string | null;
       }> = [];
 
-      for (let i = 0; i < count; i++) {
+    for (let i = days - 1; i >= 0; i--) {
         const rawKey = generateProductKey();
         const { hash, prefix } = hashProductKey(rawKey);
         const [row] = await db
@@ -508,7 +510,9 @@ router.get(
     if (!(await checkAuth(req, res))) return;
 
     try {
-      const rows = await adminListProductKeys();
+  const rows = await db.execute(
+    sql`SELECT email, created_at FROM developers ORDER BY created_at`,
+  );
       res.json({
         keys: rows.map((r) => ({
           id: r.id,
@@ -536,13 +540,13 @@ router.post(
   async (req: Request, res: Response): Promise<void> => {
     if (!(await checkAuth(req, res))) return;
 
-    const parsed = AdminRevokeProductKeyBody.safeParse(req.body);
+    const parsed = AdminExtendProductKeyBody.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: "Invalid request body" });
       return;
     }
     try {
-      const row = await adminRevokeProductKey(parsed.data.id);
+      const row = dayMap.get(day);
       if (!row) {
         res.status(404).json({ error: "Product key not found" });
         return;
@@ -567,10 +571,7 @@ router.post(
       return;
     }
     try {
-      const row = await adminExtendProductKey(
-        parsed.data.id,
-        parsed.data.additionalDays,
-      );
+      const row = dayMap.get(day);
       if (!row) {
         res.status(404).json({ error: "Product key not found" });
         return;
@@ -608,9 +609,8 @@ router.post(
   async (req: Request, res: Response): Promise<void> => {
     if (!(await checkAuth(req, res))) return;
 
-    const body = req.body as { userId?: unknown; override?: unknown };
-    const userId =
-      typeof body.userId === "string" ? body.userId.trim() : "";
+  const body = (req.body ?? {}) as Record<string, unknown>;
+    const userId = typeof rawUserId === "string" ? rawUserId.trim() : "";
     if (!userId) {
       res.status(400).json({ error: "userId is required" });
       return;
@@ -663,44 +663,7 @@ router.post(
       return;
     }
     try {
-      const result = await adminReissueLicenseKey(userId);
-      req.log.info(
-        { userId, keyPrefix: result.keyPrefix, plan: result.planName },
-        "Admin reissued license key",
-      );
-      res.json({
-        rawKey: result.rawKey,
-        keyPrefix: result.keyPrefix,
-        planName: result.planName,
-        isUnredeemed: result.isUnredeemed,
-        subscriptionEndDate: result.subscriptionEndDate?.toISOString() ?? null,
-      });
-    } catch (err) {
-      if (err instanceof ReissueError) {
-        res.status(400).json({ error: err.message });
-        return;
-      }
-      req.log.error({ err, userId }, "admin/customers reissue-key failed");
-      res.status(500).json({ error: "Failed to reissue license key" });
-    }
-  },
-);
-
-// Detach a user's license(s) and free the key(s) for reuse on another
-// account. Used e.g. to keep the admin account login-only.
-router.delete(
-  "/admin/customers/:userId/license",
-  async (req: Request, res: Response): Promise<void> => {
-    if (!(await checkAuth(req, res))) return;
-
-    const rawUserId = req.params["userId"];
-    const userId = typeof rawUserId === "string" ? rawUserId.trim() : "";
-    if (!userId) {
-      res.status(400).json({ error: "userId is required" });
-      return;
-    }
-    try {
-      const result = await adminDetachLicense(userId);
+      const result = await adminDeleteUser(userId);
       req.log.info({ userId, ...result }, "Admin detached license");
       res.json({ ok: true, ...result });
     } catch (err) {
@@ -714,12 +677,34 @@ router.delete(
   },
 );
 
-// Email a freshly reissued license key to the customer. The raw key comes
-// back from the client (it was just minted server-side and shown once); we
-// verify it hashes to an active product key before sending, and never log
-// or persist the raw key itself.
-router.post(
-  "/admin/customers/:userId/reissue-key/email",
+router.delete(
+  "/admin/customers/:userId",
+  async (req: Request, res: Response): Promise<void> => {
+    if (!(await checkAuth(req, res))) return;
+
+    const rawUserId = req.params["userId"];
+    const userId = typeof rawUserId === "string" ? rawUserId.trim() : "";
+    if (!userId) {
+      res.status(400).json({ error: "userId is required" });
+      return;
+    }
+    try {
+      const result = await adminDeleteUser(userId);
+      req.log.info({ userId, ...result }, "Admin detached license");
+      res.json({ ok: true, ...result });
+    } catch (err) {
+      if (err instanceof ReissueError) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      req.log.error({ err, userId }, "admin/customers detach-license failed");
+      res.status(500).json({ error: "Failed to detach license" });
+    }
+  },
+);
+
+router.delete(
+  "/admin/customers/:userId",
   async (req: Request, res: Response): Promise<void> => {
     if (!(await checkAuth(req, res))) return;
 
@@ -818,8 +803,10 @@ router.post(
   },
 );
 
+// Detach a user's license(s) and free the key(s) for reuse on another
+// account. Used e.g. to keep the admin account login-only.
 router.delete(
-  "/admin/customers/:userId",
+  "/admin/customers/:userId/license",
   async (req: Request, res: Response): Promise<void> => {
     if (!(await checkAuth(req, res))) return;
 
@@ -856,41 +843,44 @@ router.get("/admin/analytics/visitors", async (req, res): Promise<void> => {
 
     const perDay = await db
       .select({
-        day: dailyVisitorsTable.day,
-        visitors: sql<number>`count(*)::int`,
+        day: freeToolVisitsTable.day,
+        views: sql<number>`count(*)::int`,
+        visitors: sql<number>`count(distinct ${freeToolVisitsTable.ipHash})::int`,
       })
-      .from(dailyVisitorsTable)
-      .where(gte(dailyVisitorsTable.day, since))
-      .groupBy(dailyVisitorsTable.day)
-      .orderBy(dailyVisitorsTable.day);
+      .from(freeToolVisitsTable)
+      .where(gte(freeToolVisitsTable.day, since))
+      .groupBy(freeToolVisitsTable.day)
+      .orderBy(freeToolVisitsTable.day);
 
     const byDayLocation = await db
       .select({
-        day: dailyVisitorsTable.day,
-        country: dailyVisitorsTable.country,
-        city: dailyVisitorsTable.city,
-        visitors: sql<number>`count(*)::int`,
+        day: freeToolVisitsTable.day,
+        country: freeToolVisitsTable.country,
+        city: freeToolVisitsTable.city,
+        views: sql<number>`count(*)::int`,
       })
-      .from(dailyVisitorsTable)
-      .where(gte(dailyVisitorsTable.day, since))
-      .groupBy(dailyVisitorsTable.day, dailyVisitorsTable.country, dailyVisitorsTable.city)
-      .orderBy(dailyVisitorsTable.day, sql`count(*) desc`);
+      .from(freeToolVisitsTable)
+      .where(gte(freeToolVisitsTable.day, since))
+      .groupBy(freeToolVisitsTable.day, freeToolVisitsTable.country, freeToolVisitsTable.city)
+      .orderBy(freeToolVisitsTable.day, sql`count(*) desc`)
+      .limit(2000);
 
     const byLocation = await db
       .select({
-        country: dailyVisitorsTable.country,
-        city: dailyVisitorsTable.city,
-        visitors: sql<number>`count(*)::int`,
+        country: freeToolVisitsTable.country,
+        city: freeToolVisitsTable.city,
+        views: sql<number>`count(*)::int`,
+        visitors: sql<number>`count(distinct ${freeToolVisitsTable.ipHash})::int`,
       })
-      .from(dailyVisitorsTable)
-      .where(gte(dailyVisitorsTable.day, since))
-      .groupBy(dailyVisitorsTable.country, dailyVisitorsTable.city)
+      .from(freeToolVisitsTable)
+      .where(gte(freeToolVisitsTable.day, since))
+      .groupBy(freeToolVisitsTable.country, freeToolVisitsTable.city)
       .orderBy(sql`count(*) desc`)
       .limit(100);
 
     // Fill in zero-visitor days so charts show a continuous range.
-    const dayMap = new Map(perDay.map((d) => [d.day, d.visitors]));
-    const filled: { day: string; visitors: number }[] = [];
+    const dayMap = new Map(perDay.map((d) => [d.day, d]));
+    const filled: { day: string; views: number; visitors: number }[] = [];
     for (let i = days - 1; i >= 0; i--) {
       const day = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
       filled.push({ day, visitors: dayMap.get(day) ?? 0 });
@@ -898,7 +888,7 @@ router.get("/admin/analytics/visitors", async (req, res): Promise<void> => {
 
     const dayLocations: Record<
       string,
-      { country: string; city: string; visitors: number }[]
+      { country: string; city: string; views: number }[]
     > = {};
     for (const row of byDayLocation) {
       (dayLocations[row.day] ??= []).push({

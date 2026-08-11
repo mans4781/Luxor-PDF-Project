@@ -40,9 +40,11 @@ export interface DetachedLicense {
  * Admin support action: detaches all licenses from a user's account and
  * frees the underlying product keys for reuse on another account.
  *
- * - License rows and device bindings for the user are deleted.
- * - Each affected key's activation count is reset to 0 (status untouched),
- *   so the same key can be activated again by someone else.
+ * - The user's ACTIVE license rows are marked deactivated (history kept) and
+ *   their device bindings are deleted.
+ * - Each affected key's activation count is recomputed from the licenses
+ *   still active on it (key status untouched), so freed slots can be
+ *   activated again by someone else without over-allocating shared keys.
  * - user_licenses drops back to free (is_paid=false, plan cleared).
  */
 export async function adminDetachLicense(
@@ -50,10 +52,14 @@ export async function adminDetachLicense(
   now: Date = new Date(),
 ): Promise<DetachedLicense> {
   return db.transaction(async (tx) => {
+    // Only ACTIVE license rows are detached; deactivated/historical rows are
+    // audit evidence and stay untouched.
     const rows = await tx
       .select()
       .from(licensesTable)
-      .where(eq(licensesTable.userId, userId))
+      .where(
+        and(eq(licensesTable.userId, userId), eq(licensesTable.status, "active")),
+      )
       .for("update");
     if (rows.length === 0) {
       throw new ReissueError("This user has no license to detach.");
@@ -61,7 +67,13 @@ export async function adminDetachLicense(
 
     const keyIds = [...new Set(rows.map((r) => r.productKeyId))];
 
-    await tx.delete(licensesTable).where(eq(licensesTable.userId, userId));
+    // Preserve history: mark the rows deactivated instead of deleting them.
+    await tx
+      .update(licensesTable)
+      .set({ status: "deactivated", deactivatedAt: now, updatedAt: now })
+      .where(
+        and(eq(licensesTable.userId, userId), eq(licensesTable.status, "active")),
+      );
     const removedDevices = (
       await tx
         .delete(devicesTable)
@@ -69,14 +81,34 @@ export async function adminDetachLicense(
         .returning({ id: devicesTable.deviceId })
     ).length;
 
+    // Recount each key's activations from the licenses that are STILL active
+    // (a multi-activation key may be legitimately shared with other accounts,
+    // so resetting to zero would over-allocate it). Locking the key row
+    // serializes this with the activation flow's guarded increment.
     const freedKeyPrefixes: string[] = [];
     for (const keyId of keyIds) {
-      const [updated] = await tx
-        .update(productKeysTable)
-        .set({ currentActivations: 0, updatedAt: now })
+      const [key] = await tx
+        .select()
+        .from(productKeysTable)
         .where(eq(productKeysTable.id, keyId))
-        .returning({ keyPrefix: productKeysTable.keyPrefix });
-      if (updated) freedKeyPrefixes.push(updated.keyPrefix);
+        .for("update");
+      if (!key) continue;
+      const [count] = await tx
+        .select({ remaining: sql<number>`count(*)::int` })
+        .from(licensesTable)
+        .where(
+          and(
+            eq(licensesTable.productKeyId, keyId),
+            eq(licensesTable.status, "active"),
+          ),
+        );
+      const remaining = Math.min(key.maxActivations, count?.remaining ?? 0);
+      await tx
+        .update(productKeysTable)
+        .set({ currentActivations: remaining, updatedAt: now })
+        .where(eq(productKeysTable.id, keyId));
+      // Only report the key as freed if a slot actually opened up.
+      if (remaining < key.maxActivations) freedKeyPrefixes.push(key.keyPrefix);
     }
 
     await tx

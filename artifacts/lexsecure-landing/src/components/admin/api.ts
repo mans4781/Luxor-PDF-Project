@@ -109,6 +109,23 @@ export const adminApi = {
           },
         ),
 
+  detachLicense: (token: string, userId: string) =>
+    isDevPreview(token)
+      ? Promise.resolve({
+          ok: true,
+          freedKeyPrefixes: ["LUXOR-SAMP"],
+          removedLicenses: 1,
+          removedDevices: 1,
+        })
+      : request<{
+          ok: boolean;
+          freedKeyPrefixes: string[];
+          removedLicenses: number;
+          removedDevices: number;
+        }>(token, `/customers/${encodeURIComponent(userId)}/license`, {
+          method: "DELETE",
+        }),
+
   deleteCustomer: (token: string, userId: string) =>
     isDevPreview(token)
       ? Promise.resolve({})
