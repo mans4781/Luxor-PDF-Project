@@ -289,6 +289,8 @@ export function CloudPicker({ onFiles, accept, multiple = false, buttonClass }: 
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [menuSide, setMenuSide] = useState<"right" | "left">("right");
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const mountedRef = useRef(true);
   useEffect(() => {
@@ -352,6 +354,7 @@ export function CloudPicker({ onFiles, accept, multiple = false, buttonClass }: 
     >
       <div className="relative">
       <button
+        ref={buttonRef}
         type="button"
         aria-label="Add file from cloud drive"
         aria-haspopup="menu"
@@ -359,6 +362,9 @@ export function CloudPicker({ onFiles, accept, multiple = false, buttonClass }: 
         title="Add from Google Drive, Dropbox, OneDrive or Zoho"
         data-testid="button-cloud-picker"
         onClick={() => {
+          const rect = buttonRef.current?.getBoundingClientRect();
+          // menu is 224px wide + 56px offset; flip left if it would leave the screen
+          setMenuSide(rect && rect.right + 288 > window.innerWidth ? "left" : "right");
           setOpen((o) => !o);
           setNotice(null);
         }}
@@ -374,7 +380,9 @@ export function CloudPicker({ onFiles, accept, multiple = false, buttonClass }: 
         <div
           role="menu"
           aria-label="Cloud drives"
-          className="absolute left-full top-1/2 ml-14 w-56 -translate-y-1/2 overflow-hidden rounded-xl border border-slate-200 bg-white py-1.5 text-left shadow-xl shadow-slate-900/10"
+          className={`absolute top-1/2 w-56 -translate-y-1/2 overflow-hidden rounded-xl border border-slate-200 bg-white py-1.5 text-left shadow-xl shadow-slate-900/10 ${
+            menuSide === "right" ? "left-full ml-14" : "right-full mr-4"
+          }`}
         >
           {PROVIDERS.map((p) => (
             <button
