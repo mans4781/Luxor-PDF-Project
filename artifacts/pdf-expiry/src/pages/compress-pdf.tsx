@@ -1,3 +1,4 @@
+import { CloudPicker } from "@/components/cloud-picker";
 import { useState, useRef, useCallback } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import { PDFDocument } from "@cantoo/pdf-lib";
@@ -95,12 +96,17 @@ function FileDropZone({
       }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
-      className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all select-none ${
+      className={`relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all select-none ${
         dragging
           ? (accentDrop?.drag ?? "border-teal-400 bg-teal-50 scale-[1.01]")
           : (accentDrop?.idle ?? "border-teal-200 hover:border-teal-400 hover:bg-teal-50/60 bg-gradient-to-br from-teal-50/50 to-cyan-50/30")
       }`}
     >
+      <CloudPicker
+        accept=".pdf"
+        onFiles={(files) => upload.requireAuth(() => onFiles(files))}
+        buttonClass={`flex h-9 w-9 items-center justify-center rounded-full ${accentDrop?.iconBg ?? "bg-gradient-to-br from-teal-500 to-cyan-600"} text-white opacity-90 shadow-md transition-all hover:scale-105 hover:opacity-100 hover:shadow-lg`}
+      />
       <div className={`w-14 h-14 ${accentDrop?.iconBg ?? "bg-gradient-to-br from-teal-500 to-cyan-600"} rounded-2xl flex items-center justify-center shadow-md mx-auto mb-3 opacity-85`}>
         <Upload className="w-7 h-7 text-white" />
       </div>

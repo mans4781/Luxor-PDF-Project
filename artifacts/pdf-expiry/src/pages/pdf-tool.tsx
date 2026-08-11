@@ -1,3 +1,4 @@
+import { CloudPicker } from "@/components/cloud-picker";
 import { useState, useRef, useCallback } from "react";
 import { Layout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -93,10 +94,16 @@ function FileDropZone({
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
-      className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all select-none ${
+      className={`relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all select-none ${
         dragging ? c.drag : c.idle
       }`}
     >
+      <CloudPicker
+        accept={accept}
+        multiple={multiple}
+        onFiles={(files) => upload.requireAuth(() => onFiles(files))}
+        buttonClass={`flex h-9 w-9 items-center justify-center rounded-full ${c.iconBg} text-white opacity-90 shadow-md transition-all hover:scale-105 hover:opacity-100 hover:shadow-lg`}
+      />
       <div className={`w-14 h-14 ${c.iconBg} rounded-2xl flex items-center justify-center shadow-md mx-auto mb-3 opacity-85`}>
         <Upload className={`w-7 h-7 ${c.icon}`} />
       </div>
