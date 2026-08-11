@@ -150,6 +150,37 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [zoom, setZoom] = useState(ZOOM_BASE);
+  // Smooth ctrl+wheel zoom (Edge-style): scale the rendered pages with a CSS
+  // transform during the gesture, commit the real zoom once it pauses.
+  const zoomRef = useRef(zoom);
+  const zoomLayerRef = useRef<HTMLDivElement | null>(null);
+  const smoothZoomRef = useRef<{
+    target: number | null;
+    timer: ReturnType<typeof setTimeout> | null;
+    baseScrollTop: number;
+    baseScrollLeft: number;
+    /** True only while the gesture's own commit is applying setZoom. */
+    committing: boolean;
+  }>({ target: null, timer: null, baseScrollTop: 0, baseScrollLeft: 0, committing: false });
+  const pendingScrollRef = useRef<{ top: number; left: number | null } | null>(null);
+  /** Abort an in-flight smooth-zoom gesture (clears transform + timer). */
+  const cancelSmoothZoom = useCallback(() => {
+    const s = smoothZoomRef.current;
+    if (s.timer) { clearTimeout(s.timer); s.timer = null; }
+    s.target = null;
+    pendingScrollRef.current = null;
+    const lay = zoomLayerRef.current;
+    if (lay) { lay.style.transform = ""; lay.style.transformOrigin = ""; lay.style.willChange = ""; }
+  }, []);
+  // Any zoom change that did NOT come from the gesture's own commit (slider,
+  // toolbar buttons, keyboard, fit commands…) invalidates the gesture — its
+  // transform and anchor math are based on the previous layout.
+  useEffect(() => {
+    zoomRef.current = zoom;
+    const s = smoothZoomRef.current;
+    if (s.committing) { s.committing = false; return; }
+    if (s.target !== null || s.timer) cancelSmoothZoom();
+  }, [zoom, cancelSmoothZoom]);
   const [rotation, setRotation] = useState(0);
   const [showContents, setShowContents] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -516,18 +547,99 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     return () => window.removeEventListener("keydown", handler);
   }, [totalPages, searchOpen, undo, active]);
 
-  // Ctrl+Scroll → zoom PDF, not the browser
+  // Ctrl+Scroll → zoom PDF, not the browser.
+  // Edge-style smooth zoom: during the wheel gesture we only CSS-scale the
+  // already-rendered pages (cheap, GPU compositing) and once the gesture
+  // pauses (~160ms idle) we commit the final zoom, letting pdf.js re-render
+  // sharp pages exactly once instead of on every wheel tick.
   useEffect(() => {
     const handler = (e: WheelEvent) => {
       if (!e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
+      const s = smoothZoomRef.current;
+      const viewer = viewerRef.current;
+      const layer = zoomLayerRef.current;
+      const committed = zoomRef.current;
+      const cur = s.target ?? committed;
       const delta = e.deltaY < 0 ? 0.1 : -0.1;
-      setZoom(z => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, parseFloat((z + delta).toFixed(2)))));
+      const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, parseFloat((cur + delta).toFixed(2))));
+      if (next === cur) return;
+      if (s.target === null) {
+        // Gesture start: remember the scroll anchor so the point at the
+        // viewport centre stays put while we scale.
+        s.baseScrollTop = viewer?.scrollTop ?? 0;
+        s.baseScrollLeft = viewer?.scrollLeft ?? 0;
+      }
+      s.target = next;
+      const f = next / committed;
+      // Anchor math. Vertical: transform origin is the layer's top edge, so a
+      // content point y (in scroll coords) maps to top + (y - top) * f where
+      // top = layer.offsetTop (the viewer's padding). Horizontal: origin is
+      // the layer's centre, so x maps to cx + (x - cx) * f. We keep the
+      // document point at the viewport centre fixed on both axes.
+      const anchor = (fac: number) => {
+        const v = viewerRef.current;
+        const lay = zoomLayerRef.current;
+        if (!v || !lay) return null;
+        const top = lay.offsetTop;
+        const cx = lay.offsetLeft + lay.offsetWidth / 2;
+        const vh = v.clientHeight;
+        const vw = v.clientWidth;
+        return {
+          top: Math.max(0, top + (s.baseScrollTop + vh / 2 - top) * fac - vh / 2),
+          left: Math.max(0, cx + (s.baseScrollLeft + vw / 2 - cx) * fac - vw / 2),
+        };
+      };
+      if (layer && viewer) {
+        layer.style.transformOrigin = "50% 0";
+        layer.style.transform = `scale(${f})`;
+        layer.style.willChange = "transform";
+        const a = anchor(f);
+        if (a) { viewer.scrollTop = a.top; viewer.scrollLeft = a.left; }
+      }
+      if (s.timer) clearTimeout(s.timer);
+      s.timer = setTimeout(() => {
+        const target = s.target;
+        s.timer = null;
+        s.target = null;
+        const lay = zoomLayerRef.current;
+        if (lay) {
+          lay.style.transform = "";
+          lay.style.transformOrigin = "";
+          lay.style.willChange = "";
+        }
+        if (target != null && target !== zoomRef.current) {
+          // Re-apply the anchor after the real re-layout: the CSS transform
+          // never grew the scrollable area, so the live scroll position may
+          // have been clamped during the gesture.
+          pendingScrollRef.current = anchor(target / zoomRef.current);
+          s.committing = true;
+          setZoom(target);
+        }
+      }, 160);
     };
     if (!active) return;
     window.addEventListener("wheel", handler, { passive: false });
-    return () => window.removeEventListener("wheel", handler);
-  }, [active]);
+    return () => {
+      window.removeEventListener("wheel", handler);
+      cancelSmoothZoom();
+    };
+  }, [active, cancelSmoothZoom]);
+
+  // Rotation or split-view toggles re-layout every page — an in-flight
+  // gesture's transform and anchor are meaningless afterwards.
+  useEffect(() => { cancelSmoothZoom(); }, [rotation, splitView, cancelSmoothZoom]);
+
+  // After a smooth-zoom commit re-layout, restore the scroll anchor.
+  useLayoutEffect(() => {
+    const pending = pendingScrollRef.current;
+    if (!pending) return;
+    pendingScrollRef.current = null;
+    const v = viewerRef.current;
+    if (!v) return;
+    v.scrollTop = pending.top;
+    if (pending.left != null) v.scrollLeft = pending.left;
+  }, [zoom]);
 
   // Stop speech on unmount
   useEffect(() => () => speechSynthesis.cancel(), []);
@@ -1937,6 +2049,7 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       )}
 
       <div ref={viewerRef} className={`luxor-viewer${showContents ? " viewer-with-panel" : ""}`}>
+        <div ref={zoomLayerRef} className="zoom-layer">
         {pdfDoc && (splitView
           /* ── Two-page spread: render pairs side by side ── */
           ? Array.from({ length: Math.ceil(totalPages / 2) }, (_, i) => {
@@ -2014,6 +2127,7 @@ defaultPageSize={defaultPageSize}
               />
             ))
         )}
+        </div>
       </div>
 
       <input

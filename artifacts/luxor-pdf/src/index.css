@@ -445,6 +445,23 @@ button, input, textarea, select {
   flex-shrink: 0;
 }
 
+/* Inner layer that the smooth ctrl+wheel zoom scales with a CSS transform
+   while the gesture is in flight. Reproduces the page-column layout the
+   viewer had when pages were its direct children. */
+.zoom-layer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  width: max-content;
+  min-width: 100%;
+}
+.zoom-layer > * {
+  margin-left: auto;
+  margin-right: auto;
+  flex-shrink: 0;
+}
+
 /* Excel-style zoom slider at the right of the status bar. */
 .zoom-slider-group {
   display: flex;
