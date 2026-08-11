@@ -434,6 +434,9 @@ button, input, textarea, select {
   align-items: flex-start;
   padding: 20px 20px 80px;
   gap: 16px;
+  /* One-finger panning stays native; two-finger pinch is handled by the
+     viewer's own touch handlers (smooth PDF zoom), not browser page zoom. */
+  touch-action: pan-x pan-y;
 }
 
 /* Center pages horizontally while they fit; once a page is wider than the

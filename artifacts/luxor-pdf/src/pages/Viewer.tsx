@@ -651,6 +651,57 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
     };
   }, [active, cancelSmoothZoom, smoothZoomTo]);
 
+  // Touchscreen two-finger pinch → same smooth-zoom gesture as ctrl+wheel.
+  // Distance ratio between the fingers scales the zoom that was committed
+  // when the pinch began; the anchor stays the viewport centre (same math
+  // as the wheel path). Commit happens once when a finger lifts. One-finger
+  // scrolling is untouched — we only intercept 2-touch moves.
+  useEffect(() => {
+    if (!active) return;
+    const viewer = viewerRef.current;
+    if (!viewer) return;
+    const dist = (t: TouchList) => Math.hypot(
+      t[0].clientX - t[1].clientX,
+      t[0].clientY - t[1].clientY,
+    );
+    // null = no pinch in flight
+    let pinch: { startDist: number; startZoom: number } | null = null;
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        pinch = {
+          startDist: Math.max(1, dist(e.touches)),
+          startZoom: smoothZoomRef.current.target ?? zoomRef.current,
+        };
+      } else {
+        pinch = null;
+      }
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!pinch || e.touches.length !== 2) return;
+      // Stop the browser's own page pinch-zoom / scroll while pinching.
+      e.preventDefault();
+      const factor = dist(e.touches) / pinch.startDist;
+      smoothZoomTo(pinch.startZoom * factor);
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      if (!pinch) return;
+      if (e.touches.length < 2) {
+        pinch = null;
+        commitSmoothZoom();
+      }
+    };
+    viewer.addEventListener("touchstart", onTouchStart, { passive: true });
+    viewer.addEventListener("touchmove", onTouchMove, { passive: false });
+    viewer.addEventListener("touchend", onTouchEnd);
+    viewer.addEventListener("touchcancel", onTouchEnd);
+    return () => {
+      viewer.removeEventListener("touchstart", onTouchStart);
+      viewer.removeEventListener("touchmove", onTouchMove);
+      viewer.removeEventListener("touchend", onTouchEnd);
+      viewer.removeEventListener("touchcancel", onTouchEnd);
+    };
+  }, [active, smoothZoomTo, commitSmoothZoom, pdfDoc]);
+
   // Rotation or split-view toggles re-layout every page — an in-flight
   // gesture's transform and anchor are meaningless afterwards.
   useEffect(() => { cancelSmoothZoom(); }, [rotation, splitView, cancelSmoothZoom]);
