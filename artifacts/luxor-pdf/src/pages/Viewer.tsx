@@ -112,10 +112,34 @@ pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(
   { type: "module" }
 );
 
-const createDedicatedPdfWorker = () => {
+const spawnPdfWorker = () => {
   const port = new Worker(new URL("../pdf-worker.ts", import.meta.url), { type: "module" });
   const worker = pdfjsLib.PDFWorker.create({ port });
   return { port, worker };
+};
+
+// Keep one worker pre-spawned so the first file open doesn't pay the
+// worker startup (script download/parse/wasm init) on the critical path.
+// Taking the warm worker immediately provisions a replacement.
+let warmPdfWorker: ReturnType<typeof spawnPdfWorker> | null = null;
+const provisionWarmWorker = () => {
+  if (warmPdfWorker) return;
+  try { warmPdfWorker = spawnPdfWorker(); } catch { warmPdfWorker = null; }
+};
+if (typeof window !== "undefined") {
+  if ("requestIdleCallback" in window) {
+    (window as Window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(provisionWarmWorker);
+  } else {
+    setTimeout(provisionWarmWorker, 200);
+  }
+}
+
+const createDedicatedPdfWorker = () => {
+  const taken = warmPdfWorker;
+  warmPdfWorker = null;
+  // Replace the warm worker off the critical path.
+  setTimeout(provisionWarmWorker, 0);
+  return taken ?? spawnPdfWorker();
 };
 
 // Actual zoom values where 1.875 = "100%" (the new baseline; old 125%)
@@ -546,10 +570,15 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       }
 
       // Detect scanned pages in the background (used by the search UI).
-      detectScanned(doc).then((scanned) => {
+      // Deferred so it doesn't compete with the first page render for the
+      // pdf worker; the search UI only needs it once the user searches.
+      setTimeout(() => {
         if (cancelled) return;
-        setIsScanned(scanned);
-      });
+        detectScanned(doc).then((scanned) => {
+          if (cancelled) return;
+          setIsScanned(scanned);
+        });
+      }, 1500);
     }).catch((err: any) => {
       if (cancelled) return;
       console.error("PDF load error:", err);

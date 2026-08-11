@@ -31,7 +31,14 @@ function PageThumb({
   // visible part of the panel. With hundreds of pages, rendering every
   // thumbnail eagerly would compete with the main page renders and hang
   // the UI on open.
-  const [inView, setInView] = useState(pageNum <= 12);
+  // The first pages become eligible only after a short delay, so thumbnail
+  // renders never compete with the main first-page render for the worker.
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    if (pageNum > 12) return;
+    const t = setTimeout(() => setInView(true), 900);
+    return () => clearTimeout(t);
+  }, [pageNum]);
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
