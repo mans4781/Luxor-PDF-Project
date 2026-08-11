@@ -352,6 +352,7 @@ export function CloudPicker({ onFiles, accept, multiple = false, buttonClass }: 
       onDragOver={(e) => e.stopPropagation()}
       onDrop={(e) => e.stopPropagation()}
     >
+      <div className="relative">
       <button
         type="button"
         aria-label="Add file from cloud drive"
@@ -370,15 +371,12 @@ export function CloudPicker({ onFiles, accept, multiple = false, buttonClass }: 
       >
         <CloudUpload className="h-6 w-6" strokeWidth={2} />
       </button>
-      <p className="mt-2 text-center text-sm font-medium leading-tight text-slate-600">
-        Add files from Drive
-      </p>
 
       {open && (
         <div
           role="menu"
           aria-label="Cloud drives"
-          className="absolute right-0 top-11 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1.5 text-left shadow-xl shadow-slate-900/10 sm:left-0 sm:right-auto"
+          className="absolute left-full top-0 ml-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1.5 text-left shadow-xl shadow-slate-900/10"
         >
           <p className="px-3 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
             Add from cloud
@@ -414,6 +412,10 @@ export function CloudPicker({ onFiles, accept, multiple = false, buttonClass }: 
           )}
         </div>
       )}
+      </div>
+      <p className="mt-2 text-center text-sm font-medium leading-tight text-slate-600">
+        Add files from Drive
+      </p>
     </div>
   );
 }
