@@ -97,6 +97,18 @@ export const adminApi = {
           method: "POST",
         }),
 
+  emailReissuedKey: (token: string, userId: string, rawKey: string) =>
+    isDevPreview(token)
+      ? Promise.resolve({ sent: true, recipient: "demo@example.com" })
+      : request<{ sent: boolean; recipient: string }>(
+          token,
+          `/customers/${encodeURIComponent(userId)}/reissue-key/email`,
+          {
+            method: "POST",
+            body: JSON.stringify({ rawKey }),
+          },
+        ),
+
   deleteCustomer: (token: string, userId: string) =>
     isDevPreview(token)
       ? Promise.resolve({})

@@ -95,7 +95,10 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
     rawKey: string;
     planName: string;
     email: string | null;
+    userId: string;
+    emailSentTo: string | null;
   } | null>(null);
+  const [emailingKey, setEmailingKey] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
@@ -196,6 +199,8 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
         rawKey: result.rawKey,
         planName: result.planName,
         email: reissueTarget.email ?? null,
+        userId: reissueTarget.userId,
+        emailSentTo: null,
       });
       setReissueTarget(null);
     } catch (err) {
@@ -206,6 +211,33 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
       else toast.error("Could not reissue the key. Please try again.");
     } finally {
       setReissuing(false);
+    }
+  };
+
+  const emailReissuedKey = async () => {
+    if (!reissuedKey || emailingKey) return;
+    setEmailingKey(true);
+    try {
+      const result = await adminApi.emailReissuedKey(
+        token,
+        reissuedKey.userId,
+        reissuedKey.rawKey,
+      );
+      logAudit(
+        "Reissued key emailed",
+        reissuedKey.userId,
+        "",
+        result.recipient,
+      );
+      toast.success(`License key emailed to ${result.recipient}.`);
+      setReissuedKey({ ...reissuedKey, emailSentTo: result.recipient });
+    } catch (err) {
+      if (isUnauthorized(err)) onLogout();
+      else if (err instanceof Error && err.message.includes("no email"))
+        toast.error("This user has no email address on file.");
+      else toast.error("Could not send the email. Copy the key and share it manually.");
+    } finally {
+      setEmailingKey(false);
     }
   };
 
@@ -715,8 +747,26 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
               Plan: <span className="capitalize">{reissuedKey?.planName}</span> · the previous key
               has been revoked.
             </p>
+            {reissuedKey?.emailSentTo && (
+              <p className="rounded-md bg-emerald-50 dark:bg-emerald-950/50 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-400">
+                Emailed to <span className="font-medium">{reissuedKey.emailSentTo}</span>.
+              </p>
+            )}
           </div>
           <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={emailingKey || !!reissuedKey?.emailSentTo}
+              onClick={() => void emailReissuedKey()}
+            >
+              <MailQuestion className="mr-1.5 h-3.5 w-3.5" />
+              {emailingKey
+                ? "Sending…"
+                : reissuedKey?.emailSentTo
+                  ? "Email sent"
+                  : "Send by email"}
+            </Button>
             <Button size="sm" onClick={() => setReissuedKey(null)}>
               Done
             </Button>
