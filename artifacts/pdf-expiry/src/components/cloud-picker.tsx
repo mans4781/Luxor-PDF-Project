@@ -19,6 +19,7 @@
  */
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { CloudUpload, Loader2 } from "lucide-react";
+import zohoWorkdriveLogo from "@/assets/zoho-workdrive.png";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 declare global {
@@ -232,10 +233,13 @@ const PROVIDERS: Provider[] = [
     configured: !!(GOOGLE_API_KEY && GOOGLE_CLIENT_ID),
     pick: pickFromGoogleDrive,
     icon: (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-        <path fill="#0F9D58" d="M8.6 3.5 1.2 16.3l3.7 6.2 7.4-12.8z" />
-        <path fill="#4285F4" d="m15.4 3.5 7.4 12.8h-7.4L8 3.5z" />
-        <path fill="#FFCD40" d="M4.9 22.5h14.8l3.1-6.2H8z" />
+      <svg viewBox="0 0 87.3 78" className="h-5 w-5" aria-hidden="true">
+        <path fill="#0066da" d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" />
+        <path fill="#00ac47" d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0-1.2 4.5h27.5z" />
+        <path fill="#ea4335" d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.5l5.85 11.5z" />
+        <path fill="#00832d" d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" />
+        <path fill="#2684fc" d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" />
+        <path fill="#ffba00" d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" />
       </svg>
     ),
   },
@@ -256,12 +260,11 @@ const PROVIDERS: Provider[] = [
     configured: !!ONEDRIVE_CLIENT_ID,
     pick: pickFromOneDrive,
     icon: (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-        <path
-          fill="#0364B8"
-          d="M14.5 15.5h5.8a3.7 3.7 0 0 0 .5-7.4 5.6 5.6 0 0 0-10.7-2A4.6 4.6 0 0 0 5 15.5z"
-        />
-        <path fill="#28A8EA" d="M9.2 8.4a4.6 4.6 0 0 1 4 2.3l1.3 4.8H5a4.6 4.6 0 0 1 4.2-7.1z" />
+      <svg viewBox="0 0 32 32" className="h-5 w-5" aria-hidden="true">
+        <path fill="#0364B8" d="M19.484 13.03l6.023-5.766A9.998 9.998 0 0 0 6.994 9.074c.077-.002.15-.012.228-.012a8.11 8.11 0 0 1 3.729.912z" />
+        <path fill="#0078D4" d="M12.049 10.526a8.113 8.113 0 0 0-4.827-1.464c-.078 0-.152.01-.229.012a8.12 8.12 0 0 0-6.55 12.777l8.916-3.75 6.827-2.902 3.29-1.383z" />
+        <path fill="#1490DF" d="M25.507 7.264c-.132-.008-.264-.02-.399-.02a6.472 6.472 0 0 0-2.6.545l-3.024 1.272 3.153 3.808 5.643 1.371 2.455-4.173a6.517 6.517 0 0 0-5.228-2.803z" />
+        <path fill="#28A8EA" d="M.541 21.851a8.118 8.118 0 0 0 6.681 3.502h17.886a6.478 6.478 0 0 0 5.627-9.702l-8.01-1.946z" />
       </svg>
     ),
   },
@@ -269,12 +272,7 @@ const PROVIDERS: Provider[] = [
     id: "zoho",
     name: "Zoho WorkDrive",
     configured: false, // custom OAuth flow — wired once a Zoho client ID is set up
-    icon: (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-        <rect x="2" y="5" width="20" height="14" rx="3" fill="#E42527" />
-        <path d="M7.2 9h9.6v1.6l-6.9 4.4h7V16H7v-1.6l6.9-4.4H7.2z" fill="#fff" />
-      </svg>
-    ),
+    icon: <img src={zohoWorkdriveLogo} alt="" className="h-5 w-5" aria-hidden="true" />,
   },
 ];
 
@@ -393,7 +391,7 @@ export function CloudPicker({ onFiles, accept, multiple = false, buttonClass }: 
                   : "text-slate-400 hover:bg-slate-50")
               }
             >
-              <span className={p.configured ? "" : "opacity-45 grayscale"}>{p.icon}</span>
+              <span>{p.icon}</span>
               <span className="flex-1 text-left">{p.name}</span>
               {busy === p.id ? (
                 <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
