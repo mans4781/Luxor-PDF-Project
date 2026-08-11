@@ -390,7 +390,7 @@ function DownloadsPanel() {
               <div className="text-sm font-semibold text-slate-900 mb-1">Can't show download data</div>
               <p className="text-sm text-slate-600">{error}</p>
               <a
-                href="/admin"
+                href="/lx-console"
                 className="inline-flex items-center gap-1.5 mt-3 text-sm font-semibold text-[#2563EB] hover:underline"
               >
                 Open Admin Console <ArrowUpRight className="w-3.5 h-3.5" />

@@ -16,112 +16,7 @@ import { TicketsPage } from "@/components/admin/pages/tickets";
 import { ReportsPage } from "@/components/admin/pages/reports";
 import { IntegrationsPage } from "@/components/admin/pages/integrations";
 import { SettingsPage } from "@/components/admin/pages/settings";
-
-// ── Login Screen (two-step: email+password, then developer passphrase) ──────
-const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "10px 14px", background: "rgba(255,255,255,0.07)",
-  border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#fff",
-  fontSize: 15, outline: "none", marginBottom: 12, boxSizing: "border-box",
-};
-
-function LoginScreen({ onUnlock }: { onUnlock: (token: string) => void }) {
-  const [step, setStep] = useState<"credentials" | "passphrase">("credentials");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [pin, setPin] = useState("");
-  const [error, setError] = useState("");
-  const [shake, setShake] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const fail = (msg: string) => {
-    setError(msg);
-    setShake(true);
-    setTimeout(() => setShake(false), 500);
-  };
-
-  const submitCredentials = async () => {
-    if (!email || !password) return;
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/login-credentials", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (res.ok) {
-        setError("");
-        setStep("passphrase");
-      } else if (res.status === 429) {
-        fail("Too many attempts. Try again later.");
-      } else {
-        fail("Incorrect email or password");
-        setPassword("");
-      }
-    } catch {
-      setError("Unable to reach server. Try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const submitPassphrase = async () => {
-    if (!pin) return;
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, passphrase: pin }),
-      });
-      if (res.ok) {
-        const data = await res.json() as { token: string };
-        onUnlock(data.token);
-      } else if (res.status === 429) {
-        fail("Too many attempts. Try again later.");
-      } else {
-        fail("Incorrect passphrase");
-        setPin("");
-      }
-    } catch {
-      setError("Unable to reach server. Try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div style={{ minHeight: "100vh", background: "#0f0f13", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-        <div style={{ width: 44, height: 44, background: "linear-gradient(135deg,#2563EB,#6D5DFB)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 20, color: "#fff" }}>L</div>
-        <div>
-          <div style={{ color: "#fff", fontWeight: 700, fontSize: 18 }}>Luxor PDF Admin</div>
-          <div style={{ color: "#555", fontSize: 12 }}>Developer Console</div>
-        </div>
-      </div>
-      <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "36px 40px", width: 340, animation: shake ? "shake 0.4s ease" : undefined }}>
-        {step === "credentials" ? (
-          <>
-            <div style={{ color: "#ccc", fontSize: 14, marginBottom: 16, textAlign: "center" }}>Sign in with your admin account</div>
-            <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(""); }} placeholder="Email" autoFocus autoComplete="username" style={inputStyle} />
-            <input type="password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} onKeyDown={e => { if (e.key === "Enter") { void submitCredentials(); } }} placeholder="Password" autoComplete="current-password" style={inputStyle} />
-            {error && <div style={{ color: "#ef4444", fontSize: 12, marginBottom: 10 }}>{error}</div>}
-            <button onClick={() => { void submitCredentials(); }} disabled={loading} style={{ width: "100%", padding: "11px", background: "#2563EB", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>{loading ? "Checking…" : "Continue"}</button>
-          </>
-        ) : (
-          <>
-            <div style={{ color: "#fff", fontSize: 17, fontWeight: 700, marginBottom: 6, textAlign: "center" }}>Welcome, Admin</div>
-            <div style={{ color: "#ccc", fontSize: 13, marginBottom: 16, textAlign: "center" }}>Enter your developer passphrase to continue</div>
-            <input type="password" value={pin} onChange={e => { setPin(e.target.value); setError(""); }} onKeyDown={e => { if (e.key === "Enter") { void submitPassphrase(); } }} placeholder="Developer passphrase" autoFocus style={inputStyle} />
-            {error && <div style={{ color: "#ef4444", fontSize: 12, marginBottom: 10 }}>{error}</div>}
-            <button onClick={() => { void submitPassphrase(); }} disabled={loading} style={{ width: "100%", padding: "11px", background: "#2563EB", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>{loading ? "Verifying…" : "Unlock Console"}</button>
-            <button onClick={() => { setStep("credentials"); setPin(""); setError(""); }} disabled={loading} style={{ width: "100%", padding: "9px", background: "transparent", border: "none", color: "#888", fontSize: 12, cursor: "pointer", marginTop: 8 }}>← Back to sign in</button>
-          </>
-        )}
-      </div>
-      <style>{`@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }`}</style>
-    </div>
-  );
-}
+import NotFound from "@/pages/not-found";
 
 // ── Console ───────────────────────────────────────────────────────────────────
 function Console({ token, onLogout }: { token: string; onLogout: () => void }) {
@@ -295,16 +190,13 @@ export default function AdminPage() {
     };
   }, [token]);
 
-  const handleUnlock = useCallback((t: string) => {
-    sessionStorage.setItem("luxor_admin_token", t);
-    setToken(t);
-  }, []);
   const handleLogout = useCallback(() => {
     sessionStorage.removeItem("luxor_admin_token");
     sessionStorage.removeItem("luxor_admin_dev_preview");
-    // Never leave /admin: clear the unlock and re-probe. If the developer
-    // session is still valid (e.g. the 401 was transient), the probe silently
-    // re-unlocks the console; otherwise the admin login screen is shown.
+    // Clear the unlock and re-probe. If the developer session is still valid
+    // (e.g. the 401 was transient), the probe silently re-unlocks the
+    // console; otherwise the page renders as a plain 404 — the only way in
+    // is signing in with the admin email + passphrases.
     setToken("");
     setProbing(true);
   }, []);
@@ -316,7 +208,9 @@ export default function AdminPage() {
       </div>
     );
   }
-  if (!token) return <LoginScreen onUnlock={handleUnlock} />;
+  // No login form here: without a verified admin session this page is
+  // indistinguishable from a missing page.
+  if (!token) return <NotFound />;
   return (
     <>
       {isPreview && (

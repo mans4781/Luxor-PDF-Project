@@ -23,3 +23,8 @@ Owner preference: after a successful passphrase verification, developers are red
 **Session-based admin auth rule:** admin routes accept EITHER the `x-admin-token` header OR a verified dev Clerk session. Cookie-based session auth MUST keep the same-origin CSRF guard (Origin/Referer must match request host; header-less requests trusted only for GET/HEAD) — the API's global CORS reflects arbitrary origins with credentials, so dropping this guard reopens cross-site admin actions. Token auth needs no CSRF guard (custom headers can't be sent cross-site).
 
 Related constraint: Replit-managed Clerk supports only `email_code` verification and has name attributes disabled — names live in `unsafeMetadata` (see clerk-signup-constraints.md).
+
+## Admin console access (Aug 2026)
+- `/admin` on the landing site is deliberately a 404 for everyone (route removed). The console lives at the unlisted path `/lx-console`.
+- The ONLY UI entry: sign in on the PDF app with the admin/developer email + password → two-passphrase step → auto-redirect to `/lx-console`. The old admin email/password login form was removed.
+- `/lx-console` renders the NotFound page unless the server probe (`/api/admin/session`, verified dev session) succeeds; dev builds keep `?dev=1` sample-data preview. `x-admin-token` still works for API/curl.

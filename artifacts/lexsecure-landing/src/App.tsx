@@ -74,7 +74,9 @@ function Router() {
       <Route path="/download" component={DownloadPage} />
       <Route path="/thank-you" component={DownloadPage} />
       <Route path="/brand" component={BrandPage} />
-      <Route path="/admin" component={AdminPage} />
+      {/* The admin console lives at an unlisted path; /admin itself is a 404.
+          Access: sign in with the admin email + developer passphrases. */}
+      <Route path="/lx-console" component={AdminPage} />
       <Route path="/developer/login" component={DeveloperLoginPage} />
       <Route path="/developer/dashboard" component={DeveloperDashboardPage} />
       <Route path="/developer" component={DeveloperLoginPage} />

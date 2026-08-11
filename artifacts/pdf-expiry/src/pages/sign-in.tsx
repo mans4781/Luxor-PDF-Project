@@ -220,9 +220,9 @@ export default function SignInPage() {
       const data = (await res.json()) as { verified?: boolean };
       if (data.verified) {
         // Developers go straight to the admin dashboard after the
-        // passphrase step (owner preference). The marketing site (and its
-        // /admin page) is served at the suite root in every environment.
-        window.location.href = "/admin";
+        // passphrase step (owner preference). The console lives at an
+        // unlisted path on the marketing site; /admin itself is a 404.
+        window.location.href = "/lx-console";
         return;
       }
       setDevError("One or both passphrases are incorrect. Please try again.");
