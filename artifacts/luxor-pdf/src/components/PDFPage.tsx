@@ -127,7 +127,7 @@ const MAX_CANVAS_PIXELS = 16_000_000;
  *  rasterized at at least this scale and then downscaled by CSS, so text
  *  and images stay crisp ("4K-like") even on standard 1× displays or at
  *  low zoom. Still subject to MAX_CANVAS_PIXELS above. */
-const MIN_RENDER_SCALE = 2;
+const MIN_RENDER_SCALE = 3;
 
 function genId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
