@@ -115,7 +115,8 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
   const [pageSize, setPageSize] = useState(20);
   const table = useTableState(filtered, {
     pageSize,
-    searchable: (c) => `${c.userId} ${c.planName ?? ""} ${c.tier ?? ""} ${c.accountStatus}`,
+    searchable: (c) =>
+      `${c.userId} ${c.name ?? ""} ${c.email ?? ""} ${c.location ?? ""} ${c.planName ?? ""} ${c.tier ?? ""} ${c.accountStatus}`,
   });
 
   const planOptions = useMemo(() => {
@@ -129,6 +130,9 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
       "luxor-users.csv",
       table.filtered.map((c) => ({
         user_id: c.userId,
+        name: c.name ?? "",
+        email: c.email ?? "",
+        location: c.location ?? "",
         plan: c.planName ?? "free",
         paid: c.isPaid,
         status: c.accountStatus,
@@ -255,6 +259,7 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                     <TableHead className="cursor-pointer" onClick={() => table.toggleSort("userId")}>
                       User
                     </TableHead>
+                    <TableHead>Location</TableHead>
                     <TableHead className="cursor-pointer" onClick={() => table.toggleSort("createdAt")}>
                       Joined
                     </TableHead>
@@ -279,12 +284,25 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                         <TableCell className="text-xs tabular-nums text-slate-400 dark:text-slate-500">
                           {table.page * pageSize + i + 1}
                         </TableCell>
-                        <TableCell className="max-w-52">
-                          <div className="flex items-center gap-2">
-                            <span className="truncate font-mono text-xs" title={c.userId}>
-                              {c.userId}
+                        <TableCell className="max-w-56">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="truncate text-xs font-semibold text-slate-700 dark:text-slate-300" title={c.userId}>
+                              {c.name ?? c.email ?? c.userId}
                             </span>
+                            {c.email && c.name && (
+                              <span className="truncate text-[11px] text-slate-400 dark:text-slate-500" title={c.email}>
+                                {c.email}
+                              </span>
+                            )}
+                            {!c.name && !c.email && (
+                              <span className="truncate font-mono text-[10px] text-slate-400 dark:text-slate-500">
+                                {c.userId}
+                              </span>
+                            )}
                           </div>
+                        </TableCell>
+                        <TableCell className="text-xs text-slate-500 dark:text-slate-400">
+                          {c.location ?? "—"}
                         </TableCell>
                         <TableCell className="text-xs text-slate-500 dark:text-slate-400">{fmtDate(c.createdAt)}</TableCell>
                         <TableCell className="text-xs capitalize">{c.planName ?? "free"}</TableCell>

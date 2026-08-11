@@ -404,7 +404,7 @@ export const SAMPLE_STATS: AdminStats = {
 
 export const SAMPLE_CUSTOMERS: AdminCustomer[] = [
   {
-    userId: "user_sample_ava", planName: "yearly", tier: "pro", isPaid: true,
+    userId: "user_sample_ava", name: "Ava Sharma", email: "ava.sharma@gmail.com", location: "Mumbai, IN", planName: "yearly", tier: "pro", isPaid: true,
     accountStatus: "active", lockReason: null,
     subscriptionStartDate: new Date(Date.now() - 40 * 86_400_000).toISOString(),
     subscriptionEndDate: new Date(Date.now() + 325 * 86_400_000).toISOString(),
@@ -414,7 +414,7 @@ export const SAMPLE_CUSTOMERS: AdminCustomer[] = [
     createdAt: new Date(Date.now() - 90 * 86_400_000).toISOString(),
   },
   {
-    userId: "user_sample_leo", planName: "monthly", tier: "pro", isPaid: true,
+    userId: "user_sample_leo", name: "Leo Martinez", email: "leo.mtz@outlook.com", location: "New York, US", planName: "monthly", tier: "pro", isPaid: true,
     accountStatus: "active", lockReason: null,
     subscriptionStartDate: new Date(Date.now() - 12 * 86_400_000).toISOString(),
     subscriptionEndDate: new Date(Date.now() + 18 * 86_400_000).toISOString(),
@@ -424,7 +424,7 @@ export const SAMPLE_CUSTOMERS: AdminCustomer[] = [
     createdAt: new Date(Date.now() - 60 * 86_400_000).toISOString(),
   },
   {
-    userId: "user_sample_mia", planName: null, tier: null, isPaid: false,
+    userId: "user_sample_mia", name: "Mia Chen", email: "mia.chen@yahoo.com", location: "Singapore, SG", planName: null, tier: null, isPaid: false,
     accountStatus: "active", lockReason: null,
     subscriptionStartDate: null, subscriptionEndDate: null,
     quotaOverrideSecure: null, monthlyUsed: 3, monthlyLimit: 5, monthlyRemaining: 2,
@@ -433,7 +433,7 @@ export const SAMPLE_CUSTOMERS: AdminCustomer[] = [
     createdAt: new Date(Date.now() - 15 * 86_400_000).toISOString(),
   },
   {
-    userId: "user_sample_raj", planName: "lifetime", tier: "pro", isPaid: true,
+    userId: "user_sample_raj", name: "Raj Patel", email: "raj.patel@gmail.com", location: "London, GB", planName: "lifetime", tier: "pro", isPaid: true,
     accountStatus: "active", lockReason: null,
     subscriptionStartDate: new Date(Date.now() - 200 * 86_400_000).toISOString(),
     subscriptionEndDate: null,

@@ -1858,6 +1858,12 @@ export interface AdminCustomerRow {
   /** When the current billing month resets (ISO 8601). */
   resetDate: string | null;
   createdAt: string;
+  /** Full name from the Clerk account, if set. */
+  name: string | null;
+  /** Primary email from the Clerk account. */
+  email: string | null;
+  /** "City, Country" from the user's most recent session, if known. */
+  location: string | null;
 }
 
 /**
@@ -1865,6 +1871,64 @@ export interface AdminCustomerRow {
  * usage/remaining/reset, and admin override. Reuses {@link getLicenseStatus}
  * per user so the figures match exactly what each customer sees.
  */
+interface ClerkProfile {
+  name: string | null;
+  email: string | null;
+  location: string | null;
+}
+
+/**
+ * Batch-fetches Clerk account details (name, primary email) plus the
+ * city/country of each user's most recent session. Failures degrade to
+ * null fields — the customer list must still render if Clerk is down.
+ */
+async function fetchClerkProfiles(userIds: string[]): Promise<Map<string, ClerkProfile>> {
+  const out = new Map<string, ClerkProfile>();
+  if (userIds.length === 0) return out;
+  try {
+    const { clerkClient } = await import("@clerk/express");
+    // Clerk caps userId filters; page in chunks of 100.
+    for (let i = 0; i < userIds.length; i += 100) {
+      const chunk = userIds.slice(i, i + 100);
+      const { data: users } = await clerkClient.users.getUserList({
+        userId: chunk,
+        limit: 100,
+      });
+      for (const u of users) {
+        const primary =
+          u.emailAddresses.find((e) => e.id === u.primaryEmailAddressId) ?? u.emailAddresses[0];
+        const name = [u.firstName, u.lastName].filter(Boolean).join(" ") || null;
+        out.set(u.id, { name, email: primary?.emailAddress ?? null, location: null });
+      }
+    }
+    // Latest-session location, a few users at a time to stay within rate limits.
+    const CONCURRENCY = 5;
+    for (let i = 0; i < userIds.length; i += CONCURRENCY) {
+      await Promise.all(
+        userIds.slice(i, i + CONCURRENCY).map(async (userId) => {
+          try {
+            const { data: sessions } = await clerkClient.sessions.getSessionList({
+              userId,
+              limit: 1,
+            });
+            const activity = sessions[0]?.latestActivity;
+            if (!activity) return;
+            const parts = [activity.city, activity.country].filter(Boolean);
+            if (parts.length === 0) return;
+            const existing = out.get(userId) ?? { name: null, email: null, location: null };
+            out.set(userId, { ...existing, location: parts.join(", ") });
+          } catch {
+            // leave location null for this user
+          }
+        }),
+      );
+    }
+  } catch (err) {
+    console.error("fetchClerkProfiles failed; returning bare customer rows", err);
+  }
+  return out;
+}
+
 export async function adminListCustomers(
   now: Date = new Date(),
 ): Promise<AdminCustomerRow[]> {
@@ -1874,11 +1938,18 @@ export async function adminListCustomers(
     .orderBy(desc(userLicensesTable.createdAt))
     .limit(1000);
 
+  // Enrich with Clerk account details (name/email) and last-session location.
+  const profiles = await fetchClerkProfiles(licenses.map((l) => l.userId));
+
   const rows: AdminCustomerRow[] = [];
   for (const lic of licenses) {
     const status = await getLicenseStatus(lic.userId, now);
+    const profile = profiles.get(lic.userId);
     rows.push({
       userId: lic.userId,
+      name: profile?.name ?? null,
+      email: profile?.email ?? null,
+      location: profile?.location ?? null,
       planName: status.planName,
       tier: planTier(status.planName),
       isPaid: status.isPaid,
@@ -1923,8 +1994,12 @@ export async function adminSetQuotaOverride(
 
   const status = await getLicenseStatus(userId, now);
   const lic = await getOrCreateLicense(userId);
+  const profile = (await fetchClerkProfiles([userId])).get(userId);
   return {
     userId,
+    name: profile?.name ?? null,
+    email: profile?.email ?? null,
+    location: profile?.location ?? null,
     planName: status.planName,
     tier: planTier(status.planName),
     isPaid: status.isPaid,

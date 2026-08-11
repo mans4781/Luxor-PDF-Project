@@ -50,6 +50,9 @@ export interface SupportTicket {
 
 export interface AdminCustomer {
   userId: string;
+  name: string | null;
+  email: string | null;
+  location: string | null;
   planName: string | null;
   tier: string | null;
   isPaid: boolean;
