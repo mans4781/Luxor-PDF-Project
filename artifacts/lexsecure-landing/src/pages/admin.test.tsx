@@ -13,6 +13,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import AdminPage from "./admin";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { locationAssignMock } from "../test/setup";
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -22,10 +23,13 @@ function jsonResponse(status: number, body: unknown): Response {
   });
 }
 
+/** A fetch that never settles — keeps the console in its loading state. */
+const pending = () => new Promise<Response>(() => {});
+
 /** Mock fetch for /api/admin/* endpoints; anything else fails loudly. */
 function mockAdminFetch(handlers: {
-  session: () => Response;
-  stats?: () => Response;
+  session: () => Response | Promise<Response>;
+  stats?: () => Response | Promise<Response>;
 }) {
   return vi.fn(async (input: RequestInfo | URL) => {
     const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
@@ -36,6 +40,14 @@ function mockAdminFetch(handlers: {
     }
     throw new Error(`Unexpected fetch in test: ${url}`);
   });
+}
+
+/** Open the shell profile dropdown and click "Log out" (Radix opens on Enter in jsdom). */
+async function clickLogout() {
+  const trigger = await screen.findByLabelText("Profile menu");
+  fireEvent.keyDown(trigger, { key: "Enter" });
+  const item = await screen.findByText("Log out");
+  fireEvent.click(item);
 }
 
 describe("/lx-console access states", () => {
@@ -98,5 +110,101 @@ describe("/lx-console access states", () => {
     fireEvent.click(button);
 
     expect(locationAssignMock).toHaveBeenCalledWith("/app/sign-in");
+  });
+
+  it("manual sign-out falls back to the 404 disguise, never the session-expired prompt", async () => {
+    sessionStorage.setItem("luxor_admin_token", "valid-token");
+    vi.stubGlobal(
+      "fetch",
+      mockAdminFetch({
+        // Stats stays pending: the console shell renders with its loading body.
+        stats: pending,
+        // After sign-out the re-probe finds no developer session.
+        session: () => jsonResponse(401, { error: "Unauthorized" }),
+      }),
+    );
+
+    render(<AdminPage />);
+
+    await clickLogout();
+
+    expect(await screen.findByText("404 Page Not Found")).toBeTruthy();
+    expect(screen.queryByText("Session expired")).toBeNull();
+    expect(sessionStorage.getItem("luxor_admin_token")).toBeNull();
+  });
+
+  it("silently re-unlocks the console when a 401 was transient but the developer session is still valid", async () => {
+    sessionStorage.setItem("luxor_admin_token", "valid-token");
+    let statsCalls = 0;
+    vi.stubGlobal(
+      "fetch",
+      mockAdminFetch({
+        // First stats call 401s (transient); after the re-unlock the retry
+        // stays pending so the console shows its loading state.
+        stats: () => (++statsCalls === 1 ? jsonResponse(401, { error: "Unauthorized" }) : pending()),
+        // The developer session is still valid → probe succeeds.
+        session: () => jsonResponse(200, { ok: true }),
+      }),
+    );
+
+    render(<AdminPage />);
+
+    // The console must come back on its own — no prompt, no disguise.
+    await waitFor(() => expect(statsCalls).toBeGreaterThanOrEqual(2));
+    expect(await screen.findByLabelText("Profile menu")).toBeTruthy();
+    expect(screen.queryByText("Session expired")).toBeNull();
+    expect(screen.queryByText("404 Page Not Found")).toBeNull();
+  });
+});
+
+describe("/lx-console dev-preview gating", () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    locationAssignMock.mockClear();
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+    window.location.search = "";
+  });
+
+  it("?dev=1 unlocks the sample-data preview in dev builds", async () => {
+    vi.stubEnv("DEV", true);
+    window.location.search = "?dev=1";
+    // Preview mode uses sample data — any network call is a bug.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        throw new Error(`Unexpected fetch in dev preview: ${String(input)}`);
+      }),
+    );
+
+    // The app wraps routes in TooltipProvider (App.tsx); the dashboard needs it.
+    render(
+      <TooltipProvider>
+        <AdminPage />
+      </TooltipProvider>,
+    );
+
+    expect(await screen.findByText(/Developer preview/)).toBeTruthy();
+    expect(sessionStorage.getItem("luxor_admin_dev_preview")).toBe("1");
+  });
+
+  it("?dev=1 is inert in production builds — anonymous visitors still get the 404", async () => {
+    vi.stubEnv("DEV", false);
+    window.location.search = "?dev=1";
+    vi.stubGlobal(
+      "fetch",
+      mockAdminFetch({ session: () => jsonResponse(401, { error: "Unauthorized" }) }),
+    );
+
+    render(<AdminPage />);
+
+    expect(await screen.findByText("404 Page Not Found")).toBeTruthy();
+    expect(screen.queryByText(/Developer preview/)).toBeNull();
+    // The preview flag must never be persisted in production builds.
+    expect(sessionStorage.getItem("luxor_admin_dev_preview")).toBeNull();
   });
 });
