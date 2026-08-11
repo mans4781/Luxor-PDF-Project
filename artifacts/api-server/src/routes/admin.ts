@@ -225,9 +225,7 @@ router.get("/admin/downloads", async (req, res): Promise<void> => {
   if (!(await checkAuth(req, res))) return;
 
   try {
-    const since = new Date(Date.now() - (days - 1) * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .slice(0, 10);
+    const since = new Date();
     since.setDate(since.getDate() - 29);
     const sinceDay = since.toISOString().slice(0, 10);
 
@@ -339,7 +337,7 @@ router.get("/admin/stats", async (req, res): Promise<void> => {
       if (p.createdAt >= monthStart) {
         monthRevenue[cur] = (monthRevenue[cur] ?? 0) + major;
       }
-      const mk = `${r.createdAt.getFullYear()}-${String(r.createdAt.getMonth() + 1).padStart(2, "0")}`;
+      const mk = `${p.createdAt.getFullYear()}-${String(p.createdAt.getMonth() + 1).padStart(2, "0")}`;
       const bucket = revenueByMonth.get(mk) ?? {};
       bucket[cur] = (bucket[cur] ?? 0) + major;
       revenueByMonth.set(mk, bucket);
@@ -433,7 +431,7 @@ router.post(
   async (req: Request, res: Response): Promise<void> => {
     if (!(await checkAuth(req, res))) return;
 
-    const parsed = AdminExtendProductKeyBody.safeParse(req.body);
+    const parsed = AdminGenerateProductKeysBody.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: "Invalid request body" });
       return;
@@ -460,7 +458,7 @@ router.post(
         expiresAt: string | null;
       }> = [];
 
-    for (let i = days - 1; i >= 0; i--) {
+      for (let i = 0; i < count; i++) {
         const rawKey = generateProductKey();
         const { hash, prefix } = hashProductKey(rawKey);
         const [row] = await db
@@ -510,9 +508,7 @@ router.get(
     if (!(await checkAuth(req, res))) return;
 
     try {
-  const rows = await db.execute(
-    sql`SELECT email, created_at FROM developers ORDER BY created_at`,
-  );
+      const rows = await adminListProductKeys();
       res.json({
         keys: rows.map((r) => ({
           id: r.id,
@@ -540,13 +536,13 @@ router.post(
   async (req: Request, res: Response): Promise<void> => {
     if (!(await checkAuth(req, res))) return;
 
-    const parsed = AdminExtendProductKeyBody.safeParse(req.body);
+    const parsed = AdminRevokeProductKeyBody.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: "Invalid request body" });
       return;
     }
     try {
-      const row = dayMap.get(day);
+      const row = await adminRevokeProductKey(parsed.data.id);
       if (!row) {
         res.status(404).json({ error: "Product key not found" });
         return;
@@ -571,7 +567,10 @@ router.post(
       return;
     }
     try {
-      const row = dayMap.get(day);
+      const row = await adminExtendProductKey(
+        parsed.data.id,
+        parsed.data.additionalDays,
+      );
       if (!row) {
         res.status(404).json({ error: "Product key not found" });
         return;
@@ -609,8 +608,9 @@ router.post(
   async (req: Request, res: Response): Promise<void> => {
     if (!(await checkAuth(req, res))) return;
 
-  const body = (req.body ?? {}) as Record<string, unknown>;
-    const userId = typeof rawUserId === "string" ? rawUserId.trim() : "";
+    const body = req.body as { userId?: unknown; override?: unknown };
+    const userId =
+      typeof body.userId === "string" ? body.userId.trim() : "";
     if (!userId) {
       res.status(400).json({ error: "userId is required" });
       return;
@@ -663,26 +663,33 @@ router.post(
       return;
     }
     try {
-      const result = await adminDeleteUser(userId);
-      req.log.info({ userId, ...result }, "Admin detached license");
-      res.json({ ok: true, ...result });
+      const result = await adminReissueLicenseKey(userId);
+      req.log.info(
+        { userId, keyPrefix: result.keyPrefix, plan: result.planName },
+        "Admin reissued license key",
+      );
+      res.json({
+        rawKey: result.rawKey,
+        keyPrefix: result.keyPrefix,
+        planName: result.planName,
+        isUnredeemed: result.isUnredeemed,
+        subscriptionEndDate: result.subscriptionEndDate?.toISOString() ?? null,
+      });
     } catch (err) {
       if (err instanceof ReissueError) {
         res.status(400).json({ error: err.message });
         return;
       }
-      req.log.error({ err, userId }, "admin/customers detach-license failed");
-      res.status(500).json({ error: "Failed to detach license" });
+      req.log.error({ err, userId }, "admin/customers reissue-key failed");
+      res.status(500).json({ error: "Failed to reissue license key" });
     }
   },
 );
 
-// Email a freshly reissued license key to the customer. The raw key comes
-// back from the client (it was just minted server-side and shown once); we
-// verify it hashes to an active product key before sending, and never log
-// or persist the raw key itself.
-router.post(
-  "/admin/customers/:userId/reissue-key/email",
+// Detach a user's license(s) and free the key(s) for reuse on another
+// account. Used e.g. to keep the admin account login-only.
+router.delete(
+  "/admin/customers/:userId/license",
   async (req: Request, res: Response): Promise<void> => {
     if (!(await checkAuth(req, res))) return;
 
@@ -693,7 +700,7 @@ router.post(
       return;
     }
     try {
-      const result = await adminDeleteUser(userId);
+      const result = await adminDetachLicense(userId);
       req.log.info({ userId, ...result }, "Admin detached license");
       res.json({ ok: true, ...result });
     } catch (err) {
@@ -738,18 +745,12 @@ router.post(
           ),
         )
         .limit(1);
+      if (!keyRow) {
+        res.status(400).json({ error: "Key not found or no longer active" });
+        return;
+      }
 
-      const [ownedLicense] = await db
-        .select({ id: licensesTable.id })
-        .from(licensesTable)
-        .where(
-          and(
-            eq(licensesTable.userId, userId),
-            eq(licensesTable.productKeyId, keyRow.id),
-            eq(licensesTable.status, "active"),
-          ),
-        )
-        .limit(1);
+      // Recipient: the Clerk user's primary email.
       const user = await clerkClient.users.getUser(userId);
       const primary =
         user.emailAddresses.find((e) => e.id === user.primaryEmailAddressId) ??
@@ -855,44 +856,41 @@ router.get("/admin/analytics/visitors", async (req, res): Promise<void> => {
 
     const perDay = await db
       .select({
-        day: freeToolVisitsTable.day,
-        views: sql<number>`count(*)::int`,
-        visitors: sql<number>`count(distinct ${freeToolVisitsTable.ipHash})::int`,
+        day: dailyVisitorsTable.day,
+        visitors: sql<number>`count(*)::int`,
       })
-      .from(freeToolVisitsTable)
-      .where(gte(freeToolVisitsTable.day, since))
-      .groupBy(freeToolVisitsTable.day)
-      .orderBy(freeToolVisitsTable.day);
+      .from(dailyVisitorsTable)
+      .where(gte(dailyVisitorsTable.day, since))
+      .groupBy(dailyVisitorsTable.day)
+      .orderBy(dailyVisitorsTable.day);
 
     const byDayLocation = await db
       .select({
-        day: freeToolVisitsTable.day,
-        country: freeToolVisitsTable.country,
-        city: freeToolVisitsTable.city,
-        views: sql<number>`count(*)::int`,
+        day: dailyVisitorsTable.day,
+        country: dailyVisitorsTable.country,
+        city: dailyVisitorsTable.city,
+        visitors: sql<number>`count(*)::int`,
       })
-      .from(freeToolVisitsTable)
-      .where(gte(freeToolVisitsTable.day, since))
-      .groupBy(freeToolVisitsTable.day, freeToolVisitsTable.country, freeToolVisitsTable.city)
-      .orderBy(freeToolVisitsTable.day, sql`count(*) desc`)
-      .limit(2000);
+      .from(dailyVisitorsTable)
+      .where(gte(dailyVisitorsTable.day, since))
+      .groupBy(dailyVisitorsTable.day, dailyVisitorsTable.country, dailyVisitorsTable.city)
+      .orderBy(dailyVisitorsTable.day, sql`count(*) desc`);
 
     const byLocation = await db
       .select({
-        country: freeToolVisitsTable.country,
-        city: freeToolVisitsTable.city,
-        views: sql<number>`count(*)::int`,
-        visitors: sql<number>`count(distinct ${freeToolVisitsTable.ipHash})::int`,
+        country: dailyVisitorsTable.country,
+        city: dailyVisitorsTable.city,
+        visitors: sql<number>`count(*)::int`,
       })
-      .from(freeToolVisitsTable)
-      .where(gte(freeToolVisitsTable.day, since))
-      .groupBy(freeToolVisitsTable.country, freeToolVisitsTable.city)
+      .from(dailyVisitorsTable)
+      .where(gte(dailyVisitorsTable.day, since))
+      .groupBy(dailyVisitorsTable.country, dailyVisitorsTable.city)
       .orderBy(sql`count(*) desc`)
       .limit(100);
 
     // Fill in zero-visitor days so charts show a continuous range.
-    const dayMap = new Map(perDay.map((d) => [d.day, d]));
-    const filled: { day: string; views: number; visitors: number }[] = [];
+    const dayMap = new Map(perDay.map((d) => [d.day, d.visitors]));
+    const filled: { day: string; visitors: number }[] = [];
     for (let i = days - 1; i >= 0; i--) {
       const day = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
       filled.push({ day, visitors: dayMap.get(day) ?? 0 });
@@ -900,7 +898,7 @@ router.get("/admin/analytics/visitors", async (req, res): Promise<void> => {
 
     const dayLocations: Record<
       string,
-      { country: string; city: string; views: number }[]
+      { country: string; city: string; visitors: number }[]
     > = {};
     for (const row of byDayLocation) {
       (dayLocations[row.day] ??= []).push({
@@ -1122,19 +1120,3 @@ router.post("/admin/tickets/update", async (req, res): Promise<void> => {
 });
 
 export default router;
-
-      let ownsKey = !!ownedLicense;
-
-        const [reissueEvent] = await db
-          .select({ metadata: licenseEventsTable.metadata })
-          .from(licenseEventsTable)
-          .where(
-            and(
-              eq(licenseEventsTable.userId, userId),
-              eq(licenseEventsTable.eventType, "license_key_reissued"),
-            ),
-          )
-          .orderBy(desc(licenseEventsTable.createdAt))
-          .limit(1);
-
-        const meta = reissueEvent?.metadata as { productKeyId?: number } | null;
