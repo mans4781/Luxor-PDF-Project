@@ -12,6 +12,7 @@ import { ReferralsPage } from "@/components/admin/pages/referrals";
 import { ProductsPage } from "@/components/admin/pages/products";
 import { AnalyticsPage } from "@/components/admin/pages/analytics";
 import { FreeToolsAnalyticsPage } from "@/components/admin/pages/free-tools-analytics";
+import { DownloadsPage } from "@/components/admin/pages/downloads";
 import { TicketsPage } from "@/components/admin/pages/tickets";
 import { ReportsPage } from "@/components/admin/pages/reports";
 import { IntegrationsPage } from "@/components/admin/pages/integrations";
@@ -121,6 +122,8 @@ function Console({ token, onLogout }: { token: string; onLogout: () => void }) {
         return <AnalyticsPage stats={stats!} token={token} onLogout={onLogout} />;
       case "free-tools-analytics":
         return <FreeToolsAnalyticsPage token={token} onLogout={onLogout} />;
+      case "downloads":
+        return <DownloadsPage token={token} onLogout={onLogout} />;
       case "tickets":
         return <TicketsPage token={token} onLogout={onLogout} />;
       case "reports":

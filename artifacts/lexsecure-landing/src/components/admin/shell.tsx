@@ -10,6 +10,7 @@ import {
   LifeBuoy,
   LogOut,
   Menu,
+  MonitorDown,
   Moon,
   Sun,
   Package,
@@ -61,6 +62,7 @@ export type ConsoleSection =
   | "products"
   | "analytics"
   | "free-tools-analytics"
+  | "downloads"
   | "tickets"
   | "reports"
   | "integrations"
@@ -76,6 +78,7 @@ export const NAV_ITEMS: { id: ConsoleSection; label: string; icon: React.Element
   { id: "products", label: "Products", icon: Package },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
   { id: "free-tools-analytics", label: "Free Tools Analytics", icon: Wrench },
+  { id: "downloads", label: "Downloads", icon: MonitorDown },
   { id: "tickets", label: "Tickets", icon: LifeBuoy },
   { id: "reports", label: "Reports", icon: FileBarChart },
   { id: "integrations", label: "Integrations", icon: PlugZap },

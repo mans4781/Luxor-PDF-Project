@@ -354,7 +354,7 @@ export const OPS_METRICS = [
 ];
 
 // ── Dev-preview sample data (design review without login; dev builds only) ──
-import type { AdminStats, AdminCustomer, ProductKey, VisitorAnalytics, FreeToolsAnalytics, SupportTicket } from "./types";
+import type { AdminStats, AdminCustomer, ProductKey, VisitorAnalytics, FreeToolsAnalytics, SupportTicket, DownloadStats } from "./types";
 
 export const SAMPLE_STATS: AdminStats = {
   overview: {
@@ -504,6 +504,35 @@ export const SAMPLE_VISITOR_ANALYTICS: VisitorAnalytics = {
       return [d, picks];
     }),
   ),
+};
+
+export const SAMPLE_DOWNLOAD_STATS: DownloadStats = {
+  totals: [
+    { app: "reader", count: 1284 },
+    { app: "secure", count: 402 },
+  ],
+  daily: Array.from({ length: 30 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (29 - i));
+    const day = d.toISOString().slice(0, 10);
+    return [
+      { day, app: "reader" as const, count: 20 + ((i * 7) % 34) },
+      { day, app: "secure" as const, count: 5 + ((i * 3) % 13) },
+    ];
+  }).flat(),
+  countries: [
+    { country: "IN", app: "reader" as const, count: 512 },
+    { country: "US", app: "reader" as const, count: 301 },
+    { country: "IN", app: "secure" as const, count: 175 },
+    { country: "DE", app: "reader" as const, count: 96 },
+    { country: "US", app: "secure" as const, count: 88 },
+    { country: "GB", app: "reader" as const, count: 74 },
+  ],
+  recent: [
+    { app: "reader", country: "IN", city: "Chennai", createdAt: new Date(Date.now() - 12 * 60000).toISOString() },
+    { app: "secure", country: "US", city: "Austin", createdAt: new Date(Date.now() - 55 * 60000).toISOString() },
+    { app: "reader", country: "DE", city: "Berlin", createdAt: new Date(Date.now() - 3 * 3600000).toISOString() },
+  ],
 };
 
 export const SAMPLE_FREE_TOOLS_ANALYTICS: FreeToolsAnalytics = {

@@ -168,6 +168,13 @@ export interface AuditEntry {
   ip: string;
 }
 
+export interface DownloadStats {
+  totals: { app: "reader" | "secure"; count: number }[];
+  daily: { day: string; app: "reader" | "secure"; count: number }[];
+  countries: { country: string; app: "reader" | "secure"; count: number }[];
+  recent: { app: "reader" | "secure"; country: string; city: string; createdAt: string }[];
+}
+
 export interface SystemService {
   name: string;
   status: "operational" | "degraded" | "down";

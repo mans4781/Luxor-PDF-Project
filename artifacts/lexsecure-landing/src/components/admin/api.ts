@@ -1,5 +1,5 @@
-import type { AdminStats, AdminCustomer, ProductKey, MintedKey, VisitorAnalytics, FreeToolsAnalytics, SupportTicket } from "./types";
-import { SAMPLE_STATS, SAMPLE_CUSTOMERS, SAMPLE_PRODUCT_KEYS, SAMPLE_VISITOR_ANALYTICS, SAMPLE_FREE_TOOLS_ANALYTICS, SAMPLE_TICKETS } from "./mock-data";
+import type { AdminStats, AdminCustomer, ProductKey, MintedKey, VisitorAnalytics, FreeToolsAnalytics, SupportTicket, DownloadStats } from "./types";
+import { SAMPLE_STATS, SAMPLE_CUSTOMERS, SAMPLE_PRODUCT_KEYS, SAMPLE_VISITOR_ANALYTICS, SAMPLE_FREE_TOOLS_ANALYTICS, SAMPLE_TICKETS, SAMPLE_DOWNLOAD_STATS } from "./mock-data";
 
 // Dev-only preview mode: the console renders with sample data, no login.
 // Never active in production builds.
@@ -59,6 +59,11 @@ export const adminApi = {
     isDevPreview(token)
       ? Promise.resolve(SAMPLE_VISITOR_ANALYTICS)
       : request<VisitorAnalytics>(token, `/analytics/visitors?days=${days}`),
+
+  downloads: (token: string) =>
+    isDevPreview(token)
+      ? Promise.resolve(SAMPLE_DOWNLOAD_STATS)
+      : request<DownloadStats>(token, "/downloads"),
 
   freeToolsAnalytics: (token: string, days = 30) =>
     isDevPreview(token)
