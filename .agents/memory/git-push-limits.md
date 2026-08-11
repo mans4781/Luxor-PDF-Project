@@ -11,3 +11,5 @@ description: What works and what fails when pushing to GitHub (Luxor-PDF-Project
 - Stale `.git/*.lock` files (maintenance.lock, refs locks) cause `INDEX_LOCKED` from gitPush — safe to delete when no git process is running.
 - Remote `main` had 2 old release commits not in local history; resolved once with `git merge -X ours origin/main` (watch out: merge can silently reintroduce deleted imports in files touched on both sides — re-typecheck after).
 - gitPush fails with "current branch already tracks origin/<other>" after a prior push — run `git branch --unset-upstream main` first, then gitPush({branch:"new-branch"}) works.
+
+- 2026-08-11: `gitPush` now fails with `PUSH_REJECTED` even for brand-new branch names (tried 3 fresh names after gc). Shell push still "Invalid username or token". No known agent-side workaround — releases must go through the user's Replit Git pane (commit & push main, then tag on GitHub).
