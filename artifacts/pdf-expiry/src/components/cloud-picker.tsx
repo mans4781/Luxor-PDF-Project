@@ -347,7 +347,7 @@ export function CloudPicker({ onFiles, accept, multiple = false, buttonClass }: 
   return (
     <div
       ref={rootRef}
-      className="absolute left-full top-1/2 z-10 ml-4 flex w-24 -translate-y-1/2 flex-col items-center"
+      className="absolute left-full top-1/2 z-10 ml-8 flex w-28 -translate-y-1/2 flex-col items-center"
       onClick={(e) => e.stopPropagation()}
       onDragOver={(e) => e.stopPropagation()}
       onDrop={(e) => e.stopPropagation()}
@@ -368,9 +368,9 @@ export function CloudPicker({ onFiles, accept, multiple = false, buttonClass }: 
           "flex h-9 w-9 items-center justify-center rounded-full bg-violet-100 text-violet-600 shadow-sm transition-all hover:scale-105 hover:bg-violet-200 hover:shadow"
         }
       >
-        <CloudUpload className="h-5 w-5" strokeWidth={2} />
+        <CloudUpload className="h-6 w-6" strokeWidth={2} />
       </button>
-      <p className="mt-1.5 text-center text-[11px] font-medium leading-tight text-slate-500">
+      <p className="mt-2 text-center text-sm font-medium leading-tight text-slate-600">
         Add files from Drive
       </p>
 
