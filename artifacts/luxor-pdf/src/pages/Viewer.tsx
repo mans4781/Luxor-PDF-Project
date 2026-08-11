@@ -657,6 +657,18 @@ export default function Viewer({ file, onClose, onFileLoad, active = true, close
       // ~±100 (≈10% per tick). Clamp the per-event factor so one wild
       // delta can't jump the zoom.
       const factor = Math.min(1.25, Math.max(0.8, Math.exp(-dy * 0.0011)));
+      // Anchor the zoom at the mouse cursor (viewer-viewport coords), like
+      // desktop PDF apps — updated per event, same as pinch's midpoint.
+      // Cursors outside the viewer fall back to centre anchoring (null).
+      const viewer = viewerRef.current;
+      if (viewer) {
+        const rect = viewer.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const inside = x >= 0 && y >= 0 && x <= rect.width && y <= rect.height;
+        s.anchorX = inside ? x : null;
+        s.anchorY = inside ? y : null;
+      }
       smoothZoomTo(cur * factor);
     };
     if (!active) return;
