@@ -378,9 +378,6 @@ export function CloudPicker({ onFiles, accept, multiple = false, buttonClass }: 
           aria-label="Cloud drives"
           className="absolute left-full top-0 ml-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1.5 text-left shadow-xl shadow-slate-900/10"
         >
-          <p className="px-3 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-            Add from cloud
-          </p>
           {PROVIDERS.map((p) => (
             <button
               key={p.id}
