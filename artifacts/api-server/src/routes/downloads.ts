@@ -118,6 +118,15 @@ async function resolveAssetName(
 // Kill switch: Secure desktop build is under revision — downloads are locked.
 // Flip back to false to re-enable downloads.
 const SECURE_DOWNLOADS_LOCKED = true;
+
+/**
+ * Single source of truth for the Secure download kill switch. Other modules
+ * (e.g. license emails) must call this instead of duplicating the flag, so
+ * flipping SECURE_DOWNLOADS_LOCKED off restores everything at once.
+ */
+export function areSecureDownloadsLocked(): boolean {
+  return SECURE_DOWNLOADS_LOCKED;
+}
 const SECURE_RELEASES_LATEST =
   "https://github.com/mans4781/Luxor-Secure-Project/releases/latest/download";
 let secureCache: NameCache = null;

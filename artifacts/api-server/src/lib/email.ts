@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { logger } from "./logger";
+import { areSecureDownloadsLocked } from "../routes/downloads";
 
 interface ResendCredentials {
   apiKey: string;
@@ -67,7 +68,11 @@ export interface LicenseEmailParams {
   plan: string;
   /** ISO date string after which the license stops working. */
   subscriptionEndDate: string;
-  /** Public URL of the Windows installer .exe */
+  /**
+   * Public URL of the Windows installer .exe. Ignored while Secure desktop
+   * downloads are locked (see areSecureDownloadsLocked): the email then shows
+   * a temporary-unavailability notice instead of a download button.
+   */
   downloadUrl: string;
 }
 
@@ -96,6 +101,32 @@ export async function sendLicenseEmail(params: LicenseEmailParams): Promise<bool
       month: "long",
       day: "numeric",
     });
+    const downloadsLocked = areSecureDownloadsLocked();
+
+    const downloadSectionHtml = downloadsLocked
+      ? `    <tr><td style="padding:28px 32px 8px">
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:16px 20px">
+        <p style="margin:0 0 6px;font-weight:700;font-size:14px;color:#92400e">Downloads temporarily unavailable</p>
+        <p style="margin:0;color:#78350f;font-size:13px;line-height:1.6">
+          Luxor PDF Secure for Windows is currently under revision, so the installer
+          download is paused. Your license key above is safe and ready — we'll email
+          you as soon as the download is available again.
+        </p>
+      </div>
+    </td></tr>`
+      : `    <tr><td style="padding:28px 32px 8px">
+      <a href="${downloadUrl}" style="display:block;background:#312e81;color:#fff;text-decoration:none;text-align:center;padding:14px 20px;border-radius:10px;font-weight:600;font-size:15px">
+        Download Luxor PDF Secure for Windows
+      </a>
+    </td></tr>
+    <tr><td style="padding:24px 32px">
+      <h2 style="font-size:15px;margin:0 0 10px">How to activate</h2>
+      <ol style="margin:0;padding-left:20px;color:#475569;line-height:1.7;font-size:14px">
+        <li>Run the installer you just downloaded.</li>
+        <li>Open Luxor PDF Secure.</li>
+        <li>Paste your license key when prompted, then click Activate.</li>
+      </ol>
+    </td></tr>`;
 
     const html = `<!doctype html>
 <html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;margin:0;padding:32px 16px;color:#0f172a">
@@ -122,19 +153,7 @@ export async function sendLicenseEmail(params: LicenseEmailParams): Promise<bool
         Valid until <strong>${validUntil}</strong>
       </p>
     </td></tr>
-    <tr><td style="padding:28px 32px 8px">
-      <a href="${downloadUrl}" style="display:block;background:#312e81;color:#fff;text-decoration:none;text-align:center;padding:14px 20px;border-radius:10px;font-weight:600;font-size:15px">
-        Download Luxor PDF Secure for Windows
-      </a>
-    </td></tr>
-    <tr><td style="padding:24px 32px">
-      <h2 style="font-size:15px;margin:0 0 10px">How to activate</h2>
-      <ol style="margin:0;padding-left:20px;color:#475569;line-height:1.7;font-size:14px">
-        <li>Run the installer you just downloaded.</li>
-        <li>Open Luxor PDF Secure.</li>
-        <li>Paste your license key when prompted, then click Activate.</li>
-      </ol>
-    </td></tr>
+${downloadSectionHtml}
     <tr><td style="padding:0 32px 32px">
       <p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6">
         Need help? Reply to this email or visit <a href="https://luxorpdf.com/contact" style="color:#312e81">luxorpdf.com/contact</a>.<br>
@@ -152,12 +171,21 @@ export async function sendLicenseEmail(params: LicenseEmailParams): Promise<bool
       `Your license key: ${productKey}`,
       `Valid until: ${validUntil}`,
       "",
-      `Download for Windows: ${downloadUrl}`,
-      "",
-      "How to activate:",
-      "  1. Run the installer.",
-      "  2. Open Luxor PDF Secure.",
-      "  3. Paste your license key and click Activate.",
+      ...(downloadsLocked
+        ? [
+            "Downloads temporarily unavailable: Luxor PDF Secure for Windows is",
+            "currently under revision, so the installer download is paused. Your",
+            "license key is safe and ready — we'll email you as soon as the",
+            "download is available again.",
+          ]
+        : [
+            `Download for Windows: ${downloadUrl}`,
+            "",
+            "How to activate:",
+            "  1. Run the installer.",
+            "  2. Open Luxor PDF Secure.",
+            "  3. Paste your license key and click Activate.",
+          ]),
       "",
       "Questions? Reply to this email or visit https://luxorpdf.com/contact",
     ].join("\n");
