@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { AdminStats } from "@/components/admin/types";
 import { adminApi, isUnauthorized, DEV_PREVIEW_TOKEN, DEV_SESSION_TOKEN } from "@/components/admin/api";
@@ -20,6 +20,7 @@ import { SettingsPage } from "@/components/admin/pages/settings";
 import NotFound from "@/pages/not-found";
 import { goToSignIn } from "@/lib/authUrls";
 import { LuxorClerkProvider } from "@workspace/luxor-auth-ui";
+import { useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 
 // Clerk must run on this page: the admin console authorizes developer
@@ -179,12 +180,26 @@ export default function AdminPage() {
   if (!clerkPubKey) return <AdminPageInner />;
   return (
     <LuxorClerkProvider publishableKey={clerkPubKey} proxyUrl={clerkProxyUrl}>
-      <AdminPageInner />
+      <AdminPageWithClerk />
     </LuxorClerkProvider>
   );
 }
 
-function AdminPageInner() {
+// Bridges the Clerk context to the inner page. Kept separate so the
+// missing-key fallback above can render AdminPageInner without a provider —
+// useClerk() would crash outside one.
+function AdminPageWithClerk() {
+  const clerk = useClerk();
+  const signOutClerk = useCallback(() => Promise.resolve(clerk.signOut()), [clerk]);
+  return <AdminPageInner signOutClerk={signOutClerk} />;
+}
+
+function AdminPageInner({
+  signOutClerk,
+}: {
+  /** Ends the Clerk session on manual logout; absent when Clerk isn't mounted. */
+  signOutClerk?: () => Promise<unknown>;
+}) {
   const [token, setToken] = useState(() => {
     // Dev-only preview entry (?dev=1 from the footer). Never active in production builds.
     if (import.meta.env.DEV) {
@@ -200,13 +215,23 @@ function AdminPageInner() {
 
   const isPreview = import.meta.env.DEV && token === DEV_PREVIEW_TOKEN;
 
+  // Set after a manual Log out. It suppresses the session probe below —
+  // without it, a still-valid developer session would silently re-unlock
+  // the console right after the user clicked Log out (making the button
+  // appear broken).
+  const [signedOut, setSignedOut] = useState(false);
+  // Synchronous mirror of `signedOut` — guards stale completions (e.g. an
+  // in-flight stats request rejecting with 401 right after Log out) from
+  // flipping the page into the "Session expired" state.
+  const signedOutRef = useRef(false);
+
   // A developer who signed in and passed the two-passphrase step gets the
   // console directly — no separate admin email/password login. We probe the
   // server once; on success the sentinel token unlocks the console and the
   // server authorizes each request via the session cookie.
   const [probing, setProbing] = useState(() => !token);
   useEffect(() => {
-    if (token) return;
+    if (token || signedOut) return;
     let cancelled = false;
     (async () => {
       try {
@@ -226,7 +251,7 @@ function AdminPageInner() {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, signedOut]);
 
   // True when a signed-in admin was kicked out by a 401/403 mid-use. In that
   // case we show a "session expired" prompt instead of the intruder-disguise
@@ -234,21 +259,32 @@ function AdminPageInner() {
   // disguise only confuses them. Fresh visitors still get the 404.
   const [sessionExpired, setSessionExpired] = useState(false);
 
-  // Manual sign-out (shell menu / settings): clear the unlock and re-probe.
-  // If the developer session is still valid the probe silently re-unlocks
-  // the console; otherwise the page renders as a plain 404.
+  // Manual sign-out (shell menu / settings): clear the unlock, suppress the
+  // session probe (so a still-valid developer session can't silently
+  // re-unlock the console), and end the Clerk session itself so a page
+  // reload doesn't restore access either. Clerk redirects to "/" afterwards
+  // (afterSignOutUrl); the immediate render is the plain 404 disguise.
   const handleLogout = useCallback(() => {
     sessionStorage.removeItem("luxor_admin_token");
     sessionStorage.removeItem("luxor_admin_dev_preview");
     setSessionExpired(false);
+    signedOutRef.current = true;
+    setSignedOut(true);
     setToken("");
-    setProbing(true);
-  }, []);
+    setProbing(false);
+    void signOutClerk?.().catch(() => {
+      // Clerk unavailable (e.g. blocked script) — the local unlock is
+      // already cleared; a reload may restore access but the UI is locked.
+    });
+  }, [signOutClerk]);
 
   // A 401/403 from an admin API while the console was open. Re-probe first —
   // if the 401 was transient the console silently re-unlocks; if the probe
   // also fails, the render below shows the session-expired prompt.
   const handleAuthError = useCallback(() => {
+    // A stale 401 landing after a manual Log out must not resurrect the
+    // "Session expired" prompt — the user chose to leave; show the 404.
+    if (signedOutRef.current) return;
     sessionStorage.removeItem("luxor_admin_token");
     sessionStorage.removeItem("luxor_admin_dev_preview");
     setSessionExpired(true);
