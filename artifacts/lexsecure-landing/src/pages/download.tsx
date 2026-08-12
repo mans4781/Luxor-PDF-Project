@@ -73,26 +73,38 @@ export default function DownloadPage() {
               Windows below and paste your key to activate.
             </p>
 
-            <motion.a
-              href={DOWNLOAD_URL}
-              initial={{ scale: 0.98 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.3 }}
-              className="inline-flex items-center gap-3 bg-[#312E81] hover:bg-[#3730A3] text-white font-semibold rounded-xl px-7 py-4 text-base shadow-lg shadow-[#312E81]/20 transition-colors"
-              data-testid="download-installer-button"
-            >
-              <Download className="w-5 h-5" />
-              Download for Windows
-              {sizeLabel && (
-                <span className="text-xs font-normal text-white/70 ml-1">
-                  · {sizeLabel}
-                </span>
-              )}
-            </motion.a>
+            {info && !info.available ? (
+              <span
+                aria-disabled="true"
+                className="inline-flex items-center gap-3 bg-slate-300 text-slate-600 font-semibold rounded-xl px-7 py-4 text-base cursor-not-allowed select-none"
+                data-testid="download-installer-button"
+              >
+                <Download className="w-5 h-5" />
+                Download temporarily unavailable
+              </span>
+            ) : (
+              <motion.a
+                href={DOWNLOAD_URL}
+                initial={{ scale: 0.98 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.3 }}
+                className="inline-flex items-center gap-3 bg-[#312E81] hover:bg-[#3730A3] text-white font-semibold rounded-xl px-7 py-4 text-base shadow-lg shadow-[#312E81]/20 transition-colors"
+                data-testid="download-installer-button"
+              >
+                <Download className="w-5 h-5" />
+                Download for Windows
+                {sizeLabel && (
+                  <span className="text-xs font-normal text-white/70 ml-1">
+                    · {sizeLabel}
+                  </span>
+                )}
+              </motion.a>
+            )}
 
             {info && !info.available && (
               <p className="mt-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 inline-block rounded-lg px-3 py-2">
-                Installer is being prepared — please refresh in a moment.
+                The Luxor PDF Secure installer is under revision and temporarily
+                unavailable. Please check back soon.
               </p>
             )}
 

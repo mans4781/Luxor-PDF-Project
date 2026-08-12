@@ -115,6 +115,9 @@ async function resolveAssetName(
 }
 
 // --- Luxor PDF Secure ------------------------------------------------------
+// Kill switch: Secure desktop build is under revision — downloads are locked.
+// Flip back to false to re-enable downloads.
+const SECURE_DOWNLOADS_LOCKED = true;
 const SECURE_RELEASES_LATEST =
   "https://github.com/mans4781/Luxor-Secure-Project/releases/latest/download";
 let secureCache: NameCache = null;
@@ -122,6 +125,14 @@ let secureCache: NameCache = null;
 router.get(
   "/downloads/luxor-pdf-secure-latest.exe",
   async (req: Request, res: Response): Promise<void> => {
+    if (SECURE_DOWNLOADS_LOCKED) {
+      res.setHeader("Cache-Control", "no-store");
+      res.status(503).json({
+        error:
+          "Luxor PDF Secure downloads are temporarily unavailable while the app is under revision.",
+      });
+      return;
+    }
     try {
       const resolved = await resolveAssetName(SECURE_RELEASES_LATEST, secureCache);
       secureCache = resolved.cache;
@@ -168,6 +179,10 @@ router.get(
 router.get(
   "/downloads/installer-info",
   async (_req: Request, res: Response): Promise<void> => {
+    if (SECURE_DOWNLOADS_LOCKED) {
+      res.json({ available: false, locked: true });
+      return;
+    }
     try {
       const resolved = await resolveAssetName(SECURE_RELEASES_LATEST, secureCache);
       secureCache = resolved.cache;

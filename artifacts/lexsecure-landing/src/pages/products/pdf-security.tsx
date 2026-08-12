@@ -13,7 +13,6 @@ import secureShield from "@/assets/secure-shield.png";
 import secureCubes from "@/assets/secure-cubes.png";
 
 const APP_URL = "/app/";
-const SECURE_INSTALLER_URL = "/api/downloads/luxor-pdf-secure-latest.exe";
 
 const BLUE = "#1d4ed8";
 
@@ -300,13 +299,15 @@ export default function PdfSecurityPage() {
                 Protect sensitive documents, control access, and simplify PDF security with powerful encryption, permission controls, watermarks, and more — all in one easy-to-use desktop application.
               </p>
               <div className="flex flex-wrap gap-3">
-                <a
-                  href={SECURE_INSTALLER_URL}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-semibold transition-all shadow-lg shadow-blue-500/25 hover:-translate-y-0.5"
+                <span
+                  aria-disabled="true"
+                  title="Downloads are temporarily unavailable while the app is under revision"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-300 text-slate-600 font-semibold cursor-not-allowed select-none"
+                  data-testid="secure-download-locked"
                 >
                   <WindowsGlyph className="w-4 h-4" />
-                  Download for Windows
-                </a>
+                  Download temporarily unavailable
+                </span>
                 <a
                   href={APP_URL}
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-blue-50 text-[#1d4ed8] font-semibold border-2 border-[#1d4ed8]/30 transition-colors"
@@ -476,10 +477,14 @@ export default function PdfSecurityPage() {
                       Start Free Trial
                       <span aria-hidden="true">&rarr;</span>
                     </a>
-                    <a href={SECURE_INSTALLER_URL} className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/40 transition-colors">
+                    <span
+                      aria-disabled="true"
+                      title="Downloads are temporarily unavailable while the app is under revision"
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white/10 text-white/60 font-semibold border border-white/25 cursor-not-allowed select-none"
+                    >
                       <WindowsGlyph className="w-4 h-4" />
-                      Download for Windows
-                    </a>
+                      Download temporarily unavailable
+                    </span>
                   </div>
                 </div>
                 <div className="shrink-0 flex flex-col items-start gap-3 text-white text-sm font-medium">
