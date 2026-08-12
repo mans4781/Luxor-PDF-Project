@@ -1,6 +1,6 @@
-## What's new in 0.1.13
+## What's new in 0.1.15
 
-- New bordered `.pdf` file icon in Windows Explorer — a light-blue bordered sheet with a clipped top-right dog-ear, matching the in-app Recent Documents icon.
+- The `.pdf` file icon in Windows Explorer now has a clearly visible blue border at every icon size — the previous light-blue outline was too pale to see at small sizes against a white background.
 
 ### Icon not updating?
 
