@@ -135,6 +135,34 @@ describe("/lx-console access states", () => {
     expect(sessionStorage.getItem("luxor_admin_token")).toBeNull();
   });
 
+  it("an in-flight stats request that 401s AFTER Log out keeps the 404 disguise (never 'Session expired')", async () => {
+    sessionStorage.setItem("luxor_admin_token", "valid-token");
+    // Stats stays in flight until we release it manually — after logout.
+    let releaseStats!: (res: Response) => void;
+    vi.stubGlobal(
+      "fetch",
+      mockAdminFetch({
+        stats: () => new Promise<Response>((resolve) => { releaseStats = resolve; }),
+        session: () => jsonResponse(401, { error: "Unauthorized" }),
+      }),
+    );
+
+    render(<AdminPage />);
+
+    await clickLogout();
+    expect(await screen.findByText("404 Page Not Found")).toBeTruthy();
+
+    // The stale request now lands with a 401 — it must NOT resurrect the
+    // "Session expired" prompt; the user chose to leave.
+    releaseStats(jsonResponse(401, { error: "Unauthorized" }));
+    // Flush the microtask queue so the rejection is fully processed.
+    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(screen.queryByText("Session expired")).toBeNull();
+    expect(screen.getByText("404 Page Not Found")).toBeTruthy();
+  });
+
   it("silently re-unlocks the console when a 401 was transient but the developer session is still valid", async () => {
     sessionStorage.setItem("luxor_admin_token", "valid-token");
     let statsCalls = 0;
