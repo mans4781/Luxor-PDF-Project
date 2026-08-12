@@ -34,6 +34,34 @@ export async function runDownloadMigrations(): Promise<void> {
   await db.execute(
     sql`CREATE INDEX IF NOT EXISTS download_events_day_idx ON download_events (day)`,
   );
+  // Delivery ledger for the "downloads are back" notification emails
+  // (see /admin/notify-downloads-restored). One row per user; rows act as
+  // atomic claims ('pending' → 'sent') so concurrent or retried runs don't
+  // double-email a recipient.
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS downloads_restored_emails (
+      user_id text PRIMARY KEY,
+      email text NOT NULL,
+      status text NOT NULL DEFAULT 'pending',
+      claim_token text,
+      claimed_at timestamptz NOT NULL DEFAULT now(),
+      sent_at timestamptz
+    )
+  `);
+  // Upgrade any pre-claim-model table shape (rows in it were only written
+  // after a confirmed send, hence DEFAULT 'sent').
+  await db.execute(
+    sql`ALTER TABLE downloads_restored_emails ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'sent'`,
+  );
+  await db.execute(
+    sql`ALTER TABLE downloads_restored_emails ADD COLUMN IF NOT EXISTS claimed_at timestamptz NOT NULL DEFAULT now()`,
+  );
+  await db.execute(
+    sql`ALTER TABLE downloads_restored_emails ADD COLUMN IF NOT EXISTS claim_token text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE downloads_restored_emails ALTER COLUMN sent_at DROP NOT NULL`,
+  );
 }
 
 function hashIp(ip: string): string {
@@ -118,6 +146,14 @@ async function resolveAssetName(
 // Kill switch: Secure desktop build is under revision — downloads are locked.
 // Flip back to false to re-enable downloads.
 const SECURE_DOWNLOADS_LOCKED = true;
+
+/**
+ * When the current lock window began (UTC). Used by the admin
+ * notify-downloads-restored flow to find customers who bought/received a
+ * license while downloads were unavailable. Update this if the switch is
+ * ever locked again for a new incident.
+ */
+export const SECURE_LOCK_STARTED_AT = new Date("2026-08-12T00:00:00Z");
 
 /**
  * Single source of truth for the Secure download kill switch. Other modules

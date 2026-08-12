@@ -211,6 +211,115 @@ ${downloadSectionHtml}
   }
 }
 
+export interface DownloadsRestoredEmailParams {
+  to: string;
+  customerName?: string | null;
+  /** Public URL of the Windows installer .exe. */
+  downloadUrl: string;
+  /**
+   * Stable per-recipient key forwarded to Resend as Idempotency-Key, so a
+   * retry after a crash (email accepted but our ledger not yet updated)
+   * cannot deliver the same email twice.
+   */
+  idempotencyKey?: string;
+}
+
+/**
+ * Sends the "downloads are back" email promised to customers who bought a
+ * license while Secure desktop downloads were locked. Best-effort: returns
+ * false on failure so the caller can retry that recipient on a later run.
+ */
+export async function sendDownloadsRestoredEmail(
+  params: DownloadsRestoredEmailParams,
+): Promise<boolean> {
+  const { to, customerName, downloadUrl, idempotencyKey } = params;
+
+  try {
+    const { client, fromEmail } = await getResendClient();
+
+    const greeting = customerName ? `Hi ${customerName},` : "Hi there,";
+
+    const html = `<!doctype html>
+<html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;margin:0;padding:32px 16px;color:#0f172a">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">
+    <tr><td style="padding:32px 32px 16px">
+      <div style="font-size:22px;font-weight:800;letter-spacing:-0.01em">
+        <span style="color:#1e3a8a">Luxor</span>
+        <span style="color:#dc2626">PDF</span>
+        <span style="color:#b45309">Secure</span>
+      </div>
+    </td></tr>
+    <tr><td style="padding:8px 32px 0">
+      <h1 style="margin:0 0 8px;font-size:24px;font-weight:700">The download is back!</h1>
+      <p style="margin:0 0 24px;color:#475569;line-height:1.55">
+        ${greeting} Thanks for your patience — the Luxor PDF Secure installer
+        for Windows is available again. Your license key from your purchase
+        email is ready to use.
+      </p>
+    </td></tr>
+    <tr><td style="padding:0 32px 8px">
+      <a href="${downloadUrl}" style="display:block;background:#312e81;color:#fff;text-decoration:none;text-align:center;padding:14px 20px;border-radius:10px;font-weight:600;font-size:15px">
+        Download Luxor PDF Secure for Windows
+      </a>
+    </td></tr>
+    <tr><td style="padding:24px 32px">
+      <h2 style="font-size:15px;margin:0 0 10px">How to activate</h2>
+      <ol style="margin:0;padding-left:20px;color:#475569;line-height:1.7;font-size:14px">
+        <li>Run the installer you just downloaded.</li>
+        <li>Open Luxor PDF Secure.</li>
+        <li>Paste the license key from your purchase email, then click Activate.</li>
+      </ol>
+    </td></tr>
+    <tr><td style="padding:0 32px 32px">
+      <p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6">
+        Lost your license key? Reply to this email or visit <a href="https://luxorpdf.com/contact" style="color:#312e81">luxorpdf.com/contact</a>.<br>
+        © ${new Date().getFullYear()} Luxor PDF Secure.
+      </p>
+    </td></tr>
+  </table>
+</body></html>`;
+
+    const text = [
+      greeting,
+      "",
+      "Thanks for your patience — the Luxor PDF Secure installer for Windows",
+      "is available again. Your license key from your purchase email is ready",
+      "to use.",
+      "",
+      `Download for Windows: ${downloadUrl}`,
+      "",
+      "How to activate:",
+      "  1. Run the installer.",
+      "  2. Open Luxor PDF Secure.",
+      "  3. Paste the license key from your purchase email and click Activate.",
+      "",
+      "Lost your license key? Reply to this email or visit https://luxorpdf.com/contact",
+    ].join("\n");
+
+    const { data, error } = await client.emails.send(
+      {
+        from: fromEmail,
+        to: [to],
+        subject: "Luxor PDF Secure downloads are back — get your installer",
+        html,
+        text,
+      },
+      idempotencyKey ? { idempotencyKey } : undefined,
+    );
+
+    if (error) {
+      logger.error({ err: error, to }, "Resend rejected downloads-restored email");
+      return false;
+    }
+
+    logger.info({ to, emailId: data?.id }, "Downloads-restored email sent");
+    return true;
+  } catch (err) {
+    logger.error({ err, to }, "Failed to send downloads-restored email");
+    return false;
+  }
+}
+
 export interface WelcomeEmailParams {
   to: string;
   firstName?: string | null;

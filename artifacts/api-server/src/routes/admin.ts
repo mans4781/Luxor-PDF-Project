@@ -18,6 +18,7 @@ import {
   paymentsTable,
   userLicensesTable,
   licenseEventsTable,
+  downloadsRestoredEmailsTable,
 } from "@workspace/db";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import {
@@ -40,7 +41,13 @@ import {
 } from "../lib/license";
 import { adminDeleteUser, ProtectedUserError } from "../lib/adminDeleteUser";
 import { adminDetachLicense, adminReissueLicenseKey, ReissueError } from "../lib/billing";
-import { sendLicenseEmail } from "../lib/email";
+import { sendLicenseEmail, sendDownloadsRestoredEmail } from "../lib/email";
+import { areSecureDownloadsLocked, SECURE_LOCK_STARTED_AT } from "./downloads";
+import {
+  findLockWindowCandidates,
+  findAlreadyNotified,
+  notifyCandidates,
+} from "../lib/downloadsRestored";
 
 const router = Router();
 
@@ -1152,5 +1159,90 @@ router.post("/admin/tickets/update", async (req, res): Promise<void> => {
     res.status(500).json({ error: "Failed to update ticket" });
   }
 });
+
+// ─── "Downloads are back" notification ───────────────────────────────────────
+// One-shot admin trigger for the promise made in license emails while Secure
+// desktop downloads were locked ("we'll email you as soon as the download is
+// available again"). Finds every customer who bought/received a license during
+// the lock window (payments + license_events since SECURE_LOCK_STARTED_AT) and
+// emails them the installer link. Safe to re-run and to trigger concurrently:
+// each recipient is atomically claimed in downloads_restored_emails and the
+// send carries a stable provider idempotency key (see lib/downloadsRestored).
+//
+// Body: { dryRun?: boolean } — dryRun reports who WOULD be emailed without
+// sending anything.
+router.post(
+  "/admin/notify-downloads-restored",
+  async (req: Request, res: Response): Promise<void> => {
+    if (!(await checkAuth(req, res))) return;
+
+    if (areSecureDownloadsLocked()) {
+      res.status(409).json({
+        error:
+          "Secure downloads are still locked. Flip SECURE_DOWNLOADS_LOCKED off first, then re-run.",
+      });
+      return;
+    }
+
+    const dryRun = req.body?.dryRun === true;
+
+    try {
+      const candidateIds = await findLockWindowCandidates(SECURE_LOCK_STARTED_AT);
+      const notified = await findAlreadyNotified();
+      const toNotify = candidateIds.filter((id) => !notified.has(id));
+
+      if (dryRun) {
+        res.json({
+          dryRun: true,
+          candidates: candidateIds.length,
+          alreadyNotified: candidateIds.length - toNotify.length,
+          wouldEmail: toNotify.length,
+          userIds: toNotify,
+        });
+        return;
+      }
+
+      const host = req.get("host");
+      const proto =
+        (req.get("x-forwarded-proto") ?? "").split(",")[0]?.trim() ||
+        (req.secure ? "https" : "http");
+      const downloadUrl = `${host ? `${proto}://${host}` : ""}/api/downloads/luxor-pdf-secure-latest.exe`;
+
+      const summary = await notifyCandidates(toNotify, downloadUrl, {
+        lookupRecipient: async (userId) => {
+          try {
+            const user = await clerkClient.users.getUser(userId);
+            const primaryId = user.primaryEmailAddressId;
+            const primary =
+              user.emailAddresses.find((e) => e.id === primaryId) ??
+              user.emailAddresses[0];
+            const composed = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+            return { email: primary?.emailAddress ?? null, name: composed || null };
+          } catch (clerkErr) {
+            req.log.warn(
+              { err: clerkErr, userId },
+              "notify-downloads-restored: Clerk lookup failed",
+            );
+            return { email: null, name: null };
+          }
+        },
+        send: (params) => sendDownloadsRestoredEmail(params),
+      });
+
+      req.log.info(
+        { candidates: candidateIds.length, ...summary },
+        "notify-downloads-restored run complete",
+      );
+      res.json({
+        candidates: candidateIds.length,
+        alreadyNotified: candidateIds.length - toNotify.length,
+        ...summary,
+      });
+    } catch (err) {
+      req.log.error({ err }, "notify-downloads-restored failed");
+      res.status(500).json({ error: "Failed to send notifications" });
+    }
+  },
+);
 
 export default router;

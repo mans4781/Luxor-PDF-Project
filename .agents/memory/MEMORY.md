@@ -26,4 +26,5 @@
 - [pdf.js WASM decoders](pdfjs-wasm-decoders.md) — JPEG2000/JBIG2 images blank unless every getDocument passes wasmUrl (absolute, trailing slash); re-copy wasm assets on pdfjs upgrade.
 - [Clerk email deliverability](clerk-email-deliverability.md) — enhanced_email_deliverability:false is correct with custom domain; verify via DNS + mail-tester sign-up flow, no dashboard needed.
 - [admin.ts scrambling](admin-routes-scrambling.md) — routes/admin.ts twice committed with handlers swapped between routes; typecheck first, restore last clean git version, don't trust commit messages.
+- [One-shot email blasts](one-shot-email-blasts.md) — bulk customer emails need a claim ledger (pending/sent + fencing token) plus provider idempotency key; read-then-send gets rejected.
 - [Online tools registry](online-tools-registry.md) — pdf-expiry exposes 32 client-side tools via one registry → mega menu + /tools/:slug pages; BMP/GIF encoders, ArrayBuffer/Blob TS gotcha.
