@@ -109,7 +109,9 @@ describe("/lx-console access states", () => {
     const button = await screen.findByRole("button", { name: "Sign in again" });
     fireEvent.click(button);
 
-    expect(locationAssignMock).toHaveBeenCalledWith("/app/sign-in");
+    expect(locationAssignMock).toHaveBeenCalledWith(
+      "/app/sign-in?redirect_url=%2Flx-console",
+    );
   });
 
   it("manual sign-out falls back to the 404 disguise, never the session-expired prompt", async () => {

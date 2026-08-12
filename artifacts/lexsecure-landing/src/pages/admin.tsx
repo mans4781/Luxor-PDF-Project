@@ -19,6 +19,18 @@ import { IntegrationsPage } from "@/components/admin/pages/integrations";
 import { SettingsPage } from "@/components/admin/pages/settings";
 import NotFound from "@/pages/not-found";
 import { goToSignIn } from "@/lib/authUrls";
+import { LuxorClerkProvider } from "@workspace/luxor-auth-ui";
+import { publishableKeyFromHost } from "@clerk/react/internal";
+
+// Clerk must run on this page: the admin console authorizes developer
+// sessions via the short-lived Clerk session cookie, and only clerk-js
+// keeps that cookie refreshed. Without it, every admin API call starts
+// failing ~1 minute after sign-in ("session no longer valid" on any click).
+const clerkPubKey = publishableKeyFromHost(
+  typeof window !== "undefined" ? window.location.hostname : "",
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+);
+const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 
 // ── Console ───────────────────────────────────────────────────────────────────
 function Console({
@@ -161,6 +173,18 @@ function Console({
 
 // ── Page Root ─────────────────────────────────────────────────────────────────
 export default function AdminPage() {
+  // Keep the console usable even if the key is somehow missing (e.g. a build
+  // without the env var): fall back to rendering without Clerk rather than
+  // crashing the page.
+  if (!clerkPubKey) return <AdminPageInner />;
+  return (
+    <LuxorClerkProvider publishableKey={clerkPubKey} proxyUrl={clerkProxyUrl}>
+      <AdminPageInner />
+    </LuxorClerkProvider>
+  );
+}
+
+function AdminPageInner() {
   const [token, setToken] = useState(() => {
     // Dev-only preview entry (?dev=1 from the footer). Never active in production builds.
     if (import.meta.env.DEV) {
@@ -266,7 +290,7 @@ export default function AdminPage() {
           the console.
         </div>
         <button
-          onClick={goToSignIn}
+          onClick={() => goToSignIn("/lx-console")}
           style={{
             marginTop: 8,
             borderRadius: 8,

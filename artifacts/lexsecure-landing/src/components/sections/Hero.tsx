@@ -50,7 +50,7 @@ export function Hero() {
             <motion.div variants={FADE_UP} className="flex flex-col sm:flex-row items-start gap-4">
               <Button
                 size="lg"
-                onClick={goToSignUp}
+                onClick={() => goToSignUp()}
                 className="w-full sm:w-auto h-12 px-7 text-base font-semibold bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded-lg shadow-sm group"
               >
                 Start free

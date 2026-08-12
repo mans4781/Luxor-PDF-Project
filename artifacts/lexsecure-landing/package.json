@@ -79,5 +79,9 @@
     "vitest": "^4.1.10",
     "wouter": "^3.3.5",
     "zod": "catalog:"
+  },
+  "dependencies": {
+    "@clerk/react": "^6.5.0",
+    "@workspace/luxor-auth-ui": "workspace:*"
   }
 }
