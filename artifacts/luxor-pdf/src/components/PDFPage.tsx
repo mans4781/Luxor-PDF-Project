@@ -1344,38 +1344,68 @@ export default function PDFPage({
         const canvas = pageCanvasRef.current!;
         if (cancelled) return;
 
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+        // Update CSS footprints immediately so layout (and any scroll
+        // correction in the Viewer) is right, but DO NOT touch the physical
+        // canvas bitmaps yet — resizing a canvas clears it, which is exactly
+        // the blank-flash users see when zooming. The old bitmap simply
+        // stretches to the new CSS size until the sharp re-render is ready.
         canvas.style.width = `${cssW}px`;
         canvas.style.height = `${cssH}px`;
-
         if (highlightCanvasRef.current) {
-          highlightCanvasRef.current.width = viewport.width;
-          highlightCanvasRef.current.height = viewport.height;
           highlightCanvasRef.current.style.width = `${cssW}px`;
           highlightCanvasRef.current.style.height = `${cssH}px`;
         }
-
         if (drawCanvasRef.current) {
-          drawCanvasRef.current.width = viewport.width;
-          drawCanvasRef.current.height = viewport.height;
           drawCanvasRef.current.style.width = `${cssW}px`;
           drawCanvasRef.current.style.height = `${cssH}px`;
         }
 
         setPageSize({ w: cssW, h: cssH });
 
-        const ctx = canvas.getContext("2d")!;
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = "high";
-        // annotationMode 2 = ENABLE_FORMS: paint non-widget annotations on the
-        // canvas but leave AcroForm fields for the interactive HTML annotation
-        // layer so live widgets aren't double-drawn behind the inputs.
-        const task = page.render({ canvasContext: ctx, viewport, annotationMode: 2 });
-        renderTaskRef.current = task;
-        await task.promise;
-        renderTaskRef.current = null;
-        if (!cancelled) redrawAnnotations();
+        // Render into an offscreen canvas, then blit to the visible one in a
+        // single frame once fully painted. The visible canvas is never blank.
+        const offscreen = document.createElement("canvas");
+        offscreen.width = viewport.width;
+        offscreen.height = viewport.height;
+        try {
+          const offCtx = offscreen.getContext("2d")!;
+          offCtx.imageSmoothingEnabled = true;
+          offCtx.imageSmoothingQuality = "high";
+          // annotationMode 2 = ENABLE_FORMS: paint non-widget annotations on the
+          // canvas but leave AcroForm fields for the interactive HTML annotation
+          // layer so live widgets aren't double-drawn behind the inputs.
+          const task = page.render({ canvasContext: offCtx, viewport, annotationMode: 2 });
+          renderTaskRef.current = task;
+          await task.promise;
+          // Only clear the shared ref if it still points at OUR task — a newer
+          // effect run may have already registered its own render task, and a
+          // stale completion must not erase that reference (it would make the
+          // live render uncancellable).
+          if (renderTaskRef.current === task) renderTaskRef.current = null;
+          if (cancelled) return;
+
+          // Atomic swap: resize (clears) + draw happen back-to-back within one
+          // frame, so no blank canvas is ever presented.
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          const ctx = canvas.getContext("2d")!;
+          ctx.drawImage(offscreen, 0, 0);
+
+          if (highlightCanvasRef.current) {
+            highlightCanvasRef.current.width = viewport.width;
+            highlightCanvasRef.current.height = viewport.height;
+          }
+          if (drawCanvasRef.current) {
+            drawCanvasRef.current.width = viewport.width;
+            drawCanvasRef.current.height = viewport.height;
+          }
+          redrawAnnotations();
+        } finally {
+          // Free the offscreen bitmap eagerly (large at high zoom × DPR),
+          // on success, cancellation, and error paths alike.
+          offscreen.width = 0;
+          offscreen.height = 0;
+        }
 
         if (textLayerRef.current && !cancelled) {
           if (textLayerTaskRef.current) {
@@ -1461,6 +1491,10 @@ export default function PDFPage({
 
     return () => {
       cancelled = true;
+      // Effect cleanup runs before the next effect body, so the ref still
+      // points at this run's render task (if any) — cancel it so a superseded
+      // render stops burning CPU instead of painting a bitmap we'll discard.
+      if (renderTaskRef.current) { renderTaskRef.current.cancel(); renderTaskRef.current = null; }
       textLayerTaskRef.current?.cancel?.();
     };
   }, [pdfDocument, pageNum, zoom, rotation, nearView]);
