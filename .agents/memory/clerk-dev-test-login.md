@@ -17,4 +17,8 @@ description: How the seeded dev login works and how to bypass Clerk Client Trust
 
 **Why:** Client Trust challenges every new browser context with an email code sent to the account's inbox, which doesn't exist for seeded test accounts, making automated/e2e and dev logins impossible without the bypass.
 
-**How to apply:** when seeding any future test/demo Clerk user, create with `skip_password_checks`, mark email verified, and set `bypass_client_trust: true`. Debug tip: reproduce quickly via FAPI `POST https://<fapi-domain>/v1/client/sign_ins` with identifier/password — inspect `status` and `client_trust_state`.
+**How to apply:** when seeding any future test/demo Clerk user, create with `skip_password_checks`, mark email verified, and set `bypass_client_trust: true`.
+
+# Programmatic browser login for e2e (no Clerk UI)
+
+Backend API `POST /v1/sign_in_tokens {user_id}` → in the page (after `window.Clerk.loaded`): `Clerk.client.signIn.create({strategy:"ticket", ticket})` then `Clerk.setActive({session: res.createdSessionId})`. Works headlessly on localhost; a runnable example lives at `artifacts/lexsecure-landing/e2e/lx-console-logout.e2e.mjs`. To unlock dev-gated surfaces, insert the email into `developers` BEFORE any API lookup (avoids the 30s negative membership cache) and insert `(session_id,user_id)` into `developer_verifications`. Debug tip: reproduce quickly via FAPI `POST https://<fapi-domain>/v1/client/sign_ins` with identifier/password — inspect `status` and `client_trust_state`.
