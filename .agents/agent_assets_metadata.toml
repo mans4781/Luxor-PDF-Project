@@ -413,3 +413,10 @@ id = "KjPFmVH9eMTJPouYfB5AP"
 uri = "file://artifacts/luxor-promo/public/audio/bg_music.mp3"
 type = "audio"
 title = "background music"
+
+[[outputs]]
+id = "AKiFMXQfYJHbGrcCfeaPW"
+uri = "file://attached_assets/license-email-preview.html"
+type = "text"
+title = "License key email — customer preview"
+description = "Exactly what a customer receives after purchasing (sample data: Yearly plan). Subject line: \"Your Luxor PDF Secure license key (Yearly)\"."
