@@ -1,3 +1,4 @@
+import { PAGE_META } from "../../seo/routeMeta";
 import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import {
@@ -279,11 +280,7 @@ const trustBlocks = [
 ];
 
 export default function PdfSecurityPage() {
-  usePageMeta({
-    title: "Luxor PDF Security \u2014 Share PDFs with Expiry & Access Controls",
-    description: "Protect and share PDFs securely with Luxor PDF Security: set expiry dates, passwords, watermarks, and access controls, and track who views your documents.",
-    path: "/products/pdf-security",
-  });
+  usePageMeta(PAGE_META["/products/pdf-security"]);
 
   return (
     <ProductPageLayout>

@@ -1,3 +1,4 @@
+import { PAGE_META } from "../seo/routeMeta";
 import { useMemo, useState } from "react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { motion } from "framer-motion";
@@ -281,11 +282,7 @@ function CompareGroupRows({ group, isIndia }: { group: CompareGroup; isIndia: bo
 }
 
 export default function PricingPage() {
-  usePageMeta({
-    title: "Luxor PDF Pricing \u2014 Free & Premium Plans",
-    description: "Compare Luxor PDF Suite plans. Start free, or upgrade for advanced editing, eSign, and secure sharing with expiry and access controls. Simple, transparent pricing.",
-    path: "/pricing",
-  });
+  usePageMeta(PAGE_META["/pricing"]);
 
   const [yearly, setYearly] = useState(true);
   const isIndia = useMemo(detectIsIndia, []);

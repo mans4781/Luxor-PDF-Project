@@ -1,3 +1,4 @@
+import { PAGE_META } from "../seo/routeMeta";
 import { motion } from "framer-motion";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { Link } from "wouter";
@@ -50,11 +51,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export default function About2Page() {
-  usePageMeta({
-    title: "About Luxor PDF \u2014 Privacy-First PDF Software",
-    description: "Learn about Luxor PDF, the team building privacy-first PDF tools for reading, editing, eSigning, and secure document sharing on Windows, macOS, and the web.",
-    path: "/about",
-  });
+  usePageMeta(PAGE_META["/about"]);
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">

@@ -1,13 +1,10 @@
+import { PAGE_META } from "../seo/routeMeta";
 import { LegalDocPage } from "@/components/layout/LegalDocPage";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { termsOfUseMarkdown } from "@/content/terms-of-use";
 
 export default function TermsPage() {
-  usePageMeta({
-    title: "Terms of Use \u2014 Luxor PDF",
-    description: "Read the Luxor PDF terms of use governing your access to Luxor PDF Suite products, including the desktop apps, web tools, eSign, and secure sharing.",
-    path: "/terms",
-  });
+  usePageMeta(PAGE_META["/terms"]);
 
   return (
     <LegalDocPage

@@ -1,3 +1,4 @@
+import { PAGE_META } from "../seo/routeMeta";
 import { Navbar } from "@/components/layout/Navbar";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { Footer } from "@/components/layout/Footer";
@@ -62,11 +63,7 @@ const COLORS = [
 ];
 
 export default function BrandPage() {
-  usePageMeta({
-    title: "Brand Assets \u2014 Luxor PDF Logos & Media Kit",
-    description: "Download official Luxor PDF brand assets: logos, icons, and media kit resources with usage guidelines for press, partners, and publications.",
-    path: "/brand",
-  });
+  usePageMeta(PAGE_META["/brand"]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col font-sans">

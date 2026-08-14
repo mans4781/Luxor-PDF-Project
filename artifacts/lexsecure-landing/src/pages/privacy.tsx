@@ -1,13 +1,10 @@
+import { PAGE_META } from "../seo/routeMeta";
 import { LegalDocPage } from "@/components/layout/LegalDocPage";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { privacyPolicyMarkdown } from "@/content/privacy-policy";
 
 export default function PrivacyPage() {
-  usePageMeta({
-    title: "Privacy Policy \u2014 Luxor PDF",
-    description: "Read the Luxor PDF privacy policy. Learn what data we collect, how we protect your documents, and your privacy rights when using Luxor PDF products.",
-    path: "/privacy",
-  });
+  usePageMeta(PAGE_META["/privacy"]);
 
   return (
     <LegalDocPage

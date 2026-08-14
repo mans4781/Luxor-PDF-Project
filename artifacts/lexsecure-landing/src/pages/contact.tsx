@@ -1,3 +1,4 @@
+import { PAGE_META } from "../seo/routeMeta";
 import { useState } from "react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { motion } from "framer-motion";
@@ -161,11 +162,7 @@ const inputCls =
 
 /* ── Component ── */
 export default function ContactPage() {
-  usePageMeta({
-    title: "Contact Luxor PDF \u2014 Support & Sales",
-    description: "Get in touch with the Luxor PDF team. Contact support for help with products, licensing, or billing, or reach out with sales and partnership inquiries.",
-    path: "/contact",
-  });
+  usePageMeta(PAGE_META["/contact"]);
 
   const [form, setForm] = useState({ name: "", email: "", subject: "", product: "", category: "", message: "" });
   const [status, setStatus] = useState<FormState>("idle");

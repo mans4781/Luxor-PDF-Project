@@ -1,3 +1,4 @@
+import { PAGE_META } from "../../seo/routeMeta";
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -92,8 +93,8 @@ function Accordion({ faqs }: { faqs: { q: string, a: string }[] }) {
   );
 }
 
-const READER_TITLE = "Luxor PDF Reader – Fast, Lightweight and Secure PDF Reader";
-const READER_DESCRIPTION = "Download Luxor PDF Reader for Windows. Open, view, search, annotate, bookmark, print, and securely read PDF documents with a fast and lightweight desktop experience.";
+const READER_TITLE = PAGE_META["/products/pdf-reader"].title;
+const READER_DESCRIPTION = PAGE_META["/products/pdf-reader"].description;
 
 export default function PdfReaderPage() {
   // SEO

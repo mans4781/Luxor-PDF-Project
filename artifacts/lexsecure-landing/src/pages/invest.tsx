@@ -1,13 +1,10 @@
+import { PAGE_META } from "../seo/routeMeta";
 import { LegalDocPage } from "@/components/layout/LegalDocPage";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { investmentMarkdown } from "@/content/investment";
 
 export default function InvestPage() {
-  usePageMeta({
-    title: "Invest in Luxor PDF \u2014 Investment Opportunities",
-    description: "Explore investment opportunities with Luxor PDF, a privacy-first PDF software company building tools for reading, editing, eSigning, and secure sharing.",
-    path: "/invest",
-  });
+  usePageMeta(PAGE_META["/invest"]);
 
   return (
     <LegalDocPage

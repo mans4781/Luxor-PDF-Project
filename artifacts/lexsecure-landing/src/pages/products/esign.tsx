@@ -1,3 +1,4 @@
+import { PAGE_META } from "../../seo/routeMeta";
 import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import {
@@ -273,11 +274,7 @@ const trustBlocks = [
 ];
 
 export default function ESignPage() {
-  usePageMeta({
-    title: "Luxor eSign \u2014 Send, Sign & Track Documents Online",
-    description: "Send documents for signature with Luxor eSign. Legally binding electronic signatures, templates, reminders, and a full audit trail \u2014 simple and secure.",
-    path: "/products/esign",
-  });
+  usePageMeta(PAGE_META["/products/esign"]);
 
   return (
     <ProductPageLayout>

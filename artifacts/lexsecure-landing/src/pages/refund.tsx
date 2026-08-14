@@ -1,13 +1,10 @@
+import { PAGE_META } from "../seo/routeMeta";
 import { LegalDocPage } from "@/components/layout/LegalDocPage";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { refundMarkdown } from "@/content/refund-policy";
 
 export default function RefundPage() {
-  usePageMeta({
-    title: "Refund Policy \u2014 Luxor PDF",
-    description: "Read the Luxor PDF refund policy, including eligibility, timelines, and how to request a refund for Luxor PDF Suite purchases and subscriptions.",
-    path: "/refund",
-  });
+  usePageMeta(PAGE_META["/refund"]);
 
   return (
     <LegalDocPage

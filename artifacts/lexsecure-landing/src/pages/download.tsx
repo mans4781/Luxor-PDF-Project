@@ -1,3 +1,4 @@
+import { PAGE_META } from "../seo/routeMeta";
 import { useEffect, useState } from "react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { motion } from "framer-motion";
@@ -35,12 +36,7 @@ export default function DownloadPage() {
   // the index so Google only sees one download page.
   const [location] = useLocation();
   const isAlias = location !== "/download";
-  usePageMeta({
-    title: "Download Luxor PDF \u2014 Windows Apps & Web Tools",
-    description: "Download Luxor PDF apps for Windows and access the web tools. Get Luxor PDF Reader and the Luxor PDF Suite \u2014 fast, lightweight, and privacy-first.",
-    path: "/download",
-    noindex: isAlias,
-  });
+  usePageMeta({ ...PAGE_META["/download"], noindex: isAlias });
 
   const [info, setInfo] = useState<InstallerInfo | null>(null);
 
