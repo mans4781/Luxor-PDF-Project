@@ -33,6 +33,24 @@ const template = readFileSync(
 let outDir: string;
 let routeCount: number;
 
+describe("production rewrites cover every prerendered route", () => {
+  // Production hosting is a static server with a catch-all `/* → /index.html`
+  // rewrite. Without an explicit `/<route> → /<route>.html` rewrite per
+  // prerendered route, extensionless URLs (what crawlers fetch) fall through
+  // to the catch-all and serve the homepage SPA shell — the exact bug the
+  // prerender exists to prevent. Keep artifact.toml in sync with the registry.
+  const toml = readFileSync(
+    path.resolve(__dirname, "..", "..", ".replit-artifact", "artifact.toml"),
+    "utf8",
+  );
+  it.each(prerenderRoutes().map(([route]) => route))(
+    "artifact.toml rewrites %s to its prerendered .html file",
+    (route) => {
+      expect(toml).toContain(`from = "${route}"\nto = "${route}.html"`);
+    },
+  );
+});
+
 beforeAll(() => {
   outDir = mkdtempSync(path.join(tmpdir(), "prerender-test-"));
   routeCount = prerender(outDir, template);

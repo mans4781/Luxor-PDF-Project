@@ -23,6 +23,78 @@ publicDir = "artifacts/lexsecure-landing/dist/public"
 serve = "static"
 
 [[services.production.rewrites]]
+from = "/pricing"
+to = "/pricing.html"
+
+[[services.production.rewrites]]
+from = "/about"
+to = "/about.html"
+
+[[services.production.rewrites]]
+from = "/web-app"
+to = "/web-app.html"
+
+[[services.production.rewrites]]
+from = "/contact"
+to = "/contact.html"
+
+[[services.production.rewrites]]
+from = "/privacy"
+to = "/privacy.html"
+
+[[services.production.rewrites]]
+from = "/terms"
+to = "/terms.html"
+
+[[services.production.rewrites]]
+from = "/cookies"
+to = "/cookies.html"
+
+[[services.production.rewrites]]
+from = "/licensing"
+to = "/licensing.html"
+
+[[services.production.rewrites]]
+from = "/refund"
+to = "/refund.html"
+
+[[services.production.rewrites]]
+from = "/invest"
+to = "/invest.html"
+
+[[services.production.rewrites]]
+from = "/brand"
+to = "/brand.html"
+
+[[services.production.rewrites]]
+from = "/download"
+to = "/download.html"
+
+[[services.production.rewrites]]
+from = "/products/pdf-reader"
+to = "/products/pdf-reader.html"
+
+[[services.production.rewrites]]
+from = "/products/pdf-editor"
+to = "/products/pdf-editor.html"
+
+[[services.production.rewrites]]
+from = "/products/esign"
+to = "/products/esign.html"
+
+[[services.production.rewrites]]
+from = "/products/pdf-security"
+to = "/products/pdf-security.html"
+
+[[services.production.rewrites]]
+from = "/about-2"
+to = "/about-2.html"
+
+[[services.production.rewrites]]
+from = "/thank-you"
+to = "/thank-you.html"
+
+[[services.production.rewrites]]
 from = "/*"
 to = "/index.html"
 
