@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { Link } from "wouter";
 import {
   ArrowRight,
@@ -49,6 +50,12 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export default function About2Page() {
+  usePageMeta({
+    title: "About Luxor PDF \u2014 Privacy-First PDF Software",
+    description: "Learn about Luxor PDF, the team building privacy-first PDF tools for reading, editing, eSigning, and secure document sharing on Windows, macOS, and the web.",
+    path: "/about",
+  });
+
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
       <Navbar />

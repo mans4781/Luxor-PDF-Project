@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { Link } from "wouter";
 import {
   ArrowRight,
@@ -76,6 +77,13 @@ function Laptop({ children, className = "" }: { children: React.ReactNode; class
 /* --------------------------------- Page ----------------------------------- */
 
 export default function Home2Page() {
+  usePageMeta({
+    title: "Luxor PDF Suite \u2014 Privacy-First PDF Tools, eSign & Secure Sharing",
+    description: "Luxor PDF Suite is a privacy-first set of PDF tools \u2014 read, edit, convert, merge, eSign, and securely share PDFs with expiry and access controls.",
+    path: "/",
+    noindex: true, // draft/duplicate of the homepage — keep out of the index
+  });
+
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
       <Navbar />

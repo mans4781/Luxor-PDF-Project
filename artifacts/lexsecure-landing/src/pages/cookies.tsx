@@ -1,7 +1,14 @@
 import { LegalDocPage } from "@/components/layout/LegalDocPage";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { cookiePolicyMarkdown } from "@/content/cookie-policy";
 
 export default function CookiesPage() {
+  usePageMeta({
+    title: "Cookie Policy \u2014 Luxor PDF",
+    description: "Learn how Luxor PDF uses cookies and similar technologies across luxorpdf.com and our apps, and how you can manage your cookie preferences.",
+    path: "/cookies",
+  });
+
   return (
     <LegalDocPage
       badge="Legal & Cookies"

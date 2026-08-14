@@ -1,4 +1,5 @@
 import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   Lock, Shield, Eye, Layers, Share2, Droplets, EyeOff, Printer,
   Scissors, Boxes, Link2, CheckCircle2, Upload, ShieldCheck,
@@ -278,6 +279,12 @@ const trustBlocks = [
 ];
 
 export default function PdfSecurityPage() {
+  usePageMeta({
+    title: "Luxor PDF Security \u2014 Share PDFs with Expiry & Access Controls",
+    description: "Protect and share PDFs securely with Luxor PDF Security: set expiry dates, passwords, watermarks, and access controls, and track who views your documents.",
+    path: "/products/pdf-security",
+  });
+
   return (
     <ProductPageLayout>
       {/* === HERO === */}

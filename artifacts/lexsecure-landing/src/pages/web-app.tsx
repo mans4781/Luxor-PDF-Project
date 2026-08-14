@@ -1,7 +1,14 @@
 import { Link } from "wouter";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { Shield, ArrowLeft } from "lucide-react";
 
 export default function WebAppPage() {
+  usePageMeta({
+    title: "Luxor PDF Web App \u2014 PDF Tools in Your Browser",
+    description: "Use Luxor PDF directly in your browser. Read, edit, convert, and manage PDF documents online with privacy-first, client-side processing. No install required.",
+    path: "/web-app",
+  });
+
   return (
     <div className="flex flex-col h-screen bg-background">
       <header className="flex items-center justify-between px-6 h-14 border-b bg-background shrink-0 z-10">

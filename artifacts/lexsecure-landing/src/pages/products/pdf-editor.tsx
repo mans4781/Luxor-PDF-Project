@@ -1,4 +1,5 @@
 import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { PenTool, Type, Image, Layers, Scissors, RotateCcw, Table2, CheckCircle2, Wand2 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -81,6 +82,12 @@ function EditorMockup() {
 }
 
 export default function PdfEditorPage() {
+  usePageMeta({
+    title: "Luxor PDF Editor \u2014 Edit Text, Images & Pages in PDFs",
+    description: "Edit PDFs with Luxor PDF Editor: change text in-place, manage images, reorder and merge pages, and fill forms. Fast, privacy-first PDF editing.",
+    path: "/products/pdf-editor",
+  });
+
   return (
     <ProductPageLayout>
       {/* Hero */}

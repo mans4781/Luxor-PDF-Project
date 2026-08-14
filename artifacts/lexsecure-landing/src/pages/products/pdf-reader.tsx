@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { DownloadButton } from "@/components/reader/DownloadButton";
@@ -91,30 +92,19 @@ function Accordion({ faqs }: { faqs: { q: string, a: string }[] }) {
   );
 }
 
+const READER_TITLE = "Luxor PDF Reader – Fast, Lightweight and Secure PDF Reader";
+const READER_DESCRIPTION = "Download Luxor PDF Reader for Windows. Open, view, search, annotate, bookmark, print, and securely read PDF documents with a fast and lightweight desktop experience.";
+
 export default function PdfReaderPage() {
   // SEO
+  usePageMeta({
+    title: READER_TITLE,
+    description: READER_DESCRIPTION,
+    path: "/products/pdf-reader",
+  });
+
   useEffect(() => {
-    const title = "Luxor PDF Reader – Fast, Lightweight and Secure PDF Reader";
-    const description = "Download Luxor PDF Reader for Windows. Open, view, search, annotate, bookmark, print, and securely read PDF documents with a fast and lightweight desktop experience.";
-    document.title = title;
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) {
-      metaDesc.setAttribute("content", description);
-    }
-
-    const setOg = (property: string, content: string) => {
-      let el = document.querySelector<HTMLMetaElement>(`meta[property="${property}"]`);
-      if (!el) {
-        el = document.createElement("meta");
-        el.setAttribute("property", property);
-        document.head.appendChild(el);
-      }
-      el.setAttribute("content", content);
-    };
-    setOg("og:title", title);
-    setOg("og:description", description);
-    setOg("og:type", "website");
-
+    const description = READER_DESCRIPTION;
     const ldScript = document.createElement("script");
     ldScript.type = "application/ld+json";
     ldScript.id = "reader-jsonld";

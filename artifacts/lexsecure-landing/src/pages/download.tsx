@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { motion } from "framer-motion";
 import {
   Download,
@@ -9,7 +10,7 @@ import {
   CheckCircle2,
   Sparkles,
 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { ProductPageLayout } from "@/components/layout/ProductPageLayout";
 
 interface InstallerInfo {
@@ -29,6 +30,18 @@ function formatSize(bytes?: number): string | null {
 }
 
 export default function DownloadPage() {
+  // This page is also routed at /thank-you (post-purchase alias). We
+  // deliberately canonicalize both to /download and keep the alias out of
+  // the index so Google only sees one download page.
+  const [location] = useLocation();
+  const isAlias = location !== "/download";
+  usePageMeta({
+    title: "Download Luxor PDF \u2014 Windows Apps & Web Tools",
+    description: "Download Luxor PDF apps for Windows and access the web tools. Get Luxor PDF Reader and the Luxor PDF Suite \u2014 fast, lightweight, and privacy-first.",
+    path: "/download",
+    noindex: isAlias,
+  });
+
   const [info, setInfo] = useState<InstallerInfo | null>(null);
 
   useEffect(() => {
