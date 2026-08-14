@@ -131,6 +131,27 @@ export const adminApi = {
           method: "DELETE",
         }),
 
+  grantPro: (token: string, userId: string, plan: "yearly" | "monthly") =>
+    isDevPreview(token)
+      ? Promise.resolve({
+          granted: true,
+          emailSent: true,
+          plan,
+          subscriptionEndDate: new Date(Date.now() + 365 * 86_400_000).toISOString(),
+          recipient: "demo@example.com",
+        })
+      : request<{
+          granted: boolean;
+          emailSent: boolean;
+          plan: string;
+          subscriptionEndDate: string;
+          recipient: string;
+          warning?: string;
+        }>(token, `/customers/${encodeURIComponent(userId)}/grant-pro`, {
+          method: "POST",
+          body: JSON.stringify({ plan }),
+        }),
+
   deleteCustomer: (token: string, userId: string) =>
     isDevPreview(token)
       ? Promise.resolve({})

@@ -5,6 +5,7 @@ import {
   CalendarPlus,
   Download,
   Eye,
+  Gift,
   KeyRound,
   MailQuestion,
   MoreHorizontal,
@@ -102,6 +103,9 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
   const [emailingKey, setEmailingKey] = useState(false);
   const [detachTarget, setDetachTarget] = useState<AdminCustomer | null>(null);
   const [detaching, setDetaching] = useState(false);
+  const [grantProTarget, setGrantProTarget] = useState<AdminCustomer | null>(null);
+  const [grantPlan, setGrantPlan] = useState<"yearly" | "monthly">("yearly");
+  const [grantingPro, setGrantingPro] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
@@ -241,6 +245,38 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
       else toast.error("Could not send the email. Copy the key and share it manually.");
     } finally {
       setEmailingKey(false);
+    }
+  };
+
+  const confirmGrantPro = async () => {
+    if (!grantProTarget || grantingPro) return;
+    setGrantingPro(true);
+    try {
+      const result = await adminApi.grantPro(token, grantProTarget.userId, grantPlan);
+      logAudit(
+        "Pro license granted",
+        grantProTarget.userId,
+        "free",
+        `${result.plan} → emailed to ${result.recipient}`,
+      );
+      if (result.emailSent) {
+        toast.success(`Pro license granted and emailed to ${result.recipient}.`, {
+          description: "The license key was sent directly — it's not visible here.",
+        });
+      } else {
+        toast.warning("License activated but the email failed to deliver.", {
+          description: (result as { warning?: string }).warning ?? "Ask the user to contact support.",
+        });
+      }
+      setGrantProTarget(null);
+      setReloadKey((k) => k + 1);
+    } catch (err) {
+      if (isUnauthorized(err)) onLogout();
+      else if (err instanceof Error && err.message.toLowerCase().includes("no email"))
+        toast.error("This user has no email address on file.");
+      else toast.error("Could not grant the Pro license. Please try again.");
+    } finally {
+      setGrantingPro(false);
     }
   };
 
@@ -464,6 +500,17 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
                               <DropdownMenuItem onClick={() => setSelected(c)}>
                                 <Eye className="mr-2 h-3.5 w-3.5" /> View profile
                               </DropdownMenuItem>
+                              {!c.isPaid && (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setGrantPlan("yearly");
+                                    setGrantProTarget(c);
+                                  }}
+                                >
+                                  <Gift className="mr-2 h-3.5 w-3.5 text-indigo-500" />
+                                  Grant Pro license
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem onClick={() => setQuotaTarget(c)}>
                                 <KeyRound className="mr-2 h-3.5 w-3.5" /> Set monthly quota
                               </DropdownMenuItem>
@@ -634,6 +681,68 @@ export function UsersPage({ token, onLogout }: { token: string; onLogout: () => 
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Grant Pro license — confirm dialog */}
+      <Dialog
+        open={grantProTarget !== null}
+        onOpenChange={(v) => {
+          if (!v && !grantingPro) setGrantProTarget(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Gift className="h-4 w-4 text-indigo-500" /> Grant Pro license
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-slate-600 dark:text-slate-300">
+              This mints a fresh license key for{" "}
+              <span className="font-medium">
+                {grantProTarget?.email ?? grantProTarget?.userId}
+              </span>{" "}
+              and activates their account on the selected plan.
+            </p>
+            <div className="rounded-md bg-indigo-50 dark:bg-indigo-950/50 px-3 py-2.5 text-xs text-indigo-700 dark:text-indigo-300 space-y-1">
+              <p className="font-semibold">The license key is emailed directly to the user.</p>
+              <p>It will not appear in the admin console — not now, not after. This is by design so keys are never copied and shared informally.</p>
+            </div>
+            <div>
+              <Label className="text-xs">Plan</Label>
+              <Select
+                value={grantPlan}
+                onValueChange={(v) => setGrantPlan(v as "yearly" | "monthly")}
+              >
+                <SelectTrigger className="mt-1 h-9 text-[13px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="yearly">Yearly (365 days)</SelectItem>
+                  <SelectItem value="monthly">Monthly (30 days)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={grantingPro}
+              onClick={() => setGrantProTarget(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={grantingPro}
+              className="bg-indigo-600 hover:bg-indigo-700"
+              onClick={() => void confirmGrantPro()}
+            >
+              {grantingPro ? "Granting…" : "Grant & email key"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Block modal (advisory until user-management backend ships) */}
       <Dialog open={blockTarget !== null} onOpenChange={(v) => !v && setBlockTarget(null)}>

@@ -40,7 +40,8 @@ import {
   adminSetQuotaOverride,
 } from "../lib/license";
 import { adminDeleteUser, ProtectedUserError } from "../lib/adminDeleteUser";
-import { adminDetachLicense, adminReissueLicenseKey, ReissueError } from "../lib/billing";
+import { adminDetachLicense, adminReissueLicenseKey, applyPaidPlan, ReissueError } from "../lib/billing";
+import type { BillingProviderId } from "../lib/billing";
 import { sendLicenseEmail, sendDownloadsRestoredEmail } from "../lib/email";
 import { areSecureDownloadsLocked, SECURE_LOCK_STARTED_AT } from "./downloads";
 import {
@@ -717,6 +718,118 @@ router.delete(
       }
       req.log.error({ err, userId }, "admin/customers detach-license failed");
       res.status(500).json({ error: "Failed to detach license" });
+    }
+  },
+);
+
+// Grant a paid plan to any user — useful for partnerships, support compensation,
+// or testers. The fresh license key is emailed straight to the user and is
+// intentionally NEVER included in the API response.
+router.post(
+  "/admin/customers/:userId/grant-pro",
+  async (req: Request, res: Response): Promise<void> => {
+    if (!(await checkAuth(req, res))) return;
+
+    const rawUserId = req.params["userId"];
+    const userId = typeof rawUserId === "string" ? rawUserId.trim() : "";
+    if (!userId) {
+      res.status(400).json({ error: "userId is required" });
+      return;
+    }
+
+    const body = req.body as { plan?: unknown };
+    const rawPlan = typeof body.plan === "string" ? body.plan.trim().toLowerCase() : "yearly";
+
+    // Accept any plan that has a duration in PLAN_DURATION_DAYS.
+    if (!(rawPlan in PLAN_DURATION_DAYS)) {
+      res.status(400).json({
+        error: `Invalid plan "${rawPlan}". Valid values: ${Object.keys(PLAN_DURATION_DAYS).join(", ")}`,
+      });
+      return;
+    }
+
+    try {
+      // Resolve the user's email before minting anything. If there's no email
+      // we refuse outright — the key MUST go to the user via email, never be
+      // visible in the admin console.
+      const user = await clerkClient.users.getUser(userId);
+      const primary =
+        user.emailAddresses.find((e) => e.id === user.primaryEmailAddressId) ??
+        user.emailAddresses[0];
+      const recipient = primary?.emailAddress ?? null;
+      if (!recipient) {
+        res.status(400).json({
+          error: "This user has no email address on file — the license key can't be delivered",
+        });
+        return;
+      }
+      const name = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || null;
+
+      // Mint a fresh key and activate the plan atomically.
+      const outcome = await applyPaidPlan(
+        userId,
+        rawPlan as Parameters<typeof applyPaidPlan>[1],
+        {
+          // "admin" is not a billing-webhook provider but we cast here so the
+          // label is stored clearly in the licenseEventsTable audit trail.
+          provider: "admin" as unknown as BillingProviderId,
+          eventId: `admin-grant-${userId}-${Date.now()}`,
+        },
+      );
+
+      const host = req.get("host");
+      const proto =
+        (req.get("x-forwarded-proto") ?? "").split(",")[0]?.trim() ||
+        (req.secure ? "https" : "http");
+      const downloadUrl = `${host ? `${proto}://${host}` : ""}/api/downloads/luxor-pdf-secure-latest.exe`;
+
+      // Send the license email. The rawProductKey never leaves this scope —
+      // it is not included in the API response, only sent to the user.
+      const emailSent = await sendLicenseEmail({
+        to: recipient,
+        customerName: name,
+        productKey: outcome.rawProductKey,
+        plan: rawPlan,
+        subscriptionEndDate: outcome.subscriptionEndDate.toISOString(),
+        downloadUrl,
+      });
+
+      // Record the audit event regardless of email outcome.
+      await db.insert(licenseEventsTable).values({
+        userId,
+        eventType: "license_granted_by_admin",
+        eventMessage: `Admin granted ${rawPlan} license — key emailed to ${recipient}`,
+        metadata: {
+          plan: rawPlan,
+          productKeyId: outcome.productKeyId,
+          recipient,
+          emailSent,
+          isFirstActivation: outcome.isFirstActivation,
+        },
+      });
+
+      req.log.info(
+        { userId, plan: rawPlan, recipient, productKeyId: outcome.productKeyId, emailSent },
+        "Admin granted Pro license",
+      );
+
+      res.json({
+        granted: true,
+        emailSent,
+        plan: rawPlan,
+        subscriptionEndDate: outcome.subscriptionEndDate.toISOString(),
+        recipient,
+        ...(emailSent
+          ? {}
+          : {
+              warning:
+                "License activated but the email failed to deliver. " +
+                "Ask the user to contact support to retrieve their key.",
+            }),
+      });
+    } catch (err) {
+      req.log.error({ err, userId }, "admin/customers grant-pro failed");
+      res.status(500).json({ error: "Failed to grant the Pro license" });
     }
   },
 );
