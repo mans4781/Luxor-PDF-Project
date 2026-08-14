@@ -74,6 +74,22 @@ export interface LicenseEmailParams {
    * a temporary-unavailability notice instead of a download button.
    */
   downloadUrl: string;
+  /**
+   * Amount charged in the smallest currency unit (paise for INR, cents for
+   * USD). When provided together with `currency`, an invoice section is
+   * appended to the email. Omit for reissues / admin-generated emails where
+   * no new charge occurred.
+   */
+  amountMinor?: number | null;
+  /** ISO 4217 currency code, e.g. "INR" or "USD". */
+  currency?: string | null;
+  /**
+   * Human-readable payment method label, e.g. "Razorpay · UPI" or "Stripe".
+   * Falls back to a provider name derived from the currency if omitted.
+   */
+  paymentMethod?: string | null;
+  /** Provider transaction / payment-intent ID shown on the invoice for support. */
+  paymentTxnId?: string | null;
 }
 
 /**
@@ -89,6 +105,10 @@ export async function sendLicenseEmail(params: LicenseEmailParams): Promise<bool
     plan,
     subscriptionEndDate,
     downloadUrl,
+    amountMinor,
+    currency,
+    paymentMethod,
+    paymentTxnId,
   } = params;
 
   try {
@@ -102,6 +122,174 @@ export async function sendLicenseEmail(params: LicenseEmailParams): Promise<bool
       day: "numeric",
     });
     const downloadsLocked = areSecureDownloadsLocked();
+
+    // ── Invoice section ───────────────────────────────────────────────────────
+    // Shown when a real charge amount is available (new purchases + renewals).
+    // Omitted for admin-reissued keys where no new payment occurred.
+    let invoiceSectionHtml = "";
+    let invoiceTextLines: string[] = [];
+
+    if (amountMinor != null && amountMinor > 0 && currency) {
+      const cur = currency.toUpperCase();
+      const isINR = cur === "INR";
+      const total = amountMinor / 100;
+      const fmtINR = (n: number) =>
+        "₹" +
+        n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const fmtUSD = (n: number) => "$" + n.toFixed(2);
+      const fmt = isINR ? fmtINR : fmtUSD;
+      const fmtTotal = fmt(total);
+
+      const invNow = new Date();
+      const invYear = invNow.getFullYear();
+      const txnSuffix = paymentTxnId
+        ? paymentTxnId.slice(-6).toUpperCase().replace(/[^A-Z0-9]/g, "X")
+        : String(Date.now()).slice(-6);
+      const invoiceNo = `LXR-${invYear}-${txnSuffix}`;
+      const invoiceDate = invNow.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+      const invValidRange = `${invoiceDate} — ${validUntil}`;
+      const kParts = productKey.split("-");
+      const maskedKey =
+        kParts.length === 5
+          ? [kParts[0], kParts[1], "····", "····", kParts[4]].join("-")
+          : productKey.slice(0, 12) + "···";
+      const methodLabel = paymentMethod ?? (isINR ? "Razorpay" : "Stripe");
+      const txnLabel = paymentTxnId ?? "—";
+      const billToName = customerName ?? to.split("@")[0];
+
+      const gstRowHtml = isINR
+        ? (() => {
+            const subtotal = total / 1.18;
+            const gst = total - subtotal;
+            return `
+              <tr>
+                <td style="padding:3px 0;font-size:12px;color:#64748b">Subtotal</td>
+                <td style="padding:3px 0;font-size:12px;color:#1e293b;text-align:right">${fmtINR(subtotal)}</td>
+              </tr>
+              <tr>
+                <td style="padding:3px 0;font-size:12px;color:#64748b">GST (18%)</td>
+                <td style="padding:3px 0;font-size:12px;color:#1e293b;text-align:right">${fmtINR(gst)}</td>
+              </tr>`;
+          })()
+        : "";
+
+      invoiceSectionHtml = `
+    <tr><td style="padding:0 32px"><div style="border-top:1px solid #e2e8f0;margin:8px 0"></div></td></tr>
+    <tr><td style="padding:0">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="background:#1e3a8a;padding:18px 32px">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td>
+                  <div style="font-size:17px;font-weight:800;letter-spacing:-0.01em">
+                    <span style="color:#ffffff">Luxor</span><span style="color:#fca5a5"> PDF</span><span style="color:#fcd34d"> Secure</span>
+                  </div>
+                  <div style="font-size:10px;color:#93c5fd;margin-top:3px">luxorpdf.com</div>
+                </td>
+                <td style="text-align:right;vertical-align:top">
+                  <div style="font-size:10px;letter-spacing:0.12em;color:#93c5fd;text-transform:uppercase;margin-bottom:4px">Invoice</div>
+                  <div style="font-size:12px;font-weight:600;color:#ffffff;margin-bottom:6px">${invoiceNo}</div>
+                  <table role="presentation" cellpadding="0" cellspacing="0" style="margin-left:auto">
+                    <tr><td style="border:1.5px solid #ffffff;color:#ffffff;font-weight:700;font-size:9px;letter-spacing:0.15em;padding:2px 8px">PAID</td></tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+    <tr><td style="padding:20px 32px 0">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="width:50%;vertical-align:top">
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px">Bill To</div>
+            <div style="font-size:13px;font-weight:600;color:#0f172a">${billToName}</div>
+            <div style="font-size:12px;color:#3b82f6;margin-top:2px">${to}</div>
+          </td>
+          <td style="width:50%;vertical-align:top;text-align:right">
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px">Invoice Details</div>
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin-left:auto">
+              <tr>
+                <td style="font-size:11px;color:#64748b;padding:1px 6px 1px 0">Date</td>
+                <td style="font-size:11px;color:#0f172a;font-weight:500;padding:1px 0">${invoiceDate}</td>
+              </tr>
+              <tr>
+                <td style="font-size:11px;color:#64748b;padding:1px 6px 1px 0">Inv #</td>
+                <td style="font-size:11px;color:#0f172a;font-weight:500;padding:1px 0">${invoiceNo}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+    <tr><td style="padding:16px 32px 0">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:2px solid #e2e8f0">
+        <tr>
+          <th style="text-align:left;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#94a3b8;padding:8px 0">Description</th>
+          <th style="text-align:right;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#94a3b8;padding:8px 0">Amount</th>
+        </tr>
+        <tr>
+          <td style="padding:10px 0;font-size:13px;border-top:1px solid #f1f5f9">
+            <div style="font-weight:600;color:#0f172a">Luxor PDF Secure — ${planLabel} License</div>
+            <div style="margin-top:3px;font-size:11px;color:#64748b">Key: <span style="font-family:monospace">${maskedKey}</span></div>
+            <div style="font-size:11px;color:#64748b">Valid: ${invValidRange}</div>
+          </td>
+          <td style="padding:10px 0;font-size:13px;font-weight:600;color:#0f172a;text-align:right;vertical-align:top;border-top:1px solid #f1f5f9">${fmtTotal}</td>
+        </tr>
+      </table>
+    </td></tr>
+    <tr><td style="padding:12px 32px 20px">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="width:50%;vertical-align:top">
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px">Payment</div>
+            <div style="font-size:12px;color:#334155">${methodLabel}</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px;font-family:monospace">${txnLabel}</div>
+          </td>
+          <td style="width:50%;vertical-align:top">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+              ${gstRowHtml}
+              <tr><td colspan="2" style="padding-top:6px"><div style="border-top:1px solid #e2e8f0"></div></td></tr>
+              <tr>
+                <td style="padding-top:8px;font-size:13px;font-weight:700;color:#0f172a">Total paid</td>
+                <td style="padding-top:8px;font-size:13px;font-weight:700;color:#3730a3;text-align:right">${fmtTotal}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+    <tr><td style="padding:0 32px 8px">
+      <div style="background:#f8fafc;border-radius:8px;padding:10px 14px">
+        <p style="margin:0;font-size:11px;color:#64748b;line-height:1.6">
+          Computer-generated invoice. Manage your subscription at
+          <a href="https://luxorpdf.com/account" style="color:#3730a3">luxorpdf.com/account</a>.
+        </p>
+      </div>
+    </td></tr>`;
+
+      invoiceTextLines = [
+        "",
+        "--- Invoice ---",
+        `Invoice No: ${invoiceNo}`,
+        `Date:       ${invoiceDate}`,
+        ...(isINR
+          ? [
+              `Subtotal:   ${fmtINR(total / 1.18)}`,
+              `GST (18%):  ${fmtINR(total - total / 1.18)}`,
+            ]
+          : []),
+        `Total paid: ${fmtTotal}`,
+        `Payment:    ${methodLabel}`,
+        ...(paymentTxnId ? [`Txn ID:     ${paymentTxnId}`] : []),
+      ];
+    }
 
     const downloadSectionHtml = downloadsLocked
       ? `    <tr><td style="padding:28px 32px 8px">
@@ -154,6 +342,7 @@ export async function sendLicenseEmail(params: LicenseEmailParams): Promise<bool
       </p>
     </td></tr>
 ${downloadSectionHtml}
+${invoiceSectionHtml}
     <tr><td style="padding:0 32px 32px">
       <p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6">
         Need help? Reply to this email or visit <a href="https://luxorpdf.com/contact" style="color:#312e81">luxorpdf.com/contact</a>.<br>
@@ -188,6 +377,7 @@ ${downloadSectionHtml}
           ]),
       "",
       "Questions? Reply to this email or visit https://luxorpdf.com/contact",
+      ...invoiceTextLines,
     ].join("\n");
 
     const { data, error } = await client.emails.send({

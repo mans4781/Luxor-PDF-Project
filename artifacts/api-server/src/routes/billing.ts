@@ -599,6 +599,13 @@ billingWebhookRouter.post(
                 plan: "business",
                 subscriptionEndDate: bizOutcome.subscriptionEndDate.toISOString(),
                 downloadUrl: buildInstallerDownloadUrl(req),
+                amountMinor: typeof session.amount_total === "number" ? session.amount_total : null,
+                currency: session.currency ?? null,
+                paymentMethod: "Stripe",
+                paymentTxnId:
+                  typeof session.payment_intent === "string"
+                    ? session.payment_intent
+                    : ((session.payment_intent as { id?: string } | null)?.id ?? null),
               });
             }
           } catch (emailErr) {
@@ -680,6 +687,13 @@ billingWebhookRouter.post(
               plan,
               subscriptionEndDate: outcome.subscriptionEndDate.toISOString(),
               downloadUrl,
+              amountMinor: typeof session.amount_total === "number" ? session.amount_total : null,
+              currency: session.currency ?? null,
+              paymentMethod: "Stripe",
+              paymentTxnId:
+                typeof session.payment_intent === "string"
+                  ? session.payment_intent
+                  : ((session.payment_intent as { id?: string } | null)?.id ?? null),
             });
             if (!sent) {
               req.log.warn(
@@ -720,6 +734,7 @@ billingWebhookRouter.post(
           customer_name?: string | null;
           amount_paid?: number | null;
           currency?: string | null;
+          payment_intent?: string | { id?: string } | null;
         };
 
         if (invoiceAny.billing_reason !== "subscription_cycle") {
@@ -882,6 +897,15 @@ billingWebhookRouter.post(
               plan: renewPlan,
               subscriptionEndDate: renewOutcome.subscriptionEndDate.toISOString(),
               downloadUrl: buildInstallerDownloadUrl(req),
+              amountMinor:
+                typeof invoiceAny.amount_paid === "number" ? invoiceAny.amount_paid : null,
+              currency:
+                typeof invoiceAny.currency === "string" ? invoiceAny.currency : null,
+              paymentMethod: "Stripe",
+              paymentTxnId:
+                typeof invoiceAny.payment_intent === "string"
+                  ? invoiceAny.payment_intent
+                  : ((invoiceAny.payment_intent as { id?: string } | null)?.id ?? null),
             });
           }
         } catch (emailErr) {
@@ -1062,6 +1086,11 @@ razorpayWebhookRouter.post(
               plan,
               subscriptionEndDate: outcome.subscriptionEndDate.toISOString(),
               downloadUrl: buildInstallerDownloadUrl(req),
+              amountMinor:
+                typeof paymentEntity?.amount === "number" ? paymentEntity.amount : null,
+              currency: paymentEntity?.currency ?? null,
+              paymentMethod: "Razorpay · UPI",
+              paymentTxnId: paymentEntity?.id ?? null,
             });
           } else {
             req.log.warn(
