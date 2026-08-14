@@ -13,16 +13,17 @@
  * right tags without any runtime server logic.
  *
  * Run with: tsx scripts/prerender.ts
+ *
+ * The rendering logic is exported so src/seo/prerender.test.ts can verify
+ * that every registered route (and alias) emits BOTH file forms
+ * (`x/index.html` and `x.html`) with the correct tags.
  */
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { PAGE_META, PRERENDER_ALIASES, type RouteMeta } from "../src/seo/routeMeta";
 
-const SITE_ORIGIN = "https://luxorpdf.com";
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const outDir = path.join(root, "dist", "public");
-const template = readFileSync(path.join(outDir, "index.html"), "utf8");
+export const SITE_ORIGIN = "https://luxorpdf.com";
 
 function escapeHtml(s: string): string {
   return s
@@ -39,7 +40,7 @@ function replaceOnce(html: string, pattern: RegExp, replacement: string, what: s
   return html.replace(pattern, replacement);
 }
 
-function renderRoute(route: string, meta: RouteMeta): string {
+export function renderRoute(template: string, route: string, meta: RouteMeta): string {
   const title = escapeHtml(meta.title);
   const description = escapeHtml(meta.description);
   const canonical = SITE_ORIGIN + meta.path;
@@ -86,25 +87,49 @@ function renderRoute(route: string, meta: RouteMeta): string {
   return html;
 }
 
-const routes: Array<[string, RouteMeta]> = [
-  ...Object.entries(PAGE_META).filter(([, m]) => !("noindex" in m && m.noindex)),
-  ...Object.entries(PRERENDER_ALIASES).map(
-    ([alias, canonicalRoute]): [string, RouteMeta] => [alias, PAGE_META[canonicalRoute]],
-  ),
-];
-
-for (const [route, meta] of routes) {
-  const html = renderRoute(route, meta);
-  const segments = route.split("/").filter(Boolean);
-  // "/pricing/" style requests resolve to pricing/index.html …
-  const dir = path.join(outDir, ...segments);
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(path.join(dir, "index.html"), html);
-  // … while extensionless "/pricing" requests resolve to pricing.html
-  // (sirv/vite-preview `extensions` lookup — and what crawlers actually hit).
-  const flat = path.join(outDir, ...segments.slice(0, -1), `${segments[segments.length - 1]}.html`);
-  writeFileSync(flat, html);
-  console.log(`prerendered ${route}`);
+/** Every route the prerender must emit: non-noindex PAGE_META entries + aliases. */
+export function prerenderRoutes(): Array<[string, RouteMeta]> {
+  return [
+    ...Object.entries(PAGE_META).filter(([, m]) => !("noindex" in m && m.noindex)),
+    ...Object.entries(PRERENDER_ALIASES).map(
+      ([alias, canonicalRoute]): [string, RouteMeta] => [alias, PAGE_META[canonicalRoute]],
+    ),
+  ];
 }
 
-console.log(`prerender: wrote ${routes.length} routes`);
+/** The two file paths (relative to outDir) each route must be written to. */
+export function outputFilesFor(route: string): [dirForm: string, flatForm: string] {
+  const segments = route.split("/").filter(Boolean);
+  return [
+    path.join(...segments, "index.html"),
+    path.join(...segments.slice(0, -1), `${segments[segments.length - 1]}.html`),
+  ];
+}
+
+export function prerender(outDir: string, template: string): number {
+  const routes = prerenderRoutes();
+  for (const [route, meta] of routes) {
+    const html = renderRoute(template, route, meta);
+    // "/pricing/" style requests resolve to pricing/index.html …
+    // … while extensionless "/pricing" requests resolve to pricing.html
+    // (sirv/vite-preview `extensions` lookup — and what crawlers actually hit).
+    for (const rel of outputFilesFor(route)) {
+      const file = path.join(outDir, rel);
+      mkdirSync(path.dirname(file), { recursive: true });
+      writeFileSync(file, html);
+    }
+    console.log(`prerendered ${route}`);
+  }
+  return routes.length;
+}
+
+const isCliEntry =
+  process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isCliEntry) {
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+  const outDir = path.join(root, "dist", "public");
+  const template = readFileSync(path.join(outDir, "index.html"), "utf8");
+  const count = prerender(outDir, template);
+  console.log(`prerender: wrote ${count} routes`);
+}
