@@ -50,6 +50,16 @@ integrations = ["resend:1.0.0"]
   channel = "stable-25_05"
 packages = ["imagemagickBig"]
 
+[userenv]
+
+[userenv.shared]
+VITE_CLERK_PUBLISHABLE_KEY = "pk_test_dGVuZGVyLWZsZWEtMzMuY2xlcmsuYWNjb3VudHMuZGV2JA"
+RAZORPAY_PRICE_MONTHLY_USD = "900"
+RAZORPAY_PRICE_YEARLY_USD = "8400"
+ADMIN_EMAIL = "mans.mf@gmail.com"
+RAZORPAY_PRICE_MONTHLY_INR = "49900"
+RAZORPAY_PRICE_YEARLY_INR = "499900"
+
 [[ports]]
 localPort = 8080
 externalPort = 80
@@ -63,12 +73,20 @@ localPort = 8082
 externalPort = 6800
 
 [[ports]]
+localPort = 18799
+externalPort = 8080
+
+[[ports]]
 localPort = 19050
 externalPort = 3002
 
 [[ports]]
 localPort = 19051
 externalPort = 6000
+
+[[ports]]
+localPort = 19268
+externalPort = 8000
 
 [[ports]]
 localPort = 20963
@@ -87,6 +105,10 @@ localPort = 21448
 externalPort = 5173
 
 [[ports]]
+localPort = 21503
+externalPort = 8008
+
+[[ports]]
 localPort = 22843
 externalPort = 3004
 
@@ -97,13 +119,3 @@ externalPort = 3003
 [[ports]]
 localPort = 22845
 externalPort = 4200
-
-[userenv]
-
-[userenv.shared]
-VITE_CLERK_PUBLISHABLE_KEY = "pk_test_dGVuZGVyLWZsZWEtMzMuY2xlcmsuYWNjb3VudHMuZGV2JA"
-RAZORPAY_PRICE_MONTHLY_USD = "900"
-RAZORPAY_PRICE_YEARLY_USD = "8400"
-ADMIN_EMAIL = "mans.mf@gmail.com"
-RAZORPAY_PRICE_MONTHLY_INR = "49900"
-RAZORPAY_PRICE_YEARLY_INR = "499900"
