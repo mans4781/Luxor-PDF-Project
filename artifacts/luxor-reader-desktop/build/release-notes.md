@@ -1,4 +1,7 @@
-## What's new in 0.1.15
+## What's new in 0.1.16
+
+- Fixed opening local PDF files while the computer is offline.
+- Added the required offline PDF.js runtime support.
 
 - The `.pdf` file icon in Windows Explorer now has a clearly visible blue border at every icon size — the previous light-blue outline was too pale to see at small sizes against a white background.
 
