@@ -488,7 +488,7 @@ void app.whenReady().then(async () => {
         "Content-Security-Policy": [
           "default-src 'self'; img-src 'self' data: blob:; " +
             "style-src 'self' 'unsafe-inline'; script-src 'self' blob:; " +
-            "worker-src 'self' blob:; connect-src 'self' https:; " +
+            "worker-src 'self' blob:; connect-src 'self' blob: https:; " +
             "font-src 'self' data:;",
         ],
       },
