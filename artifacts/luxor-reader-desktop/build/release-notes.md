@@ -1,3 +1,9 @@
+## What's new in 0.1.17
+
+- Fixed the Windows installer Finish button so it exits cleanly instead of
+  launching the app while the installer is still shutting down.
+- Luxor PDF can be opened from its desktop shortcut after installation.
+
 ## What's new in 0.1.16
 
 - Fixed opening local PDF files while the computer is offline.

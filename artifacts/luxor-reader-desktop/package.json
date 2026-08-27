@@ -1,6 +1,6 @@
 {
   "name": "@workspace/luxor-reader-desktop",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "private": true,
   "description": "Luxor PDF",
   "main": "out/main.js",
@@ -98,7 +98,7 @@
       "uninstallerSidebar": "build/installerSidebar.bmp",
       "uninstallDisplayName": "Luxor PDF",
       "deleteAppDataOnUninstall": false,
-      "runAfterFinish": true
+      "runAfterFinish": false
     },
     "releaseInfo": {
    "releaseNotesFile": "build/release-notes.md"
